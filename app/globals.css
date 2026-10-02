@@ -178,6 +178,13 @@
   color-scheme: dark;
 }
 
+/*
+ * dark: variant follows data-theme (set before first paint by the script in
+ * app/layout.tsx). Only needed for things tokens can't express, such as
+ * swapping icons. Colors switch on their own.
+ */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /* Expose semantic tokens as Tailwind utilities (bg-primary, text-text-muted, ...) */
 @theme inline {
   --color-background: var(--background);
@@ -264,6 +271,16 @@
   --text-label-lg--font-weight: 700;
 }
 
+/* ---------- Motion ---------- */
+/*
+ * Utilities: ease-spring. A damped spring (about 1.5% overshoot) sampled into
+ * linear(), so CSS transitions get spring motion without a JS library.
+ * Use it for things that glide across the screen, like the navbar's active mark.
+ */
+@theme {
+  --ease-spring: linear(0, 0.065, 0.21, 0.379, 0.541, 0.68, 0.791, 0.874, 0.932, 0.971, 0.994, 1.008, 1.014, 1.015, 1.014, 1.012, 1.009, 1.007, 1.005, 1.003, 1);
+}
+
 /* ---------- Base styles ---------- */
 @layer base {
   body {
@@ -272,6 +289,11 @@
     font-family: var(--font-sans);
     font-size: var(--text-body);
     line-height: var(--text-body--line-height);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 2px;
   }
 
   h1,

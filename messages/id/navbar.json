@@ -1,0 +1,14 @@
+{
+  "links": {
+    "home": "Beranda",
+    "plan": "Rencanakan",
+    "trips": "Perjalanan Saya",
+    "about": "Tentang"
+  },
+  "homeLabel": "Kancara, ke beranda",
+  "navLabel": "Navigasi utama",
+  "openMenu": "Buka menu",
+  "closeMenu": "Tutup menu",
+  "themeToggle": "Ganti tema terang/gelap",
+  "languageToggle": "Bahasa"
+}

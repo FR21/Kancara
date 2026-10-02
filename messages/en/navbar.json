@@ -1,0 +1,14 @@
+{
+  "links": {
+    "home": "Home",
+    "plan": "Plan a Trip",
+    "trips": "My Trips",
+    "about": "About"
+  },
+  "homeLabel": "Kancara, go to home",
+  "navLabel": "Main navigation",
+  "openMenu": "Open menu",
+  "closeMenu": "Close menu",
+  "themeToggle": "Toggle light/dark theme",
+  "languageToggle": "Language"
+}
