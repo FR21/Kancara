@@ -9,6 +9,8 @@ Status: **initial setup**. The repo currently contains only the Next.js frontend
 - [Next.js](https://nextjs.org) 16 (App Router) + React 19
 - TypeScript
 - Tailwind CSS 4
+- [Lucide](https://lucide.dev/icons) icons (`lucide-react`)
+- Fonts: [Fredoka](https://fonts.google.com/specimen/Fredoka) (headings) + [Nunito](https://fonts.google.com/specimen/Nunito) (body), loaded with `next/font`
 - ESLint 9 (`eslint-config-next`)
 - Python — _not set up yet_
 
@@ -37,6 +39,8 @@ Make sure you have these installed:
    ```bash
    npm install
    ```
+
+   This installs everything in `package.json`, including the icon library (`lucide-react`). Fonts are loaded automatically by Next.js, so there is nothing extra to install.
 
 3. **Set up environment variables**
 
@@ -72,10 +76,11 @@ Run `npm run lint` before pushing.
 ```
 kancara/
 ├── app/                 # Pages & layouts (Next.js App Router)
-│   ├── layout.tsx       # Root layout
+│   ├── layout.tsx       # Root layout + font loading
 │   ├── page.tsx         # Home page (/)
-│   └── globals.css      # Global styles + Tailwind
-├── public/              # Static assets (images, icons)
+│   └── globals.css      # Design tokens (colors, fonts, type scale) + Tailwind
+├── public/              # Static assets
+│   └── images/          # Logos
 ├── eslint.config.mjs    # ESLint config
 ├── next.config.ts       # Next.js config
 ├── postcss.config.mjs   # PostCSS config (Tailwind)
