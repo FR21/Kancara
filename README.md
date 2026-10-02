@@ -1,99 +1,144 @@
+<div align="center">
+
+<img src="public/images/logo/kancara_full_logo.png" alt="Kancara mascot and logo" width="220" />
+
 # Kancara
 
-Kancara is a multi-agent travel companion for groups with different needs, from planning all the way to the trip home. It keeps working offline and makes sure no member of the group gets sacrificed.
+**Your inclusive group travel planner.**
 
-Status: **initial setup**. The repo currently contains only the Next.js frontend. The Python part has not been added yet.
+A multi-agent travel companion for groups whose members have different needs,
+from planning all the way to the trip home, even offline.
 
-## Tech Stack
+![Next.js](https://img.shields.io/badge/Next.js_16-000000?logo=nextdotjs&logoColor=white)
+![React](https://img.shields.io/badge/React_19-149ECA?logo=react&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?logo=typescript&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS_4-06B6D4?logo=tailwindcss&logoColor=white)
 
-- [Next.js](https://nextjs.org) 16 (App Router) + React 19
-- TypeScript
-- Tailwind CSS 4
-- [Lucide](https://lucide.dev/icons) icons (`lucide-react`)
-- Fonts: [Fredoka](https://fonts.google.com/specimen/Fredoka) (headings) + [Nunito](https://fonts.google.com/specimen/Nunito) (body), loaded with `next/font`
-- ESLint 9 (`eslint-config-next`)
-- Python — _not set up yet_
+</div>
 
-## Prerequisites
+---
 
-Make sure you have these installed:
+## The problem
 
-| Tool    | Minimum version  | Check version      |
-| ------- | ---------------- | ------------------ |
-| Git     | —                | `git --version`    |
-| Node.js | 20.9             | `node -v`          |
-| npm     | bundled with Node| `npm -v`           |
-| Python  | 3.x _(later)_    | `python --version` |
+Group trips usually get planned around whoever speaks up the most. The member who
+uses a wheelchair, the parent with a toddler, the friend on a tight budget, or
+the one with dietary restrictions ends up compromising, or stays home.
 
-## Getting Started
+## What Kancara does
 
-1. **Clone the repo**
+| | |
+| --- | --- |
+| 👥 **Built for the whole group** | Takes every member's needs into account, so nobody gets sacrificed. |
+| 🧭 **From planning to the trip home** | One companion for the entire journey, not just the planning stage. |
+| 📶 **Works offline** | The itinerary and key info stay available without a signal. |
 
-   ```bash
-   git clone <repo-url>
-   cd kancara
-   ```
+## Project status
 
-2. **Install dependencies**
+> 🚧 **Early stage.** This repo currently contains the Next.js frontend. The
+> Python multi-agent backend has not been added yet.
 
-   ```bash
-   npm install
-   ```
+**Done so far**
 
-   This installs everything in `package.json`, including the icon library (`lucide-react`). Fonts are loaded automatically by Next.js, so there is nothing extra to install.
+- [x] Design system: brand colors, typography, and light/dark tokens
+- [x] Responsive navbar with mobile menu
+- [x] Language switcher (Bahasa Indonesia / English)
+- [x] Light/dark theme toggle that follows the OS by default
+- [ ] Trip planning flow
+- [ ] Multi-agent backend (Python)
+- [ ] Offline support
 
-3. **Set up environment variables**
+---
 
-   Create a `.env` file in the project root. No variables are required yet. Once there are, they will be listed in `.env.example`, and you can copy it:
+## Getting started
 
-   ```bash
-   cp .env.example .env
-   ```
+### Prerequisites
 
-   > Never commit `.env` (it is already in `.gitignore`).
+| Tool | Version | Check |
+| --- | --- | --- |
+| Node.js | 20.9 or newer | `node -v` |
+| npm | comes with Node | `npm -v` |
+| Git | any | `git --version` |
 
-4. **Start the development server**
+### Run it locally
 
-   ```bash
-   npm run dev
-   ```
-
-   Open [http://localhost:3000](http://localhost:3000). The page reloads automatically when you edit files.
-
-## Scripts
-
-| Command         | What it does                         |
-| --------------- | ------------------------------------ |
-| `npm run dev`   | Starts the development server        |
-| `npm run build` | Builds the app for production        |
-| `npm run start` | Runs the production build            |
-| `npm run lint`  | Checks the code with ESLint          |
-
-Run `npm run lint` before pushing.
-
-## Folder Structure
-
-```
-kancara/
-├── app/                 # Pages & layouts (Next.js App Router)
-│   ├── layout.tsx       # Root layout + font loading
-│   ├── page.tsx         # Home page (/)
-│   └── globals.css      # Design tokens (colors, fonts, type scale) + Tailwind
-├── public/              # Static assets
-│   └── images/          # Logos
-├── eslint.config.mjs    # ESLint config
-├── next.config.ts       # Next.js config
-├── postcss.config.mjs   # PostCSS config (Tailwind)
-├── tsconfig.json        # TypeScript config
-└── package.json
+```bash
+git clone https://github.com/FR21/Kancara.git
+cd Kancara
+npm install
+npm run dev
 ```
 
-## Git Workflow
+Then open **http://localhost:3000**.
 
-- Main branch: `main`
-- Create a new branch for each task, e.g. `feature/TC001-setup-project`
-- Keep commits small and clear, then open a Pull Request to `main`
+Fonts load automatically through `next/font`, so there is nothing extra to install.
+No environment variables are needed yet. When they are, they will be listed in
+`.env.example`. Copy it to `.env`, and never commit `.env`.
 
-## Notes
+### Scripts
 
-This project uses Next.js 16, which has some breaking changes compared to older versions. If you're unsure about an API or convention, check the docs in `node_modules/next/dist/docs/` or at [nextjs.org/docs](https://nextjs.org/docs).
+| Command | What it does |
+| --- | --- |
+| `npm run dev` | Start the dev server with hot reload |
+| `npm run build` | Build for production |
+| `npm run start` | Run the production build |
+| `npm run lint` | Check the code with ESLint (run this before pushing) |
+
+---
+
+## Tech stack
+
+- **Framework:** [Next.js](https://nextjs.org) 16 (App Router) and React 19
+- **Language:** TypeScript
+- **Styling:** Tailwind CSS 4, with design tokens in `app/globals.css`
+- **Icons:** [Lucide](https://lucide.dev/icons) (`lucide-react`)
+- **Fonts:** [Fredoka](https://fonts.google.com/specimen/Fredoka) for headings, [Nunito](https://fonts.google.com/specimen/Nunito) for body text
+- **Backend:** Python, coming soon
+
+## Project structure
+
+```
+Kancara/
+├── app/                    # Pages and layouts (App Router)
+│   ├── layout.tsx          # Root layout: fonts, theme and locale scripts, navbar
+│   ├── page.tsx            # Home (/)
+│   ├── plan/ trips/ about/ # Placeholder pages
+│   └── globals.css         # Design tokens and Tailwind setup
+├── components/
+│   ├── navbar/             # Navbar, LanguageToggle, ThemeToggle
+│   └── placeholder/        # Temporary page for routes not built yet
+├── lib/                    # Locale, theme, and translation helpers
+├── messages/               # UI text, one JSON file per feature
+│   ├── id/                 # Bahasa Indonesia (default)
+│   └── en/                 # English
+└── public/images/logo/     # Logos
+```
+
+## Contributing
+
+### Adding UI text in both languages
+
+Text lives in `messages/<locale>/<feature>.json`, for example `messages/id/navbar.json`.
+
+1. Create `messages/id/<feature>.json` and `messages/en/<feature>.json` with the same keys.
+2. Register both files in `lib/messages.ts`.
+3. Read the text in a client component with `useMessages("<feature>")`.
+
+The Indonesian files define the expected keys, so a missing key in an English
+file shows up as a TypeScript error.
+
+### Styling rules
+
+Use the design tokens (`bg-primary`, `text-text-muted`, `border-border`,
+`text-h2`, …) instead of hardcoded hex colors or pixel font sizes. Light and dark
+mode then work automatically. See the comments at the top of `app/globals.css`.
+
+### Git workflow
+
+- The main branch is `master`.
+- Create one branch per task, for example `feature/TC006-trip-form`.
+- Prefix commit messages with the task ID, for example `feat(TC003): add navbar`.
+- Keep commits small, then open a pull request to `master`.
+
+> **Heads-up:** Next.js 16 has breaking changes compared to older versions. If
+> you're unsure about an API, check `node_modules/next/dist/docs/` or
+> [nextjs.org/docs](https://nextjs.org/docs).
