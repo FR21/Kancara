@@ -3,11 +3,6 @@ export type Theme = "light" | "dark";
 const STORAGE_KEY = "kancara-theme";
 const DARK_QUERY = "(prefers-color-scheme: dark)";
 
-/**
- * Inline script for <head>. Sets data-theme on <html> before the first paint,
- * from the saved choice or the OS setting, so the page never flashes the
- * wrong theme.
- */
 export const themeInitScript = `(function(){try{var t=localStorage.getItem("${STORAGE_KEY}");if(t!=="light"&&t!=="dark")t=matchMedia("${DARK_QUERY}").matches?"dark":"light";document.documentElement.setAttribute("data-theme",t)}catch(e){}})()`;
 
 function getStoredTheme(): Theme | null {
