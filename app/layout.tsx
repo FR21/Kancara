@@ -33,14 +33,14 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang={DEFAULT_LOCALE}
       suppressHydrationWarning
-      className={`${fredoka.variable} ${nunito.variable} h-full antialiased`}
+      className={`${fredoka.variable} ${nunito.variable} antialiased`}
     >
       <head>
         <script
           dangerouslySetInnerHTML={{ __html: `${themeInitScript};${localeInitScript}` }}
         />
       </head>
-      <body className="min-h-full flex flex-col">
+      <body className="min-h-screen flex flex-col font-sans overflow-x-clip">
         <Navbar />
         {children}
         <Footer />
