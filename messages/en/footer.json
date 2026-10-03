@@ -1,0 +1,12 @@
+{
+  "tagline": "Group trips where no one gets left behind.",
+  "description": "A multi-agent travel companion for groups with different needs, from planning all the way to the trip home.",
+  "navLabel": "Footer navigation",
+  "exploreHeading": "Explore",
+  "legalHeading": "Legal",
+  "legal": {
+    "privacy": "Privacy Policy",
+    "terms": "Terms & Conditions"
+  },
+  "backToTop": "Back to top"
+}

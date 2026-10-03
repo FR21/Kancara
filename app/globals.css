@@ -168,6 +168,15 @@
   --on-info: light-dark(#ffffff, var(--color-neutral-950));
   --info-subtle: light-dark(var(--color-info-50), var(--color-info-950));
   --on-info-subtle: light-dark(var(--color-info-800), var(--color-info-200));
+
+  /* Footer: a deep teal band in both modes. The landscape layers step from the
+     page background (far) down to the footer itself (near). */
+  --footer: light-dark(var(--color-primary-800), var(--color-primary-950));
+  --footer-far: light-dark(var(--color-primary-200), var(--color-primary-800));
+  --footer-mid: light-dark(var(--color-primary-400), var(--color-primary-900));
+  --footer-border: light-dark(var(--color-primary-700), var(--color-primary-900));
+  --on-footer: var(--color-neutral-50);
+  --on-footer-muted: var(--color-primary-200);
 }
 
 :root[data-theme="light"] {
@@ -221,6 +230,12 @@
   --color-on-info: var(--on-info);
   --color-info-subtle: var(--info-subtle);
   --color-on-info-subtle: var(--on-info-subtle);
+  --color-footer: var(--footer);
+  --color-footer-far: var(--footer-far);
+  --color-footer-mid: var(--footer-mid);
+  --color-footer-border: var(--footer-border);
+  --color-on-footer: var(--on-footer);
+  --color-on-footer-muted: var(--on-footer-muted);
 
   /* Fonts are loaded with next/font in app/layout.tsx */
   --font-heading: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
@@ -279,6 +294,96 @@
  */
 @theme {
   --ease-spring: linear(0, 0.065, 0.21, 0.379, 0.541, 0.68, 0.791, 0.874, 0.932, 0.971, 0.994, 1.008, 1.014, 1.015, 1.014, 1.012, 1.009, 1.007, 1.005, 1.003, 1);
+}
+
+/* ---------- Footer scroll effects ---------- */
+/*
+ * Scroll-driven, no JS. footer-timeline marks the landscape band as the scroll
+ * subject; the other utilities tie their animation to how far it has scrolled
+ * into view. The range runs to "entry 200%", past the point where the band is
+ * fully visible, so the effect always finishes before the page bottom.
+ * Without scroll-driven animation support, or with reduced motion, everything
+ * renders in its final state.
+ *
+ * footer-settle  layer drifts from --footer-depth to 0 (parallax depth)
+ * footer-draw    reveals left to right, like a route being drawn
+ * footer-arrive  fades and rises in near the end of the range
+ * footer-flow    dotted route marches toward the mascot (time-based loop,
+ *                runs only while an ancestor has [data-in-view])
+ */
+@keyframes footer-settle {
+  from {
+    translate: 0 var(--footer-depth, 0px);
+  }
+}
+
+@keyframes footer-draw {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  /* Explicit end: inset() can't interpolate to the implicit "none". */
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes footer-arrive {
+  0%,
+  65% {
+    opacity: 0;
+    transform: translateY(0.75rem) scale(0.85);
+  }
+}
+
+/* One period of the route's dash pattern (strokeDasharray "0.5 9"). */
+@keyframes footer-flow {
+  to {
+    stroke-dashoffset: -9.5;
+  }
+}
+
+@utility footer-timeline {
+  view-timeline: --footer-band block;
+}
+
+@utility footer-settle {
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      animation: footer-settle linear both;
+      animation-timeline: --footer-band;
+      animation-range: entry 0% entry 200%;
+    }
+  }
+}
+
+@utility footer-draw {
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      animation: footer-draw linear both;
+      animation-timeline: --footer-band;
+      animation-range: entry 20% entry 170%;
+    }
+  }
+}
+
+@utility footer-arrive {
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      animation: footer-arrive cubic-bezier(0.23, 1, 0.32, 1) both;
+      animation-timeline: --footer-band;
+      animation-range: entry 20% entry 190%;
+    }
+  }
+}
+
+@utility footer-flow {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: footer-flow 1s linear infinite paused;
+
+    [data-in-view] & {
+      animation-play-state: running;
+    }
+  }
 }
 
 /* ---------- Base styles ---------- */

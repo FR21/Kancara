@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Fredoka, Nunito } from "next/font/google";
+import Footer from "@/components/footer/Footer";
 import Navbar from "@/components/navbar/Navbar";
 import { DEFAULT_LOCALE, localeInitScript } from "@/lib/locale";
 import { themeInitScript } from "@/lib/theme";
@@ -20,6 +21,9 @@ const nunito = Nunito({
 export const metadata: Metadata = {
   title: "Kancara",
   description: "Your inclusive group travel planner",
+  icons: {
+    icon: { url: "/images/logo/kancara_mascot_logo.webp", type: "image/webp" },
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -39,6 +43,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full flex flex-col">
         <Navbar />
         {children}
+        <Footer />
       </body>
     </html>
   );

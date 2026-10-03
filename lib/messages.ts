@@ -5,12 +5,15 @@
 // To add a feature: create messages/id/<feature>.json and
 // messages/en/<feature>.json, then register both below.
 
+import enFooter from "@/messages/en/footer.json";
 import enNavbar from "@/messages/en/navbar.json";
+import idFooter from "@/messages/id/footer.json";
 import idNavbar from "@/messages/id/navbar.json";
 import type { Locale } from "./locale";
 
 // Indonesian is the default locale, so its files define the expected keys.
 const id = {
+  footer: idFooter,
   navbar: idNavbar,
 };
 
@@ -19,6 +22,7 @@ export type Namespace = keyof Messages;
 
 // `satisfies` makes a missing or misspelled key in an English file a type error.
 const en = {
+  footer: enFooter,
   navbar: enNavbar,
 } satisfies Messages;
 

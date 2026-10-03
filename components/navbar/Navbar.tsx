@@ -5,22 +5,12 @@ import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { type MouseEvent, useEffect, useRef, useState } from "react";
-import type { Messages } from "@/lib/messages";
+import { NAV_LINKS } from "@/lib/nav-links";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
 import { followSystemTheme } from "@/lib/theme";
 import LanguageToggle from "./LanguageToggle";
 import ThemeToggle from "./ThemeToggle";
-
-type NavLink = { href: string; key: keyof Messages["navbar"]["links"] };
-
-// Placeholder routes. Update once the real pages exist.
-const NAV_LINKS: NavLink[] = [
-  { href: "/", key: "home" },
-  { href: "/plan", key: "plan" },
-  { href: "/trips", key: "trips" },
-  { href: "/about", key: "about" },
-];
 
 /** The gold smile from the Kancara logo, used as the active-page mark. */
 function Smile({ className }: { className: string }) {
