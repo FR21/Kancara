@@ -26,7 +26,8 @@
     "card4Value": "0 Bars",
     "card4Label": "Needed To Keep Everyone Connected",
     "card1Growth": "↑ 18% this month",
-    "footerNote": "✓ Based on post trip data from 3,200+ group organisers"
+    "footerNote": "✓ Based on post trip data from 3,200+ group organisers",
+    "trustedBy": "Trusted by"
   },
   "steps": {
     "heading": "The Kancara Experience Flow",
@@ -104,7 +105,6 @@
     ]
   },
   "offline": {
-    "badge": "OFFLINE, NOT OUT OF TOUCH",
     "titlePart1": "The Signal Can Leave.",
     "titlePart2": "Your Group Won't.",
     "description": "Your complete itinerary, route maps, emergency contacts, and OCR menu reader automatically save to your phone before departure. 100% functional without internet.",
@@ -115,8 +115,23 @@
     ],
     "cta": "Explore Offline Mode",
     "statusPill": "Everyone Checked In",
-    "subStatus": "Synced locally . No internet needed",
-    "floatBadge": "Travel Calm . Works Beyond Bars"
+    "subStatus": "Synced locally · No internet needed",
+    "offlineCard": {
+      "title": "Offline",
+      "body": "Not out of touch"
+    },
+    "calmCard": {
+      "title": "Travel calm",
+      "body": "Works beyond bars"
+    },
+    "phone": {
+      "label": "Illustration of the Kancara app offline: the whole group stays connected over a peer-to-peer network.",
+      "app": "kancara",
+      "saved": "Saved",
+      "destination": "Pine Ridge Camp",
+      "network": "Peer-to-peer active",
+      "checkIn": "I'm With the Group"
+    }
   },
   "cta": {
     "heading": "Ready to Plan a Seamless Group Trip?",

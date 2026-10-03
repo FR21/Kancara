@@ -138,6 +138,10 @@
   --border-strong: light-dark(var(--color-neutral-500), var(--color-neutral-500));
   --text: light-dark(var(--color-neutral-900), var(--color-neutral-50));
   --text-muted: light-dark(var(--color-neutral-600), var(--color-neutral-400));
+  --section-muted: light-dark(
+    var(--color-neutral-100),
+    color-mix(in srgb, var(--color-neutral-900) 50%, var(--color-neutral-950))
+  );
 
   --primary: light-dark(var(--color-primary-700), var(--color-primary-400));
   --primary-hover: light-dark(var(--color-primary-800), var(--color-primary-300));
@@ -207,6 +211,7 @@
   --color-border-strong: var(--border-strong);
   --color-text: var(--text);
   --color-text-muted: var(--text-muted);
+  --color-section-muted: var(--section-muted);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-on-primary: var(--on-primary);
@@ -242,15 +247,15 @@
   --color-on-footer-muted: var(--on-footer-muted);
 
   /* Fonts are loaded with next/font in app/layout.tsx */
-  --font-heading: var(--font-fredoka), ui-rounded, system-ui, sans-serif;
-  --font-sans: var(--font-nunito), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-plus-jakarta-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
 }
 
 /* ---------- Typography scale ---------- */
 /*
  * Utilities: text-display, text-h1 ... text-label-lg. Each one sets font size,
  * line height, and font weight together.
- * Use Fredoka (font-heading) at 20px and up only, weight 500 or heavier.
+ * Use Plus Jakarta Sans (font-heading) for headings at 20px and up.
  */
 @theme {
   --text-display: clamp(2.25rem, 1.75rem + 2vw, 3rem);
@@ -307,6 +312,30 @@
  */
 @theme {
   --ease-spring: linear(0, 0.065, 0.21, 0.379, 0.541, 0.68, 0.791, 0.874, 0.932, 0.971, 0.994, 1.008, 1.014, 1.015, 1.014, 1.012, 1.009, 1.007, 1.005, 1.003, 1);
+
+  --animate-glint: glint 900ms cubic-bezier(0.23, 1, 0.32, 1);
+  --animate-signal: signal 1.4s ease-in-out infinite;
+
+  @keyframes glint {
+    from {
+      opacity: 1;
+      translate: -100% 0;
+    }
+    to {
+      opacity: 1;
+      translate: 400% 0;
+    }
+  }
+
+  @keyframes signal {
+    0%,
+    100% {
+      opacity: 0;
+    }
+    35% {
+      opacity: 1;
+    }
+  }
 }
 
 /* ---------- Footer scroll effects ---------- */
@@ -398,6 +427,93 @@
     [data-in-view] & {
       animation-play-state: running;
     }
+  }
+}
+
+@keyframes timeline-flow {
+  to {
+    background-position: 0 1.25rem;
+  }
+}
+
+@keyframes timeline-fill {
+  from {
+    clip-path: inset(0 0 100% 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+@keyframes timeline-activate {
+  from {
+    opacity: 0.35;
+    scale: 0.7;
+  }
+}
+
+@keyframes marquee {
+  to {
+    translate: -50% 0;
+  }
+}
+
+@utility timeline-scope {
+  view-timeline: --timeline block;
+}
+
+@utility timeline-track {
+  background-image: repeating-linear-gradient(
+    to bottom,
+    var(--color-accent-300) 0 0.625rem,
+    transparent 0.625rem 1.25rem
+  );
+
+  @media (prefers-reduced-motion: no-preference) {
+    animation: timeline-flow 1.2s linear infinite paused;
+
+    [data-in-view] & {
+      animation-play-state: running;
+    }
+  }
+}
+
+@utility timeline-fill {
+  opacity: 0;
+
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      opacity: 1;
+      animation: timeline-fill linear both;
+      animation-timeline: --timeline;
+      animation-range: cover 50vh cover calc(100% - 50vh);
+    }
+  }
+}
+
+@utility timeline-activate {
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      animation: timeline-activate linear both;
+      animation-timeline: view();
+      animation-range: cover 40% cover 50%;
+    }
+  }
+}
+
+@utility marquee {
+  animation: marquee 36s linear infinite paused;
+
+  [data-in-view] & {
+    animation-play-state: running;
+  }
+
+  [data-in-view] &:hover {
+    animation-play-state: paused;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    animation: none;
   }
 }
 

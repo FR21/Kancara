@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Fredoka, Nunito } from "next/font/google";
+import { Montserrat, Plus_Jakarta_Sans } from "next/font/google";
 import Footer from "@/components/footer/Footer";
 import Navbar from "@/components/navbar/Navbar";
 import { DEFAULT_LOCALE, localeInitScript } from "@/lib/locale";
@@ -7,14 +7,14 @@ import { themeInitScript } from "@/lib/theme";
 import "./globals.css";
 
 // Headings. Font tokens live in globals.css.
-const fredoka = Fredoka({
-  variable: "--font-fredoka",
+const plusJakartaSans = Plus_Jakarta_Sans({
+  variable: "--font-plus-jakarta-sans",
   subsets: ["latin"],
 });
 
 // Body text, labels, and buttons.
-const nunito = Nunito({
-  variable: "--font-nunito",
+const montserrat = Montserrat({
+  variable: "--font-montserrat",
   subsets: ["latin"],
 });
 
@@ -33,7 +33,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang={DEFAULT_LOCALE}
       suppressHydrationWarning
-      className={`${fredoka.variable} ${nunito.variable} antialiased`}
+      className={`${plusJakartaSans.variable} ${montserrat.variable} antialiased`}
     >
       <head>
         <script

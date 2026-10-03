@@ -91,7 +91,7 @@ No environment variables are needed yet. When they are, they will be listed in
 - **Language:** TypeScript
 - **Styling:** Tailwind CSS 4, with design tokens in `app/globals.css`
 - **Icons:** [Lucide](https://lucide.dev/icons) (`lucide-react`)
-- **Fonts:** [Fredoka](https://fonts.google.com/specimen/Fredoka) for headings, [Nunito](https://fonts.google.com/specimen/Nunito) for body text
+- **Fonts:** [Plus Jakarta Sans](https://fonts.google.com/specimen/Plus+Jakarta+Sans) for headings, [Montserrat](https://fonts.google.com/specimen/Montserrat) for body text
 - **Backend:** Python, coming soon
 
 ## Project structure

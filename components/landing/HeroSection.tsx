@@ -50,7 +50,7 @@ export default function HeroSection() {
       </div>
 
       {/* 2: Scrolling Overlay */}
-      <div className="absolute inset-0 w-full h-full z-10 pointer-events-none">
+      <div className="absolute inset-0 w-full h-full z-10 overflow-hidden pointer-events-none">
         <Image
           src="/images/hero/Grass.webp"
           alt="Grass Overlay"
@@ -64,11 +64,19 @@ export default function HeroSection() {
         />
       </div>
 
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 -bottom-px z-10 h-[clamp(6rem,18vh,11rem)] bg-[linear-gradient(to_bottom,transparent,color-mix(in_srgb,var(--section-muted)_6%,transparent)_22%,color-mix(in_srgb,var(--section-muted)_24%,transparent)_42%,color-mix(in_srgb,var(--section-muted)_56%,transparent)_62%,color-mix(in_srgb,var(--section-muted)_86%,transparent)_80%,var(--section-muted)_92%)]"
+      />
+
       {/* 3: Text */}
       <div className="sticky top-0 w-full h-screen z-20 pointer-events-none -mt-[100vh]">
 
         {/* TEXT CONTENT */}
-        <div className="absolute inset-0 pointer-events-auto flex flex-col justify-center items-center">
+        <div
+          className="absolute inset-0 pointer-events-auto flex flex-col justify-center items-center"
+          style={{ opacity: textOpacity, visibility: textOpacity === 0 ? "hidden" : undefined }}
+        >
           <div
             className="mx-auto w-full max-w-4xl text-center px-4 sm:px-6 mt-16 sm:mt-0 translate-y-0 sm:translate-y-[22px]"
           >
