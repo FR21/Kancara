@@ -1,152 +1,386 @@
 "use client";
 
-import { Users, Heart, Calendar, ShieldCheck, Check } from "lucide-react";
+import { ArrowUpRight, Check, HeartHandshake, Hourglass, Star, Users, WifiOff } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
+import ScrollReveal from "./ScrollReveal";
+import TrustedBy from "./TrustedBy";
+
+const MONTHLY_TRAVELLERS = [1010, 1240, 1180, 1620, 1980, 2500, 2950];
+
+const EASE = "ease-[cubic-bezier(0.23,1,0.32,1)]";
+const CARD = `group/card h-full rounded-3xl border border-border bg-white p-6 sm:p-8 dark:bg-neutral-900 transition-[translate,box-shadow,border-color] duration-300 ${EASE} hover:-translate-y-1 hover:border-primary/25 hover:shadow-xl hover:shadow-primary/5`;
+const GROW = `transition-[scale] duration-700 ${EASE}`;
+const GLINT =
+  "pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-linear-to-r from-transparent via-neutral-50/60 to-transparent opacity-0 group-hover/card:animate-glint";
+
+type Figure = {
+  prefix: string;
+  suffix: string;
+  number: number;
+  decimals: number;
+  thousands: string;
+  decimal: string;
+};
+
+function parseFigure(text: string): Figure | null {
+  const match = text.match(/\d[\d.,]*/);
+  if (!match || match.index === undefined) return null;
+  const raw = match[0];
+  const last = Math.max(raw.lastIndexOf("."), raw.lastIndexOf(","));
+  let thousands = "";
+  let decimal = ".";
+  let decimals = 0;
+  if (last >= 0) {
+    if (raw.length - last - 1 === 3) {
+      thousands = raw[last];
+    } else {
+      decimal = raw[last];
+      decimals = raw.length - last - 1;
+      thousands = raw.slice(0, last).match(/[.,]/)?.[0] ?? "";
+    }
+  }
+  const digits = (thousands ? raw.split(thousands).join("") : raw).replace(decimal, ".");
+  return {
+    prefix: text.slice(0, match.index),
+    suffix: text.slice(match.index + raw.length),
+    number: parseFloat(digits),
+    decimals,
+    thousands,
+    decimal,
+  };
+}
+
+function formatFigure(value: number, figure: Figure) {
+  const [whole, fraction] = value.toFixed(figure.decimals).split(".");
+  const grouped = figure.thousands ? whole.replace(/\B(?=(\d{3})+(?!\d))/g, figure.thousands) : whole;
+  return `${figure.prefix}${grouped}${fraction ? figure.decimal + fraction : ""}${figure.suffix}`;
+}
+
+function CountUp({ value, className }: { value: string; className: string }) {
+  const ref = useRef<HTMLParagraphElement>(null);
+  const [progress, setProgress] = useState(1);
+  const figure = parseFigure(value);
+
+  useEffect(() => {
+    const element = ref.current;
+    if (!element || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    let frame = 0;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        observer.disconnect();
+        const start = performance.now();
+        const step = (now: number) => {
+          const t = Math.min((now - start) / 1400, 1);
+          setProgress(1 - Math.pow(1 - t, 4));
+          if (t < 1) frame = requestAnimationFrame(step);
+        };
+        setProgress(0);
+        frame = requestAnimationFrame(step);
+      },
+      { rootMargin: "0px 0px 15% 0px" },
+    );
+    observer.observe(element);
+    return () => {
+      observer.disconnect();
+      cancelAnimationFrame(frame);
+    };
+  }, []);
+
+  return (
+    <p ref={ref} className={className}>
+      <span className="sr-only">{value}</span>
+      <span aria-hidden="true">{figure ? formatFigure(figure.number * progress, figure) : value}</span>
+    </p>
+  );
+}
+
+function CardLabel({
+  icon: Icon,
+  iconMotion = "group-hover/card:scale-110 group-hover/card:-rotate-8",
+  children,
+}: {
+  icon: typeof Users;
+  iconMotion?: string;
+  children: string;
+}) {
+  return (
+    <p className="flex items-center gap-2 text-label text-text-muted">
+      <Icon
+        aria-hidden="true"
+        className={`size-4 shrink-0 text-primary transition-[rotate,scale] duration-500 ease-spring ${iconMotion}`}
+      />
+      {children}
+    </p>
+  );
+}
+
+function parseHours(text: string) {
+  const inner = text.match(/\(([^)]+)\)/)?.[1] ?? text;
+  return { name: text.split(" (")[0], label: inner, hours: parseFloat(inner.replace(",", ".")) || 0 };
+}
+
+function TravellersCard() {
+  const t = useMessages("landing").stats;
+  const locale = useLocale();
+  const monthFormat = new Intl.DateTimeFormat(locale, { month: "short" });
+  const numberFormat = new Intl.NumberFormat(locale);
+  const months = MONTHLY_TRAVELLERS.map((_, index) => monthFormat.format(new Date(2026, index, 1)));
+  const max = Math.max(...MONTHLY_TRAVELLERS);
+  const last = MONTHLY_TRAVELLERS.length - 1;
+
+  return (
+    <div className={`${CARD} flex flex-col`}>
+      <div className="flex items-start justify-between gap-3">
+        <CardLabel icon={Users}>{t.card1Label}</CardLabel>
+        <span className="flex shrink-0 items-center gap-1 rounded-full bg-success-subtle px-2.5 py-1 text-caption font-bold text-on-success-subtle">
+          <ArrowUpRight
+            aria-hidden="true"
+            strokeWidth={2.5}
+            className={`size-3.5 transition-[translate] duration-300 ${EASE} group-hover/card:translate-x-0.5 group-hover/card:-translate-y-0.5`}
+          />
+          {t.card1Growth.replace(/^[↑\s]+/, "")}
+        </span>
+      </div>
+
+      <CountUp
+        value={t.card1Value}
+        className="mt-4 font-heading text-display font-extrabold tracking-tight text-text"
+      />
+
+      <figure className="mt-auto pt-10">
+        <div aria-hidden="true" className="flex h-44 items-end gap-2 border-b border-border">
+          {MONTHLY_TRAVELLERS.map((value, index) => {
+            const current = index === last;
+            const height = (value / max) * 100;
+            return (
+              <div key={months[index]} className="group/bar relative flex h-full flex-1 items-end justify-center">
+                <div
+                  style={{ height: `${height}%`, transitionDelay: `${200 + index * 70}ms` }}
+                  className={`w-full max-w-8 origin-bottom rounded-t-[4px] transition-[scale,background-color] duration-700 ${EASE} motion-safe:scale-y-0 motion-safe:group-data-visible/reveal:scale-y-100 ${
+                    current
+                      ? "bg-primary group-hover/bar:bg-primary-hover"
+                      : "bg-neutral-300 group-hover/bar:bg-neutral-400 dark:bg-neutral-700 dark:group-hover/bar:bg-neutral-600"
+                  }`}
+                />
+                <span
+                  style={{ bottom: `calc(${height}% + 0.5rem)` }}
+                  className={`pointer-events-none absolute left-1/2 -translate-x-1/2 rounded-md px-2 py-1 text-caption font-bold whitespace-nowrap transition-[opacity,translate] duration-200 ${EASE} ${
+                    current
+                      ? "text-text motion-safe:opacity-0 motion-safe:group-data-visible/reveal:opacity-100 motion-safe:[transition-delay:900ms]"
+                      : "translate-y-1 bg-text text-background opacity-0 shadow-md group-hover/bar:translate-y-0 group-hover/bar:opacity-100"
+                  }`}
+                >
+                  {current ? numberFormat.format(value) : `${months[index]} · ${numberFormat.format(value)}`}
+                </span>
+              </div>
+            );
+          })}
+        </div>
+        <div aria-hidden="true" className="mt-2 flex gap-2">
+          {months.map((month, index) => (
+            <span
+              key={month}
+              className={`flex-1 text-center text-caption ${index === last ? "font-bold text-text" : "text-text-muted"}`}
+            >
+              {month}
+            </span>
+          ))}
+        </div>
+        <table className="sr-only">
+          <caption>{t.card1Label}</caption>
+          <tbody>
+            {MONTHLY_TRAVELLERS.map((value, index) => (
+              <tr key={months[index]}>
+                <th scope="row">{months[index]}</th>
+                <td>{numberFormat.format(value)}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </figure>
+    </div>
+  );
+}
+
+function NeedsCard() {
+  const t = useMessages("landing").stats;
+  const share = parseFloat(t.card2Value) || 0;
+  const rating = parseFloat(t.card2Rating.replace(",", ".")) || 0;
+
+  return (
+    <div className={`${CARD} flex flex-col`}>
+      <CardLabel icon={HeartHandshake}>{t.card2Label}</CardLabel>
+      <CountUp value={t.card2Value} className="mt-4 font-heading text-h1 font-extrabold tracking-tight text-text" />
+
+      <div
+        role="meter"
+        aria-label={t.card2Label}
+        aria-valuemin={0}
+        aria-valuemax={100}
+        aria-valuenow={share}
+        className="mt-4 h-2 overflow-hidden rounded-full bg-primary-100 dark:bg-primary-950"
+      >
+        <div
+          style={{ width: `${share}%`, transitionDelay: "300ms" }}
+          className={`relative h-full origin-left overflow-hidden rounded-full bg-primary ${GROW} motion-safe:scale-x-0 motion-safe:group-data-visible/reveal:scale-x-100`}
+        >
+          <span aria-hidden="true" className={GLINT} />
+        </div>
+      </div>
+
+      <div className="mt-auto flex items-center gap-2 pt-6">
+        <span className="flex gap-0.5" aria-hidden="true">
+          {[0, 1, 2, 3, 4].map((index) => {
+            const fill = Math.min(Math.max(rating - index, 0), 1);
+            return (
+              <span
+                key={index}
+                style={{ transitionDelay: `${index * 50}ms` }}
+                className={`relative size-4 transition-[scale] duration-300 ease-spring group-hover/card:scale-125`}
+              >
+                <Star className="absolute inset-0 size-4 text-border" fill="currentColor" strokeWidth={0} />
+                <span className="absolute inset-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
+                  <Star className="size-4 text-accent-400" fill="currentColor" strokeWidth={0} />
+                </span>
+              </span>
+            );
+          })}
+        </span>
+        <span className="text-label text-text">{t.card2Rating}</span>
+      </div>
+    </div>
+  );
+}
+
+function TimeCard() {
+  const t = useMessages("landing").stats;
+  const before = parseHours(t.card3Before);
+  const after = parseHours(t.card3WithUs);
+  const scale = Math.max(before.hours, after.hours) || 1;
+  const rows = [
+    { ...before, bar: "bg-neutral-300 dark:bg-neutral-700", text: "text-text-muted", glint: false },
+    { ...after, bar: "bg-primary", text: "text-primary font-bold", glint: true },
+  ];
+
+  return (
+    <div className={`${CARD} flex flex-col`}>
+      <CardLabel icon={Hourglass} iconMotion="group-hover/card:rotate-180">
+        {t.card3Label}
+      </CardLabel>
+      <CountUp value={t.card3Value} className="mt-4 font-heading text-h1 font-extrabold tracking-tight text-text" />
+
+      <dl className="mt-auto space-y-3 pt-6">
+        {rows.map((row, index) => (
+          <div key={row.name}>
+            <div className="flex items-baseline justify-between text-caption">
+              <dt className={row.text}>{row.name}</dt>
+              <dd className={`${row.text} tabular-nums`}>{row.label}</dd>
+            </div>
+            <div className="mt-1 h-2 rounded-full bg-surface-muted">
+              <div
+                style={{ width: `${(row.hours / scale) * 100}%`, transitionDelay: `${350 + index * 150}ms` }}
+                className={`relative h-full origin-left overflow-hidden rounded-full ${row.bar} ${GROW} motion-safe:scale-x-0 motion-safe:group-data-visible/reveal:scale-x-100`}
+              >
+                {row.glint && <span aria-hidden="true" className={GLINT} />}
+              </div>
+            </div>
+          </div>
+        ))}
+      </dl>
+    </div>
+  );
+}
+
+function OfflineCard() {
+  const t = useMessages("landing").stats;
+
+  return (
+    <div
+      className={`group/card relative flex h-full items-center justify-between gap-6 overflow-hidden rounded-3xl bg-[#052b3b] p-6 sm:p-8 transition-[translate,box-shadow] duration-300 ${EASE} hover:-translate-y-1 hover:shadow-xl hover:shadow-neutral-950/20`}
+    >
+      <div
+        aria-hidden="true"
+        className={`absolute -right-16 -bottom-24 size-64 rounded-full bg-primary-400/10 blur-3xl transition-[scale,opacity] duration-700 ${EASE} group-hover/card:scale-125`}
+      />
+      <div className="relative max-w-sm">
+        <p className="flex items-center gap-2 text-label text-primary-200">
+          <WifiOff
+            aria-hidden="true"
+            className="size-4 shrink-0 text-accent-300 transition-[rotate,scale] duration-500 ease-spring group-hover/card:scale-110 group-hover/card:-rotate-8"
+          />
+          {t.card4Value}
+        </p>
+        <p className="mt-3 font-heading text-h1 font-extrabold tracking-tight text-neutral-50">{t.card4Label}</p>
+      </div>
+
+      <div aria-hidden="true" className="relative flex shrink-0 flex-col items-center gap-3">
+        <div className="flex h-14 items-end gap-1.5">
+          {[30, 55, 78, 100].map((height, index) => (
+            <span
+              key={height}
+              style={{ height: `${height}%`, transitionDelay: `${400 + index * 80}ms` }}
+              className={`relative w-3 origin-bottom overflow-hidden rounded-[3px] border-2 border-neutral-50/25 ${GROW} motion-safe:scale-y-0 motion-safe:group-data-visible/reveal:scale-y-100`}
+            >
+              <span
+                style={{ animationDelay: `${index * 140}ms` }}
+                className="absolute inset-0 bg-neutral-50/70 opacity-0 group-hover/card:animate-signal"
+              />
+            </span>
+          ))}
+        </div>
+        <span className="flex size-9 items-center justify-center rounded-full bg-success-400 text-neutral-950 transition-[scale] duration-500 ease-spring group-hover/card:scale-115">
+          <Check className="size-5" strokeWidth={3} />
+        </span>
+      </div>
+    </div>
+  );
+}
 
 export default function StatsSection() {
   const t = useMessages("landing");
 
   return (
-    <section className="relative w-full px-4 py-16 sm:px-6 md:px-12 lg:px-20 bg-neutral-100 dark:bg-neutral-900/50">
+    <section className="relative w-full px-4 py-16 sm:px-6 md:px-12 lg:px-20 bg-[linear-gradient(to_bottom,var(--section-muted)_calc(100%_-_12rem),var(--background))]">
       <div className="mx-auto max-w-6xl">
-        <div className="text-center mb-10">
+        <ScrollReveal className="text-center mb-10">
           <h2 className="text-h1 sm:text-display font-heading text-text">
             {t.stats.heading}
           </h2>
           <p className="mt-2 text-body text-text-muted">
             {t.stats.subtitle}
           </p>
-        </div>
+        </ScrollReveal>
 
-        {/* 4 Bento Chart Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-12 gap-5">
-          {/* Card 1: Left Tall Card (Mint background with Vertical Bar Chart) */}
-          <div className="md:col-span-5 rounded-3xl bg-white dark:bg-neutral-900 border border-border p-6 sm:p-8 flex flex-col justify-between min-h-[380px]">
-            <div>
-              <div className="flex items-center justify-between">
-                <div className="flex size-11 items-center justify-center rounded-2xl bg-primary-100 text-primary-700 dark:bg-primary-900 dark:text-primary-300">
-                  <Users className="size-6" />
-                </div>
-                <span className="rounded-full bg-surface dark:bg-neutral-800 px-3 py-1 text-caption font-bold text-primary-700 dark:text-primary-300 border border-border">
-                  {t.stats.card1Growth}
-                </span>
-              </div>
-
-              <div className="mt-6">
-                <h3 className="text-display font-heading font-extrabold text-neutral-900 dark:text-white text-4xl sm:text-5xl">
-                  {t.stats.card1Value}
-                </h3>
-                <p className="mt-1 text-body-sm font-semibold text-neutral-600 dark:text-neutral-300">
-                  {t.stats.card1Label}
-                </p>
-              </div>
+        <div className="grid grid-cols-1 gap-5 md:grid-cols-12">
+          <ScrollReveal className="md:col-span-5">
+            <TravellersCard />
+          </ScrollReveal>
+          <div className="flex flex-col gap-5 md:col-span-7">
+            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+              <ScrollReveal delayMs={100}>
+                <NeedsCard />
+              </ScrollReveal>
+              <ScrollReveal delayMs={200}>
+                <TimeCard />
+              </ScrollReveal>
             </div>
-
-            {/* Vertical Bar Chart Graphic */}
-            <div className="mt-8 pt-4">
-              <div className="flex items-end justify-between gap-2 h-36 px-2">
-                <div className="w-full bg-emerald-500/70 rounded-lg h-[40%]" />
-                <div className="w-full bg-emerald-500/80 rounded-lg h-[65%]" />
-                <div className="w-full bg-emerald-500/70 rounded-lg h-[50%]" />
-                <div className="w-full bg-emerald-500/90 rounded-lg h-[80%]" />
-                <div className="w-full bg-emerald-600 rounded-lg h-[90%]" />
-                <div className="w-full bg-accent-300 rounded-lg h-[100%]" />
-              </div>
-              <div className="flex justify-between text-caption font-bold text-neutral-400 mt-2 px-1">
-                <span>JAN</span>
-                <span>JUL</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Right Column: 3 Cards Grid (2 top, 1 wide bottom) */}
-          <div className="md:col-span-7 flex flex-col gap-5">
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-              {/* Card 2: Top Middle Card (Rating & Doughnut Chart) */}
-              <div className="rounded-3xl bg-white dark:bg-neutral-900 border border-border p-6 flex flex-col justify-between min-h-[190px]">
-                <div className="flex size-11 items-center justify-center rounded-2xl bg-accent-100 text-accent-700">
-                  <Heart className="size-6" />
-                </div>
-
-                <div className="mt-4 flex items-end justify-between">
-                  <div>
-                    <h4 className="text-h1 font-heading font-extrabold text-text text-4xl">
-                      {t.stats.card2Value}
-                    </h4>
-                    <p className="mt-1 text-caption font-medium text-text-muted leading-snug">
-                      {t.stats.card2Label}
-                    </p>
-                  </div>
-
-                  {/* Circular Doughnut Score Badge */}
-                  <div className="relative size-16 shrink-0 flex items-center justify-center rounded-full border-4 border-accent-300 bg-surface">
-                    <span className="text-caption font-bold text-text">
-                      {t.stats.card2Rating}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Card 3: Top Right Card (Hours Saved & Horizontal Comparison) */}
-              <div className="rounded-3xl bg-white dark:bg-neutral-900 border border-border p-6 flex flex-col justify-between min-h-[190px]">
-                <div className="flex size-11 items-center justify-center rounded-2xl bg-success-100 text-success-700">
-                  <Calendar className="size-6" />
-                </div>
-
-                <div className="mt-3">
-                  <h4 className="text-h1 font-heading font-extrabold text-text text-4xl">
-                    {t.stats.card3Value}
-                  </h4>
-                  <p className="text-caption font-medium text-text-muted">
-                    {t.stats.card3Label}
-                  </p>
-
-                  {/* Horizontal Bar Comparison */}
-                  <div className="mt-3 space-y-1.5">
-                    <div className="flex items-center gap-2 text-caption">
-                      <span className="w-16 text-text-muted font-medium">{t.stats.card3Before.split(' (')[0]}</span>
-                      <div className="h-2 flex-1 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden">
-                        <div className="h-full w-[90%] bg-neutral-400" />
-                      </div>
-                      <span className="text-caption font-bold text-text-muted">{t.stats.card3Before.match(/\((.*?)\)/)?.[1] || "11 jam"}</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-caption">
-                      <span className="w-16 text-success font-bold">{t.stats.card3WithUs.split(' (')[0]}</span>
-                      <div className="h-2 flex-1 rounded-full bg-neutral-200 dark:bg-neutral-700 overflow-hidden">
-                        <div className="h-full w-[25%] bg-success" />
-                      </div>
-                      <span className="text-caption font-bold text-success">{t.stats.card3WithUs.match(/\((.*?)\)/)?.[1] || "2.5 jam"}</span>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Card 4: Bottom Wide Dark Card (Offline Signal) */}
-            <div className="rounded-3xl bg-[#052b3b] text-white p-6 sm:p-8 relative overflow-hidden flex flex-col justify-between min-h-[170px]">
-              <div className="flex size-11 items-center justify-center rounded-2xl bg-white/10 text-accent">
-                <ShieldCheck className="size-6" />
-              </div>
-
-              <div className="mt-4 max-w-sm">
-                <h4 className="text-h1 font-heading font-extrabold text-white text-3xl sm:text-4xl">
-                  {t.stats.card4Value}{" "}
-                  <span className="text-emerald-400 font-semibold">{t.stats.card4Label}</span>
-                </h4>
-              </div>
-
-              {/* Bottom right decorative check badge */}
-              <div className="absolute bottom-6 right-6 flex size-10 items-center justify-center rounded-full bg-emerald-500 text-neutral-950 font-bold">
-                <Check className="size-6 stroke-[3]" />
-              </div>
-            </div>
+            <ScrollReveal delayMs={300}>
+              <OfflineCard />
+            </ScrollReveal>
           </div>
         </div>
 
-        {/* Footer Note */}
-        <div className="mt-6 text-center text-caption font-semibold text-text-muted flex items-center justify-center gap-1.5">
-          <span>{t.stats.footerNote}</span>
-        </div>
+        <ScrollReveal delayMs={150}>
+          {/* Footer Note */}
+          <div className="mt-6 text-center text-caption font-semibold text-text-muted flex items-center justify-center gap-1.5">
+            <span>{t.stats.footerNote}</span>
+          </div>
+
+          <TrustedBy label={t.stats.trustedBy} />
+        </ScrollReveal>
       </div>
     </section>
   );

@@ -6,23 +6,25 @@ interface ScrollRevealProps {
   children: ReactNode;
   className?: string;
   delayMs?: number;
+  from?: "up" | "left" | "right";
 }
+
+const HIDDEN = {
+  up: "translate-y-6",
+  left: "-translate-x-8",
+  right: "translate-x-8",
+};
 
 export default function ScrollReveal({
   children,
   className = "",
   delayMs = 0,
+  from = "up",
 }: ScrollRevealProps) {
   const ref = useRef<HTMLDivElement>(null);
   const [isVisible, setIsVisible] = useState(false);
 
   useEffect(() => {
-    // If browser supports IntersectionObserver, observe element
-    if (typeof window === "undefined" || !("IntersectionObserver" in window)) {
-      setIsVisible(true);
-      return;
-    }
-
     const element = ref.current;
     if (!element) return;
 
@@ -41,21 +43,19 @@ export default function ScrollReveal({
 
     observer.observe(element);
 
-    return () => {
-      if (element) observer.unobserve(element);
-    };
+    return () => observer.disconnect();
   }, []);
 
   return (
     <div
       ref={ref}
+      data-visible={isVisible || undefined}
       style={{
         transitionDelay: `${delayMs}ms`,
       }}
-      className={`transition-all duration-500 ease-out ${isVisible
-          ? "opacity-100 translate-y-0"
-          : "opacity-0 translate-y-4 motion-reduce:opacity-100 motion-reduce:translate-y-0"
-        } ${className}`}
+      className={`group/reveal transition-[opacity,translate] duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-opacity ${
+        isVisible ? "opacity-100 translate-0" : `opacity-0 ${HIDDEN[from]} motion-reduce:translate-0`
+      } ${className}`}
     >
       {children}
     </div>

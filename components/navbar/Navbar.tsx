@@ -30,6 +30,8 @@ function Smile({ className }: { className: string }) {
 // Scroll distance (px) over which the navbar moves into its compact state.
 const SCROLL_RANGE = 160;
 
+const DARK_HERO_ROUTES = new Set(["/"]);
+
 // Matches duration-500 on the smile, so the stretch ends as the glide settles.
 const SMILE_MS = 500;
 
@@ -127,6 +129,8 @@ export default function Navbar() {
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
   const closeMenu = () => setMenuOpen(false);
+  const solid = scrolled || menuOpen;
+  const overHero = !solid && DARK_HERO_ROUTES.has(pathname);
 
   // Move the smile on click instead of waiting for the next page to load.
   const previewSmile = (event: MouseEvent, href: string) => {
@@ -166,8 +170,11 @@ export default function Navbar() {
       )}
 
       <div
-        className={`pointer-events-auto mx-auto flex w-full max-w-5xl items-center justify-between gap-4 rounded-lg border border-border bg-surface/90 py-2 pr-2 pl-4 backdrop-blur-md transition-[background-color,box-shadow] duration-300 motion-safe:max-w-[calc(64rem-8rem*var(--nav-progress))] motion-safe:translate-y-[calc(var(--nav-progress)*-0.5rem)] ${
-          scrolled || menuOpen ? "bg-surface/95 shadow-lg shadow-neutral-950/10" : ""
+        data-over-hero={overHero || undefined}
+        className={`group/nav pointer-events-auto mx-auto flex w-full max-w-5xl items-center justify-between gap-4 rounded-lg border py-2 pr-2 pl-4 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ease-out motion-safe:max-w-[calc(64rem-8rem*var(--nav-progress))] motion-safe:translate-y-[calc(var(--nav-progress)*-0.5rem)] ${
+          solid
+            ? "border-border bg-surface/95 shadow-lg shadow-neutral-950/10 backdrop-blur-md"
+            : "border-transparent bg-transparent"
         }`}
       >
         <Link
@@ -200,7 +207,9 @@ export default function Navbar() {
                     aria-current={active ? "page" : undefined}
                     onClick={(event) => previewSmile(event, link.href)}
                     className={`inline-flex h-10 items-center rounded-md px-3 pb-1 text-label transition-[color,background-color,scale] duration-150 ease-out active:scale-[0.97] ${
-                      active ? "text-primary" : "text-text-muted hover:bg-surface-muted hover:text-text"
+                      active
+                        ? "text-primary group-data-over-hero/nav:text-neutral-50"
+                        : "text-text-muted hover:bg-surface-muted hover:text-text group-data-over-hero/nav:text-neutral-50/80 group-data-over-hero/nav:hover:bg-neutral-50/10 group-data-over-hero/nav:hover:text-neutral-50"
                     }`}
                   >
                     {text.links[link.key]}
@@ -233,7 +242,7 @@ export default function Navbar() {
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
             aria-label={menuOpen ? text.closeMenu : text.openMenu}
-            className="relative inline-flex size-11 cursor-pointer items-center justify-center rounded-md text-text transition-[background-color,scale] duration-150 ease-out hover:bg-surface-muted active:scale-[0.97] md:hidden"
+            className="relative inline-flex size-11 cursor-pointer items-center justify-center rounded-md text-text transition-[color,background-color,scale] duration-150 ease-out hover:bg-surface-muted active:scale-[0.97] group-data-over-hero/nav:text-neutral-50 group-data-over-hero/nav:hover:bg-neutral-50/10 md:hidden"
           >
             <Menu
               aria-hidden="true"
