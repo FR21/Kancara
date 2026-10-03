@@ -1,0 +1,128 @@
+{
+  "hero": {
+    "tagline": "Your Inclusive Group Travel Planner",
+    "headlinePart1": "Different Needs.",
+    "headlinePart2": "One Journey.",
+    "description": "AI-powered group travel companion that listens to every voice, fulfills every dietary & access need, and keeps everyone connected, even offline.",
+    "ctaPrimary": "Start Planning",
+    "ctaSecondary": "See the Story",
+    "meta": "Start in 60 seconds • No commitment • Invite group later",
+    "statSummary": "12,000+ travellers planned their trip together",
+    "floatingBadge1": "Day 4 . Everyone Together",
+    "floatingBadge2": "7 out of 7 Connected"
+  },
+  "stats": {
+    "heading": "Real Impact of Inclusive Travel",
+    "subtitle": "Based on post trip feedback from 3,200+ group trip leaders",
+    "card1Value": "12,480+",
+    "card1Label": "Travellers Connected",
+    "card2Value": "98%",
+    "card2Label": "Member Voices & Needs Represented",
+    "card2Rating": "4.9/5",
+    "card3Value": "8.5 Hours",
+    "card3Label": "Saved Per Group Plan",
+    "card3Before": "Before (11 Hours)",
+    "card3WithUs": "Kancara (2.5 Hours)",
+    "card4Value": "0 Bars",
+    "card4Label": "Needed To Keep Everyone Connected",
+    "card1Growth": "↑ 18% this month",
+    "footerNote": "✓ Based on post trip data from 3,200+ group organisers"
+  },
+  "steps": {
+    "heading": "The Kancara Experience Flow",
+    "subtitle": "From initial interview to unforgettable trip memories.",
+    "items": [
+      {
+        "number": "01",
+        "title": "Imagine It, Together",
+        "subheading": "Needs Interview via AI Chat & Voice",
+        "description": "Share budgets, Halal food needs, allergen requirements, elders, and toddlers. Kancara AI finds the perfect common ground for everyone.",
+        "cta": "Explore this step",
+        "chartTitle": "Group Common Ground Results",
+        "chartItems": [
+          {
+            "label": "Halal & Allergen-Free Dining",
+            "val": "94%"
+          },
+          {
+            "label": "Nature & Senior Pace",
+            "val": "88%"
+          },
+          {
+            "label": "Toddler Rest Schedule",
+            "val": "78%"
+          }
+        ],
+        "chartPill": "AI found 3 ideal matches"
+      },
+      {
+        "number": "02",
+        "title": "Plan Without Friction",
+        "subheading": "Zero Violation Validation by Rule Guardian",
+        "description": "Rule Guardian verifies every route and venue automatically. Guarantees zero violations of mandatory member requirements.",
+        "cta": "Explore this step",
+        "chartTitle": "Mandatory Requirement Validation",
+        "chartItems": [
+          {
+            "label": "Halal & Dietary Validation",
+            "val": "100%"
+          },
+          {
+            "label": "Wheelchair & Senior Access",
+            "val": "100%"
+          },
+          {
+            "label": "Rest Time Comfort",
+            "val": "96%"
+          }
+        ],
+        "chartPill": "0 Must-Have Violations"
+      },
+      {
+        "number": "03",
+        "title": "Adapt Real Time On The Go",
+        "subheading": "Live Re-planning & Preference Balancing",
+        "description": "Sudden bad weather or member fatigue? Companion instantly reroutes plans adaptively without sacrificing anyone.",
+        "cta": "Explore this step",
+        "chartTitle": "Automated Schedule Adaptation",
+        "chartItems": [
+          {
+            "label": "Weather Change Response",
+            "val": "Instant"
+          },
+          {
+            "label": "Alternative Venue Options",
+            "val": "Ready"
+          },
+          {
+            "label": "Emergency Meeting Point",
+            "val": "Active"
+          }
+        ],
+        "chartPill": "Real Time Adjustment Active"
+      }
+    ]
+  },
+  "offline": {
+    "badge": "OFFLINE, NOT OUT OF TOUCH",
+    "titlePart1": "The Signal Can Leave.",
+    "titlePart2": "Your Group Won't.",
+    "description": "Your complete itinerary, route maps, emergency contacts, and OCR menu reader automatically save to your phone before departure. 100% functional without internet.",
+    "points": [
+      "Offline route maps & adaptive itinerary",
+      "Peer to peer offline group check ins",
+      "Travel documents & emergency contacts ready 100%"
+    ],
+    "cta": "Explore Offline Mode",
+    "statusPill": "Everyone Checked In",
+    "subStatus": "Synced locally . No internet needed",
+    "floatBadge": "Travel Calm . Works Beyond Bars"
+  },
+  "cta": {
+    "heading": "Ready to Plan a Seamless Group Trip?",
+    "description": "Start building your first inclusive group plan in 60 seconds without complex signups.",
+    "ctaPrimary": "Start Planning Now",
+    "ctaSecondary": "Explore Offline Mode",
+    "note": "100% Free . PWA Ready to Install on Mobile"
+  }
+}

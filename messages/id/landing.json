@@ -1,0 +1,128 @@
+{
+  "hero": {
+    "tagline": "Your Inclusive Group Travel Planner",
+    "headlinePart1": "Beragam Kebutuhan.",
+    "headlinePart2": "Satu Perjalanan.",
+    "description": "Pendamping perjalanan rombongan berbasis AI yang mendengarkan setiap suara, memenuhi semua kebutuhan, dan menjaga semua tetap terhubung, bahkan saat sinyal hilang.",
+    "ctaPrimary": "Mulai Rencana",
+    "ctaSecondary": "Lihat Cerita",
+    "meta": "Mulai dalam 60 detik • Tanpa komitmen • Undang rombongan nanti",
+    "statSummary": "12.000+ wisatawan telah merencanakan trip bersama",
+    "floatingBadge1": "Hari 4 . Semua Bersama",
+    "floatingBadge2": "7 dari 7 Anggota Terhubung"
+  },
+  "stats": {
+    "heading": "Dampak Nyata Perjalanan Inklusif",
+    "subtitle": "Berdasarkan umpan balik pasca perjalanan dari 3.200+ ketua rombongan",
+    "card1Value": "12.480+",
+    "card1Label": "Wisatawan Terhubung",
+    "card2Value": "98%",
+    "card2Label": "Suara & Kebutuhan Anggota Terfasilitasi",
+    "card2Rating": "4.9/5",
+    "card3Value": "8.5 Jam",
+    "card3Label": "Penghematan Waktu Perencanaan",
+    "card3Before": "Sebelum (11 Jam)",
+    "card3WithUs": "Kancara (2.5 Jam)",
+    "card4Value": "Tanpa Sinyal",
+    "card4Label": "Rombongan Tetap Bisa Terhubung",
+    "card1Growth": "↑ 18% bulan ini",
+    "footerNote": "✓ Berdasarkan data pasca perjalanan dari 3.200+ kelompok rombongan"
+  },
+  "steps": {
+    "heading": "Alur Perjalanan Bersama Kancara",
+    "subtitle": "Dari wawancara awal hingga momen berharga di perjalanan.",
+    "items": [
+      {
+        "number": "01",
+        "title": "Pahami Kebutuhan Bersama",
+        "subheading": "Needs Interview via AI Chat & Voice",
+        "description": "Sampaikan anggaran, kebutuhan makanan Halal, alergen, lansia, dan balita. AI Kancara menemukan titik temu terbaik bagi semua anggota.",
+        "cta": "Jelajahi langkah ini",
+        "chartTitle": "Hasil Titik Temu Rombongan",
+        "chartItems": [
+          {
+            "label": "Kuliner Halal & Bebas Alergen",
+            "val": "94%"
+          },
+          {
+            "label": "Wisata Alam & Ramah Lansia",
+            "val": "88%"
+          },
+          {
+            "label": "Jadwal Istirahat Balita",
+            "val": "78%"
+          }
+        ],
+        "chartPill": "AI menemukan 3 rekomendasi ideal"
+      },
+      {
+        "number": "02",
+        "title": "Rencanakan Tanpa Hambatan",
+        "subheading": "Validasi Tanpa Pelanggaran oleh Rule Guardian",
+        "description": "Rule Guardian memeriksa rute dan tempat secara otomatis. Menjamin nol pelanggaran terhadap kebutuhan wajib anggota.",
+        "cta": "Jelajahi langkah ini",
+        "chartTitle": "Validasi Syarat Wajib Rombongan",
+        "chartItems": [
+          {
+            "label": "Validasi Makanan & Diet Khusus",
+            "val": "100%"
+          },
+          {
+            "label": "Rute Aksesibel & Kursi Roda",
+            "val": "100%"
+          },
+          {
+            "label": "Kenyamanan Waktu Istirahat",
+            "val": "96%"
+          }
+        ],
+        "chartPill": "0 Pelanggaran Syarat Wajib"
+      },
+      {
+        "number": "03",
+        "title": "Adaptasi Real Time di Lapangan",
+        "subheading": "Perencanaan Ulang Langsung & Penyeimbang Preferensi",
+        "description": "Saat cuaca buruk atau ada anggota kelelahan, Companion langsung menyusun ulang rute secara adaptif tanpa mengorbankan siapapun.",
+        "cta": "Jelajahi langkah ini",
+        "chartTitle": "Adaptasi Jadwal Otomatis",
+        "chartItems": [
+          {
+            "label": "Respon Perubahan Cuaca",
+            "val": "Instan"
+          },
+          {
+            "label": "Rekomendasi Tempat Alternatif",
+            "val": "Siap"
+          },
+          {
+            "label": "Titik Kumpul Darurat Rombongan",
+            "val": "Aktif"
+          }
+        ],
+        "chartPill": "Penyesuaian Real Time Berhasil"
+      }
+    ]
+  },
+  "offline": {
+    "badge": "OFFLINE, NOT OUT OF TOUCH",
+    "titlePart1": "Sinyal Bisa Hilang.",
+    "titlePart2": "Rombongan Tetap Terhubung.",
+    "description": "Seluruh itinerary, peta rute, kontak darurat, dan pembaca menu OCR tersimpan otomatis di ponsel sebelum berangkat. Tetap berfungsi penuh tanpa internet.",
+    "points": [
+      "Peta rute offline & itinerary adaptif",
+      "Check in antar anggota rombongan tanpa sinyal",
+      "Dokumen perjalanan & kontak darurat siap 100%"
+    ],
+    "cta": "Coba Fitur Offline",
+    "statusPill": "Semua Anggota Terhubung",
+    "subStatus": "Tersinkronisasi secara lokal . Tanpa internet",
+    "floatBadge": "Travel Calm . Berfungsi Tanpa Sinyal"
+  },
+  "cta": {
+    "heading": "Siap Merencanakan Liburan Rombongan yang Nyaman?",
+    "description": "Mulai susun rencana rombongan inklusif pertamamu dalam 60 detik tanpa perlu pendaftaran rumit.",
+    "ctaPrimary": "Mulai Rencana Sekarang",
+    "ctaSecondary": "Pelajari Mode Offline",
+    "note": "100% Gratis . PWA Siap Diinstall ke HP"
+  }
+}
