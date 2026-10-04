@@ -184,7 +184,7 @@ export default function Navbar() {
             closeMenu();
             previewSmile(event, "/");
           }}
-          className="shrink-0 rounded-sm"
+          className="flex min-h-11 shrink-0 items-center rounded-sm md:min-h-0"
         >
           <Image
             src="/images/logo/kancara_wordmark_logo.webp"

@@ -1,15 +1,11 @@
 {
   "hero": {
-    "tagline": "Your Inclusive Group Travel Planner",
     "headlinePart1": "Different Needs.",
     "headlinePart2": "One Journey.",
-    "description": "AI-powered group travel companion that listens to every voice, fulfills every dietary & access need, and keeps everyone connected, even offline.",
+    "description": "Plan group trips that work for everyone, and stay connected even without signal.",
     "ctaPrimary": "Start Planning",
     "ctaSecondary": "See the Story",
-    "meta": "Start in 60 seconds • No commitment • Invite group later",
-    "statSummary": "12,000+ travellers planned their trip together",
-    "floatingBadge1": "Day 4 . Everyone Together",
-    "floatingBadge2": "7 out of 7 Connected"
+    "note": "Start in 60 seconds · No commitment"
   },
   "stats": {
     "heading": "Real Impact of Inclusive Travel",
@@ -32,6 +28,7 @@
   "steps": {
     "heading": "The Kancara Experience Flow",
     "subtitle": "From initial interview to unforgettable trip memories.",
+    "liveLabel": "Live",
     "items": [
       {
         "number": "01",

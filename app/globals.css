@@ -142,6 +142,7 @@
     var(--color-neutral-100),
     color-mix(in srgb, var(--color-neutral-900) 50%, var(--color-neutral-950))
   );
+  --cta: light-dark(var(--color-primary-100), #052b3b);
 
   --primary: light-dark(var(--color-primary-700), var(--color-primary-400));
   --primary-hover: light-dark(var(--color-primary-800), var(--color-primary-300));
@@ -212,6 +213,7 @@
   --color-text: var(--text);
   --color-text-muted: var(--text-muted);
   --color-section-muted: var(--section-muted);
+  --color-cta: var(--cta);
   --color-primary: var(--primary);
   --color-primary-hover: var(--primary-hover);
   --color-on-primary: var(--on-primary);
@@ -313,8 +315,23 @@
 @theme {
   --ease-spring: linear(0, 0.065, 0.21, 0.379, 0.541, 0.68, 0.791, 0.874, 0.932, 0.971, 0.994, 1.008, 1.014, 1.015, 1.014, 1.012, 1.009, 1.007, 1.005, 1.003, 1);
 
+  --animate-rise-in: rise-in 800ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  --animate-draw: draw 900ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-glint: glint 900ms cubic-bezier(0.23, 1, 0.32, 1);
   --animate-signal: signal 1.4s ease-in-out infinite;
+
+  @keyframes rise-in {
+    from {
+      opacity: 0;
+      translate: 0 1rem;
+    }
+  }
+
+  @keyframes draw {
+    from {
+      stroke-dashoffset: 1;
+    }
+  }
 
   @keyframes glint {
     from {
@@ -452,6 +469,15 @@
   }
 }
 
+@keyframes parallax-y {
+  from {
+    translate: 0 var(--parallax-from, 0px);
+  }
+  to {
+    translate: 0 var(--parallax-to, 0px);
+  }
+}
+
 @keyframes marquee {
   to {
     translate: -50% 0;
@@ -497,6 +523,31 @@
       animation: timeline-activate linear both;
       animation-timeline: view();
       animation-range: cover 40% cover 50%;
+    }
+  }
+}
+
+@utility ticket-notch {
+  mask-image:
+    radial-gradient(
+      circle at 0 50%,
+      transparent var(--ticket-notch-size, 0.5rem),
+      black calc(var(--ticket-notch-size, 0.5rem) + 0.5px)
+    ),
+    radial-gradient(
+      circle at 100% 50%,
+      transparent var(--ticket-notch-size, 0.5rem),
+      black calc(var(--ticket-notch-size, 0.5rem) + 0.5px)
+    );
+  mask-composite: intersect;
+}
+
+@utility parallax-y {
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: view()) {
+      animation: parallax-y linear both;
+      animation-timeline: view();
+      animation-range: cover 0% cover 100%;
     }
   }
 }

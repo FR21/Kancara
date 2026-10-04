@@ -32,7 +32,7 @@ function LinkColumn({
   return (
     <div>
       <h2 className="font-sans text-label text-on-footer">{heading}</h2>
-      <ul className="mt-4 flex flex-col items-start gap-3">
+      <ul className="mt-2 flex flex-col items-start md:mt-4 md:gap-1">
         {links.map((link) => {
           const active = isActive(link.href);
           return (
@@ -40,13 +40,13 @@ function LinkColumn({
               <Link
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={`${UNDERLINE} rounded-sm text-body-sm focus-visible:outline-accent ${
-                  active
-                    ? "bg-size-[100%_2px] text-on-footer"
-                    : "text-on-footer-muted hover:bg-size-[100%_2px] hover:text-on-footer"
+                className={`group inline-flex min-h-11 items-center rounded-sm text-body-sm transition-colors focus-visible:outline-accent md:min-h-8 ${
+                  active ? "text-on-footer" : "text-on-footer-muted hover:text-on-footer"
                 }`}
               >
-                {link.label}
+                <span className={`${UNDERLINE} ${active ? "bg-size-[100%_2px]" : "group-hover:bg-size-[100%_2px]"}`}>
+                  {link.label}
+                </span>
               </Link>
             </li>
           );
