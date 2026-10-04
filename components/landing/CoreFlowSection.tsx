@@ -24,9 +24,7 @@ export default function CoreFlowSection() {
           </p>
         </ScrollReveal>
 
-        {/* Vertical Timeline Wrapper */}
         <div ref={timelineRef} className="group/timeline timeline-scope relative">
-          {/* Vertical dashed line in center for desktop / left for mobile */}
           <div className="pointer-events-none absolute top-0 bottom-0 left-4 hidden w-0.5 -translate-x-1/2 sm:block md:left-1/2">
             <div className="timeline-track absolute inset-0 opacity-70" />
             <div className="timeline-fill absolute inset-0 bg-accent-400" />
@@ -40,12 +38,10 @@ export default function CoreFlowSection() {
                   idx % 2 === 1 ? "md:flex-row-reverse" : ""
                 }`}
               >
-                {/* Center Circle Timeline Node Indicator */}
                 <div className="timeline-activate absolute left-4 md:left-1/2 -translate-x-1/2 z-10 hidden sm:flex size-7 items-center justify-center rounded-full border-4 border-accent-300 bg-background shadow-sm">
                   <div className="size-2 rounded-full bg-accent-600" />
                 </div>
 
-                {/* Left Side: Interactive Tilted Card inside Pastel Container */}
                 <ScrollReveal from={idx % 2 === 0 ? "left" : "right"} className="w-full md:w-1/2">
                   <StepVisual
                     kind={STEP_VISUALS[idx % STEP_VISUALS.length]}
@@ -56,7 +52,6 @@ export default function CoreFlowSection() {
                   />
                 </ScrollReveal>
 
-                {/* Right Side: Step Description & Link */}
                 <ScrollReveal delayMs={120} className="w-full md:w-1/2 text-left space-y-4">
                   <div className="ticket-notch inline-flex h-6 items-center rounded-sm bg-accent-300 px-3 text-caption font-bold text-neutral-950 [--ticket-notch-size:0.25rem]">
                     <Plane className="size-3" aria-hidden="true" />

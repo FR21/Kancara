@@ -178,7 +178,6 @@ export default function CtaSection() {
         </defs>
       </svg>
 
-      {/* Background ambient lighting */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
         <div className="absolute top-1/2 -right-40 size-96 -translate-y-1/2 rounded-full bg-accent-300/10 blur-3xl" />
         <div className="absolute top-1/2 -left-40 size-96 -translate-y-1/2 rounded-full bg-secondary-400/10 blur-3xl" />

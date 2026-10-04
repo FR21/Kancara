@@ -1,7 +1,9 @@
 {
   "hero": {
     "headlinePart1": "Different Needs.",
-    "headlinePart2": "One Journey.",
+    "headlinePart2": "One",
+    "headlineUnderlined": "Journey",
+    "headlineEnd": ".",
     "description": "Plan group trips that work for everyone, and stay connected even without signal.",
     "ctaPrimary": "Start Planning",
     "ctaSecondary": "See the Story",

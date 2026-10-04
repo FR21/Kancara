@@ -218,7 +218,6 @@ export default function OfflineSection() {
     <section id="pwa-info" className="relative z-10 w-full px-4 py-16 sm:px-6 md:px-12 lg:px-20 overflow-hidden bg-[linear-gradient(to_bottom,var(--background),var(--section-muted)_10rem)] shadow-2xl shadow-neutral-950/15">
       <ScrollReveal className="mx-auto max-w-6xl">
         <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
-          {/* Left Column Text & Bullet List */}
           <div className="flex-1 text-left space-y-6">
             <h2 className="text-display font-heading font-extrabold text-text text-4xl sm:text-5xl leading-tight">
               {t.offline.titlePart1} <br />

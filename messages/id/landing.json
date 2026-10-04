@@ -1,7 +1,9 @@
 {
   "hero": {
     "headlinePart1": "Beragam Kebutuhan.",
-    "headlinePart2": "Satu Perjalanan.",
+    "headlinePart2": "Satu",
+    "headlineUnderlined": "Perjalanan",
+    "headlineEnd": ".",
     "description": "Rencanakan trip rombongan yang pas untuk semua anggota, tetap terhubung walau tanpa sinyal.",
     "ctaPrimary": "Mulai Rencana",
     "ctaSecondary": "Lihat Cerita",

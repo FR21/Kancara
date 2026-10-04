@@ -374,7 +374,6 @@ export default function StatsSection() {
         </div>
 
         <ScrollReveal delayMs={150}>
-          {/* Footer Note */}
           <div className="mt-6 text-center text-caption font-semibold text-text-muted flex items-center justify-center gap-1.5">
             <span>{t.stats.footerNote}</span>
           </div>

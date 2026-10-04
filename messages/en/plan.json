@@ -1,0 +1,332 @@
+{
+  "title": "Plan a trip",
+  "start": {
+    "title": "Where are we going today?",
+    "placeholder": "To Bandung, seven of us, mum uses a wheelchair...",
+    "examplesLabel": "Examples:",
+    "or": "or",
+    "form": "Fill in manually, step by step",
+    "lead": "Just tell it like you would tell a friend. Captain asks for the rest, then prepares your boarding pass and a day-by-day plan."
+  },
+  "stages": {
+    "label": "Plan stages",
+    "story": "Story",
+    "details": "Complete",
+    "pass": "Boarding pass",
+    "plan": "Plan",
+    "done": "done",
+    "locked": "not open yet"
+  },
+  "deck": {
+    "seePass": "See boarding pass",
+    "progress": "Question {current} of {total}",
+    "back": "Back",
+    "skip": "Skip",
+    "next": "Next",
+    "finish": "Continue",
+    "backToPass": "Back to boarding pass",
+    "questions": {
+      "destination": {
+        "short": "destination",
+        "title": "Where are you going?",
+        "hint": "More than one city is fine."
+      },
+      "origin": {
+        "short": "departure city",
+        "title": "Which city are you leaving from?",
+        "hint": ""
+      },
+      "dates": {
+        "short": "dates",
+        "title": "When do you leave and return?",
+        "hint": ""
+      },
+      "crew": {
+        "short": "group",
+        "title": "Who is coming?",
+        "hint": "Add each person, then tap their character to set a name and their needs."
+      },
+      "budget": {
+        "short": "budget",
+        "title": "What is the total budget?",
+        "hint": "For everyone, in Rupiah."
+      },
+      "pace": {
+        "short": "pace",
+        "title": "What kind of trip do you want?",
+        "hint": ""
+      },
+      "extras": {
+        "short": "more details",
+        "title": "Anything else Captain should know?",
+        "hint": "Optional. The more you add, the better the plan fits."
+      }
+    },
+    "required": "Fill this in to continue.",
+    "previewNote": "This is a preview. Finish the questions to continue.",
+    "backToCaptain": "Back to Captain",
+    "previewClose": "Close",
+    "previewTitle": "Boarding pass preview"
+  },
+  "crew": {
+    "addLegend": "Add a person",
+    "add": "Add: {ageGroup}",
+    "empty": "No one yet. Start with the buttons above.",
+    "needsCount": "Needs: {count}",
+    "selectHint": "Tap a character to set their name and needs.",
+    "removeConfirm": "Remove?",
+    "removeConfirmLabel": "Tap again to remove {name}"
+  },
+  "paceHints": {
+    "relaxed": "2 to 3 activities a day, plenty of breaks.",
+    "packed": "4 to 5 activities a day, making the most of the time."
+  },
+  "budgetOther": "Another amount (Rupiah)",
+  "ticket": {
+    "readyTitle": "Your boarding pass is ready.",
+    "draftTitle": "Your boarding pass is not complete yet.",
+    "hint": "Check it first. Tap any part to change it.",
+    "from": "From",
+    "to": "To",
+    "extrasEmpty": "Not filled in",
+    "makePlan": "Create plan",
+    "remake": "Create plan again",
+    "viewPlan": "View plan",
+    "times": "×{count}",
+    "more": "+{count} more",
+    "missingLabel": "Still missing"
+  },
+  "result": {
+    "title": "Your trip plan",
+    "backToPass": "Change boarding pass"
+  },
+  "ageGroups": {
+    "adult": "Adult",
+    "elderly": "Elderly",
+    "child": "Child",
+    "toddler": "Toddler"
+  },
+  "needCategories": {
+    "mobility": "Mobility",
+    "diet": "Diet",
+    "rest": "Rest",
+    "sensory": "Sensory",
+    "other": "Other"
+  },
+  "needs": {
+    "wheelchair": "Wheelchair",
+    "noStairs": "Can't climb stairs",
+    "shortWalks": "Can't walk far",
+    "halal": "Halal",
+    "vegetarian": "Vegetarian",
+    "vegan": "Vegan",
+    "nap": "Afternoon nap",
+    "frequentBreaks": "A break every 2 hours",
+    "quiet": "Avoid noisy places",
+    "noCrowds": "Avoid crowds",
+    "nearToilet": "Toilets within easy reach"
+  },
+  "interests": {
+    "museum": "Museums",
+    "shopping": "Shopping",
+    "nature": "Nature",
+    "food": "Food",
+    "themePark": "Theme parks"
+  },
+  "wishLevels": {
+    "nice": "Nice to have",
+    "must": "Really wants"
+  },
+  "paces": {
+    "relaxed": "Relaxed",
+    "packed": "Packed"
+  },
+  "transport": {
+    "public": "Public transport",
+    "taxi": "Taxi",
+    "rental": "Rental car"
+  },
+  "pass": {
+    "brand": "Boarding pass",
+    "dates": "Dates",
+    "group": "Group",
+    "budget": "Budget",
+    "pace": "Pace",
+    "empty": "not filled yet",
+    "people": "people",
+    "fieldStatus": "{label}: {value}. Tap to change.",
+    "origin": "Departure city",
+    "originPlaceholder": "Example: Jakarta",
+    "destinations": "Destinations",
+    "destinationPlaceholder": "Add a city, for example Bandung",
+    "addDestination": "Add",
+    "removeDestination": "Remove {name}",
+    "startDate": "Departure",
+    "endDate": "Return",
+    "dateError": "The return date must be on or after the departure date.",
+    "budgetPlaceholder": "Example: 30000000",
+    "stamp": "Ready to fly",
+    "manifest": "Passengers",
+    "noMembers": "No members yet.",
+    "addMember": "Add member",
+    "removeMember": "Remove {name}",
+    "memberName": "Name or nickname",
+    "memberNamePlaceholder": "Example: Mum",
+    "ageGroup": "Age group",
+    "needsLegend": "Needs",
+    "needsHint": "Practical limits are enough, no medical history needed.",
+    "allergies": "Food allergies",
+    "allergiesPlaceholder": "Example: peanuts, seafood",
+    "interestsLegend": "Wishes",
+    "extras": "More details",
+    "extrasFilled": "{count} filled",
+    "flexibleDates": "Dates can shift by 1 to 2 days",
+    "arrivalTime": "Arrival time",
+    "departureTime": "Return time",
+    "lodging": "Accommodation",
+    "lodgingPlaceholder": "Example: a hotel near Malioboro",
+    "mustVisit": "Must-visit places",
+    "mustVisitPlaceholder": "Example: Prambanan Temple",
+    "avoid": "Things to avoid",
+    "avoidPlaceholder": "Example: very crowded places",
+    "occasion": "Special moments",
+    "occasionPlaceholder": "Example: grandma's birthday on day 3",
+    "dayStart": "Daily start",
+    "dayEnd": "Daily finish",
+    "transportLegend": "Transport"
+  },
+  "chat": {
+    "captain": "Captain",
+    "exampleLabels": [
+      "Big group",
+      "Family with an elder",
+      "Solo trip"
+    ],
+    "examples": [
+      "From Jakarta to Bandung, 7 people with an elderly member and a toddler, budget Rp15 million, relaxed pace",
+      "Family of 5 from Surabaya to Yogyakarta, halal food, grandma uses a wheelchair, budget 10 million",
+      "Solo trip from Jakarta to Bali, budget Rp5 million, packed schedule"
+    ],
+    "resume": "Continue draft",
+    "resumeTitle": "Continue your {destination} draft",
+    "resumeProgress": "{done} of {total} sections filled",
+    "typing": "Captain is typing",
+    "error": "Captain can't be reached. Check your connection, then try again.",
+    "retry": "Try again",
+    "makeInvite": "Invite the group",
+    "itineraryPending": "Captain is building the itinerary",
+    "itineraryIntro": "Here's an itinerary that accounts for each member's needs. Pick a day to see the details.",
+    "done": "Your plan is saved on this device. You can come back any time.",
+    "allSet": "All the required details are in. Your boarding pass is ready to check.",
+    "you": "You",
+    "logLabel": "Conversation with Captain",
+    "quickBudget": "{millions} million",
+    "pickDates": "Pick on a calendar",
+    "editCrew": "Set up each person",
+    "noted": "Noted."
+  },
+  "composer": {
+    "label": "Message to Captain",
+    "placeholder": "Tell me about your trip",
+    "send": "Send",
+    "voiceStart": "Start speaking",
+    "voiceStop": "Stop recording",
+    "listening": "Listening",
+    "hint": "Enter to send, Shift + Enter for a new line",
+    "listeningHint": "Just speak, I am taking notes.",
+    "hearing": "I can hear you",
+    "voiceErrors": {
+      "denied": "The microphone is blocked. Allow it in your browser settings, then try again.",
+      "network": "Speech recognition needs the internet. Check your connection, or type the story instead.",
+      "unavailable": "Speech recognition is not available in this browser. Type the story instead."
+    }
+  },
+  "itinerary": {
+    "title": "{destination} itinerary",
+    "sample": "Sample",
+    "daysLabel": "Choose a day",
+    "day": "Day {number}",
+    "honours": "Covers",
+    "everyone": "Everyone"
+  },
+  "invite": {
+    "title": "Invite the group",
+    "linkLabel": "Invite link",
+    "copy": "Copy",
+    "copied": "Copied",
+    "share": "Share",
+    "shareText": "Join our trip plan on Kancara"
+  },
+  "sample": {
+    "captured": "Got it, I've noted {items}.",
+    "itemRoute": "the route {value}",
+    "itemDestination": "the destination {value}",
+    "itemOrigin": "departure from {value}",
+    "itemGroup": "{value} people",
+    "itemBudget": "a budget of {value}",
+    "itemPace": "a {value} pace",
+    "nothing": "I didn't catch the details. Try mentioning the destination, the number of people, or the budget.",
+    "itinerary": {
+      "arrive": {
+        "title": "Arrive in {destination}",
+        "detail": "Check in, then rest for a while."
+      },
+      "morning": {
+        "title": "Morning in {destination}",
+        "detail": "Start with the main sight while it's quiet."
+      },
+      "lunch": {
+        "title": "Lunch",
+        "detail": "A place to eat near the route."
+      },
+      "rest": {
+        "title": "Rest",
+        "detail": "A break at the accommodation before continuing."
+      },
+      "afternoon": {
+        "title": "Afternoon out",
+        "detail": "A short route with plenty of stops."
+      },
+      "dinner": {
+        "title": "Dinner",
+        "detail": "Dinner together near the accommodation."
+      },
+      "evening": {
+        "title": "Evening walk",
+        "detail": "Enjoy the city at night."
+      },
+      "depart": {
+        "title": "Return to {origin}",
+        "detail": "Check out and travel home."
+      },
+      "notes": {
+        "wheelchair": "Wheelchair access available.",
+        "noStairs": "Step-free route.",
+        "shortWalks": "Short walks, plenty of seating.",
+        "halal": "Halal menu available.",
+        "vegetarian": "Vegetarian options available.",
+        "vegan": "Vegan options available.",
+        "nap": "Timed around the afternoon nap.",
+        "frequentBreaks": "A break every 2 hours.",
+        "quiet": "A quiet place was chosen.",
+        "noCrowds": "Visit at a quiet hour.",
+        "nearToilet": "Toilets close by and easy to reach."
+      }
+    },
+    "itemDates": "the dates {value}"
+  },
+  "extrasAdd": {
+    "legend": "Add if it matters",
+    "arrival": "Arrival and return times",
+    "daily": "Daily start and finish",
+    "lodging": "Accommodation",
+    "mustVisit": "Must-visit places",
+    "avoid": "Things to avoid",
+    "occasion": "A special occasion"
+  },
+  "mode": {
+    "label": "How to fill in",
+    "captain": "Talk to Captain",
+    "manual": "Fill in manually"
+  }
+}
