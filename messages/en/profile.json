@@ -1,0 +1,29 @@
+{
+  "title": "My Profile",
+  "subtitle": "Manage your account settings and preferences.",
+  "emailLabel": "Email Address",
+  "uidLabel": "User ID",
+  "nameLabel": "Display Name",
+  "namePlaceholder": "Enter your name",
+  "usernameLabel": "Username",
+  "usernamePlaceholder": "@johndoe",
+  "nationalityLabel": "Nationality",
+  "nationalityPlaceholder": "e.g. Indonesian",
+  "ageLabel": "Age",
+  "agePlaceholder": "e.g. 25",
+  "genderLabel": "Gender",
+  "genderOptions": {
+    "none": "Select Gender",
+    "male": "Male",
+    "female": "Female",
+    "other": "Other",
+    "preferNotToSay": "Prefer not to say"
+  },
+  "editProfile": "Edit Profile",
+  "cancel": "Cancel",
+  "saveButton": "Save Changes",
+  "saving": "Saving...",
+  "logoutButton": "Log Out",
+  "success": "Profile updated successfully!",
+  "error": "Failed to update profile."
+}
