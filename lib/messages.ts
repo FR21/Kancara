@@ -13,6 +13,12 @@ import enLanding from "@/messages/en/landing.json";
 import idLanding from "@/messages/id/landing.json";
 import enPlan from "@/messages/en/plan.json";
 import idPlan from "@/messages/id/plan.json";
+import enError from "@/messages/en/error.json";
+import idError from "@/messages/id/error.json";
+import enAuth from "@/messages/en/auth.json";
+import idAuth from "@/messages/id/auth.json";
+import enProfile from "@/messages/en/profile.json";
+import idProfile from "@/messages/id/profile.json";
 import type { Locale } from "./locale";
 
 // Indonesian is the default locale, so its files define the expected keys.
@@ -21,6 +27,9 @@ const id = {
   navbar: idNavbar,
   landing: idLanding,
   plan: idPlan,
+  error: idError,
+  auth: idAuth,
+  profile: idProfile,
 };
 
 export type Messages = typeof id;
@@ -32,6 +41,9 @@ const en = {
   navbar: enNavbar,
   landing: enLanding,
   plan: enPlan,
+  error: enError,
+  auth: enAuth,
+  profile: enProfile,
 } satisfies Messages;
 
 export const MESSAGES: Record<Locale, Messages> = { id, en };

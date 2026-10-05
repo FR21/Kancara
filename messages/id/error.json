@@ -1,0 +1,12 @@
+{
+  "500": {
+    "title": "Terjadi Kesalahan Server",
+    "description": "Maaf, kami mengalami masalah dalam memproses permintaan Anda. Silakan coba beberapa saat lagi."
+  },
+  "404": {
+    "title": "Halaman Tidak Ditemukan",
+    "description": "Maaf, kami tidak dapat menemukan halaman yang Anda cari. Mungkin URL-nya salah atau halaman sudah dihapus."
+  },
+  "retry": "Coba Lagi",
+  "home": "Ke Beranda"
+}

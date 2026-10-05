@@ -4,6 +4,7 @@ import Footer from "@/components/footer/Footer";
 import Navbar from "@/components/navbar/Navbar";
 import { DEFAULT_LOCALE, localeInitScript } from "@/lib/locale";
 import { themeInitScript } from "@/lib/theme";
+import { verifySession } from "@/lib/auth/session";
 import "./globals.css";
 
 // Headings. Font tokens live in globals.css.
@@ -26,7 +27,10 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default async function RootLayout({ children }: LayoutProps<"/">) {
+  const session = await verifySession();
+  const isLoggedIn = !!session;
+
   return (
     // The inline script sets data-theme and lang before hydration, so React
     // must not warn about those attributes differing from the server render.
@@ -37,14 +41,16 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <head>
         <script
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: `${themeInitScript};${localeInitScript}` }}
         />
       </head>
       <body className="min-h-screen flex flex-col font-sans overflow-x-clip">
-        <Navbar />
+        <Navbar isLoggedIn={isLoggedIn} />
         {children}
         <Footer />
       </body>
     </html>
   );
 }
+

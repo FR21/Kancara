@@ -10,5 +10,9 @@
   "openMenu": "Open menu",
   "closeMenu": "Close menu",
   "themeToggle": "Toggle light/dark theme",
-  "languageToggle": "Language"
+  "languageToggle": "Language",
+  "login": "Login",
+  "logout": "Logout",
+  "profile": "Profile"
 }
+

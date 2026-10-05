@@ -1,0 +1,29 @@
+{
+  "title": "Profil Saya",
+  "subtitle": "Kelola pengaturan dan preferensi akun Anda.",
+  "emailLabel": "Alamat Email",
+  "uidLabel": "ID Pengguna",
+  "nameLabel": "Nama Tampilan",
+  "namePlaceholder": "Masukkan nama Anda",
+  "usernameLabel": "Username",
+  "usernamePlaceholder": "@johndoe",
+  "nationalityLabel": "Kewarganegaraan",
+  "nationalityPlaceholder": "Contoh: Indonesia",
+  "ageLabel": "Umur",
+  "agePlaceholder": "Contoh: 25",
+  "genderLabel": "Jenis Kelamin",
+  "genderOptions": {
+    "none": "Pilih Jenis Kelamin",
+    "male": "Laki-laki",
+    "female": "Perempuan",
+    "other": "Lainnya",
+    "preferNotToSay": "Tidak ingin menyebutkan"
+  },
+  "editProfile": "Edit Profil",
+  "cancel": "Batal",
+  "saveButton": "Simpan Perubahan",
+  "saving": "Menyimpan...",
+  "logoutButton": "Keluar",
+  "success": "Profil berhasil diperbarui!",
+  "error": "Gagal memperbarui profil."
+}

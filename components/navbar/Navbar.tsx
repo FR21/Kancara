@@ -78,7 +78,7 @@ function isPlainClick(event: MouseEvent) {
   return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 }
 
-export default function Navbar() {
+export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
   const pathname = usePathname();
   const locale = useLocale();
   const text = useMessages("navbar");
@@ -131,6 +131,7 @@ export default function Navbar() {
   const closeMenu = () => setMenuOpen(false);
   const solid = scrolled || menuOpen;
   const overHero = !solid && DARK_HERO_ROUTES.has(pathname);
+
 
   // Move the smile on click instead of waiting for the next page to load.
   const previewSmile = (event: MouseEvent, href: string) => {
@@ -232,7 +233,21 @@ export default function Navbar() {
           <div className="hidden items-center gap-2 md:flex">
             <LanguageToggle label={text.languageToggle} />
             <ThemeToggle label={text.themeToggle} />
-            {/* Profile menu goes here (added later). */}
+            {isLoggedIn ? (
+              <Link
+                href="/profile"
+                className="shrink-0 ml-2 inline-flex h-10 items-center justify-center rounded-md bg-surface-muted px-4 text-label text-text transition-[background-color,color,scale] hover:bg-surface-active active:scale-95 group-data-over-hero/nav:bg-neutral-50/10 group-data-over-hero/nav:text-neutral-50 group-data-over-hero/nav:hover:bg-neutral-50/20"
+              >
+                {text.profile}
+              </Link>
+            ) : (
+              <Link
+                href="/login"
+                className="shrink-0 ml-2 inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-label text-on-primary shadow-sm transition-[background-color,color,scale] hover:bg-primary-hover active:scale-95"
+              >
+                {text.login}
+              </Link>
+            )}
           </div>
 
           <button
@@ -295,6 +310,25 @@ export default function Navbar() {
           </ul>
         </nav>
 
+        <div className="mt-2 border-t border-border px-1 pt-2">
+          {isLoggedIn ? (
+            <Link
+              href="/profile"
+              onClick={closeMenu}
+              className="flex items-center justify-between rounded-md px-3 py-3 text-label-lg text-text hover:bg-surface-muted transition-[color,background-color,scale] duration-150 ease-out active:scale-[0.98]"
+            >
+              {text.profile}
+            </Link>
+          ) : (
+            <Link
+              href="/login"
+              onClick={closeMenu}
+              className="flex items-center justify-between rounded-md px-3 py-3 text-label-lg text-text hover:bg-surface-muted transition-[color,background-color,scale] duration-150 ease-out active:scale-[0.98]"
+            >
+              {text.login}
+            </Link>
+          )}
+        </div>
         <div className="mt-2 flex items-center justify-between border-t border-border px-1 pt-3 pb-1">
           <LanguageToggle label={text.languageToggle} />
           <ThemeToggle label={text.themeToggle} />
