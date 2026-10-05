@@ -9,6 +9,7 @@ import { NAV_LINKS } from "@/lib/nav-links";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
 import { followSystemTheme } from "@/lib/theme";
+import ProfilePhoto from "@/components/profile/ProfilePhoto";
 import LanguageToggle from "./LanguageToggle";
 import ThemeToggle from "./ThemeToggle";
 
@@ -78,7 +79,12 @@ function isPlainClick(event: MouseEvent) {
   return event.button === 0 && !event.metaKey && !event.ctrlKey && !event.shiftKey && !event.altKey;
 }
 
-export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
+type NavbarProps = {
+  isLoggedIn?: boolean;
+  picture?: string | null;
+};
+
+export default function Navbar({ isLoggedIn = false, picture = null }: NavbarProps) {
   const pathname = usePathname();
   const locale = useLocale();
   const text = useMessages("navbar");
@@ -129,6 +135,7 @@ export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean })
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
   const closeMenu = () => setMenuOpen(false);
+  const onProfile = pathname.startsWith("/profile");
   const solid = scrolled || menuOpen;
   const overHero = !solid && DARK_HERO_ROUTES.has(pathname);
 
@@ -236,9 +243,17 @@ export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean })
             {isLoggedIn ? (
               <Link
                 href="/profile"
-                className="shrink-0 ml-2 inline-flex h-10 items-center justify-center rounded-md bg-surface-muted px-4 text-label text-text transition-[background-color,color,scale] hover:bg-surface-active active:scale-95 group-data-over-hero/nav:bg-neutral-50/10 group-data-over-hero/nav:text-neutral-50 group-data-over-hero/nav:hover:bg-neutral-50/20"
+                aria-label={text.profile}
+                title={text.profile}
+                aria-current={onProfile ? "page" : undefined}
+                className="group/photo ml-1 inline-flex size-10 shrink-0 items-center justify-center rounded-full transition-[scale] duration-150 ease-out active:scale-[0.97]"
               >
-                {text.profile}
+                <ProfilePhoto
+                  src={picture}
+                  className={`size-8 ring-2 transition-[box-shadow] duration-150 ease-out group-hover/photo:ring-primary ${
+                    onProfile ? "ring-primary" : "ring-border group-data-over-hero/nav:ring-neutral-50/40"
+                  }`}
+                />
               </Link>
             ) : (
               <Link
@@ -315,8 +330,12 @@ export default function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean })
             <Link
               href="/profile"
               onClick={closeMenu}
-              className="flex items-center justify-between rounded-md px-3 py-3 text-label-lg text-text hover:bg-surface-muted transition-[color,background-color,scale] duration-150 ease-out active:scale-[0.98]"
+              aria-current={onProfile ? "page" : undefined}
+              className={`flex items-center gap-3 rounded-md px-3 py-2 text-label-lg transition-[color,background-color,scale] duration-150 ease-out active:scale-[0.98] ${
+                onProfile ? "bg-primary-subtle text-on-primary-subtle" : "text-text hover:bg-surface-muted"
+              }`}
             >
+              <ProfilePhoto src={picture} className="size-9 ring-2 ring-border" />
               {text.profile}
             </Link>
           ) : (

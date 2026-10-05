@@ -19,11 +19,21 @@
     "other": "Other",
     "preferNotToSay": "Prefer not to say"
   },
-  "editProfile": "Edit Profile",
   "cancel": "Cancel",
   "saveButton": "Save Changes",
   "saving": "Saving...",
   "logoutButton": "Log Out",
   "success": "Profile updated successfully!",
-  "error": "Failed to update profile."
+  "error": "Failed to update profile.",
+  "fallbackName": "User",
+  "changePhoto": "Change profile photo",
+  "photoHint": "JPG, PNG, or WebP. 2 MB at most.",
+  "photoErrors": {
+    "type": "Choose an image file (JPG, PNG, or WebP).",
+    "size": "The image can be 2 MB at most."
+  },
+  "ageError": "Enter an age between 1 and 120.",
+  "saveDenied": "Couldn't save. Make sure the Firestore and Storage rules in the Firebase Console allow this for you.",
+  "nameError": "Enter a name, 2 to 50 characters.",
+  "usernameError": "Usernames are 3 to 20 characters: letters, numbers, dots, or underscores."
 }

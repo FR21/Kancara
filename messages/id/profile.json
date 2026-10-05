@@ -19,11 +19,21 @@
     "other": "Lainnya",
     "preferNotToSay": "Tidak ingin menyebutkan"
   },
-  "editProfile": "Edit Profil",
   "cancel": "Batal",
   "saveButton": "Simpan Perubahan",
   "saving": "Menyimpan...",
   "logoutButton": "Keluar",
   "success": "Profil berhasil diperbarui!",
-  "error": "Gagal memperbarui profil."
+  "error": "Gagal memperbarui profil.",
+  "fallbackName": "Pengguna",
+  "changePhoto": "Ganti foto profil",
+  "photoHint": "JPG, PNG, atau WebP. Maksimal 2 MB.",
+  "photoErrors": {
+    "type": "Pilih file gambar (JPG, PNG, atau WebP).",
+    "size": "Ukuran gambar maksimal 2 MB."
+  },
+  "ageError": "Isi umur antara 1 dan 120.",
+  "saveDenied": "Gagal menyimpan. Pastikan aturan (Rules) Firestore & Storage di Firebase Console sudah diizinkan untuk Anda.",
+  "nameError": "Isi nama, 2 sampai 50 karakter.",
+  "usernameError": "Username 3 sampai 20 karakter: huruf, angka, titik, atau garis bawah."
 }
