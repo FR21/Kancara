@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { LEGAL_LINKS, NAV_LINKS } from "@/lib/nav-links";
+import { useCursorGlow } from "@/lib/use-cursor-glow";
 import { useMessages } from "@/lib/use-messages";
 
 const FAR_HILLS =
@@ -61,6 +62,7 @@ export default function Footer() {
   const navLabels = useMessages("navbar").links;
   const year = new Date().getFullYear();
   const bandRef = useRef<HTMLDivElement>(null);
+  const glowRef = useCursorGlow<HTMLDivElement>();
 
   useEffect(() => {
     const band = bandRef.current;
@@ -138,7 +140,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="-mt-px bg-footer">
+      <div ref={glowRef} className="-mt-px bg-footer">
         <div className="mx-auto grid max-w-5xl gap-x-8 gap-y-10 px-6 pt-8 pb-14 md:grid-cols-[minmax(0,1.6fr)_minmax(0,2fr)] md:gap-y-12">
           <div>
             <Link href="/" className="inline-block rounded-sm focus-visible:outline-accent">
@@ -151,7 +153,7 @@ export default function Footer() {
               />
             </Link>
             <p className="mt-6 max-w-sm font-heading text-h2 text-balance">{text.tagline}</p>
-            <p className="mt-3 max-w-sm text-body-sm text-pretty text-on-footer-muted">
+            <p data-cursor-glow className="footer-glow mt-3 max-w-sm text-body-sm text-pretty text-on-footer-muted">
               {text.description}
             </p>
           </div>
