@@ -1,6 +1,11 @@
-import PlaceholderPage from "@/components/placeholder/PlaceholderPage";
+import type { Metadata } from "next";
+import PlanWorkspace from "@/components/plan/PlanWorkspace";
 
-// Placeholder. Replace with the real page.
-export default function Page() {
-  return <PlaceholderPage page="plan" />;
+export const metadata: Metadata = {
+  title: "Rencanakan Trip | Kancara",
+  description: "Ceritakan kebutuhan rombonganmu dan susun draf rencana trip bersama Kancara.",
+};
+
+export default function PlanPage() {
+  return <PlanWorkspace />;
 }

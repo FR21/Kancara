@@ -1,15 +1,13 @@
 {
   "hero": {
-    "tagline": "Your Inclusive Group Travel Planner",
     "headlinePart1": "Beragam Kebutuhan.",
-    "headlinePart2": "Satu Perjalanan.",
-    "description": "Pendamping perjalanan rombongan berbasis AI yang mendengarkan setiap suara, memenuhi semua kebutuhan, dan menjaga semua tetap terhubung, bahkan saat sinyal hilang.",
+    "headlinePart2": "Satu",
+    "headlineUnderlined": "Perjalanan",
+    "headlineEnd": ".",
+    "description": "Rencanakan trip rombongan yang pas untuk semua anggota, tetap terhubung walau tanpa sinyal.",
     "ctaPrimary": "Mulai Rencana",
     "ctaSecondary": "Lihat Cerita",
-    "meta": "Mulai dalam 60 detik • Tanpa komitmen • Undang rombongan nanti",
-    "statSummary": "12.000+ wisatawan telah merencanakan trip bersama",
-    "floatingBadge1": "Hari 4 . Semua Bersama",
-    "floatingBadge2": "7 dari 7 Anggota Terhubung"
+    "note": "Mulai dalam 60 detik · Tanpa komitmen"
   },
   "stats": {
     "heading": "Dampak Nyata Perjalanan Inklusif",
@@ -32,6 +30,7 @@
   "steps": {
     "heading": "Alur Perjalanan Bersama Kancara",
     "subtitle": "Dari wawancara awal hingga momen berharga di perjalanan.",
+    "liveLabel": "Live",
     "items": [
       {
         "number": "01",

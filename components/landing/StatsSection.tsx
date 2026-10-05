@@ -73,9 +73,9 @@ function CountUp({ value, className }: { value: string; className: string }) {
         observer.disconnect();
         const start = performance.now();
         const step = (now: number) => {
-          const t = Math.min((now - start) / 1400, 1);
-          setProgress(1 - Math.pow(1 - t, 4));
-          if (t < 1) frame = requestAnimationFrame(step);
+          const elapsed = Math.min((now - start) / 1400, 1);
+          setProgress(1 - Math.pow(1 - elapsed, 4));
+          if (elapsed < 1) frame = requestAnimationFrame(step);
         };
         setProgress(0);
         frame = requestAnimationFrame(step);
@@ -374,7 +374,6 @@ export default function StatsSection() {
         </div>
 
         <ScrollReveal delayMs={150}>
-          {/* Footer Note */}
           <div className="mt-6 text-center text-caption font-semibold text-text-muted flex items-center justify-center gap-1.5">
             <span>{t.stats.footerNote}</span>
           </div>

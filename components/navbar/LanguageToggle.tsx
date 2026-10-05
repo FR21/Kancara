@@ -30,7 +30,7 @@ export default function LanguageToggle({ label }: { label: string }) {
             aria-label={LOCALE_NAMES[option]}
             aria-pressed={selected}
             onClick={() => setLocale(option)}
-            className={`relative h-10 w-12 cursor-pointer rounded-sm text-label transition-[color,scale] duration-150 ease-out active:scale-[0.97] md:h-8 md:w-10 ${
+            className={`relative h-11 w-12 cursor-pointer rounded-sm text-label transition-[color,scale] duration-150 ease-out active:scale-[0.97] md:h-8 md:w-10 ${
               selected
                 ? "text-on-primary-subtle group-data-over-hero/nav:text-neutral-50"
                 : "text-text-muted hover:text-text group-data-over-hero/nav:text-neutral-50/70 group-data-over-hero/nav:hover:text-neutral-50"

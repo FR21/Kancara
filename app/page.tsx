@@ -10,8 +10,10 @@ export default function Home() {
       <HeroSection />
       <StatsSection />
       <CoreFlowSection />
-      <OfflineSection />
-      <CtaSection />
+      <div className="relative">
+        <OfflineSection />
+        <CtaSection />
+      </div>
     </main>
   );
 }

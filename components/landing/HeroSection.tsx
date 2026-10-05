@@ -2,21 +2,97 @@
 
 import Image from "next/image";
 import { useEffect, useState } from "react";
-import {
-  ArrowRight,
-  Play,
-  CheckCircle2,
-  Compass,
-  MapPin,
-  ShieldCheck,
-  Heart,
-  Sparkles,
-  Plane,
-  Camera,
-  Globe,
-  Calendar,
-} from "lucide-react";
+import { ArrowDown, ArrowRight } from "lucide-react";
+import type { Messages } from "@/lib/messages";
 import { useMessages } from "@/lib/use-messages";
+
+type HeroCopyProps = {
+  text: Messages["landing"]["hero"];
+  layer: "headline" | "actions";
+};
+
+function HeroCopy({ text, layer }: HeroCopyProps) {
+  const isHeadline = layer === "headline";
+  const Heading = isHeadline ? "h1" : "div";
+  const headlineVisibility = isHeadline ? "" : "invisible";
+  const actionsVisibility = isHeadline ? "invisible" : "pointer-events-auto";
+
+  return (
+    <div className="absolute inset-0 flex flex-col items-center justify-center">
+      <div className="mx-auto w-full max-w-3xl px-4 pt-16 text-center sm:px-6">
+        <Heading
+          className={`font-heading text-5xl leading-[1.05] font-extrabold tracking-tight text-balance text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] motion-safe:animate-rise-in sm:text-6xl lg:text-7xl ${headlineVisibility}`}
+        >
+          {text.headlinePart1} <br />
+          <span className="text-accent-300">
+            {text.headlinePart2}{" "}
+            <span className="whitespace-nowrap">
+              <span className="relative inline-block">
+                {text.headlineUnderlined}
+                <svg
+                  aria-hidden="true"
+                  className="absolute -bottom-2 left-0 h-3 w-full"
+                  viewBox="0 0 200 12"
+                  preserveAspectRatio="none"
+                  fill="none"
+                >
+                  <path
+                    d="M2 10C50 3 150 3 198 10"
+                    pathLength={1}
+                    stroke="currentColor"
+                    strokeWidth="4"
+                    strokeLinecap="round"
+                    strokeDasharray="1"
+                    className="motion-safe:animate-draw motion-safe:[animation-delay:600ms]"
+                  />
+                </svg>
+              </span>
+              {text.headlineEnd}
+            </span>
+          </span>
+        </Heading>
+
+        <p
+          className={`mx-auto mt-6 max-w-xl text-body font-medium text-pretty text-white/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] motion-safe:animate-rise-in motion-safe:[animation-delay:100ms] sm:mt-8 sm:text-h3 ${headlineVisibility}`}
+        >
+          {text.description}
+        </p>
+
+        <div
+          className={`mt-8 flex flex-col items-center justify-center gap-2 motion-safe:animate-rise-in motion-safe:[animation-delay:200ms] sm:mt-10 sm:flex-row sm:gap-6 ${actionsVisibility}`}
+        >
+          <a
+            href="/plan"
+            className="group inline-flex h-14 items-center justify-center gap-2 rounded-full bg-accent-300 px-8 text-label-lg font-bold text-neutral-950 shadow-xl transition-[background-color,scale] duration-150 ease-out hover:bg-accent-200 active:scale-[0.97]"
+          >
+            <span>{text.ctaPrimary}</span>
+            <ArrowRight
+              aria-hidden="true"
+              className="size-5 transition-transform duration-300 group-hover:translate-x-1"
+            />
+          </a>
+
+          <a
+            href="#story-steps"
+            className="group inline-flex h-12 items-center justify-center gap-2 rounded-full px-4 text-label-lg font-bold text-white underline-offset-8 drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] hover:underline"
+          >
+            <span>{text.ctaSecondary}</span>
+            <ArrowDown
+              aria-hidden="true"
+              className="size-4 transition-transform duration-300 group-hover:translate-y-1"
+            />
+          </a>
+        </div>
+
+        <p
+          className={`mt-6 text-caption font-medium text-white/80 drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] motion-safe:animate-rise-in motion-safe:[animation-delay:300ms] ${isHeadline ? "invisible" : ""}`}
+        >
+          {text.note}
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default function HeroSection() {
   const t = useMessages("landing");
@@ -30,14 +106,13 @@ export default function HeroSection() {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Fade out text softly so it transitions well when the next section arrives
   const textOpacity = Math.max(1 - scrollY / 600, 0);
+  const fade = { opacity: textOpacity, visibility: textOpacity === 0 ? ("hidden" as const) : undefined };
 
   return (
-    <section className="relative w-full h-[150vh]">
+    <section className="relative w-full h-[150svh]">
 
-      {/* 1: Sticky Background */}
-      <div className="sticky top-0 w-full h-screen overflow-hidden pointer-events-none z-0">
+      <div className="sticky top-0 w-full h-svh overflow-hidden pointer-events-none z-0">
         <Image
           src="/images/hero/Sky.webp"
           alt="Sky Background"
@@ -49,7 +124,6 @@ export default function HeroSection() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-black/30" />
       </div>
 
-      {/* 2: Scrolling Overlay */}
       <div className="absolute inset-0 w-full h-full z-10 overflow-hidden pointer-events-none">
         <Image
           src="/images/hero/Grass.webp"
@@ -66,88 +140,30 @@ export default function HeroSection() {
 
       <div
         aria-hidden="true"
-        className="pointer-events-none absolute inset-x-0 -bottom-px z-10 h-[clamp(6rem,18vh,11rem)] bg-[linear-gradient(to_bottom,transparent,color-mix(in_srgb,var(--section-muted)_6%,transparent)_22%,color-mix(in_srgb,var(--section-muted)_24%,transparent)_42%,color-mix(in_srgb,var(--section-muted)_56%,transparent)_62%,color-mix(in_srgb,var(--section-muted)_86%,transparent)_80%,var(--section-muted)_92%)]"
-      />
-
-      {/* 3: Text */}
-      <div className="sticky top-0 w-full h-screen z-20 pointer-events-none -mt-[100vh]">
-
-        {/* TEXT CONTENT */}
-        <div
-          className="absolute inset-0 pointer-events-auto flex flex-col justify-center items-center"
-          style={{ opacity: textOpacity, visibility: textOpacity === 0 ? "hidden" : undefined }}
+        className="pointer-events-none absolute inset-x-0 -bottom-px z-10 h-[clamp(4rem,9vw,8.5rem)] overflow-hidden"
+      >
+        <svg
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+          className="parallax-y absolute inset-0 size-full fill-section-muted opacity-50 [--parallax-from:8%] [--parallax-to:-8%] dark:fill-primary-900 dark:opacity-70"
         >
-          <div
-            className="mx-auto w-full max-w-4xl text-center px-4 sm:px-6 mt-16 sm:mt-0 translate-y-0 sm:translate-y-[22px]"
-          >
-            <div>
-              <span className="text-caption font-extrabold tracking-widest text-accent-300 uppercase drop-shadow-sm">
-                {t.hero.tagline}
-              </span>
-            </div>
+          <path d="M0 72C150 44 260 36 380 38C520 40 600 60 760 60C900 60 1020 34 1160 30C1280 27 1380 44 1440 56V120H0Z" />
+        </svg>
+        <svg
+          viewBox="0 0 1440 120"
+          preserveAspectRatio="none"
+          className="absolute inset-0 size-full fill-section-muted"
+        >
+          <path d="M0 96C240 54 470 72 720 84S1200 46 1440 80V120H0Z" />
+        </svg>
+      </div>
 
-            <h1 className="mt-2 sm:mt-4 text-display font-heading font-extrabold leading-tight tracking-tight text-white text-4xl sm:text-5xl lg:text-6xl drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)]">
-              {t.hero.headlinePart1} <br />
-              <span className="relative inline-block text-accent-300">
-                {t.hero.headlinePart2}
-                <svg
-                  className="absolute -bottom-2 left-0 w-full h-3 text-accent-300"
-                  viewBox="0 0 200 12"
-                  fill="none"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    d="M2 10C50 3 150 3 198 10"
-                    stroke="currentColor"
-                    strokeWidth="4"
-                    strokeLinecap="round"
-                  />
-                </svg>
-              </span>
-            </h1>
+      <div className="pointer-events-none sticky top-0 z-5 -mt-[100svh] h-svh w-full" style={fade}>
+        <HeroCopy text={t.hero} layer="headline" />
+      </div>
 
-            <p className="mt-4 sm:mt-6 mx-auto text-body sm:text-body-lg lg:text-h3 font-semibold text-white leading-relaxed max-w-2xl drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]">
-              {t.hero.description}
-            </p>
-
-            <div className="pt-6 sm:pt-8 flex flex-col sm:flex-row items-center justify-center gap-3 sm:gap-4">
-              <a
-                href="/plan"
-                className="group inline-flex items-center justify-center gap-2.5 rounded-full bg-accent-300 hover:bg-accent-200 text-neutral-950 font-bold px-8 py-3.5 sm:py-4 text-label-lg transition-all duration-300 shadow-xl active:scale-[0.98]"
-              >
-                <span>{t.hero.ctaPrimary}</span>
-                <ArrowRight className="size-5 transition-transform duration-300 group-hover:translate-x-1" />
-              </a>
-
-              <a
-                href="#story-steps"
-                className="group inline-flex items-center justify-center gap-2 rounded-full bg-black/40 hover:bg-black/60 text-white font-bold px-8 py-3.5 sm:py-4 text-label-lg border border-white/30 backdrop-blur-md transition-all duration-300 active:scale-[0.98]"
-              >
-                <Play className="size-4 fill-white text-white" />
-                <span>{t.hero.ctaSecondary}</span>
-              </a>
-            </div>
-
-            <div className="pt-5 mt-5 sm:pt-8 sm:mt-8 border-t border-white/20 flex flex-col sm:flex-row items-center justify-between gap-6 sm:gap-4 max-w-2xl mx-auto drop-shadow-md">
-              <div className="flex items-center gap-2 text-caption text-white font-bold text-center">
-                <CheckCircle2 className="size-4 text-emerald-400 shrink-0" />
-                <span>{t.hero.meta}</span>
-              </div>
-
-              <div className="flex flex-col sm:flex-row items-center gap-3">
-                <div className="flex -space-x-2">
-                  <div className="size-8 rounded-full bg-primary-600 border-2 border-neutral-900 flex items-center justify-center text-caption font-bold text-white">JL</div>
-                  <div className="size-8 rounded-full bg-accent-400 border-2 border-neutral-900 flex items-center justify-center text-caption font-bold text-neutral-950">MA</div>
-                  <div className="size-8 rounded-full bg-secondary-500 border-2 border-neutral-900 flex items-center justify-center text-caption font-bold text-neutral-950">SK</div>
-                  <div className="size-8 rounded-full bg-neutral-700 border-2 border-neutral-900 flex items-center justify-center text-caption font-bold text-white">+</div>
-                </div>
-                <span className="text-caption font-bold text-white text-center sm:text-left">
-                  {t.hero.statSummary}
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
+      <div className="pointer-events-none sticky top-0 z-20 -mt-[100svh] h-svh w-full" style={fade}>
+        <HeroCopy text={t.hero} layer="actions" />
       </div>
 
     </section>

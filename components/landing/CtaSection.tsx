@@ -32,22 +32,22 @@ const TONES = {
 
 function CtaContent({ tone }: { tone: keyof typeof TONES }) {
   const t = useMessages("landing");
-  const c = TONES[tone];
+  const classes = TONES[tone];
 
   return (
     <ScrollReveal className="mx-auto max-w-4xl text-center space-y-6">
-      <h2 className={`text-display font-heading font-extrabold text-4xl sm:text-5xl leading-tight ${c.heading}`}>
+      <h2 className={`text-display font-heading font-extrabold text-3xl text-balance sm:text-5xl leading-tight ${classes.heading}`}>
         {t.cta.heading}
       </h2>
 
-      <p className={`mx-auto max-w-2xl text-body-lg sm:text-h3 font-normal leading-relaxed ${c.body}`}>
+      <p className={`mx-auto max-w-2xl text-body text-pretty sm:text-h3 font-normal leading-relaxed ${classes.body}`}>
         {t.cta.description}
       </p>
 
       <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
         <a
           href="/plan"
-          className={`group inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full font-bold px-8 py-4 text-label-lg transition-[background-color,scale] duration-150 ease-out active:scale-[0.98] ${c.primary}`}
+          className={`group inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full font-bold px-8 py-4 text-label-lg transition-[background-color,scale] duration-150 ease-out active:scale-[0.98] ${classes.primary}`}
         >
           <span>{t.cta.ctaPrimary}</span>
           <ArrowRight className="size-5 transition-transform duration-300 group-hover:translate-x-1" />
@@ -55,13 +55,13 @@ function CtaContent({ tone }: { tone: keyof typeof TONES }) {
 
         <a
           href="#pwa-info"
-          className={`inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full font-semibold px-8 py-4 text-label-lg border transition-[background-color,scale] duration-150 ease-out active:scale-[0.98] ${c.secondary}`}
+          className={`inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full font-semibold px-8 py-4 text-label-lg border transition-[background-color,scale] duration-150 ease-out active:scale-[0.98] ${classes.secondary}`}
         >
           <span>{t.cta.ctaSecondary}</span>
         </a>
       </div>
 
-      <p className={`text-caption font-medium pt-2 ${c.note}`}>{t.cta.note}</p>
+      <p className={`text-caption font-medium pt-2 ${classes.note}`}>{t.cta.note}</p>
     </ScrollReveal>
   );
 }
@@ -170,7 +170,7 @@ export default function CtaSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative isolate w-full touch-pan-y overflow-hidden bg-primary-50 px-4 py-24 dark:bg-[#052b3b] sm:px-6 sm:py-28 md:px-12 lg:px-20"
+      className="relative isolate z-0 w-full touch-pan-y overflow-hidden bg-[linear-gradient(to_bottom,var(--cta)_calc(100%_-_8rem),var(--background))] px-4 py-16 motion-safe:sticky motion-safe:bottom-0 sm:px-6 sm:py-28 md:px-12 lg:px-20"
     >
       <svg aria-hidden="true" className="absolute size-0">
         <defs>
@@ -178,10 +178,9 @@ export default function CtaSection() {
         </defs>
       </svg>
 
-      {/* Background ambient lighting */}
       <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
-        <div className="absolute -top-40 -right-40 size-96 rounded-full bg-accent-300/10 blur-3xl" />
-        <div className="absolute -bottom-40 -left-40 size-96 rounded-full bg-secondary-400/10 blur-3xl" />
+        <div className="absolute top-1/2 -right-40 size-96 -translate-y-1/2 rounded-full bg-accent-300/10 blur-3xl" />
+        <div className="absolute top-1/2 -left-40 size-96 -translate-y-1/2 rounded-full bg-secondary-400/10 blur-3xl" />
       </div>
 
       <CtaContent tone="base" />
@@ -189,7 +188,7 @@ export default function CtaSection() {
       <div
         aria-hidden="true"
         inert
-        className="pointer-events-none absolute inset-0 bg-[#052b3b] px-4 py-24 dark:bg-accent-300 select-none sm:px-6 sm:py-28 md:px-12 lg:px-20"
+        className="pointer-events-none absolute inset-0 bg-[#052b3b] px-4 py-16 dark:bg-accent-300 select-none sm:px-6 sm:py-28 md:px-12 lg:px-20"
         style={{ clipPath: `url(#${clipId})` }}
       >
         <CtaContent tone="reveal" />

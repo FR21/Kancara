@@ -11,6 +11,8 @@ import idFooter from "@/messages/id/footer.json";
 import idNavbar from "@/messages/id/navbar.json";
 import enLanding from "@/messages/en/landing.json";
 import idLanding from "@/messages/id/landing.json";
+import enPlan from "@/messages/en/plan.json";
+import idPlan from "@/messages/id/plan.json";
 import enError from "@/messages/en/error.json";
 import idError from "@/messages/id/error.json";
 import enAuth from "@/messages/en/auth.json";
@@ -24,6 +26,7 @@ const id = {
   footer: idFooter,
   navbar: idNavbar,
   landing: idLanding,
+  plan: idPlan,
   error: idError,
   auth: idAuth,
   profile: idProfile,
@@ -37,6 +40,7 @@ const en = {
   footer: enFooter,
   navbar: enNavbar,
   landing: enLanding,
+  plan: enPlan,
   error: enError,
   auth: enAuth,
   profile: enProfile,

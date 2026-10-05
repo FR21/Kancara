@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef } from "react";
 import { LEGAL_LINKS, NAV_LINKS } from "@/lib/nav-links";
+import { useCursorGlow } from "@/lib/use-cursor-glow";
 import { useMessages } from "@/lib/use-messages";
 
 const FAR_HILLS =
@@ -32,7 +33,7 @@ function LinkColumn({
   return (
     <div>
       <h2 className="font-sans text-label text-on-footer">{heading}</h2>
-      <ul className="mt-4 flex flex-col items-start gap-3">
+      <ul className="mt-2 flex flex-col items-start md:mt-4 md:gap-1">
         {links.map((link) => {
           const active = isActive(link.href);
           return (
@@ -40,13 +41,13 @@ function LinkColumn({
               <Link
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={`${UNDERLINE} rounded-sm text-body-sm focus-visible:outline-accent ${
-                  active
-                    ? "bg-size-[100%_2px] text-on-footer"
-                    : "text-on-footer-muted hover:bg-size-[100%_2px] hover:text-on-footer"
+                className={`group inline-flex min-h-11 items-center rounded-sm text-body-sm transition-colors focus-visible:outline-accent md:min-h-8 ${
+                  active ? "text-on-footer" : "text-on-footer-muted hover:text-on-footer"
                 }`}
               >
-                {link.label}
+                <span className={`${UNDERLINE} ${active ? "bg-size-[100%_2px]" : "group-hover:bg-size-[100%_2px]"}`}>
+                  {link.label}
+                </span>
               </Link>
             </li>
           );
@@ -61,6 +62,7 @@ export default function Footer() {
   const navLabels = useMessages("navbar").links;
   const year = new Date().getFullYear();
   const bandRef = useRef<HTMLDivElement>(null);
+  const glowRef = useCursorGlow<HTMLDivElement>();
 
   useEffect(() => {
     const band = bandRef.current;
@@ -138,7 +140,7 @@ export default function Footer() {
         </div>
       </div>
 
-      <div className="-mt-px bg-footer">
+      <div ref={glowRef} className="-mt-px bg-footer">
         <div className="mx-auto grid max-w-5xl gap-x-8 gap-y-10 px-6 pt-8 pb-14 md:grid-cols-[minmax(0,1.6fr)_minmax(0,2fr)] md:gap-y-12">
           <div>
             <Link href="/" className="inline-block rounded-sm focus-visible:outline-accent">
@@ -151,7 +153,7 @@ export default function Footer() {
               />
             </Link>
             <p className="mt-6 max-w-sm font-heading text-h2 text-balance">{text.tagline}</p>
-            <p className="mt-3 max-w-sm text-body-sm text-pretty text-on-footer-muted">
+            <p data-cursor-glow className="footer-glow mt-3 max-w-sm text-body-sm text-pretty text-on-footer-muted">
               {text.description}
             </p>
           </div>

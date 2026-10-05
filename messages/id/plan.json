@@ -1,0 +1,332 @@
+{
+  "title": "Rencanakan trip",
+  "start": {
+    "title": "Pergi ke mana kita hari ini?",
+    "placeholder": "Ke Bandung bertujuh, ibu saya pakai kursi roda...",
+    "examplesLabel": "Contoh:",
+    "or": "atau",
+    "form": "Isi manual, satu per satu",
+    "lead": "Ceritakan saja seperti ke teman. Captain menanyakan sisanya, lalu menyiapkan boarding pass dan rencana per hari."
+  },
+  "stages": {
+    "label": "Tahap rencana",
+    "story": "Cerita",
+    "details": "Lengkapi",
+    "pass": "Boarding pass",
+    "plan": "Rencana",
+    "done": "selesai",
+    "locked": "belum terbuka"
+  },
+  "deck": {
+    "seePass": "Lihat boarding pass",
+    "progress": "Pertanyaan {current} dari {total}",
+    "back": "Kembali",
+    "skip": "Lewati",
+    "next": "Lanjut",
+    "finish": "Lanjut",
+    "backToPass": "Kembali ke boarding pass",
+    "questions": {
+      "destination": {
+        "short": "tujuan",
+        "title": "Mau ke mana?",
+        "hint": "Boleh lebih dari satu kota."
+      },
+      "origin": {
+        "short": "kota asal",
+        "title": "Berangkat dari kota mana?",
+        "hint": ""
+      },
+      "dates": {
+        "short": "tanggal",
+        "title": "Kapan berangkat dan pulang?",
+        "hint": ""
+      },
+      "crew": {
+        "short": "rombongan",
+        "title": "Siapa saja yang ikut?",
+        "hint": "Tambah orangnya, lalu ketuk karakternya untuk memberi nama dan kebutuhannya."
+      },
+      "budget": {
+        "short": "anggaran",
+        "title": "Berapa total anggarannya?",
+        "hint": "Untuk semua orang, dalam Rupiah."
+      },
+      "pace": {
+        "short": "ritme",
+        "title": "Mau perjalanan yang seperti apa?",
+        "hint": ""
+      },
+      "extras": {
+        "short": "detail tambahan",
+        "title": "Ada lagi yang perlu Captain tahu?",
+        "hint": "Opsional. Makin lengkap, makin pas rencananya."
+      }
+    },
+    "required": "Isi dulu bagian ini untuk lanjut.",
+    "previewNote": "Ini pratinjau. Selesaikan pertanyaannya dulu untuk lanjut.",
+    "backToCaptain": "Kembali ke Captain",
+    "previewClose": "Tutup",
+    "previewTitle": "Pratinjau boarding pass"
+  },
+  "crew": {
+    "addLegend": "Tambah orang",
+    "add": "Tambah {ageGroup}",
+    "empty": "Belum ada orang. Mulai dari tombol di atas.",
+    "needsCount": "Kebutuhan: {count}",
+    "selectHint": "Ketuk karakter untuk mengisi nama dan kebutuhannya.",
+    "removeConfirm": "Hapus?",
+    "removeConfirmLabel": "Ketuk lagi untuk menghapus {name}"
+  },
+  "paceHints": {
+    "relaxed": "2 sampai 3 kegiatan sehari, banyak jeda.",
+    "packed": "4 sampai 5 kegiatan sehari, waktu dimaksimalkan."
+  },
+  "budgetOther": "Jumlah lain (Rupiah)",
+  "ticket": {
+    "readyTitle": "Boarding pass kamu siap.",
+    "draftTitle": "Boarding pass kamu belum lengkap.",
+    "hint": "Periksa dulu. Ketuk bagian mana pun untuk mengubahnya.",
+    "from": "Dari",
+    "to": "Ke",
+    "extrasEmpty": "Belum diisi",
+    "makePlan": "Buat rencana",
+    "remake": "Buat ulang rencana",
+    "viewPlan": "Lihat rencana",
+    "times": "×{count}",
+    "more": "+{count} lainnya",
+    "missingLabel": "Belum ada"
+  },
+  "result": {
+    "title": "Rencana perjalananmu",
+    "backToPass": "Ubah boarding pass"
+  },
+  "ageGroups": {
+    "adult": "Dewasa",
+    "elderly": "Lansia",
+    "child": "Anak",
+    "toddler": "Balita"
+  },
+  "needCategories": {
+    "mobility": "Mobilitas",
+    "diet": "Diet",
+    "rest": "Istirahat",
+    "sensory": "Sensorik",
+    "other": "Lainnya"
+  },
+  "needs": {
+    "wheelchair": "Kursi roda",
+    "noStairs": "Tidak bisa naik tangga",
+    "shortWalks": "Tidak kuat jalan jauh",
+    "halal": "Halal",
+    "vegetarian": "Vegetarian",
+    "vegan": "Vegan",
+    "nap": "Tidur siang",
+    "frequentBreaks": "Istirahat tiap 2 jam",
+    "quiet": "Hindari tempat bising",
+    "noCrowds": "Hindari keramaian",
+    "nearToilet": "Toilet mudah dijangkau"
+  },
+  "interests": {
+    "museum": "Museum",
+    "shopping": "Belanja",
+    "nature": "Alam",
+    "food": "Kuliner",
+    "themePark": "Taman bermain"
+  },
+  "wishLevels": {
+    "nice": "Boleh saja",
+    "must": "Sangat ingin"
+  },
+  "paces": {
+    "relaxed": "Santai",
+    "packed": "Padat"
+  },
+  "transport": {
+    "public": "Transportasi umum",
+    "taxi": "Taksi",
+    "rental": "Sewa mobil"
+  },
+  "pass": {
+    "brand": "Boarding pass",
+    "dates": "Tanggal",
+    "group": "Rombongan",
+    "budget": "Anggaran",
+    "pace": "Ritme",
+    "empty": "belum diisi",
+    "people": "orang",
+    "fieldStatus": "{label}: {value}. Ketuk untuk mengubah.",
+    "origin": "Kota asal",
+    "originPlaceholder": "Contoh: Jakarta",
+    "destinations": "Tujuan",
+    "destinationPlaceholder": "Tambah kota, contoh: Bandung",
+    "addDestination": "Tambah",
+    "removeDestination": "Hapus {name}",
+    "startDate": "Berangkat",
+    "endDate": "Pulang",
+    "dateError": "Tanggal pulang harus sama atau setelah tanggal berangkat.",
+    "budgetPlaceholder": "Contoh: 30000000",
+    "stamp": "Siap terbang",
+    "manifest": "Penumpang",
+    "noMembers": "Belum ada anggota.",
+    "addMember": "Tambah anggota",
+    "removeMember": "Hapus {name}",
+    "memberName": "Nama atau panggilan",
+    "memberNamePlaceholder": "Contoh: Ibu",
+    "ageGroup": "Kelompok usia",
+    "needsLegend": "Kebutuhan",
+    "needsHint": "Cukup batasan praktisnya, tidak perlu riwayat kesehatan.",
+    "allergies": "Alergi makanan",
+    "allergiesPlaceholder": "Contoh: kacang, seafood",
+    "interestsLegend": "Keinginan",
+    "extras": "Detail tambahan",
+    "extrasFilled": "{count} terisi",
+    "flexibleDates": "Tanggal bisa bergeser 1 sampai 2 hari",
+    "arrivalTime": "Jam tiba",
+    "departureTime": "Jam pulang",
+    "lodging": "Penginapan",
+    "lodgingPlaceholder": "Contoh: hotel dekat Malioboro",
+    "mustVisit": "Tempat wajib dikunjungi",
+    "mustVisitPlaceholder": "Contoh: Candi Prambanan",
+    "avoid": "Yang ingin dihindari",
+    "avoidPlaceholder": "Contoh: tempat terlalu ramai",
+    "occasion": "Momen khusus",
+    "occasionPlaceholder": "Contoh: ulang tahun nenek di hari ke-3",
+    "dayStart": "Mulai harian",
+    "dayEnd": "Selesai harian",
+    "transportLegend": "Transportasi"
+  },
+  "chat": {
+    "captain": "Captain",
+    "exampleLabels": [
+      "Rombongan besar",
+      "Keluarga + lansia",
+      "Solo trip"
+    ],
+    "examples": [
+      "Dari Jakarta ke Bandung, 7 orang, ada lansia dan balita, anggaran Rp15 juta, santai",
+      "Liburan keluarga 5 orang dari Surabaya ke Yogyakarta, makanan halal, nenek pakai kursi roda, budget 10 juta",
+      "Solo trip dari Jakarta ke Bali, anggaran Rp5 juta, jadwal padat"
+    ],
+    "resume": "Lanjutkan draf",
+    "resumeTitle": "Lanjutkan draf {destination}",
+    "resumeProgress": "{done} dari {total} bagian terisi",
+    "typing": "Captain sedang mengetik",
+    "error": "Captain tidak bisa dihubungi. Periksa koneksimu, lalu coba lagi.",
+    "retry": "Coba lagi",
+    "makeInvite": "Undang rombongan",
+    "itineraryPending": "Captain sedang menyusun itinerary",
+    "itineraryIntro": "Ini itinerary yang memperhitungkan kebutuhan tiap anggota. Pilih hari untuk melihat detailnya.",
+    "done": "Rencanamu tersimpan di perangkat ini. Kamu bisa kembali kapan saja.",
+    "allSet": "Semua data wajib sudah lengkap. Boarding pass-mu siap diperiksa.",
+    "you": "Kamu",
+    "logLabel": "Percakapan dengan Captain",
+    "quickBudget": "{millions} juta",
+    "pickDates": "Pilih di kalender",
+    "editCrew": "Atur per orang",
+    "noted": "Sudah kucatat."
+  },
+  "composer": {
+    "label": "Pesan untuk Captain",
+    "placeholder": "Ceritakan tripmu",
+    "send": "Kirim",
+    "voiceStart": "Mulai bicara",
+    "voiceStop": "Berhenti merekam",
+    "listening": "Mendengarkan",
+    "hint": "Enter untuk kirim, Shift + Enter untuk baris baru",
+    "listeningHint": "Bicara saja, aku mencatat.",
+    "hearing": "Aku mendengarmu",
+    "voiceErrors": {
+      "denied": "Mikrofon belum diizinkan. Izinkan mikrofon di pengaturan browser, lalu coba lagi.",
+      "network": "Pengenalan suara butuh internet. Periksa koneksimu, atau ketik saja ceritanya.",
+      "unavailable": "Pengenalan suara tidak tersedia di browser ini. Ketik saja ceritanya."
+    }
+  },
+  "itinerary": {
+    "title": "Itinerary {destination}",
+    "sample": "Contoh",
+    "daysLabel": "Pilih hari",
+    "day": "Hari {number}",
+    "honours": "Memenuhi",
+    "everyone": "Semua"
+  },
+  "invite": {
+    "title": "Undang rombongan",
+    "linkLabel": "Tautan undangan",
+    "copy": "Salin",
+    "copied": "Tersalin",
+    "share": "Bagikan",
+    "shareText": "Ikut rencana trip kita di Kancara"
+  },
+  "sample": {
+    "captured": "Siap, kucatat {items}.",
+    "itemRoute": "rute {value}",
+    "itemDestination": "tujuan {value}",
+    "itemOrigin": "asal {value}",
+    "itemGroup": "{value} orang",
+    "itemBudget": "anggaran {value}",
+    "itemPace": "ritme {value}",
+    "nothing": "Aku belum menangkap detailnya. Coba sebutkan tujuan, jumlah orang, atau anggarannya.",
+    "itinerary": {
+      "arrive": {
+        "title": "Tiba di {destination}",
+        "detail": "Check-in, lalu istirahat sebentar."
+      },
+      "morning": {
+        "title": "Jelajah pagi di {destination}",
+        "detail": "Mulai dari tempat utama selagi masih sepi."
+      },
+      "lunch": {
+        "title": "Makan siang",
+        "detail": "Tempat makan dekat rute."
+      },
+      "rest": {
+        "title": "Istirahat",
+        "detail": "Jeda di penginapan sebelum lanjut."
+      },
+      "afternoon": {
+        "title": "Jelajah sore",
+        "detail": "Rute pendek dengan banyak tempat berhenti."
+      },
+      "dinner": {
+        "title": "Makan malam",
+        "detail": "Makan bersama dekat penginapan."
+      },
+      "evening": {
+        "title": "Jalan malam",
+        "detail": "Menikmati suasana malam kota."
+      },
+      "depart": {
+        "title": "Pulang ke {origin}",
+        "detail": "Check-out dan perjalanan pulang."
+      },
+      "notes": {
+        "wheelchair": "Akses kursi roda tersedia.",
+        "noStairs": "Rute tanpa tangga.",
+        "shortWalks": "Jalan kaki singkat, banyak tempat duduk.",
+        "halal": "Menu halal tersedia.",
+        "vegetarian": "Ada pilihan vegetarian.",
+        "vegan": "Ada pilihan vegan.",
+        "nap": "Disesuaikan dengan jam tidur siang.",
+        "frequentBreaks": "Ada jeda istirahat tiap 2 jam.",
+        "quiet": "Dipilih tempat yang tenang.",
+        "noCrowds": "Datang di jam sepi.",
+        "nearToilet": "Toilet dekat dan mudah dijangkau."
+      }
+    },
+    "itemDates": "tanggal {value}"
+  },
+  "extrasAdd": {
+    "legend": "Tambahkan kalau perlu",
+    "arrival": "Jam tiba dan pulang",
+    "daily": "Jam mulai dan selesai harian",
+    "lodging": "Penginapan",
+    "mustVisit": "Tempat wajib dikunjungi",
+    "avoid": "Yang ingin dihindari",
+    "occasion": "Momen khusus"
+  },
+  "mode": {
+    "label": "Cara mengisi",
+    "captain": "Ngobrol dengan Captain",
+    "manual": "Isi manual"
+  }
+}
