@@ -1,8 +1,10 @@
 "use client";
 
-import { RefreshCcw, Home, AlertTriangle, SearchX } from "lucide-react";
+import { Home, RefreshCcw } from "lucide-react";
 import Link from "next/link";
+import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
 import { useMessages } from "@/lib/use-messages";
+import { ErrorInstrument } from "./error-instrument";
 
 export interface ErrorStateProps {
   type: "404" | "500";
@@ -10,62 +12,54 @@ export interface ErrorStateProps {
   showHomeButton?: boolean;
 }
 
+const DIGITS: Record<ErrorStateProps["type"], [string, string]> = {
+  "404": ["4", "4"],
+  "500": ["5", "0"],
+};
+
 export function ErrorState({ type, onRetry, showHomeButton = true }: ErrorStateProps) {
   const text = useMessages("error");
-  const data = text[type as keyof typeof text] as { title: string; description: string };
-
-  const icon =
-    type === "404" ? (
-      <SearchX className="size-10 sm:size-12" />
-    ) : (
-      <AlertTriangle className="size-10 sm:size-12" />
-    );
+  const copy = text[type];
+  const [before, after] = DIGITS[type];
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] px-4 py-8 text-center max-w-md mx-auto">
-      <div className="mb-6 flex justify-center">
-        {type === "500" ? (
-          <div className="bg-error-subtle rounded-full p-4 text-on-error-subtle shadow-sm shadow-neutral-950/5">
-            {icon}
-          </div>
-        ) : (
-          <div className="bg-surface-muted rounded-full p-4 text-text-muted shadow-sm shadow-neutral-950/5">
-            {icon}
-          </div>
-        )}
+    <main className="grid min-h-dvh flex-1 place-items-center px-4 py-28">
+      <div className="flex w-full max-w-md flex-col items-center text-center">
+        <p className="flex items-center gap-1 font-heading text-7xl leading-none font-semibold text-text motion-safe:animate-message-in sm:text-8xl">
+          <span className="sr-only">{type}</span>
+          <span aria-hidden="true">{before}</span>
+          <ErrorInstrument kind={type === "404" ? "compass" : "horizon"} />
+          <span aria-hidden="true">{after}</span>
+        </p>
+
+        <h1 className="mt-8 text-h2 text-balance text-text motion-safe:animate-message-in motion-safe:[animation-delay:60ms] sm:text-h1">
+          {copy.title}
+        </h1>
+        <p className="mt-3 text-body text-pretty text-text-muted motion-safe:animate-message-in motion-safe:[animation-delay:120ms]">
+          {copy.description}
+        </p>
+
+        <div className="mt-8 flex w-full flex-col gap-3 motion-safe:animate-message-in motion-safe:[animation-delay:180ms] sm:w-auto sm:flex-row">
+          {onRetry && (
+            <button type="button" onClick={onRetry} className={`group ${PRIMARY_BUTTON}`}>
+              <RefreshCcw
+                className="size-4 transition-[rotate] duration-500 ease-out group-hover:-rotate-180 group-active:-rotate-360"
+                aria-hidden="true"
+              />
+              {text.retry}
+            </button>
+          )}
+          {showHomeButton && (
+            <Link href="/" className={`group ${onRetry ? OUTLINE_BUTTON : PRIMARY_BUTTON}`}>
+              <Home
+                className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-y-0.5"
+                aria-hidden="true"
+              />
+              {text.home}
+            </Link>
+          )}
+        </div>
       </div>
-
-      <h2 className="text-xl md:text-2xl font-bold font-heading mb-3 text-text">
-        {data.title}
-      </h2>
-      <p className="text-sm md:text-base text-text-muted mb-8 leading-relaxed">
-        {data.description}
-      </p>
-
-      {/* Mobile layout reflows to a stacked column for buttons, with minimum 48px tap targets */}
-      <div className="flex flex-col w-full gap-3 sm:flex-row sm:justify-center">
-        {onRetry && (
-          <button
-            onClick={onRetry}
-            className="flex items-center justify-center gap-2 bg-primary active:bg-primary-hover hover:bg-primary-hover text-on-primary font-medium py-3 px-6 rounded-xl min-h-[48px] min-w-[48px] transition-[background-color,transform] active:scale-[0.98] w-full sm:w-auto"
-            aria-label={text.retry}
-          >
-            <RefreshCcw className="size-5" />
-            <span>{text.retry}</span>
-          </button>
-        )}
-
-        {showHomeButton && (
-          <Link
-            href="/"
-            className="flex items-center justify-center gap-2 bg-surface-muted active:bg-border hover:bg-border text-text font-medium py-3 px-6 rounded-xl min-h-[48px] min-w-[48px] transition-[background-color,transform] active:scale-[0.98] w-full sm:w-auto"
-          >
-            <Home className="size-5" />
-            <span>{text.home}</span>
-          </Link>
-        )}
-      </div>
-    </div>
+    </main>
   );
 }
-

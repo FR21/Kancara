@@ -14,7 +14,7 @@ export default async function ProfilePage() {
   const customToken = await adminAuth.createCustomToken(session.uid);
 
   return (
-    <main className="flex-1 pt-24 pb-12">
+    <main className="flex-1 pt-28 pb-16 lg:pt-32">
       <ProfileContent 
         user={{ email: session.email, uid: session.uid, name: session.name, picture: session.picture }} 
         customToken={customToken}
