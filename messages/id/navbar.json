@@ -10,5 +10,9 @@
   "openMenu": "Buka menu",
   "closeMenu": "Tutup menu",
   "themeToggle": "Ganti tema terang/gelap",
-  "languageToggle": "Bahasa"
+  "languageToggle": "Bahasa",
+  "login": "Masuk",
+  "logout": "Keluar",
+  "profile": "Profil"
 }
+
