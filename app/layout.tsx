@@ -1,23 +1,12 @@
 import type { Metadata } from "next";
-import { Montserrat, Plus_Jakarta_Sans } from "next/font/google";
 import Footer from "@/components/footer/Footer";
+import SiteChrome from "@/components/layout/SiteChrome";
 import Navbar from "@/components/navbar/Navbar";
 import { DEFAULT_LOCALE, localeInitScript } from "@/lib/locale";
 import { themeInitScript } from "@/lib/theme";
 import { verifySession } from "@/lib/auth/session";
+import { FONT_CLASSES } from "./fonts";
 import "./globals.css";
-
-// Headings. Font tokens live in globals.css.
-const plusJakartaSans = Plus_Jakarta_Sans({
-  variable: "--font-plus-jakarta-sans",
-  subsets: ["latin"],
-});
-
-// Body text, labels, and buttons.
-const montserrat = Montserrat({
-  variable: "--font-montserrat",
-  subsets: ["latin"],
-});
 
 export const metadata: Metadata = {
   title: "Kancara",
@@ -37,7 +26,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     <html
       lang={DEFAULT_LOCALE}
       suppressHydrationWarning
-      className={`${plusJakartaSans.variable} ${montserrat.variable} antialiased`}
+      className={FONT_CLASSES}
     >
       <head>
         <script
@@ -46,9 +35,13 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="min-h-screen flex flex-col font-sans overflow-x-clip">
-        <Navbar isLoggedIn={isLoggedIn} />
+        <SiteChrome>
+          <Navbar isLoggedIn={isLoggedIn} picture={session?.picture ?? null} />
+        </SiteChrome>
         {children}
-        <Footer />
+        <SiteChrome>
+          <Footer />
+        </SiteChrome>
       </body>
     </html>
   );

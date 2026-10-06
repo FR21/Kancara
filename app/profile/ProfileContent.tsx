@@ -1,416 +1,429 @@
 "use client";
 
-import { useMessages } from "@/lib/use-messages";
-import { auth, storage, db } from "@/lib/firebase/client";
-import { removeSession, createSession } from "@/lib/auth/session";
-import { signOut, updateProfile, signInWithCustomToken } from "firebase/auth";
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { FirebaseError } from "firebase/app";
+import { signInWithCustomToken, signOut, updateProfile } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
-import { User, LogOut, Mail, Hash, Edit2, Check, X, Camera, Loader2, Globe, Calendar, UserIcon } from "lucide-react";
+import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { Camera, Check, CircleAlert, Loader2, Lock, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState, useRef, useEffect } from "react";
+import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
+import { GHOST_BUTTON, INPUT, PRIMARY_BUTTON } from "@/components/plan/styles";
+import GenderSelect from "@/components/profile/GenderSelect";
+import ProfilePhoto from "@/components/profile/ProfilePhoto";
+import { createSession, removeSession } from "@/lib/auth/session";
+import { auth, db, storage } from "@/lib/firebase/client";
+import { isAgeValid, isUsernameValid, MAX_AGE } from "@/lib/profile-fields";
+import { useMessages } from "@/lib/use-messages";
 
-export default function ProfileContent({ user, customToken }: { user: { email?: string; uid: string; name?: string; picture?: string }, customToken?: string }) {
+type ProfileContentProps = {
+  user: { email?: string; uid: string; name?: string; picture?: string };
+  customToken?: string;
+};
+
+const FIELDS = ["name", "username", "nationality", "age", "gender"] as const;
+type FieldKey = (typeof FIELDS)[number];
+type Details = Record<FieldKey, string>;
+
+const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
+
+const FIELD =
+  "group sm:grid sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start sm:gap-x-6 motion-safe:animate-message-in";
+const FIELD_LABEL =
+  "mb-2 block text-label text-text transition-colors duration-150 ease-out group-focus-within:text-primary sm:mb-0 sm:leading-12";
+const ENTER_STEP_MS = 40;
+const LOGOUT_BUTTON =
+  "group/out inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full border border-border-strong px-6 text-label-lg text-error transition-[background-color,scale] duration-150 ease-out hover:bg-error-subtle active:scale-[0.97] motion-safe:animate-message-in";
+
+const asText = (value: unknown) => (typeof value === "string" || typeof value === "number" ? String(value) : "");
+
+export default function ProfileContent({ user, customToken }: ProfileContentProps) {
   const t = useMessages("profile");
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [isEditing, setIsEditing] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [dataLoading, setDataLoading] = useState(true);
-
-  // Auth States
-  const [name, setName] = useState(user.name || "");
-  const [photo, setPhoto] = useState(user.picture || "");
+  const [saved, setSaved] = useState<Details>({
+    name: user.name ?? "",
+    username: "",
+    nationality: "",
+    age: "",
+    gender: "",
+  });
+  const [form, setForm] = useState<Details>(saved);
+  const [photo, setPhoto] = useState(user.picture ?? "");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
-  
-  // Firestore States
-  const [username, setUsername] = useState("");
-  const [nationality, setNationality] = useState("");
-  const [age, setAge] = useState("");
-  const [gender, setGender] = useState("");
-
+  const [saving, setSaving] = useState(false);
+  const [detailsLoading, setDetailsLoading] = useState(true);
   const [error, setError] = useState("");
-  const [success, setSuccess] = useState("");
+  const [succeeded, setSucceeded] = useState(false);
 
   useEffect(() => {
-    async function loadFirestoreData() {
+    let cancelled = false;
+
+    async function loadDetails() {
       try {
-        if (!customToken) {
-          console.warn("customToken is missing. Server component might need a hard refresh.");
-        }
-        if (!auth.currentUser && customToken) {
-          await signInWithCustomToken(auth, customToken);
-        }
-        
-        // Ensure auth state is ready
-        if (auth.currentUser) {
-          const docRef = doc(db, "users", user.uid);
-          const docSnap = await getDoc(docRef);
-          if (docSnap.exists()) {
-            const data = docSnap.data();
-            setUsername(data.username || "");
-            setNationality(data.nationality || "");
-            setAge(data.age || "");
-            setGender(data.gender || "");
-          }
-        } else {
-          console.warn("User is not authenticated on the client. Cannot load firestore data.");
-        }
-      } catch (err) {
-        console.error("Failed to load firestore data", err);
+        if (!auth.currentUser && customToken) await signInWithCustomToken(auth, customToken);
+        if (!auth.currentUser) return;
+
+        const snapshot = await getDoc(doc(db, "users", user.uid));
+        if (cancelled || !snapshot.exists()) return;
+
+        const data = snapshot.data();
+        const loaded = {
+          username: asText(data.username),
+          nationality: asText(data.nationality),
+          age: asText(data.age),
+          gender: asText(data.gender),
+        };
+        setSaved((current) => ({ ...current, ...loaded }));
+        setForm((current) => ({ ...current, ...loaded }));
+      } catch (caught) {
+        console.error("Failed to load profile details", caught);
       } finally {
-        setDataLoading(false);
+        if (!cancelled) setDetailsLoading(false);
       }
     }
-    loadFirestoreData();
+
+    loadDetails();
+    return () => {
+      cancelled = true;
+    };
   }, [user.uid, customToken]);
+
+  useEffect(
+    () => () => {
+      if (previewUrl) URL.revokeObjectURL(previewUrl);
+    },
+    [previewUrl],
+  );
+
+  const labels: Details = {
+    name: t.nameLabel,
+    username: t.usernameLabel,
+    nationality: t.nationalityLabel,
+    age: t.ageLabel,
+    gender: t.genderLabel,
+  };
+  const placeholders: Details = {
+    name: t.namePlaceholder,
+    username: t.usernamePlaceholder,
+    nationality: t.nationalityPlaceholder,
+    age: t.agePlaceholder,
+    gender: "",
+  };
+
+  const displayName = saved.name || user.email?.split("@")[0] || t.fallbackName;
+  const displayPhoto = previewUrl || photo || null;
+  const ageInvalid = !isAgeValid(form.age);
+  const usernameInvalid = !isUsernameValid(form.username);
+  const locked = detailsLoading || saving;
+  const dirty = selectedFile !== null || FIELDS.some((field) => form[field] !== saved[field]);
+  const inputClass = `${INPUT} disabled:cursor-not-allowed ${detailsLoading ? "motion-safe:animate-pulse" : ""}`;
+
+  const setField = (field: FieldKey, value: string) => {
+    setSucceeded(false);
+    setForm((current) => ({ ...current, [field]: value }));
+  };
+
+  const discardChanges = () => {
+    setForm(saved);
+    setSelectedFile(null);
+    setPreviewUrl(null);
+    setError("");
+  };
+
+  const handleFileChange = (event: ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    event.target.value = "";
+    if (!file) return;
+    if (!file.type.startsWith("image/")) {
+      setError(t.photoErrors.type);
+      return;
+    }
+    if (file.size > MAX_PHOTO_BYTES) {
+      setError(t.photoErrors.size);
+      return;
+    }
+    setSelectedFile(file);
+    setPreviewUrl(URL.createObjectURL(file));
+    setSucceeded(false);
+    setError("");
+  };
 
   const handleLogout = async () => {
     try {
       await signOut(auth);
       await removeSession();
       router.push("/login");
-    } catch (error) {
-      console.error("Logout failed", error);
+    } catch (caught) {
+      console.error("Logout failed", caught);
     }
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
-      if (!file.type.startsWith('image/')) {
-        setError("Harap pilih file gambar (JPG/PNG).");
-        return;
-      }
-      if (file.size > 2 * 1024 * 1024) {
-        setError("Ukuran gambar maksimal 2MB.");
-        return;
-      }
-      setSelectedFile(file);
-      setPreviewUrl(URL.createObjectURL(file));
-      setError("");
+  const handleSave = async (event: FormEvent) => {
+    event.preventDefault();
+    if (usernameInvalid) {
+      document.getElementById("profile-username")?.focus();
+      return;
     }
-  };
+    if (ageInvalid) {
+      document.getElementById("profile-age")?.focus();
+      return;
+    }
 
-  const handleSave = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
+    setSaving(true);
     setError("");
-    setSuccess("");
 
     try {
       const currentUser = auth.currentUser;
       if (!currentUser) throw new Error("User not found");
 
-      let newPhotoUrl = photo;
+      const next: Details = {
+        name: form.name.trim(),
+        username: form.username.trim(),
+        nationality: form.nationality.trim(),
+        age: form.age,
+        gender: form.gender,
+      };
 
+      let nextPhoto = photo;
       if (selectedFile) {
         const fileRef = ref(storage, `users/${user.uid}/profile_${Date.now()}`);
         await uploadBytes(fileRef, selectedFile);
-        newPhotoUrl = await getDownloadURL(fileRef);
+        nextPhoto = await getDownloadURL(fileRef);
       }
-      
-      // Update Firebase Auth
-      await updateProfile(currentUser, { 
-        displayName: name, 
-        photoURL: newPhotoUrl || null 
-      });
-      
-      // Update Firestore
-      const docRef = doc(db, "users", user.uid);
-      await setDoc(docRef, {
-        username: username,
-        nationality: nationality,
-        age: age,
-        gender: gender,
-        updatedAt: new Date().toISOString()
-      }, { merge: true });
 
-      // Refresh Session
+      await updateProfile(currentUser, { displayName: next.name, photoURL: nextPhoto || null });
+      await setDoc(
+        doc(db, "users", user.uid),
+        {
+          username: next.username,
+          nationality: next.nationality,
+          age: next.age,
+          gender: next.gender,
+          updatedAt: new Date().toISOString(),
+        },
+        { merge: true },
+      );
+
       const idToken = await currentUser.getIdToken(true);
-      const sessionResult = await createSession(idToken);
-      
-      if (sessionResult.success) {
-        setSuccess(t.success);
-        setIsEditing(false);
-        setPhoto(newPhotoUrl);
-        router.refresh();
-      } else {
-        setError(sessionResult.error || t.error);
+      const session = await createSession(idToken);
+      if (!session.success) {
+        setError(session.error || t.error);
+        return;
       }
-    } catch (err: unknown) {
-      console.error(err);
-      setError((err as Error & { code?: string }).code?.includes("permission-denied") || (err as Error & { code?: string }).code === "storage/unauthorized" 
-        ? "Gagal menyimpan. Pastikan aturan (Rules) Firestore & Storage di Firebase Console sudah diizinkan untuk Anda."
-        : t.error);
+
+      setSaved(next);
+      setForm(next);
+      setPhoto(nextPhoto);
+      setSelectedFile(null);
+      setPreviewUrl(null);
+      setSucceeded(true);
+      router.refresh();
+    } catch (caught) {
+      console.error(caught);
+      const code = caught instanceof FirebaseError ? caught.code : "";
+      const denied = code.includes("permission-denied") || code === "storage/unauthorized";
+      setError(denied ? t.saveDenied : t.error);
     } finally {
-      setLoading(false);
+      setSaving(false);
     }
   };
 
-  const displayPhoto = previewUrl || photo || user.picture;
-
   return (
-    <div className="mx-auto max-w-3xl px-4 py-12 sm:px-6 lg:px-8">
-      <div className="mb-8 flex items-center justify-between">
-        <div>
-          <h1 className="text-h2 font-heading font-bold text-text">{t.title}</h1>
-          <p className="mt-2 text-body text-text-muted">{t.subtitle}</p>
-        </div>
-      </div>
+    <div className="mx-auto w-full max-w-2xl px-4 lg:max-w-5xl xl:px-0">
+      <header className="motion-safe:animate-message-in">
+        <h1 className="text-h2 text-text sm:text-h1">{t.title}</h1>
+        <p className="mt-2 text-body text-text-muted">{t.subtitle}</p>
+      </header>
 
-      <div className="overflow-hidden rounded-xl border border-border bg-surface shadow-sm">
-        {/* Header / Avatar Section */}
-        <div className="border-b border-border p-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
-          <div className="flex flex-col sm:flex-row items-center sm:items-start gap-4 w-full sm:w-auto">
-            
-            <div className="relative group">
-              <div className={`relative flex h-20 w-20 sm:h-16 sm:w-16 overflow-hidden items-center justify-center rounded-full bg-primary-subtle text-primary shrink-0 border-2 border-transparent transition-colors ${isEditing ? "group-hover:border-primary cursor-pointer" : ""}`}
-                   onClick={() => isEditing && fileInputRef.current?.click()}
-              >
-                {displayPhoto ? (
-                  <img src={displayPhoto} alt="Profile" className="object-cover w-full h-full" />
-                ) : (
-                  <User className="h-8 w-8" />
+      <div className="mt-10 lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start lg:gap-x-16">
+        <section
+          aria-label={displayName}
+          className="flex flex-col items-center text-center motion-safe:animate-message-in motion-safe:[animation-delay:80ms]"
+        >
+          <div className="relative">
+            <span key={displayPhoto ?? "dummy"} className="block motion-safe:animate-pop-in">
+              <ProfilePhoto src={displayPhoto} className="size-32" />
+            </span>
+            <button
+              type="button"
+              onClick={() => fileInputRef.current?.click()}
+              disabled={locked}
+              aria-label={t.changePhoto}
+              title={t.changePhoto}
+              className="group/camera absolute right-0 bottom-0 inline-flex size-11 cursor-pointer items-center justify-center rounded-full border border-border bg-surface text-text shadow-md shadow-neutral-950/10 transition-[background-color,scale] duration-150 ease-out hover:scale-105 hover:bg-surface-muted active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
+            >
+              <Camera
+                className="size-5 transition-[rotate] duration-200 ease-out group-hover/camera:-rotate-12"
+                aria-hidden="true"
+              />
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              tabIndex={-1}
+              aria-hidden="true"
+              onChange={handleFileChange}
+              accept="image/png, image/jpeg, image/webp"
+              className="sr-only"
+            />
+          </div>
+
+          <p className="mt-6 max-w-full font-heading text-h2 wrap-break-word text-text">{displayName}</p>
+          {saved.username && <p className="mt-1 max-w-full text-body break-all text-primary">{saved.username}</p>}
+          <p className="mt-4 text-body-sm text-text-muted">{t.photoHint}</p>
+        </section>
+
+        <form onSubmit={handleSave} noValidate className="mt-10 lg:mt-0">
+          <div className="flex flex-col gap-6">
+            {FIELDS.map((field, index) => (
+              <div key={field} className={FIELD} style={{ animationDelay: `${(index + 3) * ENTER_STEP_MS}ms` }}>
+                <label htmlFor={`profile-${field}`} className={FIELD_LABEL}>
+                  {labels[field]}
+                </label>
+                {field === "gender" && (
+                  <GenderSelect
+                    id="profile-gender"
+                    value={form.gender}
+                    options={t.genderOptions}
+                    disabled={locked}
+                    className={detailsLoading ? "motion-safe:animate-pulse" : ""}
+                    onChange={(value) => setField("gender", value)}
+                  />
                 )}
-                
-                {isEditing && (
-                  <div className="absolute inset-0 bg-neutral-950/40 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                    <Camera className="h-6 w-6 text-white" />
+                {field === "age" && (
+                  <div>
+                    <input
+                      id="profile-age"
+                      type="number"
+                      inputMode="numeric"
+                      min={1}
+                      max={MAX_AGE}
+                      value={form.age}
+                      onChange={(event) => setField("age", event.target.value)}
+                      disabled={locked}
+                      placeholder={placeholders.age}
+                      aria-invalid={ageInvalid}
+                      aria-describedby={ageInvalid ? "profile-age-error" : undefined}
+                      className={`${inputClass} ${ageInvalid ? "border-error" : ""}`}
+                    />
+                    {ageInvalid && (
+                      <p id="profile-age-error" className="mt-2 text-body-sm text-error motion-safe:animate-message-in">
+                        {t.ageError}
+                      </p>
+                    )}
+                  </div>
+                )}
+                {field !== "gender" && field !== "age" && (
+                  <div>
+                    <input
+                      id={`profile-${field}`}
+                      type="text"
+                      value={form[field]}
+                      onChange={(event) => setField(field, event.target.value)}
+                      disabled={locked}
+                      placeholder={placeholders[field]}
+                      autoComplete={field === "name" ? "name" : "off"}
+                      aria-invalid={field === "username" && usernameInvalid ? true : undefined}
+                      aria-describedby={field === "username" && usernameInvalid ? "profile-username-error" : undefined}
+                      className={`${inputClass} ${field === "username" && usernameInvalid ? "border-error" : ""}`}
+                    />
+                    {field === "username" && usernameInvalid && (
+                      <p
+                        id="profile-username-error"
+                        className="mt-2 text-body-sm text-error motion-safe:animate-message-in"
+                      >
+                        {t.usernameError}
+                      </p>
+                    )}
                   </div>
                 )}
               </div>
-              {isEditing && (
-                <input 
-                  type="file" 
-                  ref={fileInputRef} 
-                  onChange={handleFileChange} 
-                  accept="image/png, image/jpeg, image/webp" 
-                  className="hidden" 
-                />
-              )}
-            </div>
+            ))}
 
-            <div className="text-center sm:text-left mt-2 sm:mt-0">
-              <h2 className="text-h3 font-heading font-semibold text-text line-clamp-1 break-all">
-                {user.name || user.email?.split("@")[0] || "User"}
-              </h2>
-              <p className="text-body-sm text-primary font-medium">{username ? username : "Member"}</p>
-              {isEditing && (
-                <p className="mt-1 text-xs text-text-muted sm:hidden">
-                  Ketuk foto untuk mengubah
-                </p>
-              )}
+            <div className={FIELD} style={{ animationDelay: `${(FIELDS.length + 3) * ENTER_STEP_MS}ms` }}>
+              <label htmlFor="profile-email" className={FIELD_LABEL}>
+                {t.emailLabel}
+              </label>
+              <div className="group/lock relative">
+                <input
+                  id="profile-email"
+                  type="email"
+                  value={user.email ?? ""}
+                  disabled
+                  readOnly
+                  className={`${INPUT} cursor-not-allowed bg-surface-muted pr-12 text-text-muted`}
+                />
+                <Lock
+                  aria-hidden="true"
+                  className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 text-text-muted motion-safe:group-hover/lock:animate-lock-nudge"
+                />
+              </div>
             </div>
           </div>
-          
-          {!isEditing && (
-            <button
-              onClick={() => setIsEditing(true)}
-              disabled={dataLoading}
-              className="w-full sm:w-auto inline-flex h-10 items-center justify-center gap-2 rounded-md bg-surface-muted px-4 text-label text-text transition-[background-color,color,scale] hover:bg-surface-active active:scale-95 shrink-0 disabled:opacity-50"
-            >
-              {dataLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Edit2 className="h-4 w-4" />}
-              <span>{t.editProfile}</span>
-            </button>
-          )}
-        </div>
 
-        {/* Form / Details Section */}
-        <div className="p-6">
           {error && (
-            <div className="mb-6 rounded-md bg-error-subtle p-4">
-              <p className="text-body-sm font-medium text-on-error-subtle">{error}</p>
+            <div
+              role="alert"
+              className="mt-6 flex items-center gap-3 rounded-2xl bg-error-subtle px-4 py-3 motion-safe:animate-message-in"
+            >
+              <CircleAlert className="size-5 shrink-0 text-error" aria-hidden="true" />
+              <p className="text-body-sm text-on-error-subtle">{error}</p>
             </div>
           )}
-          {success && (
-            <div className="mb-6 rounded-md bg-success-subtle p-4">
-              <p className="text-body-sm font-medium text-on-success-subtle">{success}</p>
-            </div>
+
+          {succeeded && !dirty && (
+            <p
+              role="status"
+              className="mt-6 flex items-center gap-2 text-label text-success motion-safe:animate-message-in sm:justify-end"
+            >
+              <Check className="size-4 motion-safe:animate-stamp-in" aria-hidden="true" />
+              {t.success}
+            </p>
           )}
 
-          {isEditing ? (
-            <form onSubmit={handleSave} className="space-y-6">
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="name" className="block text-label-sm font-medium text-text">
-                    {t.nameLabel}
-                  </label>
-                  <input
-                    id="name"
-                    type="text"
-                    className="mt-2 block w-full rounded-md border border-border-strong bg-background py-3 px-3 text-text placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-body-sm transition-colors"
-                    placeholder={t.namePlaceholder}
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    disabled={loading}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="username" className="block text-label-sm font-medium text-text">
-                    {t.usernameLabel || "Username"}
-                  </label>
-                  <input
-                    id="username"
-                    type="text"
-                    className="mt-2 block w-full rounded-md border border-border-strong bg-background py-3 px-3 text-text placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-body-sm transition-colors"
-                    placeholder={t.usernamePlaceholder || "@johndoe"}
-                    value={username}
-                    onChange={(e) => setUsername(e.target.value)}
-                    disabled={loading}
-                  />
-                </div>
-                <div>
-                  <label htmlFor="nationality" className="block text-label-sm font-medium text-text">
-                    {t.nationalityLabel || "Nationality"}
-                  </label>
-                  <input
-                    id="nationality"
-                    type="text"
-                    className="mt-2 block w-full rounded-md border border-border-strong bg-background py-3 px-3 text-text placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-body-sm transition-colors"
-                    placeholder={t.nationalityPlaceholder}
-                    value={nationality}
-                    onChange={(e) => setNationality(e.target.value)}
-                    disabled={loading}
-                  />
-                </div>
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label htmlFor="age" className="block text-label-sm font-medium text-text">
-                      {t.ageLabel || "Age"}
-                    </label>
-                    <input
-                      id="age"
-                      type="number"
-                      className="mt-2 block w-full rounded-md border border-border-strong bg-background py-3 px-3 text-text placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-body-sm transition-colors"
-                      placeholder={t.agePlaceholder}
-                      value={age}
-                      onChange={(e) => setAge(e.target.value)}
-                      disabled={loading}
-                    />
-                  </div>
-                  <div>
-                    <label htmlFor="gender" className="block text-label-sm font-medium text-text">
-                      {t.genderLabel || "Gender"}
-                    </label>
-                    <select
-                      id="gender"
-                      className="mt-2 block w-full rounded-md border border-border-strong bg-background py-3 px-3 text-text focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-body-sm transition-colors"
-                      value={gender}
-                      onChange={(e) => setGender(e.target.value)}
-                      disabled={loading}
-                    >
-                      <option value="">{t.genderOptions?.none || "Select Gender"}</option>
-                      <option value="male">{t.genderOptions?.male || "Male"}</option>
-                      <option value="female">{t.genderOptions?.female || "Female"}</option>
-                      <option value="other">{t.genderOptions?.other || "Other"}</option>
-                      <option value="preferNotToSay">{t.genderOptions?.preferNotToSay || "Prefer not to say"}</option>
-                    </select>
-                  </div>
-                </div>
-              </div>
-
-              <div className="flex flex-col-reverse sm:flex-row justify-end gap-3 pt-4 border-t border-border">
-                <button
-                  type="button"
-                  onClick={() => {
-                    setIsEditing(false);
-                    setName(user.name || "");
-                    setPhoto(user.picture || "");
-                    setPreviewUrl(null);
-                    setSelectedFile(null);
-                    setError("");
-                  }}
-                  disabled={loading}
-                  className="inline-flex h-12 sm:h-10 items-center justify-center gap-2 rounded-md bg-surface px-4 text-label text-text border border-border transition-[background-color,color,scale] hover:bg-surface-muted active:scale-95"
-                >
-                  <X className="h-4 w-4" />
-                  {t.cancel}
-                </button>
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="inline-flex h-12 sm:h-10 items-center justify-center gap-2 rounded-md bg-primary px-4 text-label text-on-primary shadow-sm transition-[background-color,color,scale] hover:bg-primary-hover active:scale-95 disabled:opacity-50"
-                >
-                  {loading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
-                  {loading ? t.saving : t.saveButton}
-                </button>
-              </div>
-            </form>
-          ) : (
-            <dl className="grid grid-cols-1 gap-6 sm:grid-cols-2">
-              <div>
-                <dt className="flex items-center gap-2 text-label-sm font-medium text-text-muted">
-                  <User className="h-4 w-4" />
-                  {t.nameLabel}
-                </dt>
-                <dd className="mt-2 text-body font-medium text-text">
-                  {user.name || "-"}
-                </dd>
-              </div>
-              <div>
-                <dt className="flex items-center gap-2 text-label-sm font-medium text-text-muted">
-                  <Hash className="h-4 w-4" />
-                  {t.usernameLabel || "Username"}
-                </dt>
-                <dd className="mt-2 text-body font-medium text-text">
-                  {username || "-"}
-                </dd>
-              </div>
-              <div>
-                <dt className="flex items-center gap-2 text-label-sm font-medium text-text-muted">
-                  <Globe className="h-4 w-4" />
-                  {t.nationalityLabel || "Nationality"}
-                </dt>
-                <dd className="mt-2 text-body font-medium text-text">
-                  {nationality || "-"}
-                </dd>
-              </div>
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <dt className="flex items-center gap-2 text-label-sm font-medium text-text-muted">
-                    <Calendar className="h-4 w-4" />
-                    {t.ageLabel || "Age"}
-                  </dt>
-                  <dd className="mt-2 text-body font-medium text-text">
-                    {age || "-"}
-                  </dd>
-                </div>
-                <div>
-                  <dt className="flex items-center gap-2 text-label-sm font-medium text-text-muted">
-                    <UserIcon className="h-4 w-4" />
-                    {t.genderLabel || "Gender"}
-                  </dt>
-                  <dd className="mt-2 text-body font-medium text-text capitalize">
-                    {gender ? t.genderOptions?.[gender as keyof typeof t.genderOptions] || gender : "-"}
-                  </dd>
-                </div>
-              </div>
-              <div className="sm:col-span-2 border-t border-border pt-6 mt-2">
-                <dt className="flex items-center gap-2 text-label-sm font-medium text-text-muted">
-                  <Mail className="h-4 w-4" />
-                  {t.emailLabel}
-                </dt>
-                <dd className="mt-2 text-body font-medium text-text">
-                  {user.email || "-"}
-                </dd>
-              </div>
-            </dl>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div className="border-t border-border bg-surface-muted p-6 flex justify-end gap-4">
-          <button
-            onClick={handleLogout}
-            className="w-full sm:w-auto inline-flex h-12 sm:h-10 items-center justify-center gap-2 rounded-md border border-border bg-surface px-4 text-label text-error transition-[background-color,color,scale] hover:bg-error-subtle active:scale-95"
+          <div
+            style={{ animationDelay: `${(FIELDS.length + 4) * ENTER_STEP_MS}ms` }}
+            className={`mt-8 flex justify-end gap-3 motion-safe:animate-message-in sm:flex-row sm:items-center ${
+              dirty
+                ? "safe-bottom sticky bottom-0 -mx-4 items-center border-t border-border bg-background px-4 pt-3 sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0"
+                : "flex-col-reverse"
+            }`}
           >
-            <LogOut className="h-4 w-4" />
-            {t.logoutButton}
-          </button>
-        </div>
+            {dirty ? (
+              <button
+                key="cancel"
+                type="button"
+                onClick={discardChanges}
+                disabled={saving}
+                className={`${GHOST_BUTTON} motion-safe:animate-message-in`}
+              >
+                {t.cancel}
+              </button>
+            ) : (
+              <button key="logout" type="button" onClick={handleLogout} className={LOGOUT_BUTTON}>
+                <LogOut
+                  className="size-4 transition-[translate] duration-200 ease-out group-hover/out:translate-x-0.5"
+                  aria-hidden="true"
+                />
+                {t.logoutButton}
+              </button>
+            )}
+            <button
+              type="submit"
+              disabled={!dirty || locked}
+              className={`${PRIMARY_BUTTON} whitespace-nowrap ${dirty ? "flex-1 sm:flex-none" : ""}`}
+            >
+              {saving ? (
+                <Loader2 className="size-4 motion-safe:animate-spin" aria-hidden="true" />
+              ) : (
+                <Check className="size-4" aria-hidden="true" />
+              )}
+              {saving ? t.saving : t.saveButton}
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

@@ -3,17 +3,10 @@
 import { useEffect } from "react";
 import { ErrorState } from "@/components/ui/error-state";
 
-export default function Error({
-  error,
-  reset,
-}: {
-  error: Error & { digest?: string };
-  reset: () => void;
-}) {
+export default function Error({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   useEffect(() => {
     console.error(error);
   }, [error]);
 
-  return <ErrorState type="500" onRetry={() => reset()} />;
+  return <ErrorState type="500" onRetry={retry} />;
 }
-

@@ -1,207 +1,312 @@
 "use client";
 
-import { useState } from "react";
+import { createUserWithEmailAndPassword } from "firebase/auth";
+import { ArrowLeft, ArrowRight } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { createUserWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from "firebase/auth";
+import { type FormEvent, useEffect, useRef, useState } from "react";
+import AuthHeading from "@/components/auth/AuthHeading";
+import { FormAlert, GoogleButton, OrDivider, PasswordRules, SubmitButton } from "@/components/auth/AuthParts";
+import TextField, { FIELD_LABEL, OptionalMark } from "@/components/auth/TextField";
+import { GHOST_BUTTON } from "@/components/plan/styles";
+import GenderSelect from "@/components/profile/GenderSelect";
+import { saveProfileDetails, signInWithGoogle, startSession } from "@/lib/auth/client";
+import { useAuthFlow } from "@/lib/auth/use-auth-flow";
+import { emailIssue, isPasswordStrong } from "@/lib/auth/validation";
 import { auth } from "@/lib/firebase/client";
-import { createSession } from "@/lib/auth/session";
+import { fillTemplate } from "@/lib/plan-draft";
+import { isAgeValid, isNameValid, isUsernameValid, MAX_AGE } from "@/lib/profile-fields";
 import { useMessages } from "@/lib/use-messages";
-import { Mail, Lock, Loader2 } from "lucide-react";
+
+const HOME = "/trips";
+const PROFILE = "/profile";
+const TEXT_LINK =
+  "inline-flex min-h-11 items-center rounded-sm text-label text-primary underline-offset-4 hover:underline";
+
+const STEPS = ["account", "about"] as const;
+type Step = (typeof STEPS)[number];
+
+const STEP_FIELDS = {
+  account: ["email", "password", "confirm"],
+  about: ["name", "username", "age"],
+} as const;
+type CheckedField = (typeof STEP_FIELDS)[Step][number];
+
+const FIRST_FIELD: Record<Step, string> = { account: "register-email", about: "register-name" };
 
 export default function RegisterPage() {
   const t = useMessages("auth");
-  const router = useRouter();
-  
+  const profile = useMessages("profile");
+  const { pending, error, run } = useAuthFlow();
+
+  const [step, setStep] = useState<Step>("account");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [name, setName] = useState("");
+  const [username, setUsername] = useState("");
+  const [nationality, setNationality] = useState("");
+  const [age, setAge] = useState("");
+  const [gender, setGender] = useState("");
+  const [takenEmail, setTakenEmail] = useState("");
+  const [touched, setTouched] = useState<ReadonlySet<CheckedField>>(new Set());
+  const [attempted, setAttempted] = useState<ReadonlySet<Step>>(new Set());
+  const focusedStep = useRef<Step>(step);
 
-  const handleRegister = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+  useEffect(() => {
+    if (focusedStep.current === step) return;
+    focusedStep.current = step;
+    document.getElementById(FIRST_FIELD[step])?.focus();
+  }, [step]);
 
-    try {
-      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-      const idToken = await userCredential.user.getIdToken();
-      
-      const sessionResult = await createSession(idToken);
-      if (sessionResult.success) {
-        await auth.signOut();
-        router.push("/trips");
-        router.refresh();
-      } else {
-        setError(sessionResult.error || t.errors.default);
+  const emailError = () => {
+    const issue = emailIssue(email);
+    if (issue) return t.errors[issue];
+    if (email.trim() === takenEmail) return t.errors.emailInUse;
+    return "";
+  };
+  const confirmError = () => {
+    if (confirm === "") return t.errors.required;
+    if (confirm !== password) return t.errors.passwordMismatch;
+    return "";
+  };
+  const nameError = () => {
+    if (name.trim() === "") return t.errors.required;
+    if (!isNameValid(name)) return profile.nameError;
+    return "";
+  };
+
+  const errors: Record<CheckedField, string> = {
+    email: emailError(),
+    password: isPasswordStrong(password) ? "" : t.errors.passwordRules,
+    confirm: confirmError(),
+    name: nameError(),
+    username: isUsernameValid(username) ? "" : profile.usernameError,
+    age: isAgeValid(age) ? "" : profile.ageError,
+  };
+
+  const stepOf = (field: CheckedField): Step =>
+    STEP_FIELDS.account.some((accountField) => accountField === field) ? "account" : "about";
+  const shown = (field: CheckedField) => (touched.has(field) || attempted.has(stepOf(field)) ? errors[field] : "");
+  const touch = (field: CheckedField) => setTouched((current) => new Set(current).add(field));
+
+  const firstInvalid = (target: Step) => STEP_FIELDS[target].find((field) => errors[field] !== "");
+
+  const createAccount = () =>
+    run(async () => {
+      const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
+      let destination = HOME;
+      try {
+        await saveProfileDetails(credential.user, {
+          name: name.trim(),
+          username: username.trim(),
+          nationality: nationality.trim(),
+          age,
+          gender,
+        });
+      } catch {
+        console.error("Profile details were not saved at sign-up");
+        destination = PROFILE;
       }
-    } catch (err: unknown) {
-      console.error(err);
-      if ((err as Error & { code?: string }).code === "auth/weak-password") {
-        setError(t.errors.weakPassword);
-      } else if ((err as Error & { code?: string }).code === "auth/email-already-in-use") {
-        setError("Email sudah digunakan."); // Temporary static fallback
-      } else {
-        setError(t.errors.default);
-      }
-    } finally {
-      setLoading(false);
+      return (await startSession(credential.user)) ? destination : null;
+    });
+
+  const handleSubmit = async (event: FormEvent) => {
+    event.preventDefault();
+    setAttempted((current) => new Set(current).add(step));
+    const invalid = firstInvalid(step);
+    if (invalid) {
+      document.getElementById(`register-${invalid}`)?.focus();
+      return;
+    }
+    if (step === "account") {
+      setStep("about");
+      return;
+    }
+    const failure = await createAccount();
+    if (failure === "emailInUse") {
+      setTakenEmail(email.trim());
+      setStep("account");
     }
   };
 
-  const handleGoogleLogin = async () => {
-    setLoading(true);
-    setError("");
-    const provider = new GoogleAuthProvider();
+  const handleGoogle = () => run(async () => ((await signInWithGoogle()) ? HOME : null));
 
-    try {
-      const userCredential = await signInWithPopup(auth, provider);
-      const idToken = await userCredential.user.getIdToken();
-      
-      const sessionResult = await createSession(idToken);
-      if (sessionResult.success) {
-        await auth.signOut();
-        router.push("/trips");
-        router.refresh();
-      } else {
-        setError(sessionResult.error || t.errors.default);
-      }
-    } catch (err: unknown) {
-      console.error(err);
-      setError(t.errors.default);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const reveal = { show: t.common.showPassword, hide: t.common.hidePassword };
+  const stepNumber = STEPS.indexOf(step) + 1;
 
   return (
-    <div className="flex min-h-[calc(100vh-8rem)] flex-col justify-center px-4 py-12 sm:px-6 lg:px-8">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center font-heading text-h2 font-bold tracking-tight text-text">
-          {t.register.title}
-        </h2>
-        <p className="mt-2 text-center text-body text-text-muted">
-          {t.register.subtitle}
+    <div className="motion-safe:animate-message-in">
+      <AuthHeading
+        title={t.register.title}
+        subtitle={step === "account" ? t.register.subtitle : t.register.aboutSubtitle}
+      />
+
+      <div className="mt-6">
+        <p className="text-label text-text-muted">
+          {fillTemplate(t.register.stepLabel, { step: stepNumber, total: STEPS.length })}
+          <span className="text-text"> · {t.register.steps[step]}</span>
         </p>
+        <div aria-hidden="true" className="mt-2 flex gap-2">
+          {STEPS.map((item, index) => (
+            <span
+              key={item}
+              className={`h-1 flex-1 rounded-full transition-colors duration-300 ease-out ${
+                index < stepNumber ? "bg-primary" : "bg-surface-muted"
+              }`}
+            />
+          ))}
+        </div>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-surface px-4 py-8 shadow-sm shadow-neutral-950/10 sm:rounded-xl sm:px-10 border border-border">
-          <form className="space-y-6" onSubmit={handleRegister}>
-            {error && (
-              <div className="rounded-md bg-error-subtle p-4">
-                <p className="text-body-sm font-medium text-on-error-subtle">{error}</p>
-              </div>
-            )}
+      <form onSubmit={handleSubmit} noValidate className="mt-6 flex flex-col gap-6">
+        <FormAlert message={error} />
 
+        {step === "account" ? (
+          <div key="account" className="flex flex-col gap-6 motion-safe:animate-message-in">
+            <TextField
+              id="register-email"
+              type="email"
+              label={t.register.emailLabel}
+              placeholder={t.register.emailPlaceholder}
+              autoComplete="email"
+              inputMode="email"
+              value={email}
+              error={shown("email")}
+              disabled={pending}
+              onChange={setEmail}
+              onBlur={() => touch("email")}
+            />
             <div>
-              <label htmlFor="email" className="block text-label-sm font-medium text-text">
-                {t.register.emailLabel}
-              </label>
-              <div className="relative mt-2">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Mail className="size-5 text-text-muted" aria-hidden="true" />
-                </div>
-                <input
-                  id="email"
-                  name="email"
-                  type="email"
-                  autoComplete="email"
-                  required
-                  className="block w-full rounded-md border border-border-strong bg-background py-3 pl-10 pr-3 text-text placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-body-sm transition-colors"
-                  placeholder={t.register.emailPlaceholder}
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  disabled={loading}
+              <TextField
+                id="register-password"
+                type="password"
+                label={t.register.passwordLabel}
+                placeholder={t.register.passwordPlaceholder}
+                autoComplete="new-password"
+                value={password}
+                error={shown("password")}
+                disabled={pending}
+                reveal={reveal}
+                describedBy="register-password-rules"
+                onChange={setPassword}
+                onBlur={() => touch("password")}
+              />
+              <PasswordRules
+                id="register-password-rules"
+                password={password}
+                legend={t.register.rulesLegend}
+                labels={t.register.rules}
+              />
+            </div>
+            <TextField
+              id="register-confirm"
+              type="password"
+              label={t.register.confirmLabel}
+              placeholder={t.register.confirmPlaceholder}
+              autoComplete="new-password"
+              value={confirm}
+              error={shown("confirm")}
+              disabled={pending}
+              reveal={reveal}
+              onChange={setConfirm}
+              onBlur={() => touch("confirm")}
+            />
+            <SubmitButton pending={pending}>
+              {t.register.next}
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </SubmitButton>
+          </div>
+        ) : (
+          <div key="about" className="flex flex-col gap-6 motion-safe:animate-message-in">
+            <TextField
+              id="register-name"
+              label={profile.nameLabel}
+              placeholder={profile.namePlaceholder}
+              autoComplete="name"
+              value={name}
+              error={shown("name")}
+              disabled={pending}
+              onChange={setName}
+              onBlur={() => touch("name")}
+            />
+            <TextField
+              id="register-username"
+              label={profile.usernameLabel}
+              optionalLabel={t.common.optional}
+              placeholder={profile.usernamePlaceholder}
+              autoComplete="off"
+              value={username}
+              error={shown("username")}
+              disabled={pending}
+              onChange={setUsername}
+              onBlur={() => touch("username")}
+            />
+            <TextField
+              id="register-nationality"
+              label={profile.nationalityLabel}
+              optionalLabel={t.common.optional}
+              placeholder={profile.nationalityPlaceholder}
+              autoComplete="off"
+              value={nationality}
+              disabled={pending}
+              onChange={setNationality}
+            />
+            <div className="grid gap-6 sm:grid-cols-2 sm:gap-4">
+              <TextField
+                id="register-age"
+                type="number"
+                label={profile.ageLabel}
+                optionalLabel={t.common.optional}
+                placeholder={profile.agePlaceholder}
+                inputMode="numeric"
+                min={1}
+                max={MAX_AGE}
+                value={age}
+                error={shown("age")}
+                disabled={pending}
+                onChange={setAge}
+                onBlur={() => touch("age")}
+              />
+              <div className="group">
+                <label htmlFor="register-gender" className={`mb-2 block ${FIELD_LABEL}`}>
+                  {profile.genderLabel}
+                  <OptionalMark label={t.common.optional} />
+                </label>
+                <GenderSelect
+                  id="register-gender"
+                  value={gender}
+                  options={profile.genderOptions}
+                  disabled={pending}
+                  onChange={setGender}
                 />
               </div>
             </div>
-
-            <div>
-              <label htmlFor="password" className="block text-label-sm font-medium text-text">
-                {t.register.passwordLabel}
-              </label>
-              <div className="relative mt-2">
-                <div className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-3">
-                  <Lock className="size-5 text-text-muted" aria-hidden="true" />
-                </div>
-                <input
-                  id="password"
-                  name="password"
-                  type="password"
-                  autoComplete="new-password"
-                  required
-                  className="block w-full rounded-md border border-border-strong bg-background py-3 pl-10 pr-3 text-text placeholder:text-text-muted focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary sm:text-body-sm transition-colors"
-                  placeholder={t.register.passwordPlaceholder}
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  disabled={loading}
-                />
-              </div>
-            </div>
-
-            <div>
-              <button
-                type="submit"
-                disabled={loading}
-                className="flex w-full items-center justify-center rounded-xl bg-primary px-3 py-3 text-label font-semibold text-on-primary shadow-sm hover:bg-primary-hover active:scale-[0.98] transition-[background-color,transform] focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-primary disabled:opacity-50 disabled:pointer-events-none"
-              >
-                {loading ? <Loader2 className="size-5 animate-spin" /> : t.register.submit}
+            <div className="flex gap-3">
+              <button type="button" onClick={() => setStep("account")} disabled={pending} className={GHOST_BUTTON}>
+                <ArrowLeft className="size-4" aria-hidden="true" />
+                {t.register.back}
               </button>
-            </div>
-          </form>
-
-          <div className="mt-6">
-            <div className="relative">
-              <div className="absolute inset-0 flex items-center">
-                <div className="w-full border-t border-border" />
-              </div>
-              <div className="relative flex justify-center text-caption font-medium">
-                <span className="bg-surface px-2 text-text-muted">Atau</span>
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <button
-                onClick={handleGoogleLogin}
-                disabled={loading}
-                className="flex w-full items-center justify-center gap-3 rounded-xl bg-surface-muted px-3 py-3 text-label font-semibold text-text shadow-sm ring-1 ring-inset ring-border hover:bg-border active:scale-[0.98] transition-[background-color,transform] disabled:opacity-50 disabled:pointer-events-none"
-              >
-                <svg className="size-5" viewBox="0 0 24 24" aria-hidden="true">
-                  <path
-                    d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-                    fill="#4285F4"
-                  />
-                  <path
-                    d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-                    fill="#34A853"
-                  />
-                  <path
-                    d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
-                    fill="#FBBC05"
-                  />
-                  <path
-                    d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
-                    fill="#EA4335"
-                  />
-                  <path d="M1 1h22v22H1z" fill="none" />
-                </svg>
-                {t.register.google}
-              </button>
+              <SubmitButton pending={pending} className="flex-1">
+                {t.register.submit}
+              </SubmitButton>
             </div>
           </div>
-        </div>
+        )}
+      </form>
 
-        <p className="mt-8 text-center text-body-sm text-text-muted">
-          {t.register.hasAccount}{" "}
-          <Link
-            href="/login"
-            className="font-medium text-primary hover:text-primary-hover transition-colors p-2 -m-2"
-          >
-            {t.register.loginLink}
-          </Link>
-        </p>
-      </div>
+      {step === "account" && (
+        <div className="mt-6 flex flex-col gap-6">
+          <OrDivider label={t.common.or} />
+          <GoogleButton label={t.register.google} disabled={pending} onClick={handleGoogle} />
+        </div>
+      )}
+
+      <p className="mt-8 text-center text-body-sm text-text-muted">
+        {t.register.hasAccount}{" "}
+        <Link href="/login" className={TEXT_LINK}>
+          {t.register.loginLink}
+        </Link>
+      </p>
     </div>
   );
 }
