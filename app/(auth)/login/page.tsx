@@ -35,7 +35,7 @@ export default function LoginPage() {
       } else {
         setError(sessionResult.error || t.errors.default);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError(t.errors.default);
     } finally {
@@ -60,7 +60,7 @@ export default function LoginPage() {
       } else {
         setError(sessionResult.error || t.errors.default);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError(t.errors.default);
     } finally {

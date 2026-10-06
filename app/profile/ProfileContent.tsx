@@ -140,9 +140,9 @@ export default function ProfileContent({ user, customToken }: { user: { email?: 
       } else {
         setError(sessionResult.error || t.error);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      setError(err.code?.includes("permission-denied") || err.code === "storage/unauthorized" 
+      setError((err as Error & { code?: string }).code?.includes("permission-denied") || (err as Error & { code?: string }).code === "storage/unauthorized" 
         ? "Gagal menyimpan. Pastikan aturan (Rules) Firestore & Storage di Firebase Console sudah diizinkan untuk Anda."
         : t.error);
     } finally {

@@ -35,11 +35,11 @@ export default function RegisterPage() {
       } else {
         setError(sessionResult.error || t.errors.default);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
-      if (err.code === "auth/weak-password") {
+      if ((err as Error & { code?: string }).code === "auth/weak-password") {
         setError(t.errors.weakPassword);
-      } else if (err.code === "auth/email-already-in-use") {
+      } else if ((err as Error & { code?: string }).code === "auth/email-already-in-use") {
         setError("Email sudah digunakan."); // Temporary static fallback
       } else {
         setError(t.errors.default);
@@ -66,7 +66,7 @@ export default function RegisterPage() {
       } else {
         setError(sessionResult.error || t.errors.default);
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error(err);
       setError(t.errors.default);
     } finally {
