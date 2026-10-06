@@ -12,13 +12,14 @@ type ComposerProps = {
   disabled: boolean;
   text: Messages["plan"]["composer"];
   rows?: number;
+  placeholder?: string;
   onChange: (value: string) => void;
   onSend: () => void;
 };
 
 const SPEECH_LANGUAGE = { id: "id-ID", en: "en-US" };
 
-export default function Composer({ value, disabled, text, rows = 1, onChange, onSend }: ComposerProps) {
+export default function Composer({ value, disabled, text, rows = 1, placeholder, onChange, onSend }: ComposerProps) {
   const locale = useLocale();
   const fieldRef = useRef<HTMLTextAreaElement>(null);
   const spokenBaseRef = useRef("");
@@ -103,31 +104,30 @@ export default function Composer({ value, disabled, text, rows = 1, onChange, on
           id="plan-composer"
           rows={rows}
           value={value}
-          placeholder={text.placeholder}
+          disabled={disabled}
+          placeholder={placeholder ?? text.placeholder}
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={handleKeyDown}
           className={`max-h-40 min-h-11 resize-none bg-transparent py-2 pr-2 pl-4 text-body leading-7 text-text outline-none [scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin] placeholder:text-text-muted ${
             stacked ? "w-full" : "flex-1"
           } ${dictation.listening ? "hidden" : ""}`}
         />
-        {dictation.supported && (
-          <button
+        <button
             type="button"
+            disabled={disabled}
             aria-pressed={dictation.listening}
             aria-label={dictation.listening ? text.voiceStop : text.voiceStart}
             title={dictation.listening ? text.voiceStop : text.voiceStart}
             onClick={toggleDictation}
             className={`inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full transition-[background-color,color,scale] duration-150 ease-out active:scale-[0.97] ${
               dictation.listening ? "bg-error text-on-error" : "text-text-muted hover:bg-surface-muted hover:text-text"
-            }`}
-          >
+            } ${!dictation.supported ? "hidden" : ""}`}>
             {dictation.listening ? (
               <Square className="size-4" fill="currentColor" aria-hidden="true" />
             ) : (
               <Mic className="size-5" aria-hidden="true" />
             )}
           </button>
-        )}
         <button
           type="submit"
           disabled={!canSend}

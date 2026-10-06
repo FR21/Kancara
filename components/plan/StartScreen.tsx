@@ -30,7 +30,7 @@ export default function StartScreen({ text, input, onInputChange, onSend, onStar
         width={500}
         height={500}
         sizes="(min-width: 1024px) 128px, 96px"
-        preload
+        priority
         className="mx-auto size-24 lg:size-32"
       />
       <h1 tabIndex={-1} className="mt-4 text-h2 text-balance text-text outline-none sm:text-h1 lg:text-display">

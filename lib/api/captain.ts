@@ -6,7 +6,8 @@ import { sampleCaptain } from "./captain-sample";
 export type CaptainReply = { message: string; draftPatch: DraftPatch };
 
 export type ItineraryCover = { need: NeedKey; memberIds: string[] };
-export type ItineraryItem = { time: string; title: string; detail: string; covers: ItineraryCover[] };
+export type ItineraryViolation = { need: NeedKey; reason: string };
+export type ItineraryItem = { time: string; title: string; detail: string; imageUrl?: string; address?: string; rating?: number; priceLevel?: string; openingHours?: string; travelToNext?: { distance: string; duration: string }; covers: ItineraryCover[]; violations?: ItineraryViolation[] };
 export type ItineraryDay = { date: string; items: ItineraryItem[] };
 export type Itinerary = { days: ItineraryDay[] };
 
@@ -24,7 +25,7 @@ export interface CaptainClient {
 export class CaptainError extends Error {}
 
 const BASE_URL = process.env.NEXT_PUBLIC_CAPTAIN_API_URL ?? "";
-const REQUEST_TIMEOUT_MS = 20000;
+const REQUEST_TIMEOUT_MS = 60000;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -50,7 +51,14 @@ function parseItem(value: unknown): ItineraryItem | null {
     time: value.time,
     title: value.title,
     detail: typeof value.detail === "string" ? value.detail : "",
+    imageUrl: typeof value.imageUrl === "string" ? value.imageUrl : undefined,
+    address: typeof value.address === "string" ? value.address : undefined,
+    rating: typeof value.rating === "number" ? value.rating : undefined,
+    priceLevel: typeof value.priceLevel === "string" ? value.priceLevel : undefined,
+    openingHours: typeof value.openingHours === "string" ? value.openingHours : undefined,
+    travelToNext: isRecord(value.travelToNext) && typeof value.travelToNext.distance === "string" && typeof value.travelToNext.duration === "string" ? { distance: value.travelToNext.distance, duration: value.travelToNext.duration } : undefined,
     covers: Array.isArray(value.covers) ? value.covers.flatMap((cover) => parseCover(cover) ?? []) : [],
+    violations: Array.isArray(value.violations) ? value.violations.filter(v => typeof v === "object" && v !== null && "need" in v && "reason" in v) : [],
   };
 }
 

@@ -94,7 +94,7 @@ const EMPTY_EXTRAS: TripExtras = {
 export const EMPTY_DRAFT: PlanDraft = {
   origin: "",
   destinations: [],
-  startDate: "",
+  startDate: new Date().toISOString().split("T")[0],
   endDate: "",
   members: [],
   budget: null,
@@ -272,7 +272,7 @@ function includes<Value extends string>(values: readonly Value[], value: unknown
 
 export const isNeedKey = (value: unknown): value is NeedKey => includes(NEED_KEYS, value);
 const isAgeGroup = (value: unknown): value is AgeGroup => includes(AGE_GROUPS, value);
-const isPace = (value: unknown): value is Pace => includes(PACES, value);
+
 const isTransportKey = (value: unknown): value is TransportKey => includes(TRANSPORT_KEYS, value);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -280,7 +280,9 @@ function isRecord(value: unknown): value is Record<string, unknown> {
 }
 
 function parseMember(value: unknown): Member | null {
-  if (!isRecord(value) || !isAgeGroup(value.ageGroup)) return null;
+  if (!isRecord(value)) return null;
+  const ageGroupRaw = typeof value.ageGroup === "string" ? value.ageGroup.toLowerCase() : "adult";
+  const ageGroup = isAgeGroup(ageGroupRaw) ? ageGroupRaw : "adult";
   const interests: Member["interests"] = {};
   if (isRecord(value.interests)) {
     INTEREST_KEYS.forEach((interest) => {
@@ -291,7 +293,7 @@ function parseMember(value: unknown): Member | null {
   return {
     id: typeof value.id === "string" && value.id ? value.id : crypto.randomUUID(),
     name: typeof value.name === "string" ? value.name : "",
-    ageGroup: value.ageGroup,
+    ageGroup: ageGroup,
     needs: Array.isArray(value.needs) ? value.needs.filter(isNeedKey) : [],
     allergies: typeof value.allergies === "string" ? value.allergies : "",
     interests,
@@ -323,18 +325,51 @@ function parseExtras(value: unknown): Partial<TripExtras> {
 export function parseDraftPatch(value: unknown): DraftPatch {
   if (!isRecord(value)) return {};
   const patch: DraftPatch = {};
-  if (typeof value.origin === "string") patch.origin = value.origin;
-  if (Array.isArray(value.destinations)) {
-    patch.destinations = value.destinations.filter((entry): entry is string => typeof entry === "string");
+  if (typeof value.origin === "string") {
+    const o = value.origin.trim();
+    if (o) patch.origin = o;
   }
-  if (typeof value.startDate === "string") patch.startDate = value.startDate;
-  if (typeof value.endDate === "string") patch.endDate = value.endDate;
+
+  let rawDestinations = value.destinations ?? (value as any).destination;
+  if (typeof rawDestinations === "string") {
+    rawDestinations = [rawDestinations];
+  }
+
+  if (Array.isArray(rawDestinations)) {
+    const validDests = rawDestinations.filter((entry): entry is string => typeof entry === "string" && entry.trim() !== "");
+    if (validDests.length > 0) patch.destinations = validDests;
+  }
+  
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (typeof value.startDate === "string") {
+    const s = value.startDate.trim();
+    if (s && dateRegex.test(s)) patch.startDate = s;
+  }
+  if (typeof value.endDate === "string") {
+    const e = value.endDate.trim();
+    if (e && dateRegex.test(e)) patch.endDate = e;
+  }
+  
   if (Array.isArray(value.members)) {
-    patch.members = value.members.flatMap((entry) => parseMember(entry) ?? []).slice(0, MAX_MEMBERS);
+    const validMembers = value.members.flatMap((entry) => parseMember(entry) ?? []).slice(0, MAX_MEMBERS);
+    if (validMembers.length > 0) patch.members = validMembers;
   }
-  if (typeof value.budget === "number" && value.budget >= 0) patch.budget = Math.round(value.budget);
-  if (isPace(value.pace)) patch.pace = value.pace;
-  if (value.extras !== undefined) patch.extras = parseExtras(value.extras);
+  const parsedBudget = typeof value.budget === "string" ? Number(value.budget.replace(/[^0-9]/g, '')) : value.budget;
+  if (typeof parsedBudget === "number" && !isNaN(parsedBudget) && parsedBudget > 0) patch.budget = Math.round(parsedBudget);
+  
+  if (typeof value.pace === "string") {
+    const p = value.pace.toLowerCase().trim();
+    if (p === "packed" || p === "padat" || p === "cepat") {
+      patch.pace = "packed";
+    } else if (p === "relaxed" || p === "santai") {
+      patch.pace = "relaxed";
+    }
+  }
+
+  if (value.extras !== undefined) {
+    const e = parseExtras(value.extras);
+    if (Object.keys(e).length > 0) patch.extras = e;
+  }
   return patch;
 }
 

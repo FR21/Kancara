@@ -1,6 +1,6 @@
 import { type PlanDraft, countFilledExtras, hasBudget, hasDateError, hasDates } from "@/lib/plan-draft";
 
-const QUESTION_KEYS = ["destination", "origin", "dates", "crew", "budget", "pace", "extras"] as const;
+const QUESTION_KEYS = ["destination", "dates", "crew", "budget", "pace", "origin", "extras"] as const;
 export type QuestionKey = (typeof QUESTION_KEYS)[number];
 
 const ALWAYS_ASKED: QuestionKey[] = ["crew", "extras"];

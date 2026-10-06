@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, CalendarDays, Users } from "lucide-react";
+import { ArrowRight, CalendarDays, Users, Settings } from "lucide-react";
 import Image from "next/image";
 import { type ReactNode, useEffect, useRef } from "react";
 import type { Messages } from "@/lib/messages";
@@ -108,9 +108,9 @@ export default function CaptainChat({
 
         {failed && <ErrorAlert message={text.chat.error} retryLabel={text.chat.retry} onRetry={onRetry} />}
 
-        {idle && asking === "budget" && (
+        {idle && asking !== null && (
           <div className="flex flex-wrap gap-2 pl-12 motion-safe:animate-message-in">
-            {BUDGET_MILLIONS.map((millions) => {
+            {asking === "budget" && BUDGET_MILLIONS.map((millions) => {
               const label = fillTemplate(text.chat.quickBudget, { millions });
               return (
                 <button key={millions} type="button" onClick={() => onSend(label)} className={QUICK_CHIP}>
@@ -118,40 +118,37 @@ export default function CaptainChat({
                 </button>
               );
             })}
-          </div>
-        )}
 
-        {idle && asking === "pace" && (
-          <div className="flex flex-wrap gap-2 pl-12 motion-safe:animate-message-in">
-            <button type="button" onClick={() => onSend(text.paces.relaxed)} className={QUICK_CHIP}>
-              {text.paces.relaxed}
-            </button>
-            <button type="button" onClick={() => onSend(text.paces.packed)} className={QUICK_CHIP}>
-              {text.paces.packed}
-            </button>
-          </div>
-        )}
+            {asking === "pace" && (
+              <>
+                <button type="button" onClick={() => onSend(text.paces.relaxed)} className={QUICK_CHIP}>
+                  {text.paces.relaxed}
+                </button>
+                <button type="button" onClick={() => onSend(text.paces.packed)} className={QUICK_CHIP}>
+                  {text.paces.packed}
+                </button>
+              </>
+            )}
 
-        {idle && asking === "dates" && (
-          <div className="pl-12 motion-safe:animate-message-in">
-            <button type="button" onClick={() => onAnswerManually("dates")} className={QUICK_CHIP}>
-              <CalendarDays className="size-4 text-primary" aria-hidden="true" />
-              {text.chat.pickDates}
-            </button>
-          </div>
-        )}
-
-        {idle && asking === "crew" && (
-          <div className="pl-12 motion-safe:animate-message-in">
-            <button type="button" onClick={() => onAnswerManually("crew")} className={QUICK_CHIP}>
-              <Users className="size-4 text-primary" aria-hidden="true" />
-              {text.chat.editCrew}
+            <button type="button" onClick={() => onAnswerManually(asking)} className={QUICK_CHIP}>
+              {asking === "dates" ? (
+                <CalendarDays className="size-4 text-primary" aria-hidden="true" />
+              ) : asking === "crew" ? (
+                <Users className="size-4 text-primary" aria-hidden="true" />
+              ) : (
+                <Settings className="size-4 text-primary" aria-hidden="true" />
+              )}
+              {asking === "dates" ? text.chat.pickDates : asking === "crew" ? text.chat.editCrew : text.mode.manual}
             </button>
           </div>
         )}
 
         {idle && complete && (
-          <div className="pl-12 motion-safe:animate-message-in">
+          <div className="flex flex-wrap gap-2 pl-12 motion-safe:animate-message-in">
+            <button type="button" onClick={() => onAnswerManually("extras")} className={QUICK_CHIP}>
+              <Settings className="size-4 text-primary" aria-hidden="true" />
+              {(text.chat as any).addExtras}
+            </button>
             <button type="button" onClick={onContinue} className={PRIMARY_BUTTON}>
               {text.deck.finish}
               <ArrowRight className="size-4" aria-hidden="true" />
@@ -164,8 +161,9 @@ export default function CaptainChat({
       <div className="safe-bottom sticky bottom-0 -mx-4 bg-background px-4 pt-2 sm:mx-0 sm:px-0">
         <Composer
           value={input}
-          disabled={busy}
+          disabled={busy || (idle && asking === "dates")}
           text={text.composer}
+          placeholder={(idle && asking === "dates") ? (text.composer as any).datesPlaceholder : undefined}
           onChange={onInputChange}
           onSend={() => onSend(input.trim())}
         />

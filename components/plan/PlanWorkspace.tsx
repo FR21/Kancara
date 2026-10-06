@@ -9,6 +9,7 @@ import {
   EMPTY_DRAFT,
   isDraftEmpty,
   planDraftReducer,
+  parseDraftPatch
 } from "@/lib/plan-draft";
 import { saveDraft, useSavedDraft } from "@/lib/plan-draft-store";
 import { type QuestionKey, isAnswered, missingRequired, nextRequired, openQuestions } from "@/lib/plan-questions";
@@ -96,7 +97,7 @@ export default function PlanWorkspace() {
     const signal = beginRequest("reply");
     try {
       const reply = await captain.reply({ story, draft, locale, focus: nextRequired(draft) }, signal);
-      dispatch({ type: "patch", patch: reply.draftPatch });
+      dispatch({ type: "patch", patch: parseDraftPatch(reply.draftPatch) });
       say("captain", reply.message);
     } catch {
       if (signal.aborted) return;

@@ -1,8 +1,8 @@
 "use client";
 
-import { Check } from "lucide-react";
-import { type CSSProperties, type KeyboardEvent, useId, useRef, useState } from "react";
-import type { Itinerary, ItineraryCover } from "@/lib/api/captain";
+import { Check, TriangleAlert, X, Star, MapPin, Clock, Wallet } from "lucide-react";
+import { type CSSProperties, type KeyboardEvent, useId, useRef, useState, useEffect } from "react";
+import type { Itinerary, ItineraryCover, ItineraryItem } from "@/lib/api/captain";
 import type { Messages } from "@/lib/messages";
 import { type Member, fillTemplate, getMemberName, parseLocalDate } from "@/lib/plan-draft";
 import { useLocale } from "@/lib/use-locale";
@@ -21,10 +21,23 @@ export default function ItineraryCard({ itinerary, destination, members, text, i
   const locale = useLocale();
   const baseId = useId();
   const [selected, setSelected] = useState(0);
+  const [selectedItem, setSelectedItem] = useState<ItineraryItem | null>(null);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const dayFormat = new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric" });
   const dayCount = itinerary.days.length;
   const day = itinerary.days[selected];
+
+  // Prevent scrolling when modal is open
+  useEffect(() => {
+    if (selectedItem) {
+      document.body.style.overflow = "hidden";
+    } else {
+      document.body.style.overflow = "unset";
+    }
+    return () => {
+      document.body.style.overflow = "unset";
+    };
+  }, [selectedItem]);
 
   const describeCover = (cover: ItineraryCover) => {
     const covered = members.filter((member) => cover.memberIds.includes(member.id));
@@ -115,8 +128,25 @@ export default function ItineraryCard({ itinerary, destination, members, text, i
           <li key={`${item.time}-${item.title}`} className="grid grid-cols-[3rem_minmax(0,1fr)] gap-4 py-4">
             <p className="text-label text-primary tabular-nums">{item.time}</p>
             <div className="min-w-0">
-              <p className="text-label text-text">{item.title}</p>
-              {item.detail && <p className="mt-1 text-body-sm text-text-muted">{item.detail}</p>}
+              <button 
+                onClick={() => setSelectedItem(item)}
+                className="text-left w-full hover:opacity-80 transition-opacity"
+              >
+                <p className="text-label text-text">{item.title}</p>
+                {item.detail && <p className="mt-1 text-body-sm text-text-muted">{item.detail}</p>}
+              </button>
+              
+              {item.violations && item.violations.length > 0 && (
+                <div className="mt-3 rounded-lg border border-error bg-error-subtle p-3 text-body-sm text-on-error-subtle">
+                  <p className="font-bold flex items-center gap-1"><TriangleAlert className="size-4" /> Perhatian:</p>
+                  <ul className="mt-1 list-disc pl-5">
+                    {item.violations.map((v, i) => (
+                      <li key={i}>{v.reason}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
               {item.covers.length > 0 && (
                 <ul aria-label={text.itinerary.honours} className="mt-2 flex flex-wrap gap-2">
                   {item.covers.map((cover) => (
@@ -130,10 +160,92 @@ export default function ItineraryCard({ itinerary, destination, members, text, i
                   ))}
                 </ul>
               )}
+              
+              {item.travelToNext && (
+                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface-muted px-3 py-1.5 text-caption text-text-muted">
+                  <span aria-hidden="true">🚗</span>
+                  <span>{item.travelToNext.duration} ({item.travelToNext.distance})</span>
+                </div>
+              )}
             </div>
           </li>
         ))}
       </ol>
+
+      {/* Modal */}
+      {selectedItem && (
+        <div 
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 sm:p-6 backdrop-blur-sm"
+          onClick={() => setSelectedItem(null)}
+        >
+          <div 
+            className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-surface shadow-xl motion-safe:animate-message-in flex flex-col max-h-[90vh]"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="flex items-center justify-between border-b border-border px-5 py-4 shrink-0">
+              <h3 className="text-label-lg text-text truncate pr-4">{selectedItem.title}</h3>
+              <button
+                onClick={() => setSelectedItem(null)}
+                className="rounded-full p-2 text-text-muted hover:bg-surface-muted transition-colors shrink-0"
+                aria-label="Close modal"
+              >
+                <X className="size-5" />
+              </button>
+            </div>
+            
+            <div className="overflow-y-auto p-5 custom-scrollbar">
+              <div className="mb-4 aspect-video w-full overflow-hidden rounded-xl bg-surface-muted">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={selectedItem.imageUrl || "/images/hero/Sky.webp"}
+                  alt={selectedItem.title}
+                  className="h-full w-full object-cover text-transparent"
+                />
+              </div>
+              
+              <div className="space-y-4">
+                {selectedItem.detail && (
+                  <p className="text-body text-text">{selectedItem.detail}</p>
+                )}
+                
+                <div className="grid gap-3 pt-2">
+                  {selectedItem.address && (
+                    <div className="flex gap-3 text-body-sm">
+                      <MapPin className="size-5 shrink-0 text-primary" />
+                      <span className="text-text">{selectedItem.address}</span>
+                    </div>
+                  )}
+                  
+                  {selectedItem.openingHours && (
+                    <div className="flex gap-3 text-body-sm">
+                      <Clock className="size-5 shrink-0 text-primary" />
+                      <span className="text-text">{selectedItem.openingHours}</span>
+                    </div>
+                  )}
+                  
+                  {(selectedItem.priceLevel || selectedItem.rating) && (
+                    <div className="flex gap-6 text-body-sm">
+                      {selectedItem.priceLevel && (
+                        <div className="flex gap-2 items-center">
+                          <Wallet className="size-5 shrink-0 text-primary" />
+                          <span className="text-text">{selectedItem.priceLevel}</span>
+                        </div>
+                      )}
+                      
+                      {selectedItem.rating && (
+                        <div className="flex gap-2 items-center">
+                          <Star className="size-5 shrink-0 text-primary fill-primary" />
+                          <span className="text-text">{selectedItem.rating} / 5</span>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
