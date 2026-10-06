@@ -3,7 +3,11 @@ import { type DraftPatch, type NeedKey, type PlanDraft, isNeedKey, parseDraftPat
 import type { QuestionKey } from "@/lib/plan-questions";
 import { sampleCaptain } from "./captain-sample";
 
-export type CaptainReply = { message: string; draftPatch: DraftPatch };
+const CAPTAIN_ACTIONS = ["ask", "confirm", "proceed"] as const;
+export type CaptainAction = (typeof CAPTAIN_ACTIONS)[number];
+
+export type CaptainReply = { message: string; draftPatch: DraftPatch; action: CaptainAction };
+export type ChatTurn = { role: "captain" | "user"; text: string };
 
 export type ItineraryCover = { need: NeedKey; memberIds: string[] };
 export type ItineraryViolation = { need: NeedKey; reason: string };
@@ -13,7 +17,13 @@ export type Itinerary = { days: ItineraryDay[] };
 
 export type Invite = { url: string };
 
-export type ReplyRequest = { story: string; draft: PlanDraft; locale: Locale; focus: QuestionKey | null };
+export type ReplyRequest = {
+  story: string;
+  draft: PlanDraft;
+  locale: Locale;
+  focus: QuestionKey | null;
+  history: ChatTurn[];
+};
 export type PlanRequest = { draft: PlanDraft; locale: Locale };
 
 export interface CaptainClient {
@@ -35,7 +45,8 @@ function parseReply(value: unknown): CaptainReply {
   if (!isRecord(value) || typeof value.message !== "string") {
     throw new CaptainError("Invalid reply response");
   }
-  return { message: value.message, draftPatch: parseDraftPatch(value.draftPatch) };
+  const action = CAPTAIN_ACTIONS.find((entry) => entry === value.action) ?? "ask";
+  return { message: value.message, draftPatch: parseDraftPatch(value.draftPatch), action };
 }
 
 function parseCover(value: unknown): ItineraryCover | null {

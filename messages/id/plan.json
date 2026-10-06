@@ -221,15 +221,15 @@
     "you": "Kamu",
     "logLabel": "Percakapan dengan Captain",
     "quickBudget": "{millions} juta",
-    "pickDates": "Pilih di kalender",
     "editCrew": "Atur per orang",
     "addExtras": "Tulis catatan khusus",
-    "noted": "Sudah kucatat."
+    "noted": "Sudah kucatat.",
+    "datesLegend": "Atau pilih tanggalnya di sini",
+    "useDates": "Pakai tanggal ini"
   },
   "composer": {
     "label": "Pesan untuk Captain",
     "placeholder": "Ceritakan tripmu",
-    "datesPlaceholder": "Silakan pilih tanggal pada kalender di atas ☝️",
     "send": "Kirim",
     "voiceStart": "Mulai bicara",
     "voiceStop": "Berhenti merekam",

@@ -188,6 +188,19 @@
   --footer-border: light-dark(var(--color-primary-700), var(--color-primary-900));
   --on-footer: var(--color-neutral-50);
   --on-footer-muted: var(--color-primary-200);
+
+  --globe-ocean: light-dark(var(--color-primary-100), var(--color-primary-900));
+  --globe-land: light-dark(#ffffff, var(--color-primary-700));
+  --globe-border: light-dark(var(--color-primary-300), var(--color-primary-500));
+  --globe-visited: var(--color-accent-300);
+  --globe-visited-border: light-dark(var(--color-accent-600), var(--color-accent-100));
+  --globe-hover: color-mix(in oklab, var(--color-accent-300) 40%, transparent);
+  --globe-grid: color-mix(in oklab, var(--text) 10%, transparent);
+  --globe-glow: light-dark(
+    color-mix(in srgb, var(--color-secondary-400) 45%, transparent),
+    color-mix(in srgb, var(--color-secondary-400) 55%, transparent)
+  );
+  --globe-shade: light-dark(rgb(0 49 51 / 0.2), rgb(0 0 0 / 0.3));
 }
 
 :root[data-theme="light"] {
@@ -549,6 +562,13 @@
   to {
     stroke-dashoffset: -9.5;
   }
+}
+
+@utility stage-fade {
+  mask-image:
+    linear-gradient(to right, transparent, black 7%, black 93%, transparent),
+    linear-gradient(to bottom, transparent, black 7%, black 93%, transparent);
+  mask-composite: intersect;
 }
 
 @utility footer-timeline {

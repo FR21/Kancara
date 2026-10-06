@@ -1,0 +1,47 @@
+{
+  "title": "My travel map",
+  "lead": "Spin the globe, then tap the countries you've been to.",
+  "open": "My travel map",
+  "view": {
+    "label": "View",
+    "globe": "Globe",
+    "map": "Map"
+  },
+  "stage": {
+    "label": "World globe, {count} countries marked. Arrow keys turn the globe, Enter marks the country in the middle.",
+    "hint": "Drag to turn, tap a country to mark it.",
+    "zoomIn": "Zoom in",
+    "zoomOut": "Zoom out",
+    "loading": "Getting the globe ready"
+  },
+  "tooltip": {
+    "visited": "Visited",
+    "mark": "Tap to mark"
+  },
+  "count": {
+    "label": "countries and territories visited",
+    "of": "out of {total} on the map"
+  },
+  "search": {
+    "label": "Search countries",
+    "placeholder": "Search countries",
+    "empty": "No country matches \"{query}\"."
+  },
+  "list": {
+    "locate": "Show {name} on the map",
+    "visitedHeading": "Visited",
+    "allHeading": "Not visited yet"
+  },
+  "empty": "Nothing marked yet. Tap a country on the globe, or tick one in the list below.",
+  "status": {
+    "saving": "Saving…",
+    "saved": "Saved",
+    "error": "Couldn't save. Check your connection.",
+    "retry": "Try again",
+    "loadError": "Your travel map couldn't be loaded. Reload this page."
+  },
+  "announce": {
+    "marked": "{name} marked as visited",
+    "unmarked": "{name} unmarked"
+  }
+}

@@ -1,5 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { GoogleGenAI } from '@google/genai';
+import { findDateRange } from '@/lib/api/sample-dates';
+import { buildCaptainInput, buildCaptainInstruction, readHistory, settleTripEnd } from './captainPrompt';
 
 const ai = new GoogleGenAI({});
 const client = ai;
@@ -114,47 +116,16 @@ const toolExecutors: Record<string, (...args: any[]) => any> = {
 // 1. CAPTAIN AGENT (Mengurus Chat & Ekstraksi Data)
 // ============================================================================
 export async function captainAgentReply(requestBody: any) {
-  const { story, draft, locale, focus } = requestBody;
-  console.log("Captain: Memproses pesan user:", story);
+  const { story, draft, locale } = requestBody;
+  const history = readHistory(requestBody.history);
+  const today = new Date().toISOString().split("T")[0];
+  const statedDates = findDateRange(typeof story === "string" ? story : "", new Date());
 
   const interaction = await client.interactions.create({
     model: 'gemini-3.5-flash',
-    input: `
-Pesan pengguna saat ini: "${story}"
-
-Draf perjalanan saat ini (JSON):
-${JSON.stringify(draft, null, 2)}
-    `,
-    system_instruction: `You are an AI travel assistant named Captain Kancara. Today's date is: ${new Date().toISOString().split("T")[0]}.
-Your ONLY tasks are:
-1. Extract ALL relevant data from the user's message into 'draftPatch'.
-IMPORTANT RULES FOR EXTRACTION:
-- You are provided with the current draft (Draf perjalanan saat ini).
-- ONLY output fields in 'draftPatch' that are known or have changed. OMIT fields if you don't know them yet.
-- Do NOT hallucinate data (like dates or budget) just to fill the schema. If you are asking the user for it, do NOT include a guessed value in draftPatch.
-- RELATIVE DATES: If the user says "tomorrow", "besok", "next week", etc., you MUST calculate the exact calendar date in YYYY-MM-DD format based on today's date. NEVER output words like "tomorrow".
-- If the user mentions "Solo trip" or "sendiri" (alone), ensure there is exactly 1 adult member. If "couple", 2 adult members.
-- If the user mentions DURATION (e.g., "for 3 days") but NO start date, assume startDate is TODAY and calculate the exact endDate in YYYY-MM-DD!
-- For 'pace': if user says "Packed", "Padat", or "Fast", set to "packed". If "Relaxed", "Santai", or "Slow", set to "relaxed".
-- Extract SPECIAL REQUESTS (e.g., museums, cheap hotels, dietary restrictions, avoidances) into 'extras'.
-- If budget is mentioned like "5 million", "5 juta", or "5jt", output the full numerical value in Rupiah: 5000000.
-
-2. Reply with a 'message' that is EXTREMELY SHORT, CONCISE, AND TO THE POINT (maximum 1 to 2 sentences).
-IMPORTANT RULES FOR REPLY:
-- NEVER ask for data that the user has ALREADY provided.
-- ONE TOPIC AT A TIME: NEVER ask multiple questions at once.
-- STRICT QUESTION ORDER: You must figure out the FIRST missing information from this exact order and ask for it:
-  1. destinations (Tujuan)
-  2. dates (Tanggal atau Durasi)
-  3. members/crew (Siapa saja yang ikut)
-  4. budget (Anggaran)
-  5. pace (Kecepatan santai/padat)
-  6. origin (Kota Asal keberangkatan)
-  Do NOT skip this order. If 'dates' is missing, ask for 'dates' before asking for 'members'.
-- INTERVIEW THE ORGANIZER: If the user mentions traveling with others (e.g., family, friends), you MUST ask if the other members have any SPECIFIC NEEDS (e.g., wheelchair access, dietary restrictions like halal/vegan, allergies, or need frequent rest).
-- If the main data (origin, destinations, dates/duration, budget, members, pace) is complete AND you have captured specific needs/allergies (or the user says there are none), give a cheerful confirmation and provide an option like "Ketik 'Gas' untuk langsung buat jadwalnya!".
-- Only ask for missing essential data, DO NOT be verbose.
-MANDATORY: You MUST reply to the 'message' in ${locale === "id" ? "Indonesian" : "English"} based on the user's preference.`,
+    input: buildCaptainInput(story, statedDates ? { ...draft, ...statedDates } : draft, history),
+    system_instruction: buildCaptainInstruction(locale, today),
+    generation_config: { max_output_tokens: 2048, thinking_level: "low" },
     response_format: {
       type: "text",
       mime_type: "application/json",
@@ -162,13 +133,15 @@ MANDATORY: You MUST reply to the 'message' in ${locale === "id" ? "Indonesian" :
         type: "object",
         properties: {
           message: { type: "string" },
+          action: { type: "string", enum: ["ask", "confirm", "proceed"] },
           draftPatch: {
             type: "object",
             properties: {
               origin: { type: "string" },
               destinations: { type: "array", items: { type: "string" } },
-              startDate: { type: "string", description: "Format YYYY-MM-DD. Jangan diisi jika tidak ada." },
-              endDate: { type: "string", description: "Format YYYY-MM-DD. Jangan diisi jika tidak ada." },
+              startDate: { type: "string", format: "date", description: "Format YYYY-MM-DD. Jangan diisi jika tidak ada." },
+              endDate: { type: "string", format: "date", description: "Format YYYY-MM-DD. Jangan diisi jika tidak ada." },
+              tripDays: { type: "integer", description: "Trip length in days, when the user gave a duration." },
               members: {
                 type: "array",
                 items: {
@@ -205,17 +178,19 @@ MANDATORY: You MUST reply to the 'message' in ${locale === "id" ? "Indonesian" :
             }
           }
         },
-        required: ["message", "draftPatch"]
+        required: ["message", "action", "draftPatch"]
       }
     }
   });
 
   try {
-    const rawOutput = interaction.output_text || "{}";
-    console.log("AI Raw Output:", rawOutput);
-    return JSON.parse(rawOutput);
+    const reply = JSON.parse(interaction.output_text || "{}");
+    const patch = settleTripEnd(reply.draftPatch ?? {}, draft?.startDate, today);
+    reply.draftPatch = statedDates ? { ...patch, ...statedDates } : patch;
+    return reply;
   } catch (e) {
-    return { message: "Oke, siap! Mari kita atur perjalanannya.", draftPatch: {} };
+    const message = locale === "en" ? "Sorry, I lost that one. Could you say it again?" : "Maaf, aku ketinggalan yang barusan. Boleh diulang?";
+    return { message, action: "ask", draftPatch: {} };
   }
 }
 

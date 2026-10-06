@@ -221,15 +221,15 @@
     "you": "You",
     "logLabel": "Conversation with Captain",
     "quickBudget": "{millions} million",
-    "pickDates": "Pick on a calendar",
     "editCrew": "Set up each person",
     "addExtras": "Add special notes",
-    "noted": "Noted."
+    "noted": "Noted.",
+    "datesLegend": "Or pick the dates here",
+    "useDates": "Use these dates"
   },
   "composer": {
     "label": "Message to Captain",
     "placeholder": "Tell me about your trip",
-    "datesPlaceholder": "Please pick the dates on the calendar above ☝️",
     "send": "Send",
     "voiceStart": "Start speaking",
     "voiceStop": "Stop recording",
