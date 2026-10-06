@@ -19,6 +19,8 @@ import enAuth from "@/messages/en/auth.json";
 import idAuth from "@/messages/id/auth.json";
 import enProfile from "@/messages/en/profile.json";
 import idProfile from "@/messages/id/profile.json";
+import enTravel from "@/messages/en/travel.json";
+import idTravel from "@/messages/id/travel.json";
 import type { Locale } from "./locale";
 
 // Indonesian is the default locale, so its files define the expected keys.
@@ -30,6 +32,7 @@ const id = {
   error: idError,
   auth: idAuth,
   profile: idProfile,
+  travel: idTravel,
 };
 
 export type Messages = typeof id;
@@ -44,6 +47,7 @@ const en = {
   error: enError,
   auth: enAuth,
   profile: enProfile,
+  travel: enTravel,
 } satisfies Messages;
 
 export const MESSAGES: Record<Locale, Messages> = { id, en };

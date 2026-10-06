@@ -1,0 +1,47 @@
+{
+  "title": "Jejak perjalananku",
+  "lead": "Putar globenya, lalu ketuk negara yang pernah kamu kunjungi.",
+  "open": "Jejak perjalananku",
+  "view": {
+    "label": "Tampilan",
+    "globe": "Globe",
+    "map": "Peta"
+  },
+  "stage": {
+    "label": "Globe dunia, {count} negara ditandai. Tombol panah memutar globe, Enter menandai negara di tengah.",
+    "hint": "Seret untuk memutar, ketuk negara untuk menandai.",
+    "zoomIn": "Perbesar",
+    "zoomOut": "Perkecil",
+    "loading": "Menyiapkan globe"
+  },
+  "tooltip": {
+    "visited": "Sudah dikunjungi",
+    "mark": "Ketuk untuk menandai"
+  },
+  "count": {
+    "label": "negara dan wilayah dikunjungi",
+    "of": "dari {total} di peta"
+  },
+  "search": {
+    "label": "Cari negara",
+    "placeholder": "Cari negara",
+    "empty": "Tidak ada negara yang cocok dengan \"{query}\"."
+  },
+  "list": {
+    "locate": "Tunjukkan {name} di peta",
+    "visitedHeading": "Sudah dikunjungi",
+    "allHeading": "Belum dikunjungi"
+  },
+  "empty": "Belum ada yang ditandai. Ketuk negara di globe, atau centang dari daftar di bawah.",
+  "status": {
+    "saving": "Menyimpan…",
+    "saved": "Tersimpan",
+    "error": "Gagal menyimpan. Periksa koneksimu.",
+    "retry": "Coba lagi",
+    "loadError": "Jejak perjalananmu tidak bisa dimuat. Muat ulang halaman ini."
+  },
+  "announce": {
+    "marked": "{name} ditandai sudah dikunjungi",
+    "unmarked": "Tanda di {name} dihapus"
+  }
+}

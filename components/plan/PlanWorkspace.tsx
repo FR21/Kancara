@@ -2,14 +2,16 @@
 
 import { Ticket } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
-import { type Itinerary, captain, captainIsSample } from "@/lib/api/captain";
+import { type ChatTurn, type Itinerary, captain, captainIsSample } from "@/lib/api/captain";
+import { isGoAhead } from "@/lib/go-ahead";
 import {
   type PlanDraft,
   createMember,
   EMPTY_DRAFT,
   isDraftEmpty,
+  parseDraftPatch,
+  parseLocalDate,
   planDraftReducer,
-  parseDraftPatch
 } from "@/lib/plan-draft";
 import { saveDraft, useSavedDraft } from "@/lib/plan-draft-store";
 import { type QuestionKey, isAnswered, missingRequired, nextRequired, openQuestions } from "@/lib/plan-questions";
@@ -31,6 +33,7 @@ type Pending = "reply" | "itinerary" | "invite";
 type FailedRequest = { kind: "reply"; story: string } | { kind: "itinerary" } | { kind: "invite" };
 
 const DESKTOP_QUERY = "(min-width: 1024px)";
+const HISTORY_TURNS = 10;
 
 export default function PlanWorkspace() {
   const text = useMessages("plan");
@@ -93,12 +96,22 @@ export default function PlanWorkspace() {
     return controller.signal;
   };
 
-  const askCaptain = async (story: string) => {
+  const askCaptain = async (story: string, base: PlanDraft = draft) => {
     const signal = beginRequest("reply");
+    const turns: ChatTurn[] = chat.map((message) => ({ role: message.role, text: message.text }));
+    const last = turns.at(-1);
+    if (last?.role === "user" && last.text === story) turns.pop();
+    const history = turns.slice(-HISTORY_TURNS);
     try {
-      const reply = await captain.reply({ story, draft, locale, focus: nextRequired(draft) }, signal);
-      dispatch({ type: "patch", patch: parseDraftPatch(reply.draftPatch) });
+      const reply = await captain.reply({ story, draft: base, locale, focus: nextRequired(base), history }, signal);
+      const patch = parseDraftPatch(reply.draftPatch);
+      dispatch({ type: "patch", patch });
       say("captain", reply.message);
+      const ready = missingRequired(planDraftReducer(base, { type: "patch", patch })).length === 0;
+      if (reply.action === "proceed" && ready) {
+        setFromPass(false);
+        setStage("pass");
+      }
     } catch {
       if (signal.aborted) return;
       setFailed({ kind: "reply", story });
@@ -134,6 +147,13 @@ export default function PlanWorkspace() {
 
   const tellCaptain = (story: string) => {
     if (story === "") return;
+    if (stage === "details" && requiredDone && isGoAhead(story)) {
+      setInput("");
+      say("user", story);
+      setFromPass(false);
+      setStage("pass");
+      return;
+    }
     dispatch({ type: "appendNote", value: story });
     setInput("");
     setStarted(true);
@@ -144,6 +164,17 @@ export default function PlanWorkspace() {
     setStage("details");
     say("user", story);
     askCaptain(story);
+  };
+
+  const pickDates = (startDate: string, endDate: string) => {
+    const patch = { startDate, endDate };
+    const range = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" }).formatRange(
+      parseLocalDate(startDate),
+      parseLocalDate(endDate),
+    );
+    dispatch({ type: "patch", patch });
+    say("user", range);
+    askCaptain(range, planDraftReducer(draft, { type: "patch", patch }));
   };
 
   const retry = () => {
@@ -333,6 +364,7 @@ export default function PlanWorkspace() {
               onSend={tellCaptain}
               onRetry={retry}
               onAnswerManually={setInlineQuestion}
+              onPickDates={pickDates}
               onContinue={finishDetails}
             />
           )}

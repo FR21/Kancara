@@ -1,11 +1,12 @@
 "use client";
 
-import { ArrowRight, CalendarDays, Users, Settings } from "lucide-react";
+import { ArrowRight, Settings, Users } from "lucide-react";
 import Image from "next/image";
 import { type ReactNode, useEffect, useRef } from "react";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
 import type { QuestionKey } from "@/lib/plan-questions";
+import ChatDatePicker from "./ChatDatePicker";
 import Composer from "./Composer";
 import ErrorAlert from "./ErrorAlert";
 import type { ChatMessage } from "./flow";
@@ -22,6 +23,7 @@ type CaptainChatProps = {
   onSend: (story: string) => void;
   onRetry: () => void;
   onAnswerManually: (question: QuestionKey) => void;
+  onPickDates: (startDate: string, endDate: string) => void;
   onContinue: () => void;
 };
 
@@ -55,16 +57,18 @@ export default function CaptainChat({
   onSend,
   onRetry,
   onAnswerManually,
+  onPickDates,
   onContinue,
 }: CaptainChatProps) {
   const endRef = useRef<HTMLDivElement>(null);
   const idle = !busy && !failed;
   const complete = asking === null;
+  const ManualIcon = asking === "crew" ? Users : Settings;
 
   useEffect(() => {
     const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
     endRef.current?.scrollIntoView({ block: "end", behavior: reduceMotion ? "auto" : "smooth" });
-  }, [messages.length, busy, failed]);
+  }, [messages.length, busy, failed, asking]);
 
   return (
     <div className="flex min-h-[50dvh] flex-col">
@@ -108,16 +112,23 @@ export default function CaptainChat({
 
         {failed && <ErrorAlert message={text.chat.error} retryLabel={text.chat.retry} onRetry={onRetry} />}
 
-        {idle && asking !== null && (
+        {idle && asking === "dates" && (
+          <div className="pl-12 motion-safe:animate-message-in">
+            <ChatDatePicker text={text} onPick={onPickDates} />
+          </div>
+        )}
+
+        {idle && asking !== null && asking !== "dates" && (
           <div className="flex flex-wrap gap-2 pl-12 motion-safe:animate-message-in">
-            {asking === "budget" && BUDGET_MILLIONS.map((millions) => {
-              const label = fillTemplate(text.chat.quickBudget, { millions });
-              return (
-                <button key={millions} type="button" onClick={() => onSend(label)} className={QUICK_CHIP}>
-                  {label}
-                </button>
-              );
-            })}
+            {asking === "budget" &&
+              BUDGET_MILLIONS.map((millions) => {
+                const label = fillTemplate(text.chat.quickBudget, { millions });
+                return (
+                  <button key={millions} type="button" onClick={() => onSend(label)} className={QUICK_CHIP}>
+                    {label}
+                  </button>
+                );
+              })}
 
             {asking === "pace" && (
               <>
@@ -131,14 +142,8 @@ export default function CaptainChat({
             )}
 
             <button type="button" onClick={() => onAnswerManually(asking)} className={QUICK_CHIP}>
-              {asking === "dates" ? (
-                <CalendarDays className="size-4 text-primary" aria-hidden="true" />
-              ) : asking === "crew" ? (
-                <Users className="size-4 text-primary" aria-hidden="true" />
-              ) : (
-                <Settings className="size-4 text-primary" aria-hidden="true" />
-              )}
-              {asking === "dates" ? text.chat.pickDates : asking === "crew" ? text.chat.editCrew : text.mode.manual}
+              <ManualIcon className="size-4 text-primary" aria-hidden="true" />
+              {asking === "crew" ? text.chat.editCrew : text.mode.manual}
             </button>
           </div>
         )}
@@ -147,7 +152,7 @@ export default function CaptainChat({
           <div className="flex flex-wrap gap-2 pl-12 motion-safe:animate-message-in">
             <button type="button" onClick={() => onAnswerManually("extras")} className={QUICK_CHIP}>
               <Settings className="size-4 text-primary" aria-hidden="true" />
-              {(text.chat as any).addExtras}
+              {text.chat.addExtras}
             </button>
             <button type="button" onClick={onContinue} className={PRIMARY_BUTTON}>
               {text.deck.finish}
@@ -161,9 +166,8 @@ export default function CaptainChat({
       <div className="safe-bottom sticky bottom-0 -mx-4 bg-background px-4 pt-2 sm:mx-0 sm:px-0">
         <Composer
           value={input}
-          disabled={busy || (idle && asking === "dates")}
+          disabled={busy}
           text={text.composer}
-          placeholder={(idle && asking === "dates") ? (text.composer as any).datesPlaceholder : undefined}
           onChange={onInputChange}
           onSend={() => onSend(input.trim())}
         />

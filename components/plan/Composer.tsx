@@ -12,14 +12,13 @@ type ComposerProps = {
   disabled: boolean;
   text: Messages["plan"]["composer"];
   rows?: number;
-  placeholder?: string;
   onChange: (value: string) => void;
   onSend: () => void;
 };
 
 const SPEECH_LANGUAGE = { id: "id-ID", en: "en-US" };
 
-export default function Composer({ value, disabled, text, rows = 1, placeholder, onChange, onSend }: ComposerProps) {
+export default function Composer({ value, disabled, text, rows = 1, onChange, onSend }: ComposerProps) {
   const locale = useLocale();
   const fieldRef = useRef<HTMLTextAreaElement>(null);
   const spokenBaseRef = useRef("");
@@ -105,7 +104,7 @@ export default function Composer({ value, disabled, text, rows = 1, placeholder,
           rows={rows}
           value={value}
           disabled={disabled}
-          placeholder={placeholder ?? text.placeholder}
+          placeholder={text.placeholder}
           onChange={(event) => onChange(event.target.value)}
           onKeyDown={handleKeyDown}
           className={`max-h-40 min-h-11 resize-none bg-transparent py-2 pr-2 pl-4 text-body leading-7 text-text outline-none [scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin] placeholder:text-text-muted ${

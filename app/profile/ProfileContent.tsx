@@ -4,10 +4,11 @@ import { FirebaseError } from "firebase/app";
 import { signInWithCustomToken, signOut, updateProfile } from "firebase/auth";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
-import { Camera, Check, CircleAlert, Loader2, Lock, LogOut } from "lucide-react";
+import { ArrowRight, Camera, Check, CircleAlert, Globe, Loader2, Lock, LogOut } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
-import { GHOST_BUTTON, INPUT, PRIMARY_BUTTON } from "@/components/plan/styles";
+import { GHOST_BUTTON, INPUT, OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
 import GenderSelect from "@/components/profile/GenderSelect";
 import ProfilePhoto from "@/components/profile/ProfilePhoto";
 import { createSession, removeSession } from "@/lib/auth/session";
@@ -38,6 +39,7 @@ const asText = (value: unknown) => (typeof value === "string" || typeof value ==
 
 export default function ProfileContent({ user, customToken }: ProfileContentProps) {
   const t = useMessages("profile");
+  const travel = useMessages("travel");
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -273,6 +275,17 @@ export default function ProfileContent({ user, customToken }: ProfileContentProp
           <p className="mt-6 max-w-full font-heading text-h2 wrap-break-word text-text">{displayName}</p>
           {saved.username && <p className="mt-1 max-w-full text-body break-all text-primary">{saved.username}</p>}
           <p className="mt-4 text-body-sm text-text-muted">{t.photoHint}</p>
+          <Link href="/profile/map" className={`group ${OUTLINE_BUTTON} mt-6 w-full max-w-xs`}>
+            <Globe
+              className="size-4 text-primary transition-[rotate] duration-500 ease-out group-hover:rotate-45"
+              aria-hidden="true"
+            />
+            {travel.open}
+            <ArrowRight
+              className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-0.5"
+              aria-hidden="true"
+            />
+          </Link>
         </section>
 
         <form onSubmit={handleSave} noValidate className="mt-10 lg:mt-0">

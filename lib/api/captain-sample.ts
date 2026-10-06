@@ -236,7 +236,7 @@ export const sampleCaptain: CaptainClient = {
         : phrases.nothing;
     const next = nextRequired(nextDraft);
     const closing = next ? text.deck.questions[next].title : text.chat.allSet;
-    return { message: `${opening} ${closing}`, draftPatch };
+    return { message: `${opening} ${closing}`, draftPatch, action: next ? "ask" : "confirm" };
   },
 
   async itinerary({ draft, locale }, signal) {
