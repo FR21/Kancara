@@ -1,0 +1,210 @@
+[
+  {
+    "id": "demo-bali",
+    "name": "Liburan keluarga ke Bali",
+    "state": "PLANNED",
+    "role": "organizer",
+    "startOffsetDays": -2,
+    "days": 6,
+    "updatedDaysAgo": 2,
+    "countryCodes": ["ID"],
+    "violations": 0,
+    "offline": "downloaded",
+    "today": [
+      { "time": "08:30", "title": "Sarapan di hotel, Sanur" },
+      { "time": "10:00", "title": "Pantai Sanur, jalur landai untuk kursi roda" },
+      { "time": "12:30", "title": "Makan siang halal di Warung Nikmat" },
+      { "time": "14:00", "title": "Tidur siang Kirana di hotel" },
+      { "time": "16:30", "title": "Museum Le Mayeur" },
+      { "time": "19:00", "title": "Makan malam di tepi pantai Sindhu" },
+      { "time": "23:59", "title": "Istirahat di hotel" }
+    ],
+    "draft": {
+      "origin": "Jakarta",
+      "destinations": ["Bali"],
+      "budget": 18000000,
+      "pace": "relaxed",
+      "members": [
+        { "name": "Dimas", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Laras", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Oma Ratna", "ageGroup": "elderly", "needs": ["wheelchair", "nearToilet"] },
+        { "name": "Opa Hadi", "ageGroup": "elderly", "needs": ["shortWalks"] },
+        { "name": "Bima", "ageGroup": "child", "needs": [] },
+        { "name": "Kirana", "ageGroup": "toddler", "needs": ["nap"] }
+      ]
+    }
+  },
+  {
+    "id": "demo-yogyakarta",
+    "name": "Reuni kampus di Yogyakarta",
+    "state": "PLANNED",
+    "role": "member",
+    "startOffsetDays": 9,
+    "days": 3,
+    "updatedDaysAgo": 5,
+    "countryCodes": ["ID"],
+    "violations": 0,
+    "offline": "notDownloaded",
+    "draft": {
+      "origin": "Surabaya",
+      "destinations": ["Yogyakarta"],
+      "budget": 6000000,
+      "pace": "packed",
+      "members": [
+        { "name": "Sekar", "ageGroup": "adult", "needs": ["vegetarian"] },
+        { "name": "Yoga", "ageGroup": "adult", "needs": [] },
+        { "name": "Nadia", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Reza", "ageGroup": "adult", "needs": [] },
+        { "name": "Dimas", "ageGroup": "adult", "needs": ["halal"] }
+      ]
+    }
+  },
+  {
+    "id": "demo-jepang",
+    "name": "Musim gugur di Jepang",
+    "state": "PLANNED",
+    "role": "organizer",
+    "startOffsetDays": 34,
+    "days": 8,
+    "updatedDaysAgo": 1,
+    "countryCodes": ["JP"],
+    "violations": 2,
+    "draft": {
+      "origin": "Jakarta",
+      "destinations": ["Tokyo", "Kyoto"],
+      "budget": 85000000,
+      "pace": "relaxed",
+      "members": [
+        { "name": "Dimas", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Laras", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Oma Ratna", "ageGroup": "elderly", "needs": ["wheelchair", "noStairs"] },
+        { "name": "Bima", "ageGroup": "child", "needs": ["frequentBreaks"] }
+      ]
+    }
+  },
+  {
+    "id": "demo-bandung",
+    "name": "Akhir pekan di Bandung",
+    "state": "DRAFT",
+    "role": "organizer",
+    "updatedDaysAgo": 1,
+    "countryCodes": ["ID"],
+    "draft": {
+      "origin": "Jakarta",
+      "destinations": ["Bandung"],
+      "pace": "relaxed",
+      "members": [
+        { "name": "Dimas", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Laras", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Kirana", "ageGroup": "toddler", "needs": ["nap"] }
+      ]
+    }
+  },
+  {
+    "id": "demo-lombok",
+    "name": "",
+    "state": "DRAFT",
+    "role": "organizer",
+    "updatedDaysAgo": 6,
+    "countryCodes": ["ID"],
+    "draft": {
+      "destinations": ["Lombok"]
+    }
+  },
+  {
+    "id": "demo-singapura",
+    "name": "Singapura bareng Oma",
+    "state": "PLANNED",
+    "role": "organizer",
+    "startOffsetDays": -46,
+    "days": 5,
+    "updatedDaysAgo": 41,
+    "countryCodes": ["SG"],
+    "violations": 0,
+    "spent": 21400000,
+    "draft": {
+      "origin": "Jakarta",
+      "destinations": ["Singapura"],
+      "budget": 24000000,
+      "pace": "relaxed",
+      "members": [
+        { "name": "Dimas", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Laras", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Oma Ratna", "ageGroup": "elderly", "needs": ["wheelchair", "nearToilet"] },
+        { "name": "Bima", "ageGroup": "child", "needs": [] },
+        { "name": "Kirana", "ageGroup": "toddler", "needs": ["nap"] }
+      ]
+    }
+  },
+  {
+    "id": "demo-malaysia",
+    "name": "Kuala Lumpur dan Penang",
+    "state": "COMPLETED",
+    "role": "member",
+    "startOffsetDays": -168,
+    "days": 6,
+    "updatedDaysAgo": 162,
+    "countryCodes": ["MY"],
+    "violations": 1,
+    "spent": 16800000,
+    "draft": {
+      "origin": "Medan",
+      "destinations": ["Kuala Lumpur", "Penang"],
+      "budget": 15000000,
+      "pace": "packed",
+      "members": [
+        { "name": "Tante Mira", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Om Farid", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Dimas", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Laras", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Opa Hadi", "ageGroup": "elderly", "needs": ["shortWalks"] },
+        { "name": "Salsa", "ageGroup": "child", "needs": [] },
+        { "name": "Bima", "ageGroup": "child", "needs": [] }
+      ]
+    }
+  },
+  {
+    "id": "demo-padang",
+    "name": "Mudik ke Padang",
+    "state": "COMPLETED",
+    "role": "organizer",
+    "startOffsetDays": -402,
+    "days": 9,
+    "updatedDaysAgo": 393,
+    "countryCodes": ["ID"],
+    "violations": 0,
+    "spent": 9300000,
+    "draft": {
+      "origin": "Jakarta",
+      "destinations": ["Padang", "Bukittinggi"],
+      "pace": "relaxed",
+      "members": [
+        { "name": "Dimas", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Laras", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Bima", "ageGroup": "child", "needs": [] }
+      ]
+    }
+  },
+  {
+    "id": "demo-bangkok",
+    "name": "Kulineran di Bangkok",
+    "state": "COMPLETED",
+    "role": "organizer",
+    "startOffsetDays": -611,
+    "days": 4,
+    "updatedDaysAgo": 607,
+    "countryCodes": ["TH"],
+    "violations": 0,
+    "spent": 11200000,
+    "draft": {
+      "origin": "Jakarta",
+      "destinations": ["Bangkok"],
+      "budget": 12000000,
+      "pace": "packed",
+      "members": [
+        { "name": "Dimas", "ageGroup": "adult", "needs": ["halal"] },
+        { "name": "Laras", "ageGroup": "adult", "needs": ["halal"] }
+      ]
+    }
+  }
+]

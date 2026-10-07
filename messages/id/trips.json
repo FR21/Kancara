@@ -1,0 +1,104 @@
+{
+  "title": "Perjalanan Saya",
+  "plan": "Rencanakan perjalanan",
+  "tabs": {
+    "label": "Daftar perjalanan",
+    "active": "Aktif",
+    "history": "Riwayat"
+  },
+  "sections": {
+    "ongoing": "Sedang berlangsung",
+    "upcoming": "Akan datang",
+    "drafts": "Draf"
+  },
+  "status": {
+    "ongoing": "Sedang berlangsung",
+    "upcoming": "Akan datang",
+    "draft": "Draf",
+    "completed": "Selesai"
+  },
+  "card": {
+    "untitled": "Perjalanan tanpa nama",
+    "routeTo": "ke",
+    "noRoute": "Rute belum diisi",
+    "noDates": "Tanggal belum diisi",
+    "noMembers": "Belum ada anggota",
+    "members": {
+      "one": "{count} orang",
+      "other": "{count} orang"
+    },
+    "moreMembers": "+{count}",
+    "dayOf": "Hari ke-{day} dari {total}",
+    "next": "Berikutnya",
+    "openToday": "Buka hari ini",
+    "departs": "Berangkat {when}",
+    "progress": "{done} dari {total} bagian terisi",
+    "continue": "Lanjutkan",
+    "continueLabel": "Lanjutkan {name}",
+    "violations": {
+      "one": "{count} pelanggaran",
+      "other": "{count} pelanggaran"
+    },
+    "offline": {
+      "downloaded": "Tersedia offline",
+      "notDownloaded": "Belum diunduh"
+    },
+    "spent": "Terpakai {spent}",
+    "spentOf": "Terpakai {spent} dari {budget}"
+  },
+  "menu": {
+    "label": "Menu {name}",
+    "duplicate": "Duplikat",
+    "share": "Bagikan",
+    "delete": "Hapus"
+  },
+  "copyName": "Salinan {name}",
+  "delete": {
+    "title": "Hapus perjalanan ini?",
+    "body": "{name} beserta rencananya akan dihapus untuk semua anggota dan tidak bisa dikembalikan.",
+    "cancel": "Batal",
+    "confirm": "Hapus",
+    "pending": "Menghapus",
+    "failed": "Perjalanan belum terhapus. Periksa koneksimu, lalu coba lagi."
+  },
+  "notice": {
+    "duplicated": "Draf baru dibuat dari {name}.",
+    "duplicateFailed": "Perjalanan belum terduplikat. Coba lagi.",
+    "deleted": "{name} dihapus.",
+    "copied": "Tautan disalin.",
+    "shareFailed": "Tautan belum tersalin. Coba lagi.",
+    "dismiss": "Tutup"
+  },
+  "history": {
+    "trips": {
+      "one": "{count} perjalanan",
+      "other": "{count} perjalanan"
+    },
+    "countries": {
+      "one": "{count} negara",
+      "other": "{count} negara"
+    },
+    "searchLabel": "Cari perjalanan",
+    "searchPlaceholder": "Cari kota atau nama perjalanan",
+    "yearLabel": "Tahun",
+    "allYears": "Semua",
+    "clear": "Hapus filter"
+  },
+  "empty": {
+    "activeTitle": "Belum ada perjalanan.",
+    "activeBody": "Ajak semua orang, tanpa ada yang tertinggal.",
+    "history": "Perjalanan yang sudah selesai akan tersimpan di sini.",
+    "search": "Tidak ada perjalanan yang cocok."
+  },
+  "loading": "Memuat perjalanan",
+  "error": "Daftar perjalanan belum bisa dimuat. Periksa koneksimu, lalu coba lagi.",
+  "retry": "Coba lagi",
+  "offline": "Kamu sedang offline. Daftar ini mungkin belum yang terbaru.",
+  "placeholder": {
+    "detail": "Itinerary",
+    "today": "Jadwal hari ini",
+    "summary": "Rangkuman perjalanan",
+    "soon": "Halaman ini sedang disiapkan.",
+    "back": "Kembali ke Perjalanan Saya"
+  }
+}

@@ -8,11 +8,11 @@ import { FormAlert, GoogleButton, OrDivider, SubmitButton } from "@/components/a
 import TextField from "@/components/auth/TextField";
 import { signInWithGoogle, startSession } from "@/lib/auth/client";
 import { useAuthFlow } from "@/lib/auth/use-auth-flow";
+import { postLoginPath } from "@/lib/auth/routes";
 import { emailIssue } from "@/lib/auth/validation";
 import { auth } from "@/lib/firebase/client";
 import { useMessages } from "@/lib/use-messages";
 
-const HOME = "/trips";
 const TEXT_LINK =
   "inline-flex min-h-11 items-center rounded-sm text-label text-primary underline-offset-4 hover:underline";
 
@@ -41,11 +41,12 @@ export default function LoginPage() {
     }
     run(async () => {
       const credential = await signInWithEmailAndPassword(auth, email.trim(), password);
-      return (await startSession(credential.user)) ? HOME : null;
+      return (await startSession(credential.user)) ? postLoginPath(window.location.search) : null;
     });
   };
 
-  const handleGoogle = () => run(async () => ((await signInWithGoogle()) ? HOME : null));
+  const handleGoogle = () =>
+    run(async () => ((await signInWithGoogle()) ? postLoginPath(window.location.search) : null));
 
   return (
     <div className="motion-safe:animate-message-in">
