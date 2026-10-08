@@ -105,30 +105,30 @@ export default function QuestionDeck({
   return (
     <div className="space-y-8">
       {!single && (
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-4 py-2">
           <div
             role="progressbar"
             aria-label={fillTemplate(text.deck.progress, { current: index + 1, total: questions.length })}
             aria-valuemin={1}
             aria-valuemax={questions.length}
             aria-valuenow={index + 1}
-            className="h-2 flex-1 overflow-hidden rounded-full bg-surface-muted"
+            className="relative h-3 flex-1 overflow-hidden rounded-full bg-surface-muted shadow-inner"
           >
             <div
               style={{ width: `${((index + 1) / questions.length) * 100}%` }}
-              className={`h-full rounded-full bg-primary transition-[width] duration-300 ${EASE} motion-reduce:transition-none`}
+              className={`absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-primary to-primary-hover shadow-[0_0_10px_rgba(var(--color-primary),0.5)] transition-[width] duration-500 ${EASE} motion-reduce:transition-none`}
             />
           </div>
-          <p aria-hidden="true" className="text-label text-text-muted tabular-nums">
+          <div className="flex h-8 min-w-12 items-center justify-center rounded-full bg-surface-muted px-3 text-label text-text-muted tabular-nums shadow-sm">
             {index + 1}/{questions.length}
-          </p>
+          </div>
         </div>
       )}
 
       <section
         key={question}
         aria-labelledby="deck-question"
-        className={`motion-safe:animate-message-in lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-x-16 ${
+        className={`motion-safe:animate-message-in rounded-2xl bg-surface/50 p-6 shadow-sm ring-1 ring-border/50 backdrop-blur-xl sm:p-10 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-x-16 ${
           isCrew ? "lg:items-stretch" : "lg:items-start"
         }`}
       >
@@ -137,11 +137,11 @@ export default function QuestionDeck({
             id="deck-question"
             ref={headingRef}
             tabIndex={-1}
-            className="text-h2 text-balance text-text outline-none lg:text-h1"
+            className="text-3xl font-bold tracking-tight text-balance text-text outline-none lg:text-4xl"
           >
             {copy.title}
           </h1>
-          {copy.hint && <p className="mt-2 text-body text-text-muted">{copy.hint}</p>}
+          {copy.hint && <p className="mt-4 text-lg leading-relaxed text-text-muted">{copy.hint}</p>}
           {isCrew && <div className="mt-8">{answer}</div>}
         </div>
 

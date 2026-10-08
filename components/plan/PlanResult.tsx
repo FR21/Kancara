@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowLeft, ArrowRight, Bookmark } from "lucide-react";
 import type { Itinerary } from "@/lib/api/captain";
 import type { Messages } from "@/lib/messages";
 import type { PlanDraft } from "@/lib/plan-draft";
@@ -49,7 +49,7 @@ export default function PlanResult({
       </div>
 
       <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_20rem] lg:items-start lg:gap-10">
-        <div className="min-w-0 space-y-4">
+        <div className="min-w-0 space-y-8">
           {pending === "itinerary" && (
             <div
               role="status"
@@ -97,7 +97,19 @@ export default function PlanResult({
             </div>
           )}
 
-          {itinerary && pending === null && <p className="text-body-sm text-text-muted">{text.chat.done}</p>}
+          {itinerary && pending === null && (
+            <div className="space-y-4">
+              <p className="text-body-sm text-text-muted">{text.chat.done}</p>
+              <button 
+                type="button" 
+                className={`${PRIMARY_BUTTON} w-full bg-accent hover:bg-accent-strong text-on-accent shadow-md shadow-accent/20`}
+                onClick={() => alert("Saved to My Trips!")}
+              >
+                <Bookmark className="size-4 mr-2" aria-hidden="true" />
+                {text.result.saveToTrips}
+              </button>
+            </div>
+          )}
 
           <button type="button" onClick={onBackToPass} className={`${GHOST_BUTTON} -ml-4`}>
             <ArrowLeft className="size-4" aria-hidden="true" />

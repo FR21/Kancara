@@ -98,7 +98,8 @@
   },
   "result": {
     "title": "Rencana perjalananmu",
-    "backToPass": "Ubah boarding pass"
+    "backToPass": "Ubah boarding pass",
+    "saveToTrips": "Simpan ke My Trips"
   },
   "ageGroups": {
     "adult": "Dewasa",

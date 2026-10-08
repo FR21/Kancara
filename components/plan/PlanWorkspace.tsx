@@ -2,8 +2,7 @@
 
 import { Ticket } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
-import { type ChatTurn, type Itinerary, captain, captainIsSample } from "@/lib/api/captain";
-import { isGoAhead } from "@/lib/go-ahead";
+import { type Itinerary, captain, captainIsSample } from "@/lib/api/captain";
 import {
   type PlanDraft,
   createMember,
@@ -18,9 +17,7 @@ import { type QuestionKey, isAnswered, missingRequired, nextRequired, openQuesti
 import { useLocale } from "@/lib/use-locale";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { useMessages } from "@/lib/use-messages";
-import CaptainChat from "./CaptainChat";
-import type { ChatMessage, PlanMode, Stage } from "./flow";
-import ModeSwitch from "./ModeSwitch";
+import type { Stage } from "./flow";
 import PassDialog from "./PassDialog";
 import PlanResult from "./PlanResult";
 import QuestionDeck from "./QuestionDeck";
@@ -29,11 +26,10 @@ import StageRail from "./StageRail";
 import StartScreen from "./StartScreen";
 import TicketReview from "./TicketReview";
 
-type Pending = "reply" | "itinerary" | "invite";
-type FailedRequest = { kind: "reply"; story: string } | { kind: "itinerary" } | { kind: "invite" };
+type Pending = "itinerary" | "invite";
+type FailedRequest = { kind: "itinerary" } | { kind: "invite" };
 
 const DESKTOP_QUERY = "(min-width: 1024px)";
-const HISTORY_TURNS = 10;
 
 export default function PlanWorkspace() {
   const text = useMessages("plan");
@@ -43,21 +39,16 @@ export default function PlanWorkspace() {
   const [draft, dispatch] = useReducer(planDraftReducer, EMPTY_DRAFT);
   const [stage, setStage] = useState<Stage>("story");
   const [started, setStarted] = useState(false);
-  const [mode, setMode] = useState<PlanMode>("captain");
   const [questions, setQuestions] = useState<QuestionKey[]>([]);
   const [questionIndex, setQuestionIndex] = useState(0);
   const [fromPass, setFromPass] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [previewing, setPreviewing] = useState(false);
-  const [inlineQuestion, setInlineQuestion] = useState<QuestionKey | null>(null);
-  const [chat, setChat] = useState<ChatMessage[]>([]);
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [pending, setPending] = useState<Pending | null>(null);
   const [failed, setFailed] = useState<FailedRequest | null>(null);
-  const [input, setInput] = useState("");
   const controllerRef = useRef<AbortController | null>(null);
-  const nextIdRef = useRef(1);
   const arrivedRef = useRef(false);
 
   const showResume = !started && savedDraft !== null && isDraftEmpty(draft);
@@ -79,13 +70,7 @@ export default function PlanWorkspace() {
     }
     window.scrollTo({ top: 0 });
     document.querySelector<HTMLElement>("main h1")?.focus({ preventScroll: true });
-  }, [stage, inlineQuestion]);
-
-  const say = (role: ChatMessage["role"], message: string) => {
-    const id = nextIdRef.current;
-    nextIdRef.current += 1;
-    setChat((current) => [...current, { id, role, text: message }]);
-  };
+  }, [stage]);
 
   const beginRequest = (kind: Pending) => {
     controllerRef.current?.abort();
@@ -94,29 +79,6 @@ export default function PlanWorkspace() {
     setPending(kind);
     setFailed(null);
     return controller.signal;
-  };
-
-  const askCaptain = async (story: string, base: PlanDraft = draft) => {
-    const signal = beginRequest("reply");
-    const turns: ChatTurn[] = chat.map((message) => ({ role: message.role, text: message.text }));
-    const last = turns.at(-1);
-    if (last?.role === "user" && last.text === story) turns.pop();
-    const history = turns.slice(-HISTORY_TURNS);
-    try {
-      const reply = await captain.reply({ story, draft: base, locale, focus: nextRequired(base), history }, signal);
-      const patch = parseDraftPatch(reply.draftPatch);
-      dispatch({ type: "patch", patch });
-      say("captain", reply.message);
-      const ready = missingRequired(planDraftReducer(base, { type: "patch", patch })).length === 0;
-      if (reply.action === "proceed" && ready) {
-        setFromPass(false);
-        setStage("pass");
-      }
-    } catch {
-      if (signal.aborted) return;
-      setFailed({ kind: "reply", story });
-    }
-    if (!signal.aborted) setPending(null);
   };
 
   const makePlan = async () => {
@@ -145,52 +107,17 @@ export default function PlanWorkspace() {
     if (!signal.aborted) setPending(null);
   };
 
-  const tellCaptain = (story: string) => {
-    if (story === "") return;
-    if (stage === "details" && requiredDone && isGoAhead(story)) {
-      setInput("");
-      say("user", story);
-      setFromPass(false);
-      setStage("pass");
-      return;
-    }
-    dispatch({ type: "appendNote", value: story });
-    setInput("");
-    setStarted(true);
-    setMode("captain");
-    setFromPass(false);
-    setPreviewing(false);
-    setInlineQuestion(null);
-    setStage("details");
-    say("user", story);
-    askCaptain(story);
-  };
-
-  const pickDates = (startDate: string, endDate: string) => {
-    const patch = { startDate, endDate };
-    const range = new Intl.DateTimeFormat(locale, { day: "numeric", month: "long", year: "numeric" }).formatRange(
-      parseLocalDate(startDate),
-      parseLocalDate(endDate),
-    );
-    dispatch({ type: "patch", patch });
-    say("user", range);
-    askCaptain(range, planDraftReducer(draft, { type: "patch", patch }));
-  };
-
   const retry = () => {
     if (!failed) return;
-    if (failed.kind === "reply") askCaptain(failed.story);
     if (failed.kind === "itinerary") makePlan();
     if (failed.kind === "invite") makeInvite();
   };
 
   const openDeck = (list: QuestionKey[], startAt: QuestionKey | null = null, memberId: string | null = null) => {
-    setMode("manual");
     setQuestions(list);
     setQuestionIndex(startAt ? Math.max(list.indexOf(startAt), 0) : 0);
     setSelectedMemberId(memberId);
     setPreviewing(false);
-    setInlineQuestion(null);
     setStage("details");
     setStarted(true);
   };
@@ -198,31 +125,6 @@ export default function PlanWorkspace() {
   const startManual = (source: PlanDraft, startAt: QuestionKey | null = null) => {
     setFromPass(false);
     openDeck(openQuestions(source), startAt);
-  };
-
-  const announceNext = (prefix = "") => {
-    const asking = nextRequired(draft);
-    const prompt = asking ? text.deck.questions[asking].title : text.chat.allSet;
-    if (prefix === "" && chat.at(-1)?.text.endsWith(prompt)) return;
-    say("captain", `${prefix} ${prompt}`.trim());
-  };
-
-  const finishInline = () => {
-    const answeredNow = inlineQuestion !== null && isAnswered(inlineQuestion, draft);
-    setInlineQuestion(null);
-    setSelectedMemberId(null);
-    if (answeredNow) announceNext(text.chat.noted);
-  };
-
-  const changeMode = (next: PlanMode) => {
-    if (next === mode) return;
-    if (next === "manual") {
-      startManual(draft);
-      return;
-    }
-    setMode("captain");
-    setSelectedMemberId(null);
-    announceNext();
   };
 
   const resumeDraft = () => {
@@ -265,11 +167,10 @@ export default function PlanWorkspace() {
 
   const navigate = (target: Stage) => {
     setPreviewing(false);
-    if (target === "details" && mode === "manual") {
+    if (target === "details") {
       startManual(draft);
       return;
     }
-    if (target === "details") announceNext();
     setFromPass(false);
     setStage(target);
   };
@@ -291,9 +192,6 @@ export default function PlanWorkspace() {
         <div className="flex flex-1 flex-col justify-center pb-12">
           <StartScreen
             text={text}
-            input={input}
-            onInputChange={setInput}
-            onSend={() => tellCaptain(input.trim())}
             onStartManual={() => startManual(draft)}
           />
         </div>
@@ -302,10 +200,7 @@ export default function PlanWorkspace() {
       {stage === "details" && (
         <div className="space-y-8">
           {!fromPass && (
-            <div className="flex items-center justify-between gap-3">
-              <div className="min-w-0 flex-1 sm:flex-none">
-                <ModeSwitch mode={mode} text={text.mode} onChange={changeMode} />
-              </div>
+            <div className="flex items-center justify-end gap-3">
               <button
                 type="button"
                 aria-label={text.deck.seePass}
@@ -318,7 +213,7 @@ export default function PlanWorkspace() {
             </div>
           )}
 
-          {mode === "manual" && question !== undefined && (
+          {question !== undefined && (
             <QuestionDeck
               draft={draft}
               dispatch={dispatch}
@@ -332,40 +227,6 @@ export default function PlanWorkspace() {
               onBackToStory={() => setStage("story")}
               onFinish={finishDetails}
               onSelectMember={setSelectedMemberId}
-            />
-          )}
-
-          {mode === "captain" && inlineQuestion !== null && (
-            <QuestionDeck
-              draft={draft}
-              dispatch={dispatch}
-              text={text}
-              questions={[inlineQuestion]}
-              index={0}
-              returnLabel={text.deck.backToCaptain}
-              isDesktop={isDesktop}
-              selectedMemberId={selectedMemberId}
-              onIndexChange={changeQuestion}
-              onBackToStory={finishInline}
-              onFinish={finishInline}
-              onSelectMember={setSelectedMemberId}
-            />
-          )}
-
-          {mode === "captain" && inlineQuestion === null && (
-            <CaptainChat
-              text={text}
-              messages={chat}
-              asking={nextRequired(draft)}
-              busy={pending === "reply"}
-              failed={failed?.kind === "reply"}
-              input={input}
-              onInputChange={setInput}
-              onSend={tellCaptain}
-              onRetry={retry}
-              onAnswerManually={setInlineQuestion}
-              onPickDates={pickDates}
-              onContinue={finishDetails}
             />
           )}
         </div>
@@ -392,8 +253,8 @@ export default function PlanWorkspace() {
           text={text}
           itinerary={itinerary}
           inviteUrl={inviteUrl}
-          pending={pending === "reply" ? null : pending}
-          failed={failed !== null && failed.kind !== "reply"}
+          pending={pending}
+          failed={failed !== null}
           isSample={captainIsSample}
           onRetry={retry}
           onInvite={makeInvite}
