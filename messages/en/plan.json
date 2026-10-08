@@ -98,7 +98,8 @@
   },
   "result": {
     "title": "Your trip plan",
-    "backToPass": "Change boarding pass"
+    "backToPass": "Change boarding pass",
+    "saveToTrips": "Save to My Trips"
   },
   "ageGroups": {
     "adult": "Adult",
