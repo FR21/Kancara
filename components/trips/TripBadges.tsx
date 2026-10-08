@@ -1,40 +1,43 @@
-import { CalendarClock, CloudDownload, CloudOff, PencilLine, ShieldCheck, TriangleAlert } from "lucide-react";
+import {
+  CalendarClock,
+  Check,
+  CloudDownload,
+  CloudOff,
+  PencilLine,
+  Plane,
+  ShieldCheck,
+  TriangleAlert,
+} from "lucide-react";
 import type { OfflineState, TripStatus } from "@/lib/trips/trip";
 
 const CHIP = "inline-flex items-center gap-1 rounded-full px-2 py-1 text-caption font-bold";
-const STATUS = "inline-flex items-center gap-2 text-label";
 
-type StatusBadgeProps = {
-  status: Exclude<TripStatus, "ongoing">;
-  label: string;
+const STATUS_ICONS = { ongoing: Plane, upcoming: CalendarClock, draft: PencilLine, completed: Check };
+
+const STATUS_MARKS: Record<TripStatus, string> = {
+  ongoing: "bg-primary text-on-primary",
+  upcoming: "border border-primary text-primary",
+  draft: "border border-dashed border-border-strong text-text-muted",
+  completed: "bg-success-subtle text-success",
 };
 
-// A finished trip carries the same stamp the boarding pass gets when it is ready.
-function CompletedStamp({ label }: { label: string }) {
+/** The round mark that leads a row in the list: shape and icon change with the status, not only the colour. */
+export function StatusMark({ status, label }: { status: TripStatus; label: string }) {
+  const Icon = STATUS_ICONS[status];
   return (
-    <p className="inline-flex -rotate-3 items-center gap-2 text-success">
-      <svg viewBox="0 0 48 48" aria-hidden="true" className="size-6 shrink-0" fill="none" stroke="currentColor">
-        <circle cx="24" cy="24" r="21" strokeWidth="3" />
-        <path d="M15 24.5l6 6 12-13" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-      <span className="text-caption font-extrabold tracking-wider uppercase">{label}</span>
-    </p>
+    <span className={`flex size-10 shrink-0 items-center justify-center rounded-full ${STATUS_MARKS[status]}`}>
+      <Icon className="size-4" strokeWidth={status === "completed" ? 3 : 2} aria-hidden="true" />
+      <span className="sr-only">{label}</span>
+    </span>
   );
 }
 
-export function StatusBadge({ status, label }: StatusBadgeProps) {
-  if (status === "completed") return <CompletedStamp label={label} />;
-  if (status === "draft") {
-    return (
-      <p className={`${STATUS} text-text-muted`}>
-        <PencilLine className="size-4" aria-hidden="true" />
-        {label}
-      </p>
-    );
-  }
+/** The status as a labelled pill, for the detail panel's band. */
+export function StatusPill({ status, label }: { status: TripStatus; label: string }) {
+  const Icon = STATUS_ICONS[status];
   return (
-    <p className={`${STATUS} text-primary`}>
-      <CalendarClock className="size-4" aria-hidden="true" />
+    <p className="inline-flex h-8 items-center gap-2 rounded-full bg-on-primary/15 px-3 text-label text-on-primary">
+      <Icon className="size-4" strokeWidth={status === "completed" ? 3 : 2} aria-hidden="true" />
       {label}
     </p>
   );

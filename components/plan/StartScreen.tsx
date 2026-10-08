@@ -3,14 +3,9 @@
 import { ListChecks } from "lucide-react";
 import Image from "next/image";
 import type { Messages } from "@/lib/messages";
-import Composer from "./Composer";
-import { OUTLINE_BUTTON, QUICK_CHIP } from "./styles";
 
 type StartScreenProps = {
   text: Messages["plan"];
-  input: string;
-  onInputChange: (value: string) => void;
-  onSend: () => void;
   onStartManual: () => void;
 };
 

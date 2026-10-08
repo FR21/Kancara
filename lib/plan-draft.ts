@@ -77,6 +77,7 @@ export type DraftPatch = {
 };
 
 export const MAX_MEMBERS = 50;
+export const MAX_NOTES_CHARS = 500;
 
 const EMPTY_EXTRAS: TripExtras = {
   flexibleDates: false,
@@ -124,6 +125,7 @@ export type PlanDraftAction =
   | { type: "toggleTransport"; value: TransportKey }
   | { type: "patch"; patch: DraftPatch }
   | { type: "appendNote"; value: string }
+  | { type: "setNotes"; value: string }
   | { type: "replace"; draft: PlanDraft };
 
 function toggleItem<Item>(items: Item[], item: Item): Item[] {
@@ -190,6 +192,8 @@ export function planDraftReducer(draft: PlanDraft, action: PlanDraftAction): Pla
       const { extras, ...rest } = action.patch;
       return { ...draft, ...rest, extras: { ...draft.extras, ...extras } };
     }
+    case "setNotes":
+      return { ...draft, notes: action.value.slice(0, MAX_NOTES_CHARS) };
     case "appendNote":
       return { ...draft, notes: draft.notes ? `${draft.notes}\n${action.value}` : action.value };
   }
@@ -238,6 +242,11 @@ export function countFilledExtras(extras: TripExtras): number {
   ];
   const filledText = textKeys.filter((key) => extras[key].trim() !== "").length;
   return filledText + (extras.flexibleDates ? 1 : 0) + (extras.transport.length > 0 ? 1 : 0);
+}
+
+/** Optional details the planner has filled in: the extras plus the free-text note. */
+export function countFilledDetails(draft: PlanDraft): number {
+  return countFilledExtras(draft.extras) + (draft.notes.trim() === "" ? 0 : 1);
 }
 
 export function getMemberName(member: Member, members: Member[], ageLabels: Record<AgeGroup, string>): string {

@@ -1,29 +1,42 @@
-const CARDS = [0, 1, 2];
+const ROWS = [0, 1, 2, 3];
 const BAR = "rounded-full bg-surface-muted";
 
-// Same footprint as a trip card, so the grid does not jump when the list arrives.
+// Same footprint as the list and the detail panel, so nothing jumps when the trips arrive.
 export default function TripsSkeleton({ label }: { label: string }) {
   return (
-    <div role="status" className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+    <div role="status" className="lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start lg:gap-8">
       <span className="sr-only">{label}</span>
-      {CARDS.map((card) => (
-        <div
-          key={card}
-          aria-hidden="true"
-          className="rounded-2xl border border-border bg-surface motion-safe:animate-pulse"
-        >
-          <div className="flex flex-col gap-3 p-5">
-            <div className={`h-6 w-24 ${BAR}`} />
-            <div className={`h-5 w-40 ${BAR}`} />
-            <div className={`h-6 ${BAR}`} />
-            <div className={`h-5 w-32 ${BAR}`} />
-            <div className={`mt-1 h-8 w-28 ${BAR}`} />
+      <div
+        aria-hidden="true"
+        className="divide-y divide-border rounded-2xl border border-border bg-surface motion-safe:animate-pulse"
+      >
+        {ROWS.map((row) => (
+          <div key={row} className="flex items-center gap-3 px-4 py-3">
+            <div className="size-10 shrink-0 rounded-full bg-surface-muted" />
+            <div className="min-w-0 flex-1 space-y-2">
+              <div className={`h-4 w-40 max-w-full ${BAR}`} />
+              <div className={`h-3 w-56 max-w-full ${BAR}`} />
+            </div>
+            <div className={`h-4 w-12 ${BAR}`} />
           </div>
-          <div className="border-t border-dashed border-border-strong px-5 py-4">
-            <div className={`h-6 w-36 ${BAR}`} />
+        ))}
+      </div>
+      <div
+        aria-hidden="true"
+        className="hidden overflow-clip rounded-3xl border border-border bg-surface motion-safe:animate-pulse lg:block"
+      >
+        <div className="h-36 bg-surface-muted" />
+        <div className="space-y-6 px-6 py-6">
+          <div className="grid grid-cols-4 gap-4">
+            {ROWS.map((row) => (
+              <div key={row} className={`h-10 ${BAR}`} />
+            ))}
           </div>
+          <div className={`h-8 w-48 ${BAR}`} />
+          <div className={`h-20 rounded-2xl bg-surface-muted`} />
+          <div className={`h-12 w-44 ${BAR}`} />
         </div>
-      ))}
+      </div>
     </div>
   );
 }

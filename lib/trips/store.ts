@@ -1,11 +1,23 @@
 import "server-only";
+import type { Itinerary } from "@/lib/api/captain";
 import { verifySession } from "@/lib/auth/session";
+import type { PlanDraft } from "@/lib/plan-draft";
 import { seedTrips } from "./seed";
-import { type ActiveTrips, type Clock, type HistoryTrips, type Trip, type TripCard, toTripCard } from "./trip";
+import {
+  type ActiveTrips,
+  type Clock,
+  type HistoryTrips,
+  type Trip,
+  type TripCard,
+  type TripPlanView,
+  toTripCard,
+} from "./trip";
 
 export type Viewer = { uid: string; email: string | null };
 export type HistoryFilter = { query: string; year: number | null };
 export type DeleteResult = "deleted" | "notFound" | "forbidden";
+/** A finished plan to keep. `violations` is left out when the plan was never checked against the group's needs. */
+export type TripInput = { name: string; draft: PlanDraft; violations?: number; itinerary?: Itinerary };
 
 // Stand-in for the trips database: one list per signed-in user, kept in memory
 // and lost when the server restarts. It hangs off globalThis so a hot reload in
@@ -104,6 +116,55 @@ export function listHistoryTrips(viewer: Viewer, filter: HistoryFilter): History
     countries: new Set(finished.flatMap(({ trip }) => trip.countryCodes)).size,
     years: [...new Set(finished.map(({ endedOn }) => yearOf(endedOn)))],
   };
+}
+
+/** A trip the viewer can see, with its itinerary when one was saved. Null when there is no such trip. */
+export function getTripPlan(viewer: Viewer, id: string): TripPlanView | null {
+  const trip = tripsOf(viewer).find((entry) => entry.id === id);
+  if (!trip) return null;
+  const clock = readClock(new Date());
+  return {
+    card: toTripCard(trip, clock),
+    draft: trip.draft,
+    itinerary: trip.itinerary ?? null,
+    today: clock.date,
+  };
+}
+
+function withPlan(trip: Trip, input: TripInput, now: Date): Trip {
+  const next: Trip = { ...trip, name: input.name, draft: input.draft, updatedAt: now.toISOString() };
+  delete next.violations;
+  delete next.itinerary;
+  if (input.violations !== undefined) next.violations = input.violations;
+  if (input.itinerary !== undefined) next.itinerary = input.itinerary;
+  return next;
+}
+
+/** Saves a finished plan as a trip the viewer organizes. */
+export function createTrip(viewer: Viewer, input: TripInput): TripCard {
+  const now = new Date();
+  const blank: Trip = {
+    id: crypto.randomUUID(),
+    name: "",
+    state: "PLANNED",
+    role: "organizer",
+    draft: input.draft,
+    updatedAt: "",
+    countryCodes: [],
+  };
+  const trip = withPlan(blank, input, now);
+  tripsOf(viewer).push(trip);
+  return toTripCard(trip, readClock(now));
+}
+
+/** Replaces a saved trip's plan, for example after it is generated again. Null when the viewer cannot change it. */
+export function updateTrip(viewer: Viewer, id: string, input: TripInput): TripCard | null {
+  const trips = tripsOf(viewer);
+  const index = trips.findIndex((trip) => trip.id === id);
+  if (index === -1 || trips[index].role !== "organizer") return null;
+  const now = new Date();
+  trips[index] = withPlan(trips[index], input, now);
+  return toTripCard(trips[index], readClock(now));
 }
 
 /** Copies a trip into a new draft the viewer organizes: same members, needs, and settings, no dates. */

@@ -3,10 +3,14 @@
 import { Ticket } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
 import { type Itinerary, captain, captainIsSample } from "@/lib/api/captain";
+import { trips } from "@/lib/api/trips";
+import { countViolations } from "@/lib/trips/trip";
+import TripsNotice from "@/components/trips/TripsNotice";
 import {
   type PlanDraft,
   createMember,
   EMPTY_DRAFT,
+  fillTemplate,
   isDraftEmpty,
   parseDraftPatch,
   parseLocalDate,
@@ -19,7 +23,7 @@ import { useMediaQuery } from "@/lib/use-media-query";
 import { useMessages } from "@/lib/use-messages";
 import type { Stage } from "./flow";
 import PassDialog from "./PassDialog";
-import PlanResult from "./PlanResult";
+import PlanResult, { type SaveState } from "./PlanResult";
 import QuestionDeck from "./QuestionDeck";
 import ResumeBanner from "./ResumeBanner";
 import StageRail from "./StageRail";
@@ -30,6 +34,7 @@ type Pending = "itinerary" | "invite";
 type FailedRequest = { kind: "itinerary" } | { kind: "invite" };
 
 const DESKTOP_QUERY = "(min-width: 1024px)";
+const NOTICE_MS = 5000;
 
 export default function PlanWorkspace() {
   const text = useMessages("plan");
@@ -48,6 +53,10 @@ export default function PlanWorkspace() {
   const [inviteUrl, setInviteUrl] = useState<string | null>(null);
   const [pending, setPending] = useState<Pending | null>(null);
   const [failed, setFailed] = useState<FailedRequest | null>(null);
+  const [saveState, setSaveState] = useState<SaveState>("idle");
+  const [tripId, setTripId] = useState<string | null>(null);
+  const [savedCount, setSavedCount] = useState(0);
+  const [noticeOpen, setNoticeOpen] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
   const arrivedRef = useRef(false);
 
@@ -72,6 +81,12 @@ export default function PlanWorkspace() {
     document.querySelector<HTMLElement>("main h1")?.focus({ preventScroll: true });
   }, [stage]);
 
+  useEffect(() => {
+    if (!noticeOpen) return;
+    const timer = setTimeout(() => setNoticeOpen(false), NOTICE_MS);
+    return () => clearTimeout(timer);
+  }, [noticeOpen, savedCount]);
+
   const beginRequest = (kind: Pending) => {
     controllerRef.current?.abort();
     const controller = new AbortController();
@@ -81,13 +96,39 @@ export default function PlanWorkspace() {
     return controller.signal;
   };
 
+  // A finished plan goes to My Trips on its own. Generating it again updates the same trip.
+  const saveTrip = async (plan: Itinerary) => {
+    setSaveState("saving");
+    try {
+      const saved = await trips.save(
+        {
+          name: fillTemplate(text.result.tripName, { destination: draft.destinations.join(", ") }),
+          draft,
+          // Sample itineraries are never checked against the group's needs, so no count is sent for them.
+          violations: captainIsSample ? undefined : countViolations(plan),
+          itinerary: plan,
+        },
+        tripId,
+      );
+      setTripId(saved.id);
+      setSaveState("saved");
+      setSavedCount((count) => count + 1);
+      setNoticeOpen(true);
+    } catch {
+      setSaveState("failed");
+    }
+  };
+
   const makePlan = async () => {
     setStage("plan");
     setItinerary(null);
     setInviteUrl(null);
+    setSaveState("idle");
     const signal = beginRequest("itinerary");
     try {
-      setItinerary(await captain.itinerary({ draft, locale }, signal));
+      const plan = await captain.itinerary({ draft, locale }, signal);
+      setItinerary(plan);
+      saveTrip(plan);
     } catch {
       if (signal.aborted) return;
       setFailed({ kind: "itinerary" });
@@ -256,11 +297,19 @@ export default function PlanWorkspace() {
           pending={pending}
           failed={failed !== null}
           isSample={captainIsSample}
+          saveState={saveState}
           onRetry={retry}
           onInvite={makeInvite}
+          onSave={() => itinerary && saveTrip(itinerary)}
           onBackToPass={() => setStage("pass")}
         />
       )}
+
+      <TripsNotice
+        notice={noticeOpen ? { id: savedCount, tone: "success", message: text.result.savedNotice } : null}
+        dismissLabel={text.result.dismiss}
+        onDismiss={() => setNoticeOpen(false)}
+      />
     </main>
   );
 }

@@ -73,7 +73,7 @@ function parseItem(value: unknown): ItineraryItem | null {
   };
 }
 
-function parseItinerary(value: unknown): Itinerary {
+export function parseItinerary(value: unknown): Itinerary {
   if (!isRecord(value) || !Array.isArray(value.days)) {
     throw new CaptainError("Invalid itinerary response");
   }

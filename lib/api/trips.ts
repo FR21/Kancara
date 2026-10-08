@@ -1,18 +1,28 @@
-import { AGE_GROUPS } from "@/lib/plan-draft";
+import { type Itinerary, parseItinerary } from "@/lib/api/captain";
+import { type PlanDraft, AGE_GROUPS, isNeedKey, parsePlanDraft, PASS_FIELDS } from "@/lib/plan-draft";
 import {
   type ActiveTrips,
   type HistoryTrips,
   type TripActivity,
   type TripCard,
   type TripCardMember,
+  type TripPlanView,
   OFFLINE_STATES,
   TRIP_ROLES,
   TRIP_STATUSES,
 } from "@/lib/trips/trip";
 
 export type HistoryFilter = { query: string; year: number | null };
+export type TripPlan = { name: string; draft: PlanDraft; violations?: number; itinerary: Itinerary };
 
-export class TripsError extends Error {}
+export class TripsError extends Error {
+  constructor(
+    message: string,
+    readonly status = 0,
+  ) {
+    super(message);
+  }
+}
 
 const BASE_URL = "/api/trips";
 const REQUEST_TIMEOUT_MS = 15000;
@@ -47,6 +57,12 @@ function parseCost(value: unknown): TripCard["cost"] {
   return { spent, budget: asCount(value.budget) ?? null };
 }
 
+function parseMissing(value: unknown): TripCard["missing"] {
+  if (!Array.isArray(value)) return undefined;
+  const listed: unknown[] = value;
+  return PASS_FIELDS.filter((field) => listed.includes(field));
+}
+
 function parseCard(value: unknown): TripCard | null {
   if (!isRecord(value) || typeof value.id !== "string") return null;
   const status = TRIP_STATUSES.find((entry) => entry === value.status);
@@ -66,18 +82,41 @@ function parseCard(value: unknown): TripCard | null {
     days: asCount(value.days) ?? 0,
     members: Array.isArray(value.members) ? value.members.flatMap(parseMember) : [],
     memberCount: asCount(value.memberCount) ?? 0,
+    needs: Array.isArray(value.needs) ? value.needs.filter(isNeedKey) : [],
+    budget: asCount(value.budget) ?? null,
     violations: asCount(value.violations),
     offline: OFFLINE_STATES.find((entry) => entry === value.offline),
     day: asCount(value.day),
     nextActivity: parseActivity(value.nextActivity),
     startsIn: asCount(value.startsIn),
     filled: asCount(value.filled),
+    missing: parseMissing(value.missing),
     cost: parseCost(value.cost),
   };
 }
 
 function parseCards(value: unknown): TripCard[] {
   return Array.isArray(value) ? value.flatMap((entry) => parseCard(entry) ?? []) : [];
+}
+
+function parseSavedItinerary(value: unknown): Itinerary | null {
+  try {
+    return parseItinerary(value);
+  } catch {
+    return null;
+  }
+}
+
+function parsePlanView(value: unknown): TripPlanView {
+  const card = isRecord(value) ? parseCard(value.card) : null;
+  const draft = isRecord(value) ? parsePlanDraft(value.draft) : null;
+  if (!isRecord(value) || !card || !draft) throw new TripsError("Invalid trip response");
+  return {
+    card,
+    draft,
+    itinerary: parseSavedItinerary(value.itinerary),
+    today: asText(value.today),
+  };
 }
 
 function parseActive(value: unknown): ActiveTrips {
@@ -105,7 +144,7 @@ async function send(path: string, init: RequestInit, signal?: AbortSignal): Prom
     ...init,
     signal: signal ? AbortSignal.any([signal, timeout]) : timeout,
   });
-  if (!response.ok) throw new TripsError(`Trips request failed with ${response.status}`);
+  if (!response.ok) throw new TripsError(`Trips request failed with ${response.status}`, response.status);
   return response;
 }
 
@@ -121,6 +160,26 @@ export const trips = {
     if (filter.year !== null) params.set("year", String(filter.year));
     const response = await send(`?${params}`, { method: "GET" }, signal);
     return parseHistory(await response.json());
+  },
+
+  async plan(id: string, signal: AbortSignal): Promise<TripPlanView> {
+    const response = await send(`/${encodeURIComponent(id)}`, { method: "GET" }, signal);
+    return parsePlanView(await response.json());
+  },
+
+  /** Saves a plan: updates the trip with this id, or creates one when there is no id or the trip is gone. */
+  async save(plan: TripPlan, id: string | null): Promise<TripCard> {
+    const init = { headers: { "Content-Type": "application/json" }, body: JSON.stringify(plan) };
+    const create = () => send("", { ...init, method: "POST" });
+    const update = (tripId: string) =>
+      send(`/${encodeURIComponent(tripId)}`, { ...init, method: "PUT" }).catch((caught: unknown) => {
+        if (caught instanceof TripsError && caught.status === 404) return create();
+        throw caught;
+      });
+    const response = await (id === null ? create() : update(id));
+    const card = parseCard(await response.json());
+    if (!card) throw new TripsError("Invalid save response");
+    return card;
   },
 
   async duplicate(id: string, name: string): Promise<TripCard> {

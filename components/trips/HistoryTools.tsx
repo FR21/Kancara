@@ -53,8 +53,8 @@ export default function HistoryTools({
         </Link>
       </div>
 
-      <div className="flex flex-col gap-3 lg:flex-row lg:items-center">
-        <div className="group relative lg:w-96">
+      <div className="flex flex-col gap-3">
+        <div className="group relative">
           <label htmlFor="trips-search" className="sr-only">
             {text.searchLabel}
           </label>
@@ -77,7 +77,7 @@ export default function HistoryTools({
           <div
             role="group"
             aria-label={text.yearLabel}
-            className="-mx-4 flex gap-2 overflow-x-auto px-4 py-1 [scrollbar-width:none] lg:mx-0 lg:px-0"
+            className="-mx-4 flex gap-2 overflow-x-auto px-4 py-1 [scrollbar-width:none] sm:mx-0 sm:px-0"
           >
             {yearOptions.map((option) => {
               const selected = option === year;

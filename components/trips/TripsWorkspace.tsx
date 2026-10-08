@@ -7,14 +7,15 @@ import ErrorAlert from "@/components/plan/ErrorAlert";
 import { PRIMARY_BUTTON } from "@/components/plan/styles";
 import { trips } from "@/lib/api/trips";
 import { fillTemplate } from "@/lib/plan-draft";
-import type { ActiveTrips, HistoryTrips, TripCard as TripCardData } from "@/lib/trips/trip";
+import type { ActiveTrips, HistoryTrips, TripCard } from "@/lib/trips/trip";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { useMessages } from "@/lib/use-messages";
 import { useOnline } from "@/lib/use-online";
 import DeleteDialog from "./DeleteDialog";
 import HistoryTools from "./HistoryTools";
-import OngoingCard from "./OngoingCard";
-import TripCard from "./TripCard";
-import type { TripActions } from "./TripMenu";
+import TripDetail, { type TripActions } from "./TripDetail";
+import TripList, { type TripListSection, tripRowId } from "./TripList";
+import TripSheet from "./TripSheet";
 import TripsEmpty from "./TripsEmpty";
 import TripsNotice, { type Notice } from "./TripsNotice";
 import TripsSkeleton from "./TripsSkeleton";
@@ -27,24 +28,29 @@ type TripsWorkspaceProps = {
 type DeleteState = "idle" | "pending" | "failed";
 
 const PLAN_HREF = "/plan";
+const DESKTOP_QUERY = "(min-width: 1024px)";
 const SEARCH_DELAY_MS = 250;
 const NOTICE_MS = 5000;
-const GRID = "grid gap-4 md:grid-cols-2 lg:grid-cols-3";
-const SECTION_TITLE = "mb-4 text-h3 text-text";
+const DETAIL_HEADING_ID = "trip-detail-title";
+const SHEET_HEADING_ID = "trip-sheet-title";
 
 export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
   const text = useMessages("trips");
   const travel = useMessages("travel");
+  const needLabels = useMessages("plan").needs;
   const online = useOnline();
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
   const [tab, setTab] = useState<TripTab>(initialTab);
   const [activeTrips, setActiveTrips] = useState<ActiveTrips | null>(null);
   const [historyTrips, setHistoryTrips] = useState<HistoryTrips | null>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [sheetOpen, setSheetOpen] = useState(false);
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState("");
   const [year, setYear] = useState<number | null>(null);
   const [failedTab, setFailedTab] = useState<TripTab | null>(null);
   const [reloads, setReloads] = useState(0);
-  const [deleteTarget, setDeleteTarget] = useState<TripCardData | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<TripCard | null>(null);
   const [deleteState, setDeleteState] = useState<DeleteState>("idle");
   const [notice, setNotice] = useState<Notice | null>(null);
   const headingRef = useRef<HTMLHeadingElement>(null);
@@ -82,18 +88,18 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
     return () => clearTimeout(timer);
   }, [notice]);
 
-  // A draft made by "duplicate" is brought into view and focused once it is on screen.
+  // A draft made by "duplicate" is brought into view and focused once its row is on screen.
   useEffect(() => {
     if (tab !== "active" || !arrivingIdRef.current) return;
-    const card = document.getElementById(`trip-${arrivingIdRef.current}`);
-    if (!card) return;
+    const row = document.getElementById(tripRowId(arrivingIdRef.current));
+    if (!row) return;
     arrivingIdRef.current = null;
-    card.scrollIntoView({ block: "center" });
-    card.querySelector<HTMLElement>("a")?.focus({ preventScroll: true });
+    row.scrollIntoView({ block: "center" });
+    row.focus({ preventScroll: true });
   }, [tab, activeTrips]);
 
   // Runs after the dialog has closed and given focus back, so the heading keeps it:
-  // the card that opened the dialog no longer exists.
+  // the trip that opened the dialog no longer exists.
   useEffect(() => {
     if (deleteTarget || !deletedRef.current) return;
     deletedRef.current = false;
@@ -109,6 +115,7 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
     if (next === tab) return;
     setTab(next);
     setFailedTab(null);
+    setSheetOpen(false);
     window.history.replaceState(null, "", next === "history" ? "/trips?tab=history" : "/trips");
   };
 
@@ -123,13 +130,20 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
     setYear(null);
   };
 
-  const nameOf = (card: TripCardData) => card.name || text.card.untitled;
+  const selectTrip = (card: TripCard) => {
+    setSelectedId(card.id);
+    setSheetOpen(true);
+  };
 
-  const duplicate = async (card: TripCardData) => {
+  const nameOf = (card: TripCard) => card.name || text.card.untitled;
+
+  const duplicate = async (card: TripCard) => {
     const name = nameOf(card);
+    setSheetOpen(false);
     try {
       const copy = await trips.duplicate(card.id, fillTemplate(text.copyName, { name }));
       arrivingIdRef.current = copy.id;
+      setSelectedId(copy.id);
       setActiveTrips((current) => current && { ...current, drafts: [copy, ...current.drafts] });
       changeTab("active");
       announce("success", fillTemplate(text.notice.duplicated, { name }));
@@ -138,7 +152,7 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
     }
   };
 
-  const share = async (card: TripCardData) => {
+  const share = async (card: TripCard) => {
     const url = `${window.location.origin}/trips/${encodeURIComponent(card.id)}`;
     if (typeof navigator.share === "function") {
       // Closing the share sheet rejects too; that is not a failure worth reporting.
@@ -153,7 +167,8 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
     }
   };
 
-  const askDelete = (card: TripCardData) => {
+  const askDelete = (card: TripCard) => {
+    setSheetOpen(false);
     setDeleteState("idle");
     setDeleteTarget(card);
   };
@@ -166,7 +181,7 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
   const confirmDelete = async () => {
     if (!deleteTarget) return;
     const { id } = deleteTarget;
-    const keep = (card: TripCardData) => card.id !== id;
+    const keep = (card: TripCard) => card.id !== id;
     setDeleteState("pending");
     try {
       await trips.remove(id);
@@ -193,10 +208,24 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
 
   const actions: TripActions = { onDuplicate: duplicate, onShare: share, onDelete: askDelete };
   const filtering = query.trim() !== "" || year !== null;
-  const activeEmpty =
-    activeTrips !== null &&
-    activeTrips.ongoing.length + activeTrips.upcoming.length + activeTrips.drafts.length === 0;
   const loading = failedTab !== tab && (tab === "active" ? activeTrips === null : historyTrips === null);
+  const ready = !loading && failedTab !== tab;
+
+  const activeSections: TripListSection[] = activeTrips
+    ? [
+        { key: "ongoing", title: text.sections.ongoing, cards: activeTrips.ongoing },
+        { key: "upcoming", title: text.sections.upcoming, cards: activeTrips.upcoming },
+        { key: "drafts", title: text.sections.drafts, cards: activeTrips.drafts },
+      ].filter((section) => section.cards.length > 0)
+    : [];
+  const historySections: TripListSection[] =
+    historyTrips && historyTrips.trips.length > 0 ? [{ key: "history", title: null, cards: historyTrips.trips }] : [];
+  const sections = tab === "active" ? activeSections : historySections;
+  const cards = sections.flatMap((section) => section.cards);
+  // Without a pick of the visitor's own, the panel shows the first trip: the one in progress when there is one.
+  const selected = cards.find((card) => card.id === selectedId) ?? cards[0] ?? null;
+  const emptyKind = tab === "active" ? "active" : "history";
+  const nothingYet = tab === "active" ? activeTrips !== null && cards.length === 0 : historyTrips?.total === 0;
 
   return (
     <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 lg:max-w-5xl xl:px-0">
@@ -224,62 +253,16 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
         </p>
       )}
 
-      <div id={TRIPS_PANEL_ID} role="tabpanel" aria-labelledby={tripTabId(tab)} aria-busy={loading} className="mt-8">
+      <div id={TRIPS_PANEL_ID} role="tabpanel" aria-labelledby={tripTabId(tab)} aria-busy={loading} className="mt-6">
         {failedTab === tab && <ErrorAlert message={text.error} retryLabel={text.retry} onRetry={retry} />}
         {loading && <TripsSkeleton label={text.loading} />}
 
-        {tab === "active" && activeTrips !== null && failedTab !== "active" && (
-          <div className="flex flex-col gap-12">
-            {activeEmpty && <TripsEmpty kind="active" text={text} planHref={PLAN_HREF} onClear={clearFilters} />}
+        {ready && nothingYet && <TripsEmpty kind={emptyKind} text={text} planHref={PLAN_HREF} onClear={clearFilters} />}
 
-            {activeTrips.ongoing.length > 0 && (
-              <section aria-labelledby="trips-ongoing">
-                <h2 id="trips-ongoing" className="sr-only">
-                  {text.sections.ongoing}
-                </h2>
-                <div className="flex flex-col gap-6">
-                  {activeTrips.ongoing.map((card) => (
-                    <OngoingCard key={card.id} card={card} text={text} actions={actions} />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {activeTrips.upcoming.length > 0 && (
-              <section aria-labelledby="trips-upcoming">
-                <h2 id="trips-upcoming" className={SECTION_TITLE}>
-                  {text.sections.upcoming}
-                </h2>
-                <div className={GRID}>
-                  {activeTrips.upcoming.map((card, index) => (
-                    <TripCard key={card.id} card={card} text={text} index={index} actions={actions} />
-                  ))}
-                </div>
-              </section>
-            )}
-
-            {activeTrips.drafts.length > 0 && (
-              <section aria-labelledby="trips-drafts">
-                <h2 id="trips-drafts" className={SECTION_TITLE}>
-                  {text.sections.drafts}
-                </h2>
-                <div className={GRID}>
-                  {activeTrips.drafts.map((card, index) => (
-                    <TripCard key={card.id} card={card} text={text} index={index} actions={actions} />
-                  ))}
-                </div>
-              </section>
-            )}
-          </div>
-        )}
-
-        {tab === "history" && historyTrips !== null && failedTab !== "history" && (
-          <>
-            {historyTrips.total === 0 && (
-              <TripsEmpty kind="history" text={text} planHref={PLAN_HREF} onClear={clearFilters} />
-            )}
-            {historyTrips.total > 0 && (
-              <div className="flex flex-col gap-8">
+        {ready && !nothingYet && (
+          <div className="lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start lg:gap-8">
+            <div className="flex min-w-0 flex-col gap-4">
+              {tab === "history" && historyTrips && (
                 <HistoryTools
                   text={text.history}
                   mapLabel={travel.open}
@@ -291,21 +274,52 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
                   onQueryChange={setQuery}
                   onYearChange={setYear}
                 />
-                {historyTrips.trips.length === 0 && filtering && (
-                  <TripsEmpty kind="search" text={text} planHref={PLAN_HREF} onClear={clearFilters} />
-                )}
-                {historyTrips.trips.length > 0 && (
-                  <div className={GRID}>
-                    {historyTrips.trips.map((card, index) => (
-                      <TripCard key={card.id} card={card} text={text} index={index} actions={actions} />
-                    ))}
-                  </div>
-                )}
-              </div>
-            )}
-          </>
+              )}
+              {cards.length === 0 && filtering && (
+                <TripsEmpty kind="search" text={text} planHref={PLAN_HREF} onClear={clearFilters} />
+              )}
+              {cards.length > 0 && (
+                <TripList sections={sections} selectedId={selected?.id ?? null} text={text} onSelect={selectTrip} />
+              )}
+            </div>
+
+            <aside aria-label={text.detail.label} className="hidden lg:sticky lg:top-28 lg:block">
+              {selected ? (
+                <div key={selected.id} className="motion-safe:animate-message-in">
+                  <TripDetail
+                    card={selected}
+                    text={text}
+                    needLabels={needLabels}
+                    actions={actions}
+                    headingId={DETAIL_HEADING_ID}
+                  />
+                </div>
+              ) : (
+                <p className="rounded-3xl border border-dashed border-border-strong px-6 py-16 text-center text-body text-text-muted">
+                  {text.detail.empty}
+                </p>
+              )}
+            </aside>
+          </div>
         )}
       </div>
+
+      <TripSheet
+        open={sheetOpen && !isDesktop && selected !== null}
+        labelledBy={SHEET_HEADING_ID}
+        onClose={() => setSheetOpen(false)}
+      >
+        {selected && (
+          <TripDetail
+            card={selected}
+            text={text}
+            needLabels={needLabels}
+            actions={actions}
+            headingId={SHEET_HEADING_ID}
+            onClose={() => setSheetOpen(false)}
+          />
+        )}
+      </TripSheet>
 
       <DeleteDialog
         name={deleteTarget ? nameOf(deleteTarget) : null}

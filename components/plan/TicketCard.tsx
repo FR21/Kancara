@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import type { Messages } from "@/lib/messages";
 import {
   type PlanDraft,
-  countFilledExtras,
+  countFilledDetails,
   fillTemplate,
   getMemberName,
   hasBudget,
@@ -77,7 +77,7 @@ export default function TicketCard({ draft, text, arriving = false, onEdit, onAd
   const edit = (question: QuestionKey, memberId?: string) => onEdit?.(question, memberId);
   const missing = missingRequired(draft);
   const ready = missing.length === 0;
-  const filledExtras = countFilledExtras(draft.extras);
+  const filledExtras = countFilledDetails(draft);
 
   const dateFormat = new Intl.DateTimeFormat(locale, { day: "numeric", month: "short" });
   const moneyFormat = new Intl.NumberFormat(locale, {

@@ -3,7 +3,13 @@
 import { Check, Plus } from "lucide-react";
 import { type Dispatch, useState } from "react";
 import type { Messages } from "@/lib/messages";
-import { type ExtraTextKey, type PlanDraft, type PlanDraftAction, TRANSPORT_KEYS } from "@/lib/plan-draft";
+import {
+  type ExtraTextKey,
+  type PlanDraft,
+  type PlanDraftAction,
+  MAX_NOTES_CHARS,
+  TRANSPORT_KEYS,
+} from "@/lib/plan-draft";
 import { choiceClass, FIELD_LABEL, INPUT } from "./styles";
 
 type ExtrasEditorProps = {
@@ -108,6 +114,22 @@ export default function ExtrasEditor({ draft, dispatch, text }: ExtrasEditorProp
           </div>
         </fieldset>
       )}
+
+      <div>
+        <label htmlFor="extra-notes" className={FIELD_LABEL}>
+          {text.extrasAdd.notes}
+        </label>
+        <textarea
+          id="extra-notes"
+          rows={3}
+          maxLength={MAX_NOTES_CHARS}
+          value={draft.notes}
+          placeholder={text.extrasAdd.notesPlaceholder}
+          onChange={(event) => dispatch({ type: "setNotes", value: event.target.value })}
+          className="mt-2 block w-full resize-y rounded-lg border border-border-strong bg-background px-4 py-3 text-body text-text transition-colors duration-150 placeholder:text-text-muted"
+        />
+        <p className="mt-2 text-caption text-text-muted">{text.extrasAdd.notesHint}</p>
+      </div>
     </div>
   );
 }

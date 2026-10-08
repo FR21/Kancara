@@ -44,7 +44,44 @@
       "notDownloaded": "Belum diunduh"
     },
     "spent": "Terpakai {spent}",
-    "spentOf": "Terpakai {spent} dari {budget}"
+    "spentOf": "Terpakai {spent} dari {budget}",
+    "dayShort": "Hari {day}/{total}",
+    "filledShort": "{done}/{total} terisi",
+    "toCheck": "Ada yang perlu dicek"
+  },
+  "list": {
+    "label": "Daftar perjalanan"
+  },
+  "detail": {
+    "label": "Detail perjalanan",
+    "empty": "Pilih perjalanan untuk melihat detailnya.",
+    "close": "Tutup",
+    "notSet": "Belum diisi",
+    "fields": {
+      "dates": "Tanggal",
+      "duration": "Durasi",
+      "budget": "Anggaran",
+      "role": "Peranmu"
+    },
+    "roles": {
+      "organizer": "Penyelenggara",
+      "member": "Anggota undangan"
+    },
+    "group": "Rombongan",
+    "needs": "Kebutuhan yang dijaga",
+    "sectionsTitle": "Kelengkapan rencana",
+    "sections": {
+      "route": "Rute",
+      "dates": "Tanggal",
+      "group": "Rombongan",
+      "budget": "Anggaran",
+      "pace": "Ritme"
+    },
+    "sectionDone": "terisi",
+    "sectionMissing": "belum diisi",
+    "openItinerary": "Lihat itinerary",
+    "openSummary": "Lihat rangkuman",
+    "actions": "Aksi perjalanan"
   },
   "menu": {
     "label": "Menu {name}",
@@ -94,6 +131,19 @@
   "error": "Daftar perjalanan belum bisa dimuat. Periksa koneksimu, lalu coba lagi.",
   "retry": "Coba lagi",
   "offline": "Kamu sedang offline. Daftar ini mungkin belum yang terbaru.",
+  "itinerary": {
+    "back": "Perjalanan Saya",
+    "loading": "Memuat itinerary",
+    "error": "Itinerary belum bisa dimuat. Periksa koneksimu, lalu coba lagi.",
+    "notFound": "Perjalanan ini tidak ditemukan. Mungkin sudah dihapus.",
+    "missing": "Perjalanan ini belum punya itinerary.",
+    "missingOrganizer": "Captain bisa menyusunnya sekarang dari tanggal, rombongan, dan kebutuhan yang sudah tersimpan.",
+    "missingMember": "Itinerary muncul di sini setelah penyelenggara membuatnya.",
+    "missingDraft": "Lengkapi dulu rencananya, lalu itinerary dibuat dari sana.",
+    "generate": "Buat itinerary",
+    "generating": "Captain sedang menyusun itinerary. Biasanya kurang dari satu menit.",
+    "generateFailed": "Itinerary belum berhasil dibuat. Periksa koneksimu, lalu coba lagi."
+  },
   "placeholder": {
     "detail": "Itinerary",
     "today": "Jadwal hari ini",

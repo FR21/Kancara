@@ -99,7 +99,14 @@
   "result": {
     "title": "Rencana perjalananmu",
     "backToPass": "Ubah boarding pass",
-    "saveToTrips": "Simpan ke My Trips"
+    "tripName": "Perjalanan ke {destination}",
+    "saving": "Menyimpan ke Perjalanan Saya",
+    "saved": "Tersimpan otomatis di Perjalanan Saya.",
+    "savedNotice": "Rencana tersimpan di Perjalanan Saya.",
+    "viewTrips": "Lihat Perjalanan Saya",
+    "saveFailed": "Rencana belum tersimpan ke Perjalanan Saya. Periksa koneksimu, lalu coba lagi.",
+    "saveRetry": "Simpan lagi",
+    "dismiss": "Tutup"
   },
   "ageGroups": {
     "adult": "Dewasa",
@@ -250,7 +257,41 @@
     "daysLabel": "Pilih hari",
     "day": "Hari {number}",
     "honours": "Memenuhi",
-    "everyone": "Semua"
+    "everyone": "Semua",
+    "stops": {
+      "one": "{count} kegiatan",
+      "other": "{count} kegiatan"
+    },
+    "honoured": {
+      "one": "{count} kebutuhan terpenuhi",
+      "other": "{count} kebutuhan terpenuhi"
+    },
+    "toCheck": {
+      "one": "{count} perlu dicek",
+      "other": "{count} perlu dicek"
+    },
+    "check": "Perlu dicek",
+    "emptyDay": "Belum ada kegiatan di hari ini.",
+    "leg": "{duration} · {distance} ke tempat berikutnya",
+    "rating": "{rating} dari 5",
+    "close": "Tutup",
+    "now": "Sedang berlangsung",
+    "next": "Berikutnya",
+    "done": "Selesai",
+    "more": "+{count}",
+    "hours": "{count} jam",
+    "minutes": "{count} mnt",
+    "position": "Kegiatan {current} dari {total}",
+    "previous": "Sebelumnya",
+    "following": "Berikutnya",
+    "openMap": "Buka di Google Maps",
+    "address": "Alamat",
+    "openingHours": "Jam buka",
+    "price": "Harga",
+    "ratingLabel": "Rating",
+    "forGroup": "Untuk rombonganmu",
+    "afterThis": "Setelah ini",
+    "afterThisLeg": "{duration} · {distance} ke {name}"
   },
   "invite": {
     "title": "Undang rombongan",
@@ -325,7 +366,10 @@
     "lodging": "Penginapan",
     "mustVisit": "Tempat wajib dikunjungi",
     "avoid": "Yang ingin dihindari",
-    "occasion": "Momen khusus"
+    "occasion": "Momen khusus",
+    "notes": "Ada yang lain? Tulis sendiri",
+    "notesPlaceholder": "Contoh: bawa mobil sendiri, ada yang mabuk laut, ingin lihat matahari terbit",
+    "notesHint": "Tulis apa saja yang tidak ada di pilihan. Captain ikut memperhitungkannya."
   },
   "mode": {
     "label": "Cara mengisi",

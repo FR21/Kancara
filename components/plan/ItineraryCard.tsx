@@ -1,11 +1,15 @@
 "use client";
 
-import { Check, TriangleAlert, X, Star, MapPin, Clock, Wallet } from "lucide-react";
-import { type CSSProperties, type KeyboardEvent, useId, useRef, useState, useEffect } from "react";
-import type { Itinerary, ItineraryCover, ItineraryItem } from "@/lib/api/captain";
+import { Check, ChevronRight, TriangleAlert } from "lucide-react";
+import { type KeyboardEvent, useId, useRef, useState } from "react";
+import type { Itinerary, ItineraryCover, ItineraryDay } from "@/lib/api/captain";
 import type { Messages } from "@/lib/messages";
 import { type Member, fillTemplate, getMemberName, parseLocalDate } from "@/lib/plan-draft";
+import { plural } from "@/lib/trips/format";
 import { useLocale } from "@/lib/use-locale";
+import { useWibNow } from "@/lib/use-wib-now";
+import ItineraryStop, { type StopPhase, splitTime, toMinutes } from "./ItineraryStop";
+import StopDialog from "./StopDialog";
 
 type ItineraryCardProps = {
   itinerary: Itinerary;
@@ -13,31 +17,77 @@ type ItineraryCardProps = {
   members: Member[];
   text: Messages["plan"];
   isSample: boolean;
+  /** The day to open on, as YYYY-MM-DD. Falls back to the first day. */
+  initialDate?: string;
+  /** For a trip in progress: mark what is done, happening now, and up next on today's schedule. */
+  live?: boolean;
 };
 
 const MAX_NAMES = 2;
+const NEXT_KEYS = ["ArrowRight", "ArrowDown"];
+const PREVIOUS_KEYS = ["ArrowLeft", "ArrowUp"];
 
-export default function ItineraryCard({ itinerary, destination, members, text, isSample }: ItineraryCardProps) {
+// One tab serves both layouts: a pill in a scrolling row on a phone, a full
+// row in the day column from 1024px.
+const DAY_TAB =
+  "inline-flex h-11 shrink-0 cursor-pointer items-center gap-2 rounded-full border px-4 text-left whitespace-nowrap transition-[background-color,border-color,color,scale] duration-150 ease-out active:scale-[0.97] lg:h-auto lg:w-full lg:justify-between lg:rounded-xl lg:border-transparent lg:px-3 lg:py-3";
+const DAY_TAB_ACTIVE = "border-primary bg-primary text-on-primary lg:bg-primary-subtle lg:text-text";
+const DAY_TAB_IDLE = "border-border-strong text-text hover:bg-surface-muted";
+
+// Where each stop stands against the clock. Only today's schedule gets phases;
+// a stop without a readable time is left unmarked.
+function readPhases(day: ItineraryDay, now: { date: string; time: string } | null): (StopPhase | null)[] {
+  const minute = now && now.date === day.date ? toMinutes(now.time) : null;
+  if (minute === null) return day.items.map(() => null);
+  let nextFound = false;
+  return day.items.map((item, index) => {
+    const { start, end } = splitTime(item.time);
+    const from = toMinutes(start);
+    if (from === null) return null;
+    const nextStart = day.items[index + 1] ? toMinutes(splitTime(day.items[index + 1].time).start) : null;
+    const until = toMinutes(end) ?? nextStart ?? from;
+    if (minute >= until && until > from) return "done";
+    if (minute >= from) return minute < until ? "now" : "done";
+    if (nextFound) return null;
+    nextFound = true;
+    return "next";
+  });
+}
+
+function countToCheck(day: ItineraryDay): number {
+  return day.items.reduce((count, item) => count + (item.violations?.length ?? 0), 0);
+}
+
+// The itinerary as a schedule: the days down the side, the chosen day's stops
+// beside them in one aligned list.
+export default function ItineraryCard({
+  itinerary,
+  destination,
+  members,
+  text,
+  isSample,
+  initialDate,
+  live = false,
+}: ItineraryCardProps) {
   const locale = useLocale();
   const baseId = useId();
-  const [selected, setSelected] = useState(0);
-  const [selectedItem, setSelectedItem] = useState<ItineraryItem | null>(null);
+  const [selected, setSelected] = useState(() =>
+    Math.max(
+      itinerary.days.findIndex((entry) => entry.date === initialDate),
+      0,
+    ),
+  );
+  const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const now = useWibNow(live);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
-  const dayFormat = new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric" });
+  const shortFormat = new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "short" });
+  const longFormat = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long" });
   const dayCount = itinerary.days.length;
-  const day = itinerary.days[selected];
-
-  // Prevent scrolling when modal is open
-  useEffect(() => {
-    if (selectedItem) {
-      document.body.style.overflow = "hidden";
-    } else {
-      document.body.style.overflow = "unset";
-    }
-    return () => {
-      document.body.style.overflow = "unset";
-    };
-  }, [selectedItem]);
+  const day = itinerary.days[Math.min(selected, dayCount - 1)];
+  const honoured = day.items.reduce((count, item) => count + item.covers.length, 0);
+  const toCheck = countToCheck(day);
+  const phases = readPhases(day, now);
+  const dayName = (index: number) => fillTemplate(text.itinerary.day, { number: index + 1 });
 
   const describeCover = (cover: ItineraryCover) => {
     const covered = members.filter((member) => cover.memberIds.includes(member.id));
@@ -51,39 +101,40 @@ export default function ItineraryCard({ itinerary, destination, members, text, i
   };
 
   const selectDay = (index: number) => {
+    setSelected(index);
+    setOpenIndex(null);
+  };
+
+  const moveTo = (index: number) => {
     const next = (index + dayCount) % dayCount;
-    setSelected(next);
-    tabRefs.current[next]?.focus();
+    selectDay(next);
+    const tab = tabRefs.current[next];
+    tab?.scrollIntoView({ block: "nearest", inline: "center" });
+    tab?.focus({ preventScroll: true });
   };
 
   const handleTabKeyDown = (event: KeyboardEvent<HTMLButtonElement>) => {
-    if (event.key === "ArrowRight") selectDay(selected + 1);
-    if (event.key === "ArrowLeft") selectDay(selected - 1);
+    if (!NEXT_KEYS.includes(event.key) && !PREVIOUS_KEYS.includes(event.key)) return;
+    event.preventDefault();
+    moveTo(selected + (NEXT_KEYS.includes(event.key) ? 1 : -1));
   };
 
-  const tabTrackStyle = {
-    gridTemplateColumns: `repeat(${dayCount}, minmax(4rem, 1fr))`,
-    "--tab-index": selected,
-    "--tab-count": dayCount,
-  } as CSSProperties;
-
   return (
-    <div className="w-full overflow-hidden rounded-2xl border border-border bg-surface">
-      <div className="flex items-center justify-between gap-3 px-4 pt-4 sm:px-5">
-        <h2 className="text-label-lg text-text">{fillTemplate(text.itinerary.title, { destination })}</h2>
+    <section className="overflow-clip rounded-2xl border border-border bg-surface">
+      <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-4 sm:px-6">
+        <h2 className="text-h3 text-text">{fillTemplate(text.itinerary.title, { destination })}</h2>
         {isSample && (
           <span className="shrink-0 rounded-full border border-border-strong px-2 py-0.5 text-caption font-bold text-text-muted">
             {text.itinerary.sample}
           </span>
         )}
-      </div>
+      </header>
 
-      <div className="mt-3 overflow-x-auto border-b border-border px-4 [scrollbar-width:none] sm:px-5">
+      <div className="lg:grid lg:grid-cols-[15rem_minmax(0,1fr)]">
         <div
           role="tablist"
           aria-label={text.itinerary.daysLabel}
-          style={tabTrackStyle}
-          className="relative grid min-w-max"
+          className="flex gap-2 overflow-x-auto border-b border-border px-4 py-3 [scrollbar-width:none] sm:px-6 lg:flex-col lg:gap-1 lg:overflow-visible lg:border-r lg:border-b-0 lg:p-3"
         >
           {itinerary.days.map((entry, index) => {
             const active = index === selected;
@@ -99,153 +150,94 @@ export default function ItineraryCard({ itinerary, destination, members, text, i
                 aria-selected={active}
                 aria-controls={`${baseId}-panel`}
                 tabIndex={active ? 0 : -1}
-                onClick={() => setSelected(index)}
+                onClick={() => selectDay(index)}
                 onKeyDown={handleTabKeyDown}
-                className={`flex min-h-12 cursor-pointer flex-col items-center justify-center rounded-t-lg px-2 py-2 transition-colors duration-150 hover:bg-surface-muted ${
-                  active ? "text-primary" : "text-text-muted"
-                }`}
+                className={`${DAY_TAB} ${active ? DAY_TAB_ACTIVE : DAY_TAB_IDLE}`}
               >
-                <span className="text-label">{fillTemplate(text.itinerary.day, { number: index + 1 })}</span>
-                <span className="text-caption">{dayFormat.format(parseLocalDate(entry.date))}</span>
+                {active && <Check className="size-4 shrink-0 lg:hidden" strokeWidth={3} aria-hidden="true" />}
+                <span className="flex items-baseline gap-2 lg:flex-col lg:gap-0">
+                  <span className="text-label lg:text-label-lg">{dayName(index)}</span>
+                  <span className={`text-body-sm ${active ? "lg:text-text-muted" : "text-text-muted"}`}>
+                    {shortFormat.format(parseLocalDate(entry.date))}
+                  </span>
+                </span>
+                <span className="hidden items-center gap-2 lg:flex">
+                  {countToCheck(entry) > 0 && (
+                    <TriangleAlert className="size-4 shrink-0 text-warning" aria-hidden="true" />
+                  )}
+                  <span
+                    aria-hidden="true"
+                    className={`flex size-6 items-center justify-center rounded-full ${
+                      active ? "bg-primary text-on-primary" : "text-text-muted"
+                    }`}
+                  >
+                    <ChevronRight className="size-4" />
+                  </span>
+                </span>
               </button>
             );
           })}
-          <span
-            aria-hidden="true"
-            className="absolute bottom-0 left-0 h-0.5 w-[calc(100%/var(--tab-count))] translate-x-[calc(var(--tab-index)*100%)] rounded-full bg-primary transition-[translate] duration-250 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-none"
-          />
+        </div>
+
+        <div
+          role="tabpanel"
+          id={`${baseId}-panel`}
+          aria-labelledby={`${baseId}-tab-${selected}`}
+          className="min-w-0 px-4 pt-5 pb-5 sm:px-6 lg:px-8 lg:pt-6 lg:pb-8"
+        >
+          <div key={day.date} className="motion-safe:animate-message-in">
+            <h3 className="text-h3 text-text">
+              {dayName(selected)} · {longFormat.format(parseLocalDate(day.date))}
+            </h3>
+            <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm text-text-muted tabular-nums">
+              {plural(text.itinerary.stops, day.items.length, locale)}
+              {honoured > 0 && (
+                <span className="inline-flex items-center gap-1 text-success">
+                  <Check className="size-4 shrink-0" strokeWidth={3} aria-hidden="true" />
+                  {plural(text.itinerary.honoured, honoured, locale)}
+                </span>
+              )}
+              {toCheck > 0 && (
+                <span className="inline-flex items-center gap-1 text-warning">
+                  <TriangleAlert className="size-4 shrink-0" aria-hidden="true" />
+                  {plural(text.itinerary.toCheck, toCheck, locale)}
+                </span>
+              )}
+            </p>
+
+            {day.items.length === 0 && (
+              <p className="py-8 text-body-sm text-text-muted">{text.itinerary.emptyDay}</p>
+            )}
+
+            <ol className="mt-4">
+              {day.items.map((item, index) => (
+                <ItineraryStop
+                  key={`${item.time}-${item.title}`}
+                  item={item}
+                  phase={phases[index]}
+                  isLast={index === day.items.length - 1}
+                  locale={locale}
+                  text={text.itinerary}
+                  describeCover={describeCover}
+                  onOpen={() => setOpenIndex(index)}
+                />
+              ))}
+            </ol>
+          </div>
         </div>
       </div>
 
-      <ol
-        key={day.date}
-        role="tabpanel"
-        id={`${baseId}-panel`}
-        aria-labelledby={`${baseId}-tab-${selected}`}
-        className="divide-y divide-border px-4 motion-safe:animate-message-in sm:px-5"
-      >
-        {day.items.map((item) => (
-          <li key={`${item.time}-${item.title}`} className="grid grid-cols-[3rem_minmax(0,1fr)] gap-4 py-4">
-            <p className="text-label text-primary tabular-nums">{item.time}</p>
-            <div className="min-w-0">
-              <button 
-                onClick={() => setSelectedItem(item)}
-                className="text-left w-full hover:opacity-80 transition-opacity"
-              >
-                <p className="text-label text-text">{item.title}</p>
-                {item.detail && <p className="mt-1 text-body-sm text-text-muted">{item.detail}</p>}
-              </button>
-              
-              {item.violations && item.violations.length > 0 && (
-                <div className="mt-3 rounded-lg border border-error bg-error-subtle p-3 text-body-sm text-on-error-subtle">
-                  <p className="font-bold flex items-center gap-1"><TriangleAlert className="size-4" /> Perhatian:</p>
-                  <ul className="mt-1 list-disc pl-5">
-                    {item.violations.map((v, i) => (
-                      <li key={i}>{v.reason}</li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-
-              {item.covers.length > 0 && (
-                <ul aria-label={text.itinerary.honours} className="mt-2 flex flex-wrap gap-2">
-                  {item.covers.map((cover) => (
-                    <li
-                      key={cover.need}
-                      className="inline-flex items-center gap-1 rounded-full bg-success-subtle px-2 py-1 text-caption font-bold text-on-success-subtle"
-                    >
-                      <Check className="size-3 shrink-0" strokeWidth={3} aria-hidden="true" />
-                      {describeCover(cover)}
-                    </li>
-                  ))}
-                </ul>
-              )}
-              
-              {item.travelToNext && (
-                <div className="mt-3 inline-flex items-center gap-2 rounded-full border border-border bg-surface-muted px-3 py-1.5 text-caption text-text-muted">
-                  <span aria-hidden="true">🚗</span>
-                  <span>{item.travelToNext.duration} ({item.travelToNext.distance})</span>
-                </div>
-              )}
-            </div>
-          </li>
-        ))}
-      </ol>
-
-      {/* Modal */}
-      {selectedItem && (
-        <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 sm:p-6 backdrop-blur-sm"
-          onClick={() => setSelectedItem(null)}
-        >
-          <div 
-            className="relative w-full max-w-lg overflow-hidden rounded-2xl bg-surface shadow-xl motion-safe:animate-message-in flex flex-col max-h-[90vh]"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="flex items-center justify-between border-b border-border px-5 py-4 shrink-0">
-              <h3 className="text-label-lg text-text truncate pr-4">{selectedItem.title}</h3>
-              <button
-                onClick={() => setSelectedItem(null)}
-                className="rounded-full p-2 text-text-muted hover:bg-surface-muted transition-colors shrink-0"
-                aria-label="Close modal"
-              >
-                <X className="size-5" />
-              </button>
-            </div>
-            
-            <div className="overflow-y-auto p-5 custom-scrollbar">
-              <div className="mb-4 aspect-video w-full overflow-hidden rounded-xl bg-surface-muted">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={selectedItem.imageUrl || "/images/hero/Sky.webp"}
-                  alt={selectedItem.title}
-                  className="h-full w-full object-cover text-transparent"
-                />
-              </div>
-              
-              <div className="space-y-4">
-                {selectedItem.detail && (
-                  <p className="text-body text-text">{selectedItem.detail}</p>
-                )}
-                
-                <div className="grid gap-3 pt-2">
-                  {selectedItem.address && (
-                    <div className="flex gap-3 text-body-sm">
-                      <MapPin className="size-5 shrink-0 text-primary" />
-                      <span className="text-text">{selectedItem.address}</span>
-                    </div>
-                  )}
-                  
-                  {selectedItem.openingHours && (
-                    <div className="flex gap-3 text-body-sm">
-                      <Clock className="size-5 shrink-0 text-primary" />
-                      <span className="text-text">{selectedItem.openingHours}</span>
-                    </div>
-                  )}
-                  
-                  {(selectedItem.priceLevel || selectedItem.rating) && (
-                    <div className="flex gap-6 text-body-sm">
-                      {selectedItem.priceLevel && (
-                        <div className="flex gap-2 items-center">
-                          <Wallet className="size-5 shrink-0 text-primary" />
-                          <span className="text-text">{selectedItem.priceLevel}</span>
-                        </div>
-                      )}
-                      
-                      {selectedItem.rating && (
-                        <div className="flex gap-2 items-center">
-                          <Star className="size-5 shrink-0 text-primary fill-primary" />
-                          <span className="text-text">{selectedItem.rating} / 5</span>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-    </div>
+      <StopDialog
+        items={day.items}
+        index={openIndex}
+        phases={phases}
+        dayLabel={dayName(selected)}
+        destination={destination}
+        text={text.itinerary}
+        describeCover={describeCover}
+        onNavigate={setOpenIndex}
+        onClose={() => setOpenIndex(null)}
+      />
+    </section>
   );
 }

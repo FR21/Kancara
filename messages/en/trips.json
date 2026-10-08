@@ -44,7 +44,44 @@
       "notDownloaded": "Not downloaded"
     },
     "spent": "Spent {spent}",
-    "spentOf": "Spent {spent} of {budget}"
+    "spentOf": "Spent {spent} of {budget}",
+    "dayShort": "Day {day}/{total}",
+    "filledShort": "{done}/{total} filled in",
+    "toCheck": "Something needs a check"
+  },
+  "list": {
+    "label": "Trip list"
+  },
+  "detail": {
+    "label": "Trip details",
+    "empty": "Pick a trip to see its details.",
+    "close": "Close",
+    "notSet": "Not set yet",
+    "fields": {
+      "dates": "Dates",
+      "duration": "Length",
+      "budget": "Budget",
+      "role": "Your role"
+    },
+    "roles": {
+      "organizer": "Organizer",
+      "member": "Invited member"
+    },
+    "group": "Group",
+    "needs": "Needs being looked after",
+    "sectionsTitle": "Plan progress",
+    "sections": {
+      "route": "Route",
+      "dates": "Dates",
+      "group": "Group",
+      "budget": "Budget",
+      "pace": "Pace"
+    },
+    "sectionDone": "filled in",
+    "sectionMissing": "not filled in yet",
+    "openItinerary": "View itinerary",
+    "openSummary": "View summary",
+    "actions": "Trip actions"
   },
   "menu": {
     "label": "Menu for {name}",
@@ -94,6 +131,19 @@
   "error": "The trip list couldn't be loaded. Check your connection, then try again.",
   "retry": "Try again",
   "offline": "You're offline. This list may not be up to date.",
+  "itinerary": {
+    "back": "My Trips",
+    "loading": "Loading itinerary",
+    "error": "The itinerary couldn't be loaded. Check your connection, then try again.",
+    "notFound": "This trip wasn't found. It may have been deleted.",
+    "missing": "This trip doesn't have an itinerary yet.",
+    "missingOrganizer": "Captain can build it now from the dates, group, and needs already saved.",
+    "missingMember": "The itinerary shows up here once the organizer creates it.",
+    "missingDraft": "Finish the plan first, then the itinerary is built from it.",
+    "generate": "Create itinerary",
+    "generating": "Captain is putting the itinerary together. It usually takes less than a minute.",
+    "generateFailed": "The itinerary couldn't be created. Check your connection, then try again."
+  },
   "placeholder": {
     "detail": "Itinerary",
     "today": "Today's schedule",

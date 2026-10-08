@@ -1,4 +1,16 @@
-import { type AgeGroup, type PlanDraft, hasDateError, hasDates, missingFields, PASS_FIELDS } from "@/lib/plan-draft";
+import type { Itinerary } from "@/lib/api/captain";
+import {
+  type AgeGroup,
+  type NeedKey,
+  type PassField,
+  type PlanDraft,
+  hasBudget,
+  hasDateError,
+  hasDates,
+  missingFields,
+  NEED_KEYS,
+  PASS_FIELDS,
+} from "@/lib/plan-draft";
 
 export const TRIP_STATES = ["DRAFT", "PLANNED", "COMPLETED"] as const;
 export type TripState = (typeof TRIP_STATES)[number];
@@ -29,6 +41,7 @@ export type Trip = {
   offline?: OfflineState;
   spent?: number;
   today?: TripActivity[];
+  itinerary?: Itinerary;
 };
 
 export type TripCardMember = { id: string; ageGroup: AgeGroup };
@@ -45,14 +58,27 @@ export type TripCard = {
   days: number;
   members: TripCardMember[];
   memberCount: number;
+  needs: NeedKey[];
+  budget: number | null;
   violations?: number;
   offline?: OfflineState;
   day?: number;
   nextActivity?: TripActivity;
   startsIn?: number;
   filled?: number;
+  missing?: PassField[];
   cost?: { spent: number; budget: number | null };
 };
+
+/** One trip opened up: its card, the plan details behind it, the saved itinerary, and today's date in WIB. */
+export type TripPlanView = { card: TripCard; draft: PlanDraft; itinerary: Itinerary | null; today: string };
+
+/** How many needs an itinerary fails to honour, summed over every stop. */
+export function countViolations(itinerary: Itinerary): number {
+  return itinerary.days
+    .flatMap((day) => day.items)
+    .reduce((count, item) => count + (item.violations?.length ?? 0), 0);
+}
 
 export type ActiveTrips = { ongoing: TripCard[]; upcoming: TripCard[]; drafts: TripCard[] };
 export type HistoryTrips = { trips: TripCard[]; total: number; countries: number; years: number[] };
@@ -81,6 +107,20 @@ function isDated(draft: PlanDraft): boolean {
   return hasDates(draft) && !hasDateError(draft);
 }
 
+const START_TIME = /^\s*(\d{1,2})[:.](\d{2})/;
+
+// What happens today, from the seeded list or from the saved itinerary. An
+// itinerary time is free text ("09:00 - 12:00"), so only its start is read.
+function activitiesToday(trip: Trip, today: string): TripActivity[] {
+  if (trip.today) return trip.today;
+  const day = trip.itinerary?.days.find((entry) => entry.date === today);
+  if (!day) return [];
+  return day.items.flatMap((item) => {
+    const match = START_TIME.exec(item.time);
+    return match ? [{ time: `${match[1].padStart(2, "0")}:${match[2]}`, title: item.title }] : [];
+  });
+}
+
 export function tripStatus(trip: Trip, today: string): TripStatus {
   if (trip.state === "DRAFT") return "draft";
   if (trip.state === "COMPLETED") return "completed";
@@ -105,10 +145,14 @@ export function toTripCard(trip: Trip, clock: Clock): TripCard {
     days: dated ? daysBetween(draft.startDate, draft.endDate) + 1 : 0,
     members: draft.members.slice(0, MAX_CARD_MEMBERS).map((member) => ({ id: member.id, ageGroup: member.ageGroup })),
     memberCount: draft.members.length,
+    // Every need anyone in the group has, once each, in the order the plan form lists them.
+    needs: NEED_KEYS.filter((need) => draft.members.some((member) => member.needs.includes(need))),
+    budget: hasBudget(draft) ? draft.budget : null,
   };
 
   if (status === "draft") {
-    card.filled = DRAFT_SECTIONS - missingFields(draft).length;
+    card.missing = missingFields(draft);
+    card.filled = DRAFT_SECTIONS - card.missing.length;
     return card;
   }
 
@@ -122,7 +166,7 @@ export function toTripCard(trip: Trip, clock: Clock): TripCard {
   if (status === "upcoming" && dated) card.startsIn = daysBetween(clock.date, draft.startDate);
   if (status === "ongoing") {
     card.day = daysBetween(draft.startDate, clock.date) + 1;
-    card.nextActivity = trip.today?.find((activity) => activity.time >= clock.time);
+    card.nextActivity = activitiesToday(trip, clock.date).find((activity) => activity.time >= clock.time);
   }
   return card;
 }
