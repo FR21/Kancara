@@ -21,6 +21,8 @@ import enProfile from "@/messages/en/profile.json";
 import idProfile from "@/messages/id/profile.json";
 import enTravel from "@/messages/en/travel.json";
 import idTravel from "@/messages/id/travel.json";
+import enAbout from "@/messages/en/about.json";
+import idAbout from "@/messages/id/about.json";
 import enTrips from "@/messages/en/trips.json";
 import idTrips from "@/messages/id/trips.json";
 import type { Locale } from "./locale";
@@ -35,6 +37,7 @@ const id = {
   auth: idAuth,
   profile: idProfile,
   travel: idTravel,
+  about: idAbout,
   trips: idTrips,
 };
 
@@ -51,6 +54,7 @@ const en = {
   auth: enAuth,
   profile: enProfile,
   travel: enTravel,
+  about: enAbout,
   trips: enTrips,
 } satisfies Messages;
 
