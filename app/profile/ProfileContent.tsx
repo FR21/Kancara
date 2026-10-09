@@ -282,7 +282,7 @@ export default function ProfileContent({ user, customToken }: ProfileContentProp
             />
             {travel.open}
             <ArrowRight
-              className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-0.5"
+              className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1"
               aria-hidden="true"
             />
           </Link>
@@ -417,7 +417,7 @@ export default function ProfileContent({ user, customToken }: ProfileContentProp
             ) : (
               <button key="logout" type="button" onClick={handleLogout} className={LOGOUT_BUTTON}>
                 <LogOut
-                  className="size-4 transition-[translate] duration-200 ease-out group-hover/out:translate-x-0.5"
+                  className="size-4 transition-[translate] duration-200 ease-out group-hover/out:translate-x-1"
                   aria-hidden="true"
                 />
                 {t.logoutButton}

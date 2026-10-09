@@ -150,13 +150,11 @@ function readBareCities(story: string): string[] {
 
 function readFocused(story: string, focus: QuestionKey | null, draft: PlanDraft, patch: DraftPatch): void {
   const bareNumber = story.trim().match(/^(\d[\d.,]*)$/);
-  if (focus === "origin" && patch.origin === undefined) {
+  if (focus === "trip" && patch.origin === undefined && patch.destinations === undefined) {
     const cities = readBareCities(story);
-    if (cities.length > 0) patch.origin = cities[0];
-  }
-  if (focus === "destination" && patch.destinations === undefined) {
-    const cities = readBareCities(story);
-    if (cities.length > 0) patch.destinations = cities;
+    // A bare city name answers whichever half of the route is still open: the destination first.
+    if (cities.length > 0 && draft.destinations.length === 0) patch.destinations = cities;
+    else if (cities.length > 0) patch.origin = cities[0];
   }
   if (focus === "crew" && patch.members === undefined && bareNumber) {
     const size = Number(bareNumber[1]);

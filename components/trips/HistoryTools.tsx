@@ -47,7 +47,7 @@ export default function HistoryTools({
           <Globe className="size-4" aria-hidden="true" />
           {mapLabel}
           <ArrowRight
-            className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-0.5"
+            className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1"
             aria-hidden="true"
           />
         </Link>

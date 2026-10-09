@@ -33,6 +33,8 @@ const BLOCK_TITLE = "text-label text-text";
 const ACTION =
   "inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-border-strong px-4 text-label transition-[background-color,border-color,scale] duration-150 ease-out active:scale-[0.97]";
 const TRACK = "h-2 overflow-hidden rounded-full bg-surface-muted";
+const NEED =
+  "max-w-full rounded-2xl border border-border-strong px-2 py-1 text-caption font-bold wrap-anywhere text-text";
 
 // Everything about one trip, and the way into it. On a laptop it sits beside
 // the list; on a phone the same panel rises as a sheet.
@@ -87,7 +89,6 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
             destinations={card.destinations}
             toLabel={text.card.routeTo}
             emptyLabel={text.card.noRoute}
-            onBand
           />
         </div>
       </header>
@@ -126,14 +127,16 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
               moreLabel={text.card.moreMembers}
             />
           </div>
-          {card.needs.length > 0 && (
+          {card.needs.length + card.customNeeds.length > 0 && (
             <ul aria-label={detail.needs} className="mt-3 flex flex-wrap gap-2">
               {card.needs.map((need) => (
-                <li
-                  key={need}
-                  className="rounded-full border border-border-strong px-2 py-1 text-caption font-bold text-text"
-                >
+                <li key={need} className={NEED}>
                   {needLabels[need]}
+                </li>
+              ))}
+              {card.customNeeds.map((need) => (
+                <li key={need} className={NEED}>
+                  {need}
                 </li>
               ))}
             </ul>
@@ -148,7 +151,7 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
             <div aria-hidden="true" className={`mt-2 ${TRACK}`}>
               <div
                 style={{ width: `${((card.day ?? 1) / card.days) * 100}%` }}
-                className="h-full rounded-full bg-primary"
+                className="h-full origin-left rounded-full bg-primary motion-safe:animate-grow-x"
               />
             </div>
             {card.nextActivity && (
@@ -179,7 +182,7 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
             <div aria-hidden="true" className={`mt-2 ${TRACK}`}>
               <div
                 style={{ width: `${((card.filled ?? 0) / DRAFT_SECTIONS) * 100}%` }}
-                className="h-full rounded-full bg-primary"
+                className="h-full origin-left rounded-full bg-primary motion-safe:animate-grow-x"
               />
             </div>
             <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
@@ -232,7 +235,7 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
           >
             {openLabels[card.status]}
             <ArrowRight
-              className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-0.5"
+              className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1"
               aria-hidden="true"
             />
           </Link>
@@ -241,26 +244,35 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
             <button
               type="button"
               onClick={() => actions.onDuplicate(card)}
-              className={`${ACTION} text-text hover:bg-surface-muted`}
+              className={`group/action ${ACTION} text-text hover:bg-surface-muted`}
             >
-              <CopyPlus className="size-4" aria-hidden="true" />
+              <CopyPlus
+                className="size-4 transition-[scale] duration-300 ease-spring group-hover/action:scale-125"
+                aria-hidden="true"
+              />
               {text.menu.duplicate}
             </button>
             <button
               type="button"
               onClick={() => actions.onShare(card)}
-              className={`${ACTION} text-text hover:bg-surface-muted`}
+              className={`group/action ${ACTION} text-text hover:bg-surface-muted`}
             >
-              <Share2 className="size-4" aria-hidden="true" />
+              <Share2
+                className="size-4 transition-[rotate] duration-300 ease-spring group-hover/action:-rotate-12"
+                aria-hidden="true"
+              />
               {text.menu.share}
             </button>
             {canDelete && (
               <button
                 type="button"
                 onClick={() => actions.onDelete(card)}
-                className={`${ACTION} text-error hover:border-error hover:bg-error-subtle`}
+                className={`group/action ${ACTION} text-error hover:border-error hover:bg-error-subtle`}
               >
-                <Trash2 className="size-4" aria-hidden="true" />
+                <Trash2
+                  className="size-4 transition-[rotate] duration-300 ease-spring group-hover/action:rotate-12"
+                  aria-hidden="true"
+                />
                 {text.menu.delete}
               </button>
             )}

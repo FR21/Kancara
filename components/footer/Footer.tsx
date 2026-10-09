@@ -17,7 +17,7 @@ const NEAR_HILLS = "M0 204C240 176 470 192 720 184S1180 166 1440 190V240H0Z";
 const ROUTE = "M90 176C250 72 460 66 640 118S990 176 1217 126";
 
 const UNDERLINE =
-  "bg-[linear-gradient(var(--accent),var(--accent))] bg-position-[0_100%] bg-no-repeat bg-size-[0%_2px] pb-0.5 transition-[color,background-size] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]";
+  "bg-[linear-gradient(var(--accent),var(--accent))] bg-position-[0_100%] bg-no-repeat bg-size-[0%_2px] pb-1 transition-[color,background-size] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)]";
 
 function LinkColumn({
   heading,
@@ -181,7 +181,7 @@ export default function Footer() {
               {text.backToTop}
               <ArrowUp
                 aria-hidden="true"
-                className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-y-0.5"
+                className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-y-1"
               />
             </button>
           </div>

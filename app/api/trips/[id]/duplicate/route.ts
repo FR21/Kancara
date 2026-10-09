@@ -1,4 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { currentViewer, duplicateTrip } from "@/lib/trips/store";
 
 const MAX_NAME_CHARS = 120;
@@ -14,6 +15,9 @@ async function readName(request: NextRequest): Promise<string> {
 }
 
 export async function POST(request: NextRequest, context: RouteContext<"/api/trips/[id]/duplicate">) {
+  const limited = rateLimit(request, "trips-duplicate");
+  if (limited) return limited;
+
   const viewer = await currentViewer();
   if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

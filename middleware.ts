@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
+import { isLocale, LOCALE_HEADER, LOCALE_PARAM } from "@/lib/locale";
 
 export function middleware(request: NextRequest) {
   const session = request.cookies.get("session");
@@ -22,7 +23,12 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/trips", request.url));
   }
 
-  return NextResponse.next();
+  // An address like /about?lang=en names its language. Passing it on lets the page be rendered in it.
+  const named = request.nextUrl.searchParams.get(LOCALE_PARAM);
+  if (!isLocale(named)) return NextResponse.next();
+  const headers = new Headers(request.headers);
+  headers.set(LOCALE_HEADER, named);
+  return NextResponse.next({ request: { headers } });
 }
 
 export const config = {

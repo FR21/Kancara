@@ -59,7 +59,7 @@ export default function CoreFlowSection() {
                     <span className="tabular-nums">{step.number}</span>
                   </div>
 
-                  <h3 className="text-display font-heading font-extrabold text-text text-3xl sm:text-4xl">
+                  <h3 className="text-display font-heading font-extrabold text-text text-h1 sm:text-4xl">
                     {step.title}
                   </h3>
 
@@ -73,7 +73,7 @@ export default function CoreFlowSection() {
 
                   <a
                     href="/plan"
-                    className="inline-flex min-h-11 items-center gap-1.5 text-label-lg font-bold text-primary hover:text-primary-hover transition-colors group"
+                    className="inline-flex min-h-11 items-center gap-2 text-label-lg font-bold text-primary hover:text-primary-hover transition-colors group"
                   >
                     <span>{step.cta}</span>
                     <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />

@@ -17,13 +17,13 @@ export default function MemberStack({ members, count, label, moreLabel }: Member
   return (
     <div className="flex items-center gap-3">
       {members.length > 0 && (
-        <span aria-hidden="true" className="flex shrink-0">
+        <span aria-hidden="true" className="pointer-events-auto flex shrink-0">
           {members.map((member, index) => (
             <MemberAvatar
               key={member.id}
               ageGroup={member.ageGroup}
               variant={index}
-              className={`size-8 ${RING} ${index > 0 ? "-ml-2" : ""}`}
+              className={`size-8 transition-[translate] duration-300 ease-spring hover:-translate-y-1 ${RING} ${index > 0 ? "-ml-2" : ""}`}
             />
           ))}
           {hidden > 0 && (

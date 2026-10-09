@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import TripItinerary from "@/components/trips/TripItinerary";
+import { requestMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Jadwal hari ini | Kancara",
-};
+export function generateMetadata(): Promise<Metadata> {
+  return requestMetadata("tripToday");
+}
 
 // Until the trip home is built, "open today" shows the itinerary opened on today's date.
 export default async function TripTodayPage({ params }: PageProps<"/trips/[id]/today">) {

@@ -1,8 +1,12 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { readTripInput } from "@/lib/trips/input";
 import { currentViewer, deleteTrip, getTripPlan, updateTrip } from "@/lib/trips/store";
 
-export async function GET(_request: NextRequest, context: RouteContext<"/api/trips/[id]">) {
+export async function GET(request: NextRequest, context: RouteContext<"/api/trips/[id]">) {
+  const limited = rateLimit(request, "trips-read");
+  if (limited) return limited;
+
   const viewer = await currentViewer();
   if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -13,6 +17,9 @@ export async function GET(_request: NextRequest, context: RouteContext<"/api/tri
 }
 
 export async function PUT(request: NextRequest, context: RouteContext<"/api/trips/[id]">) {
+  const limited = rateLimit(request, "trips-update");
+  if (limited) return limited;
+
   const viewer = await currentViewer();
   if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -25,7 +32,10 @@ export async function PUT(request: NextRequest, context: RouteContext<"/api/trip
   return NextResponse.json(card);
 }
 
-export async function DELETE(_request: NextRequest, context: RouteContext<"/api/trips/[id]">) {
+export async function DELETE(request: NextRequest, context: RouteContext<"/api/trips/[id]">) {
+  const limited = rateLimit(request, "trips-delete");
+  if (limited) return limited;
+
   const viewer = await currentViewer();
   if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

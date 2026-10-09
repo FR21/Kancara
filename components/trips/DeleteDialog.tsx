@@ -49,7 +49,7 @@ export default function DeleteDialog({ name, text, pending, failed, onCancel, on
 
         {failed && (
           <p role="alert" className="mt-4 flex items-start gap-2 text-body-sm text-error">
-            <CircleAlert className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+            <CircleAlert className="mt-1 size-4 shrink-0" aria-hidden="true" />
             {text.failed}
           </p>
         )}

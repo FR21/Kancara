@@ -1,33 +1,44 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import Footer from "@/components/footer/Footer";
+import LocaleProvider from "@/components/layout/LocaleProvider";
 import SiteChrome from "@/components/layout/SiteChrome";
 import Navbar from "@/components/navbar/Navbar";
-import { DEFAULT_LOCALE, localeInitScript } from "@/lib/locale";
+import { localeInitScript } from "@/lib/locale";
+import { requestLocale } from "@/lib/locale-server";
+import { MESSAGES } from "@/lib/messages";
+import { SITE_URL } from "@/lib/seo";
 import { themeInitScript } from "@/lib/theme";
 import { verifySession } from "@/lib/auth/session";
 import { FONT_CLASSES } from "./fonts";
 import "./globals.css";
 
-export const metadata: Metadata = {
-  title: "Kancara",
-  description: "Your inclusive group travel planner",
-  icons: {
-    icon: { url: "/images/logo/kancara_mascot_logo.webp", type: "image/webp" },
-  },
+// Defaults for every page. Each page adds its own title, description, canonical address, and preview tags.
+export async function generateMetadata(): Promise<Metadata> {
+  const text = MESSAGES[await requestLocale()].seo;
+  return {
+    metadataBase: new URL(SITE_URL),
+    title: { default: text.pages.home.title, template: `%s | ${text.siteName}` },
+    description: text.description,
+    applicationName: text.siteName,
+    verification: { google: process.env.GOOGLE_SITE_VERIFICATION },
+  };
+}
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: "(prefers-color-scheme: light)", color: "#ffffff" },
+    { media: "(prefers-color-scheme: dark)", color: "#081415" },
+  ],
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const session = await verifySession();
+  const [session, locale] = await Promise.all([verifySession(), requestLocale()]);
   const isLoggedIn = !!session;
 
   return (
     // The inline script sets data-theme and lang before hydration, so React
     // must not warn about those attributes differing from the server render.
-    <html
-      lang={DEFAULT_LOCALE}
-      suppressHydrationWarning
-      className={FONT_CLASSES}
-    >
+    <html lang={locale} suppressHydrationWarning className={FONT_CLASSES}>
       <head>
         <script
           suppressHydrationWarning
@@ -35,15 +46,16 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
         />
       </head>
       <body className="min-h-screen flex flex-col font-sans overflow-x-clip">
-        <SiteChrome>
-          <Navbar isLoggedIn={isLoggedIn} picture={session?.picture ?? null} />
-        </SiteChrome>
-        {children}
-        <SiteChrome>
-          <Footer />
-        </SiteChrome>
+        <LocaleProvider locale={locale}>
+          <SiteChrome>
+            <Navbar isLoggedIn={isLoggedIn} picture={session?.picture ?? null} />
+          </SiteChrome>
+          {children}
+          <SiteChrome>
+            <Footer />
+          </SiteChrome>
+        </LocaleProvider>
       </body>
     </html>
   );
 }
-

@@ -52,7 +52,7 @@ export function ErrorState({ type, onRetry, showHomeButton = true }: ErrorStateP
           {showHomeButton && (
             <Link href="/" className={`group ${onRetry ? OUTLINE_BUTTON : PRIMARY_BUTTON}`}>
               <Home
-                className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-y-0.5"
+                className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-y-1"
                 aria-hidden="true"
               />
               {text.home}

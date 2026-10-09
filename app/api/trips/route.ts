@@ -1,10 +1,14 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { readTripInput } from "@/lib/trips/input";
 import { createTrip, currentViewer, listActiveTrips, listHistoryTrips } from "@/lib/trips/store";
 
 const MAX_QUERY_CHARS = 100;
 
 export async function GET(request: NextRequest) {
+  const limited = rateLimit(request, "trips-list");
+  if (limited) return limited;
+
   const viewer = await currentViewer();
   if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
@@ -21,6 +25,9 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
+  const limited = rateLimit(request, "trips-create");
+  if (limited) return limited;
+
   const viewer = await currentViewer();
   if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 

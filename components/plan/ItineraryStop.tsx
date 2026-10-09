@@ -10,6 +10,7 @@ export type StopPhase = "done" | "now" | "next";
 type ItineraryStopProps = {
   item: ItineraryItem;
   phase: StopPhase | null;
+  order: number;
   isLast: boolean;
   locale: string;
   text: Messages["plan"]["itinerary"];
@@ -21,6 +22,8 @@ const TIME_RANGE = /^\s*(\d{1,2}[:.]\d{2})\s*(?:[-–—]|to|sampai)\s*(\d{1,2}[
 const CLOCK = /^(\d{1,2})[:.](\d{2})$/;
 const MAX_COVERS = 2;
 const CHIP = "inline-flex items-center gap-1 rounded-full px-2 py-1 text-caption font-bold";
+const ENTER_STEP_MS = 60;
+const MAX_STAGGER = 8;
 
 // The planner writes times as free text, usually "09:00 - 12:00". Anything
 // else is shown as it came.
@@ -111,6 +114,7 @@ export function PhaseBadge({ phase, text }: { phase: StopPhase; text: Messages["
 export default function ItineraryStop({
   item,
   phase,
+  order,
   isLast,
   locale,
   text,
@@ -126,13 +130,16 @@ export default function ItineraryStop({
   const dot = phase === "now" ? "size-3 bg-primary ring-4 ring-primary/25" : "size-2 bg-border-strong";
 
   return (
-    <li className="grid grid-cols-[4rem_minmax(0,1fr)] sm:grid-cols-[5.5rem_minmax(0,1fr)]">
+    <li
+      style={{ animationDelay: `${Math.min(order, MAX_STAGGER) * ENTER_STEP_MS}ms` }}
+      className="group/slot grid grid-cols-[4rem_minmax(0,1fr)] motion-safe:animate-message-in sm:grid-cols-[5.5rem_minmax(0,1fr)]"
+    >
       <div className="relative border-r border-border pt-4 pr-3 text-right sm:pr-4">
         <p className={`text-label tabular-nums ${phase === "done" ? "text-text-muted" : "text-text"}`}>{start}</p>
         {duration && <p className="mt-1 text-caption text-text-muted tabular-nums">{duration}</p>}
         <span
           aria-hidden="true"
-          className={`absolute top-6 right-0 translate-x-1/2 -translate-y-1/2 rounded-full ${dot}`}
+          className={`absolute top-6 right-0 translate-x-1/2 -translate-y-1/2 rounded-full transition-[background-color,scale] duration-300 ease-spring group-hover/slot:scale-150 group-hover/slot:bg-primary ${dot}`}
         />
       </div>
 
@@ -154,16 +161,18 @@ export default function ItineraryStop({
               )}
             </span>
             {item.imageUrl && (
-              // eslint-disable-next-line @next/next/no-img-element -- place photos come from a remote API with per-request URLs
-              <img
-                src={item.imageUrl}
-                alt=""
-                loading="lazy"
-                className="hidden size-16 shrink-0 rounded-xl bg-surface-muted object-cover sm:block"
-              />
+              <span className="hidden size-16 shrink-0 overflow-clip rounded-xl bg-surface-muted sm:block">
+                {/* eslint-disable-next-line @next/next/no-img-element -- place photos come from a remote API with per-request URLs */}
+                <img
+                  src={item.imageUrl}
+                  alt=""
+                  loading="lazy"
+                  className="size-full object-cover transition-[scale] duration-500 ease-out group-hover/stop:scale-110"
+                />
+              </span>
             )}
             <ChevronRight
-              className="mt-1 size-4 shrink-0 text-text-muted transition-[translate,color] duration-200 ease-out group-hover/stop:translate-x-0.5 group-hover/stop:text-primary"
+              className="mt-1 size-4 shrink-0 text-text-muted transition-[translate,color] duration-200 ease-out group-hover/stop:translate-x-1 group-hover/stop:text-primary"
               aria-hidden="true"
             />
           </span>

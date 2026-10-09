@@ -25,7 +25,9 @@ const STATUS_MARKS: Record<TripStatus, string> = {
 export function StatusMark({ status, label }: { status: TripStatus; label: string }) {
   const Icon = STATUS_ICONS[status];
   return (
-    <span className={`flex size-10 shrink-0 items-center justify-center rounded-full ${STATUS_MARKS[status]}`}>
+    <span
+      className={`flex size-10 shrink-0 items-center justify-center rounded-full transition-[scale,rotate] duration-300 ease-spring group-hover/row:scale-110 group-hover/row:-rotate-6 ${STATUS_MARKS[status]}`}
+    >
       <Icon className="size-4" strokeWidth={status === "completed" ? 3 : 2} aria-hidden="true" />
       <span className="sr-only">{label}</span>
     </span>

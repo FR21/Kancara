@@ -139,25 +139,7 @@ export default function TravelMap({ uid, customToken }: TravelMapProps) {
 
       <div className="mt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-x-12">
         <section aria-label={text.view.label}>
-          <div
-            className={`relative w-full transition-[aspect-ratio] duration-1000 ${EASE} motion-reduce:transition-none ${
-              mode === "map" ? "aspect-2/1" : "aspect-square"
-            }`}
-          >
-            <WorldStage
-              visited={visited}
-              mode={mode}
-              zoom={zoom}
-              focus={focus}
-              names={names}
-              label={fillTemplate(text.stage.label, { count })}
-              text={text}
-              onToggle={(code) => toggle(code, false)}
-              onZoom={setZoom}
-            />
-          </div>
-
-          <div className="mt-4 flex items-center justify-between gap-3 motion-safe:animate-message-in motion-safe:[animation-delay:300ms]">
+          <div className="flex items-center justify-between gap-3 motion-safe:animate-message-in motion-safe:[animation-delay:300ms]">
             <div
               role="group"
               aria-label={text.view.label}
@@ -208,6 +190,24 @@ export default function TravelMap({ uid, customToken }: TravelMapProps) {
             </div>
           </div>
           <p className="mt-3 text-body-sm text-text-muted">{text.stage.hint}</p>
+          <div
+            className={`relative mt-4 w-full transition-[aspect-ratio] duration-1000 ${EASE} motion-reduce:transition-none ${
+              mode === "map" ? "aspect-2/1" : "aspect-square"
+            }`}
+          >
+            <WorldStage
+              visited={visited}
+              mode={mode}
+              zoom={zoom}
+              focus={focus}
+              names={names}
+              label={fillTemplate(text.stage.label, { count })}
+              text={text}
+              onToggle={(code) => toggle(code, false)}
+              onZoom={setZoom}
+            />
+          </div>
+
         </section>
 
         <aside className="mt-10 motion-safe:animate-message-in motion-safe:[animation-delay:200ms] lg:mt-0">

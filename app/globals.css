@@ -345,6 +345,10 @@
   --animate-orb-bump: orb-bump 350ms cubic-bezier(0.23, 1, 0.32, 1);
   --animate-pop-in: pop-in 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-sheet-up: sheet-up 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  --animate-float: float 5s ease-in-out infinite;
+  --animate-fly-in: fly-in 900ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  --animate-grow-x: grow-x 700ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  --animate-turn: turn 12s linear infinite;
   --animate-lock-nudge: lock-nudge 400ms ease-in-out;
   --animate-slide-progress: slide-progress 6s linear both;
   --animate-needle-sway: needle-sway 4s ease-in-out infinite;
@@ -430,6 +434,35 @@
     from {
       opacity: 0;
       scale: 0.92;
+    }
+  }
+
+  /* The plane on a route line arriving from where the trip starts. */
+  @keyframes fly-in {
+    from {
+      opacity: 0;
+      translate: -3rem 0;
+    }
+  }
+
+  /* A progress fill growing from the left edge. Pair with origin-left. */
+  @keyframes grow-x {
+    from {
+      scale: 0 1;
+    }
+  }
+
+  /* A slow idle bob, for something that hovers in place. */
+  @keyframes float {
+    50% {
+      translate: 0 -0.5rem;
+    }
+  }
+
+  /* One slow full turn, for a mark that means "still in progress". */
+  @keyframes turn {
+    to {
+      rotate: 360deg;
     }
   }
 
@@ -730,19 +763,45 @@
   }
 }
 
+/* Utilities: ticket-notch, with notch-top, notch-bottom, notch-left and
+   notch-right. Cuts two round bites out of an element, so whatever lies behind
+   shows through. By default they sit halfway up the left and right edges. A
+   notch-* utility moves them to the two ends of one edge: the two halves of a
+   boarding pass each carry one, and together they leave a notch on both sides
+   of the tear line. */
 @utility ticket-notch {
   mask-image:
     radial-gradient(
-      circle at 0 50%,
+      circle at var(--ticket-notch-a, 0 50%),
       transparent var(--ticket-notch-size, 0.5rem),
       black calc(var(--ticket-notch-size, 0.5rem) + 0.5px)
     ),
     radial-gradient(
-      circle at 100% 50%,
+      circle at var(--ticket-notch-b, 100% 50%),
       transparent var(--ticket-notch-size, 0.5rem),
       black calc(var(--ticket-notch-size, 0.5rem) + 0.5px)
     );
   mask-composite: intersect;
+}
+
+@utility notch-top {
+  --ticket-notch-a: 0 0;
+  --ticket-notch-b: 100% 0;
+}
+
+@utility notch-bottom {
+  --ticket-notch-a: 0 100%;
+  --ticket-notch-b: 100% 100%;
+}
+
+@utility notch-left {
+  --ticket-notch-a: 0 0;
+  --ticket-notch-b: 0 100%;
+}
+
+@utility notch-right {
+  --ticket-notch-a: 100% 0;
+  --ticket-notch-b: 100% 100%;
 }
 
 @utility parallax-y {
@@ -751,6 +810,39 @@
       animation: parallax-y linear both;
       animation-timeline: view();
       animation-range: cover 0% cover 100%;
+    }
+  }
+}
+
+/*
+ * parallax-top: for layers on the first screen of a page. It follows how far
+ * the page has scrolled, from the top to one viewport height, so a layer starts
+ * at rest and shifts by the whole of --parallax-to. parallax-top-fade does the
+ * same and fades the layer out on the way.
+ */
+@keyframes parallax-fade {
+  to {
+    translate: 0 var(--parallax-to, 0px);
+    opacity: 0;
+  }
+}
+
+@utility parallax-top {
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: scroll()) {
+      animation: parallax-y linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 100vh;
+    }
+  }
+}
+
+@utility parallax-top-fade {
+  @media (prefers-reduced-motion: no-preference) {
+    @supports (animation-timeline: scroll()) {
+      animation: parallax-fade linear both;
+      animation-timeline: scroll(root block);
+      animation-range: 0 100vh;
     }
   }
 }

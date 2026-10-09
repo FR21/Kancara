@@ -36,7 +36,7 @@ function CtaContent({ tone }: { tone: keyof typeof TONES }) {
 
   return (
     <ScrollReveal className="mx-auto max-w-4xl text-center space-y-6">
-      <h2 className={`text-display font-heading font-extrabold text-3xl text-balance sm:text-5xl leading-tight ${classes.heading}`}>
+      <h2 className={`text-display font-heading font-extrabold text-h1 text-balance sm:text-5xl leading-tight ${classes.heading}`}>
         {t.cta.heading}
       </h2>
 

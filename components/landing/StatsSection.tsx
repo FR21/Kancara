@@ -135,11 +135,11 @@ function TravellersCard() {
     <div className={`${CARD} flex flex-col`}>
       <div className="flex items-start justify-between gap-3">
         <CardLabel icon={Users}>{t.card1Label}</CardLabel>
-        <span className="flex shrink-0 items-center gap-1 rounded-full bg-success-subtle px-2.5 py-1 text-caption font-bold text-on-success-subtle">
+        <span className="flex shrink-0 items-center gap-1 rounded-full bg-success-subtle px-3 py-1 text-caption font-bold text-on-success-subtle">
           <ArrowUpRight
             aria-hidden="true"
             strokeWidth={2.5}
-            className={`size-3.5 transition-[translate] duration-300 ${EASE} group-hover/card:translate-x-0.5 group-hover/card:-translate-y-0.5`}
+            className={`size-4 transition-[translate] duration-300 ${EASE} group-hover/card:translate-x-1 group-hover/card:-translate-y-1`}
           />
           {t.card1Growth.replace(/^[↑\s]+/, "")}
         </span>
@@ -232,7 +232,7 @@ function NeedsCard() {
       </div>
 
       <div className="mt-auto flex items-center gap-2 pt-6">
-        <span className="flex gap-0.5" aria-hidden="true">
+        <span className="flex gap-1" aria-hidden="true">
           {[0, 1, 2, 3, 4].map((index) => {
             const fill = Math.min(Math.max(rating - index, 0), 1);
             return (
@@ -317,7 +317,7 @@ function OfflineCard() {
       </div>
 
       <div aria-hidden="true" className="relative flex shrink-0 flex-col items-center gap-3">
-        <div className="flex h-14 items-end gap-1.5">
+        <div className="flex h-14 items-end gap-2">
           {[30, 55, 78, 100].map((height, index) => (
             <span
               key={height}
@@ -374,7 +374,7 @@ export default function StatsSection() {
         </div>
 
         <ScrollReveal delayMs={150}>
-          <div className="mt-6 text-center text-caption font-semibold text-text-muted flex items-center justify-center gap-1.5">
+          <div className="mt-6 text-center text-caption font-semibold text-text-muted flex items-center justify-center gap-2">
             <span>{t.stats.footerNote}</span>
           </div>
 

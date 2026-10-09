@@ -34,7 +34,6 @@
     "departs": "Berangkat {when}",
     "progress": "{done} dari {total} bagian terisi",
     "continue": "Lanjutkan",
-    "continueLabel": "Lanjutkan {name}",
     "violations": {
       "one": "{count} pelanggaran",
       "other": "{count} pelanggaran"
@@ -84,7 +83,6 @@
     "actions": "Aksi perjalanan"
   },
   "menu": {
-    "label": "Menu {name}",
     "duplicate": "Duplikat",
     "share": "Bagikan",
     "delete": "Hapus"
@@ -145,8 +143,6 @@
     "generateFailed": "Itinerary belum berhasil dibuat. Periksa koneksimu, lalu coba lagi."
   },
   "placeholder": {
-    "detail": "Itinerary",
-    "today": "Jadwal hari ini",
     "summary": "Rangkuman perjalanan",
     "soon": "Halaman ini sedang disiapkan.",
     "back": "Kembali ke Perjalanan Saya"

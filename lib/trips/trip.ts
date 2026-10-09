@@ -7,6 +7,7 @@ import {
   hasBudget,
   hasDateError,
   hasDates,
+  listCustomNeeds,
   missingFields,
   NEED_KEYS,
   PASS_FIELDS,
@@ -59,6 +60,7 @@ export type TripCard = {
   members: TripCardMember[];
   memberCount: number;
   needs: NeedKey[];
+  customNeeds: string[];
   budget: number | null;
   violations?: number;
   offline?: OfflineState;
@@ -147,6 +149,7 @@ export function toTripCard(trip: Trip, clock: Clock): TripCard {
     memberCount: draft.members.length,
     // Every need anyone in the group has, once each, in the order the plan form lists them.
     needs: NEED_KEYS.filter((need) => draft.members.some((member) => member.needs.includes(need))),
+    customNeeds: listCustomNeeds(draft.members),
     budget: hasBudget(draft) ? draft.budget : null,
   };
 

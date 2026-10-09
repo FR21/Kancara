@@ -124,7 +124,7 @@ export default function ItineraryCard({
       <header className="flex items-center justify-between gap-3 border-b border-border px-4 py-4 sm:px-6">
         <h2 className="text-h3 text-text">{fillTemplate(text.itinerary.title, { destination })}</h2>
         {isSample && (
-          <span className="shrink-0 rounded-full border border-border-strong px-2 py-0.5 text-caption font-bold text-text-muted">
+          <span className="shrink-0 rounded-full border border-border-strong px-2 py-1 text-caption font-bold text-text-muted">
             {text.itinerary.sample}
           </span>
         )}
@@ -152,7 +152,7 @@ export default function ItineraryCard({
                 tabIndex={active ? 0 : -1}
                 onClick={() => selectDay(index)}
                 onKeyDown={handleTabKeyDown}
-                className={`${DAY_TAB} ${active ? DAY_TAB_ACTIVE : DAY_TAB_IDLE}`}
+                className={`group/day ${DAY_TAB} ${active ? DAY_TAB_ACTIVE : DAY_TAB_IDLE}`}
               >
                 {active && <Check className="size-4 shrink-0 lg:hidden" strokeWidth={3} aria-hidden="true" />}
                 <span className="flex items-baseline gap-2 lg:flex-col lg:gap-0">
@@ -167,7 +167,7 @@ export default function ItineraryCard({
                   )}
                   <span
                     aria-hidden="true"
-                    className={`flex size-6 items-center justify-center rounded-full ${
+                    className={`flex size-6 items-center justify-center rounded-full transition-[translate] duration-200 ease-out group-hover/day:translate-x-1 ${
                       active ? "bg-primary text-on-primary" : "text-text-muted"
                     }`}
                   >
@@ -215,6 +215,7 @@ export default function ItineraryCard({
                   key={`${item.time}-${item.title}`}
                   item={item}
                   phase={phases[index]}
+                  order={index}
                   isLast={index === day.items.length - 1}
                   locale={locale}
                   text={text.itinerary}

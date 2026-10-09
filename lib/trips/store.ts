@@ -2,7 +2,8 @@ import "server-only";
 import type { Itinerary } from "@/lib/api/captain";
 import { verifySession } from "@/lib/auth/session";
 import type { PlanDraft } from "@/lib/plan-draft";
-import { seedTrips } from "./seed";
+import { loadTrips, saveTrips } from "./persist";
+import { isSeedTrip, seedTrips } from "./seed";
 import {
   type ActiveTrips,
   type Clock,
@@ -19,13 +20,21 @@ export type DeleteResult = "deleted" | "notFound" | "forbidden";
 /** A finished plan to keep. `violations` is left out when the plan was never checked against the group's needs. */
 export type TripInput = { name: string; draft: PlanDraft; violations?: number; itinerary?: Itinerary };
 
-// Stand-in for the trips database: one list per signed-in user, kept in memory
-// and lost when the server restarts. It hangs off globalThis so a hot reload in
-// development keeps it. Replace the functions below with real queries; the API
-// routes and the page only use what this file exports.
-type TripsGlobal = typeof globalThis & { kancaraTrips?: Map<string, Trip[]> };
+// Stand-in for the trips database: one list per signed-in user, held in memory
+// and written to a JSON file after every change so it survives a restart. It
+// hangs off globalThis so a hot reload in development keeps it. Replace the
+// functions below with real queries; the API routes and the pages only use
+// what this file exports.
+type TripsGlobal = typeof globalThis & { kancaraTrips?: Map<string, Trip[]>; kancaraSeeded?: Set<string> };
 const globalStore = globalThis as TripsGlobal;
-const tripsByUser = (globalStore.kancaraTrips ??= new Map<string, Trip[]>());
+const tripsByUser = (globalStore.kancaraTrips ??= loadTrips());
+const seededUsers = (globalStore.kancaraSeeded ??= new Set<string>());
+
+// Demo seed trips are rebuilt on every start so their dates stay relative to
+// today; only what an account made itself is written to disk.
+function persist(): void {
+  saveTrips(tripsByUser, (trip) => !isSeedTrip(trip));
+}
 
 const TIME_ZONE = "Asia/Jakarta";
 const DATE_FORMAT = new Intl.DateTimeFormat("en-CA", {
@@ -57,12 +66,14 @@ function isDemoAccount(email: string | null): boolean {
 }
 
 function tripsOf(viewer: Viewer): Trip[] {
-  const existing = tripsByUser.get(viewer.uid);
-  if (existing) return existing;
-  const now = new Date();
-  const created = isDemoAccount(viewer.email) ? seedTrips(readClock(now).date, now) : [];
-  tripsByUser.set(viewer.uid, created);
-  return created;
+  const trips = tripsByUser.get(viewer.uid) ?? [];
+  tripsByUser.set(viewer.uid, trips);
+  if (isDemoAccount(viewer.email) && !seededUsers.has(viewer.uid)) {
+    seededUsers.add(viewer.uid);
+    const now = new Date();
+    if (!trips.some(isSeedTrip)) trips.push(...seedTrips(readClock(now).date, now));
+  }
+  return trips;
 }
 
 export async function currentViewer(): Promise<Viewer | null> {
@@ -154,6 +165,7 @@ export function createTrip(viewer: Viewer, input: TripInput): TripCard {
   };
   const trip = withPlan(blank, input, now);
   tripsOf(viewer).push(trip);
+  persist();
   return toTripCard(trip, readClock(now));
 }
 
@@ -164,6 +176,7 @@ export function updateTrip(viewer: Viewer, id: string, input: TripInput): TripCa
   if (index === -1 || trips[index].role !== "organizer") return null;
   const now = new Date();
   trips[index] = withPlan(trips[index], input, now);
+  persist();
   return toTripCard(trips[index], readClock(now));
 }
 
@@ -191,6 +204,7 @@ export function duplicateTrip(viewer: Viewer, id: string, name: string): TripCar
     countryCodes: [...source.countryCodes],
   };
   trips.push(copy);
+  persist();
   return toTripCard(copy, readClock(now));
 }
 
@@ -200,5 +214,6 @@ export function deleteTrip(viewer: Viewer, id: string): DeleteResult {
   if (index === -1) return "notFound";
   if (trips[index].role !== "organizer") return "forbidden";
   trips.splice(index, 1);
+  persist();
   return "deleted";
 }

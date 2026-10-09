@@ -3,10 +3,11 @@ import { redirect } from "next/navigation";
 import TravelMap from "@/components/travel/TravelMap";
 import { verifySession } from "@/lib/auth/session";
 import { adminAuth } from "@/lib/firebase/admin";
+import { requestMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Jejak Perjalanan | Kancara",
-};
+export function generateMetadata(): Promise<Metadata> {
+  return requestMetadata("travelMap");
+}
 
 export default async function TravelMapPage() {
   const session = await verifySession();

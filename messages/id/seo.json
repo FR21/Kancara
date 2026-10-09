@@ -1,0 +1,59 @@
+{
+  "siteName": "Kancara",
+  "description": "Kancara adalah pendamping perjalanan multi-agen untuk rombongan dengan kebutuhan berbeda, dari perencanaan sampai pulang.",
+  "imageAlt": "Captain, maskot burung berseragam pilot milik Kancara, di samping tulisan Beragam Kebutuhan. Satu Perjalanan.",
+  "pages": {
+    "home": {
+      "title": "Kancara: Perencana Perjalanan Rombongan untuk Semua Anggota",
+      "description": "Kancara adalah pendamping perjalanan multi-agen untuk rombongan dengan kebutuhan berbeda, dari perencanaan sampai pulang."
+    },
+    "about": {
+      "title": "Tentang Kancara",
+      "description": "Kancara adalah pendamping perjalanan multi-agen untuk rombongan dengan kebutuhan berbeda. Kenali cara Kancara merencanakan untuk setiap anggota, bukan untuk suara paling keras."
+    },
+    "login": {
+      "title": "Masuk",
+      "description": "Masuk ke Kancara untuk merencanakan perjalanan rombonganmu."
+    },
+    "register": {
+      "title": "Daftar",
+      "description": "Buat akun Kancara dan mulai rencanakan perjalanan rombongan yang pas untuk semua anggota."
+    },
+    "forgotPassword": {
+      "title": "Lupa Kata Sandi",
+      "description": "Atur ulang kata sandi akun Kancara."
+    },
+    "plan": {
+      "title": "Rencanakan Trip",
+      "description": "Isi rute, tanggal, anggota, dan anggaran, lalu dapatkan rencana perjalanan per hari dari Kancara."
+    },
+    "trips": {
+      "title": "Perjalanan Saya",
+      "description": "Semua perjalananmu di satu tempat: yang sedang berlangsung, yang akan datang, draf, dan riwayat."
+    },
+    "trip": {
+      "title": "Itinerary",
+      "description": "Itinerary per hari untuk perjalanan ini."
+    },
+    "tripToday": {
+      "title": "Jadwal hari ini",
+      "description": "Jadwal perjalanan ini untuk hari ini."
+    },
+    "profile": {
+      "title": "Profil",
+      "description": "Kelola profil dan pengaturan akun Kancara."
+    },
+    "travelMap": {
+      "title": "Jejak Perjalanan",
+      "description": "Tandai negara yang sudah kamu kunjungi di globe Kancara."
+    },
+    "privacy": {
+      "title": "Kebijakan Privasi",
+      "description": "Kebijakan privasi Kancara."
+    },
+    "terms": {
+      "title": "Syarat & Ketentuan",
+      "description": "Syarat dan ketentuan penggunaan Kancara."
+    }
+  }
+}

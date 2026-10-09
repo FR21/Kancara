@@ -36,6 +36,7 @@ export class CaptainError extends Error {}
 
 const BASE_URL = process.env.NEXT_PUBLIC_CAPTAIN_API_URL ?? "";
 const REQUEST_TIMEOUT_MS = 60000;
+const RATE_LIMIT_WAIT_MS = 1100;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -93,7 +94,7 @@ function parseInvite(value: unknown): Invite {
   return { url: value.url };
 }
 
-async function post(path: string, body: unknown, signal: AbortSignal): Promise<unknown> {
+async function post(path: string, body: unknown, signal: AbortSignal, retried = false): Promise<unknown> {
   const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
   const response = await fetch(`${BASE_URL}${path}`, {
     method: "POST",
@@ -101,6 +102,11 @@ async function post(path: string, body: unknown, signal: AbortSignal): Promise<u
     body: JSON.stringify(body),
     signal: AbortSignal.any([signal, timeout]),
   });
+  // Every API allows three requests a second; one busy moment is waited out, not shown as a failure.
+  if (response.status === 429 && !retried) {
+    await new Promise((resolve) => setTimeout(resolve, RATE_LIMIT_WAIT_MS));
+    return post(path, body, signal, true);
+  }
   if (!response.ok) throw new CaptainError(`Captain request failed with ${response.status}`);
   return response.json();
 }

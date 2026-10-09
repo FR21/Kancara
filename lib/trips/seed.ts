@@ -54,6 +54,13 @@ function parseEntry(value: unknown, today: string, now: Date): Trip[] {
   return [trip];
 }
 
+const SEED_ID_PREFIX = "demo-";
+
+/** Whether a trip came from the demo seed rather than from something the account did. */
+export function isSeedTrip(trip: Trip): boolean {
+  return trip.id.startsWith(SEED_ID_PREFIX);
+}
+
 export function seedTrips(today: string, now: Date): Trip[] {
   const list: unknown[] = entries;
   return list.flatMap((entry) => parseEntry(entry, today, now));

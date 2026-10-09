@@ -4,12 +4,16 @@ import Image from "next/image";
 import { useEffect, useState } from "react";
 import { ArrowDown, ArrowRight } from "lucide-react";
 import type { Messages } from "@/lib/messages";
+import { useMediaQuery } from "@/lib/use-media-query";
 import { useMessages } from "@/lib/use-messages";
 
 type HeroCopyProps = {
   text: Messages["landing"]["hero"];
   layer: "headline" | "actions";
 };
+
+// How far the headline drops for every pixel scrolled while the hero is pinned.
+const HEADLINE_SINK = 0.5;
 
 function HeroCopy({ text, layer }: HeroCopyProps) {
   const isHeadline = layer === "headline";
@@ -96,18 +100,22 @@ function HeroCopy({ text, layer }: HeroCopyProps) {
 
 export default function HeroSection() {
   const t = useMessages("landing");
-  const [scrollY, setScrollY] = useState(0);
+  const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const [scroll, setScroll] = useState({ y: 0, pinned: 0 });
 
   useEffect(() => {
     const handleScroll = () => {
-      setScrollY(window.scrollY);
+      // The hero stays pinned for half a screen of scrolling; `pinned` stops growing after that.
+      setScroll({ y: window.scrollY, pinned: Math.min(window.scrollY, window.innerHeight / 2) });
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const textOpacity = Math.max(1 - scrollY / 600, 0);
+  const textOpacity = Math.max(1 - scroll.y / 600, 0);
   const fade = { opacity: textOpacity, visibility: textOpacity === 0 ? ("hidden" as const) : undefined };
+  // The treeline rises in front of the headline. Sinking the headline to meet it lets the trees cover every line.
+  const sink = reduceMotion ? 0 : scroll.pinned * HEADLINE_SINK;
 
   return (
     <section className="relative w-full h-[150svh]">
@@ -115,7 +123,7 @@ export default function HeroSection() {
       <div className="sticky top-0 w-full h-svh overflow-hidden pointer-events-none z-0">
         <Image
           src="/images/hero/Sky.webp"
-          alt="Sky Background"
+          alt=""
           fill
           priority
           sizes="100vw"
@@ -127,7 +135,7 @@ export default function HeroSection() {
       <div className="absolute inset-0 w-full h-full z-10 overflow-hidden pointer-events-none">
         <Image
           src="/images/hero/Grass.webp"
-          alt="Grass Overlay"
+          alt=""
           fill
           priority
           sizes="100vw"
@@ -158,7 +166,10 @@ export default function HeroSection() {
         </svg>
       </div>
 
-      <div className="pointer-events-none sticky top-0 z-5 -mt-[100svh] h-svh w-full" style={fade}>
+      <div
+        className="pointer-events-none sticky top-0 z-5 -mt-[100svh] h-svh w-full"
+        style={{ ...fade, translate: `0 ${sink}px` }}
+      >
         <HeroCopy text={t.hero} layer="headline" />
       </div>
 

@@ -83,13 +83,17 @@ export default function PlanResult({
           {saveState === "saved" && (
             <>
               <p className="flex items-center gap-2 text-body-sm text-text">
-                <Check className="size-4 shrink-0 text-success" strokeWidth={3} aria-hidden="true" />
+                <Check
+                  className="size-4 shrink-0 text-success motion-safe:animate-stamp-in"
+                  strokeWidth={3}
+                  aria-hidden="true"
+                />
                 {text.result.saved}
               </p>
               <Link href="/trips" className={STRIP_ACTION}>
                 {text.result.viewTrips}
                 <ArrowRight
-                  className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-0.5"
+                  className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1"
                   aria-hidden="true"
                 />
               </Link>

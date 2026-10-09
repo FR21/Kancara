@@ -5,6 +5,7 @@ import { useEffect, useReducer, useRef, useState } from "react";
 import { type Itinerary, captain, captainIsSample } from "@/lib/api/captain";
 import { trips } from "@/lib/api/trips";
 import { countViolations } from "@/lib/trips/trip";
+import PageBackdrop from "@/components/layout/PageBackdrop";
 import TripsNotice from "@/components/trips/TripsNotice";
 import {
   type PlanDraft,
@@ -12,12 +13,17 @@ import {
   EMPTY_DRAFT,
   fillTemplate,
   isDraftEmpty,
-  parseDraftPatch,
-  parseLocalDate,
   planDraftReducer,
 } from "@/lib/plan-draft";
 import { saveDraft, useSavedDraft } from "@/lib/plan-draft-store";
-import { type QuestionKey, isAnswered, missingRequired, nextRequired, openQuestions } from "@/lib/plan-questions";
+import {
+  type QuestionKey,
+  isAnswered,
+  isOptional,
+  missingRequired,
+  nextRequired,
+  QUESTIONS,
+} from "@/lib/plan-questions";
 import { useLocale } from "@/lib/use-locale";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { useMessages } from "@/lib/use-messages";
@@ -26,7 +32,7 @@ import PassDialog from "./PassDialog";
 import PlanResult, { type SaveState } from "./PlanResult";
 import QuestionDeck from "./QuestionDeck";
 import ResumeBanner from "./ResumeBanner";
-import StageRail from "./StageRail";
+import StageRail, { type RailStep } from "./StageRail";
 import StartScreen from "./StartScreen";
 import TicketReview from "./TicketReview";
 
@@ -44,8 +50,7 @@ export default function PlanWorkspace() {
   const [draft, dispatch] = useReducer(planDraftReducer, EMPTY_DRAFT);
   const [stage, setStage] = useState<Stage>("story");
   const [started, setStarted] = useState(false);
-  const [questions, setQuestions] = useState<QuestionKey[]>([]);
-  const [questionIndex, setQuestionIndex] = useState(0);
+  const [question, setQuestion] = useState<QuestionKey>(QUESTIONS[0]);
   const [fromPass, setFromPass] = useState(false);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [previewing, setPreviewing] = useState(false);
@@ -63,7 +68,8 @@ export default function PlanWorkspace() {
   const showResume = !started && savedDraft !== null && isDraftEmpty(draft);
   const requiredDone = missingRequired(draft).length === 0;
   const planStarted = itinerary !== null || pending === "itinerary" || failed?.kind === "itinerary";
-  const question = questions[questionIndex];
+  // Editing one answer from the boarding pass shows that question alone; otherwise the deck runs through all of them.
+  const deckQuestions: QuestionKey[] = fromPass ? [question] : [...QUESTIONS];
 
   useEffect(() => () => controllerRef.current?.abort(), []);
 
@@ -154,18 +160,18 @@ export default function PlanWorkspace() {
     if (failed.kind === "invite") makeInvite();
   };
 
-  const openDeck = (list: QuestionKey[], startAt: QuestionKey | null = null, memberId: string | null = null) => {
-    setQuestions(list);
-    setQuestionIndex(startAt ? Math.max(list.indexOf(startAt), 0) : 0);
+  const openQuestion = (target: QuestionKey, memberId: string | null = null) => {
+    setQuestion(target);
     setSelectedMemberId(memberId);
     setPreviewing(false);
     setStage("details");
     setStarted(true);
   };
 
-  const startManual = (source: PlanDraft, startAt: QuestionKey | null = null) => {
+  // Starts at the first required question that is still open, or at the top when nothing is.
+  const startManual = (source: PlanDraft) => {
     setFromPass(false);
-    openDeck(openQuestions(source), startAt);
+    openQuestion(nextRequired(source) ?? QUESTIONS[0]);
   };
 
   const resumeDraft = () => {
@@ -181,7 +187,7 @@ export default function PlanWorkspace() {
 
   const editFromPass = (target: QuestionKey, memberId: string | null = null) => {
     setFromPass(true);
-    openDeck([target], null, memberId);
+    openQuestion(target, memberId);
   };
 
   const addMemberFromPass = () => {
@@ -192,42 +198,63 @@ export default function PlanWorkspace() {
 
   const changeQuestion = (index: number) => {
     setSelectedMemberId(null);
-    setQuestionIndex(index);
+    setQuestion(deckQuestions[index]);
   };
 
   const finishDetails = () => {
     const missing = missingRequired(draft);
     if (missing.length > 0) {
       setFromPass(false);
-      openDeck(missing);
+      openQuestion(missing[0]);
       return;
     }
     setFromPass(false);
     setStage("pass");
   };
 
-  const navigate = (target: Stage) => {
+  const openStage = (target: Stage) => {
     setPreviewing(false);
-    if (target === "details") {
-      startManual(draft);
-      return;
-    }
     setFromPass(false);
     setStage(target);
   };
 
-  const reachable: Record<Stage, boolean> = {
-    story: true,
-    details: started,
-    pass: started && requiredDone,
-    plan: planStarted,
-  };
+  // A question opens once every required question before it has an answer.
+  const canOpen = (target: QuestionKey) =>
+    QUESTIONS.slice(0, QUESTIONS.indexOf(target)).every((earlier) => isOptional(earlier) || isAnswered(earlier, draft));
+
+  const steps: RailStep[] = [
+    ...QUESTIONS.map((key) => ({
+      key,
+      label: text.stages.questions[key],
+      done: isAnswered(key, draft),
+      current: stage === "details" && question === key,
+      onSelect: canOpen(key)
+        ? () => {
+            setFromPass(false);
+            openQuestion(key);
+          }
+        : null,
+    })),
+    {
+      key: "pass",
+      label: text.stages.pass,
+      done: planStarted,
+      current: stage === "pass",
+      onSelect: requiredDone ? () => openStage("pass") : null,
+    },
+    {
+      key: "plan",
+      label: text.stages.plan,
+      done: false,
+      current: stage === "plan",
+      onSelect: planStarted ? () => openStage("plan") : null,
+    },
+  ];
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-2xl flex-col gap-8 px-4 pt-24 pb-12 sm:px-6 sm:pt-28 lg:max-w-5xl xl:px-0">
-      {started && <StageRail stage={stage} text={text.stages} reachable={reachable} onNavigate={navigate} />}
-
-      {showResume && <ResumeBanner savedDraft={savedDraft} text={text.chat} onResume={resumeDraft} />}
+    <main className="relative isolate mx-auto flex min-h-dvh w-full max-w-2xl flex-col gap-8 px-4 pt-24 pb-12 sm:px-6 sm:pt-28 lg:max-w-5xl xl:px-0">
+      <PageBackdrop />
+      {started && <StageRail steps={steps} text={text.stages} />}
 
       {stage === "story" && (
         <div className="flex flex-1 flex-col justify-center pb-12">
@@ -235,6 +262,11 @@ export default function PlanWorkspace() {
             text={text}
             onStartManual={() => startManual(draft)}
           />
+          {showResume && (
+            <div className="mt-6 flex justify-center px-4 motion-safe:animate-message-in motion-safe:[animation-delay:150ms]">
+              <ResumeBanner savedDraft={savedDraft} text={text.chat} onResume={resumeDraft} />
+            </div>
+          )}
         </div>
       )}
 
@@ -254,22 +286,20 @@ export default function PlanWorkspace() {
             </div>
           )}
 
-          {question !== undefined && (
-            <QuestionDeck
-              draft={draft}
-              dispatch={dispatch}
-              text={text}
-              questions={questions}
-              index={questionIndex}
-              returnLabel={fromPass ? text.deck.backToPass : null}
-              isDesktop={isDesktop}
-              selectedMemberId={selectedMemberId}
-              onIndexChange={changeQuestion}
-              onBackToStory={() => setStage("story")}
-              onFinish={finishDetails}
-              onSelectMember={setSelectedMemberId}
-            />
-          )}
+          <QuestionDeck
+            draft={draft}
+            dispatch={dispatch}
+            text={text}
+            questions={deckQuestions}
+            index={deckQuestions.indexOf(question)}
+            returnLabel={fromPass ? text.deck.backToPass : null}
+            isDesktop={isDesktop}
+            selectedMemberId={selectedMemberId}
+            onIndexChange={changeQuestion}
+            onBackToStory={() => setStage("story")}
+            onFinish={finishDetails}
+            onSelectMember={setSelectedMemberId}
+          />
         </div>
       )}
 

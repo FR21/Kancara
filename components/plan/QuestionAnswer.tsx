@@ -31,9 +31,16 @@ export default function QuestionAnswer({
 }: QuestionAnswerProps) {
   const editorProps = { draft, dispatch, text };
 
-  if (question === "destination") return <DestinationsEditor {...editorProps} />;
-  if (question === "origin") return <OriginEditor {...editorProps} />;
-  if (question === "dates") return <DatesEditor {...editorProps} />;
+  if (question === "trip") {
+    return (
+      <div className="space-y-6">
+        <OriginEditor {...editorProps} />
+        <DestinationsEditor {...editorProps} />
+        <DatesEditor {...editorProps} />
+        <PaceEditor {...editorProps} />
+      </div>
+    );
+  }
   if (question === "crew") {
     return (
       <CrewGrid
@@ -45,6 +52,5 @@ export default function QuestionAnswer({
     );
   }
   if (question === "budget") return <BudgetEditor {...editorProps} onPicked={onPicked} />;
-  if (question === "pace") return <PaceEditor {...editorProps} onPicked={onPicked} />;
   return <ExtrasEditor {...editorProps} />;
 }

@@ -2,69 +2,51 @@
   "title": "Rencanakan trip",
   "start": {
     "title": "Pergi ke mana kita hari ini?",
-    "placeholder": "Ke Bandung bertujuh, ibu saya pakai kursi roda...",
-    "examplesLabel": "Contoh:",
-    "or": "atau",
     "form": "Isi manual, satu per satu",
     "lead": "Ceritakan saja seperti ke teman. Captain menanyakan sisanya, lalu menyiapkan boarding pass dan rencana per hari."
   },
   "stages": {
     "label": "Tahap rencana",
-    "story": "Cerita",
-    "details": "Lengkapi",
     "pass": "Boarding pass",
     "plan": "Rencana",
     "done": "selesai",
-    "locked": "belum terbuka"
+    "locked": "belum terbuka",
+    "questions": {
+      "trip": "Perjalanan",
+      "crew": "Rombongan",
+      "budget": "Anggaran",
+      "extras": "Tambahan"
+    },
+    "stepOf": "Langkah {current} dari {total}",
+    "next": "Berikutnya: {name}"
   },
   "deck": {
     "seePass": "Lihat boarding pass",
-    "progress": "Pertanyaan {current} dari {total}",
     "back": "Kembali",
     "skip": "Lewati",
     "next": "Lanjut",
     "finish": "Lanjut",
     "backToPass": "Kembali ke boarding pass",
     "questions": {
-      "destination": {
-        "short": "tujuan",
-        "title": "Mau ke mana?",
-        "hint": "Boleh lebih dari satu kota."
-      },
-      "origin": {
-        "short": "kota asal",
-        "title": "Berangkat dari kota mana?",
-        "hint": ""
-      },
-      "dates": {
-        "short": "tanggal",
-        "title": "Kapan berangkat dan pulang?",
-        "hint": ""
+      "trip": {
+        "title": "Ke mana, kapan, dan seperti apa perjalanannya?",
+        "hint": "Rute, tanggal, dan ritme dalam satu langkah. Tujuan boleh lebih dari satu kota."
       },
       "crew": {
-        "short": "rombongan",
         "title": "Siapa saja yang ikut?",
         "hint": "Tambah orangnya, lalu ketuk karakternya untuk memberi nama dan kebutuhannya."
       },
       "budget": {
-        "short": "anggaran",
         "title": "Berapa total anggarannya?",
-        "hint": "Untuk semua orang, dalam Rupiah."
-      },
-      "pace": {
-        "short": "ritme",
-        "title": "Mau perjalanan yang seperti apa?",
-        "hint": ""
+        "hint": "Untuk semua orang. Isi dalam Rupiah atau dolar AS, yang satunya dihitung otomatis."
       },
       "extras": {
-        "short": "detail tambahan",
         "title": "Ada lagi yang perlu Captain tahu?",
         "hint": "Opsional. Makin lengkap, makin pas rencananya."
       }
     },
-    "required": "Isi dulu bagian ini untuk lanjut.",
+    "required": "Belum diisi: {items}.",
     "previewNote": "Ini pratinjau. Selesaikan pertanyaannya dulu untuk lanjut.",
-    "backToCaptain": "Kembali ke Captain",
     "previewClose": "Tutup",
     "previewTitle": "Pratinjau boarding pass"
   },
@@ -81,7 +63,24 @@
     "relaxed": "2 sampai 3 kegiatan sehari, banyak jeda.",
     "packed": "4 sampai 5 kegiatan sehari, waktu dimaksimalkan."
   },
-  "budgetOther": "Jumlah lain (Rupiah)",
+  "budget": {
+    "currencyLegend": "Mata uang",
+    "currencies": {
+      "IDR": "Rupiah",
+      "USD": "Dolar AS"
+    },
+    "fields": {
+      "IDR": "Jumlah dalam Rupiah",
+      "USD": "Jumlah dalam dolar AS"
+    },
+    "placeholders": {
+      "IDR": "Contoh: 30000000",
+      "USD": "Contoh: 2000"
+    },
+    "auto": "Terisi otomatis",
+    "rate": "Kurs {one} = {rate}, per {date}.",
+    "rateEstimate": "Kurs perkiraan: {one} = {rate}."
+  },
   "ticket": {
     "readyTitle": "Boarding pass kamu siap.",
     "draftTitle": "Boarding pass kamu belum lengkap.",
@@ -94,7 +93,14 @@
     "viewPlan": "Lihat rencana",
     "times": "×{count}",
     "more": "+{count} lainnya",
-    "missingLabel": "Belum ada"
+    "missingLabel": "Belum ada",
+    "missing": {
+      "route": "rute",
+      "dates": "tanggal",
+      "group": "rombongan",
+      "budget": "anggaran",
+      "pace": "ritme"
+    }
   },
   "result": {
     "title": "Rencana perjalananmu",
@@ -154,6 +160,17 @@
     "taxi": "Taksi",
     "rental": "Sewa mobil"
   },
+  "custom": {
+    "add": "Tambah",
+    "remove": "Hapus {name}",
+    "full": "Sudah {count}. Hapus satu dulu untuk menambah lagi.",
+    "need": "Kebutuhan lain",
+    "needPlaceholder": "Contoh: stroller",
+    "interest": "Keinginan lain",
+    "interestPlaceholder": "Contoh: onsen",
+    "transport": "Transportasi lain",
+    "transportPlaceholder": "Contoh: kereta"
+  },
   "pass": {
     "brand": "Boarding pass",
     "dates": "Tanggal",
@@ -172,7 +189,6 @@
     "startDate": "Berangkat",
     "endDate": "Pulang",
     "dateError": "Tanggal pulang harus sama atau setelah tanggal berangkat.",
-    "budgetPlaceholder": "Contoh: 30000000",
     "stamp": "Siap terbang",
     "manifest": "Penumpang",
     "noMembers": "Belum ada anggota.",
@@ -181,10 +197,13 @@
     "memberName": "Nama atau panggilan",
     "memberNamePlaceholder": "Contoh: Ibu",
     "ageGroup": "Kelompok usia",
+    "age": "Usia (opsional)",
+    "agePlaceholder": "Contoh: 67",
+    "ageHint": "Kelompok usia ikut menyesuaikan.",
     "needsLegend": "Kebutuhan",
     "needsHint": "Cukup batasan praktisnya, tidak perlu riwayat kesehatan.",
-    "allergies": "Alergi makanan",
-    "allergiesPlaceholder": "Contoh: kacang, seafood",
+    "allergies": "Alergi",
+    "allergiesPlaceholder": "Contoh: kacang, seafood, debu",
     "interestsLegend": "Keinginan",
     "extras": "Detail tambahan",
     "extrasFilled": "{count} terisi",
@@ -204,17 +223,6 @@
     "transportLegend": "Transportasi"
   },
   "chat": {
-    "captain": "Captain",
-    "exampleLabels": [
-      "Rombongan besar",
-      "Keluarga + lansia",
-      "Solo trip"
-    ],
-    "examples": [
-      "Dari Jakarta ke Bandung, 7 orang, ada lansia dan balita, anggaran Rp15 juta, santai",
-      "Liburan keluarga 5 orang dari Surabaya ke Yogyakarta, makanan halal, nenek pakai kursi roda, budget 10 juta",
-      "Solo trip dari Jakarta ke Bali, anggaran Rp5 juta, jadwal padat"
-    ],
     "resume": "Lanjutkan draf",
     "resumeTitle": "Lanjutkan draf {destination}",
     "resumeProgress": "{done} dari {total} bagian terisi",
@@ -224,32 +232,7 @@
     "makeInvite": "Undang rombongan",
     "itineraryPending": "Captain sedang menyusun itinerary",
     "itineraryIntro": "Ini itinerary yang memperhitungkan kebutuhan tiap anggota. Pilih hari untuk melihat detailnya.",
-    "done": "Rencanamu tersimpan di perangkat ini. Kamu bisa kembali kapan saja.",
-    "allSet": "Semua data wajib sudah lengkap. Boarding pass-mu siap diperiksa.",
-    "you": "Kamu",
-    "logLabel": "Percakapan dengan Captain",
-    "quickBudget": "{millions} juta",
-    "editCrew": "Atur per orang",
-    "addExtras": "Tulis catatan khusus",
-    "noted": "Sudah kucatat.",
-    "datesLegend": "Atau pilih tanggalnya di sini",
-    "useDates": "Pakai tanggal ini"
-  },
-  "composer": {
-    "label": "Pesan untuk Captain",
-    "placeholder": "Ceritakan tripmu",
-    "send": "Kirim",
-    "voiceStart": "Mulai bicara",
-    "voiceStop": "Berhenti merekam",
-    "listening": "Mendengarkan",
-    "hint": "Enter untuk kirim, Shift + Enter untuk baris baru",
-    "listeningHint": "Bicara saja, aku mencatat.",
-    "hearing": "Aku mendengarmu",
-    "voiceErrors": {
-      "denied": "Mikrofon belum diizinkan. Izinkan mikrofon di pengaturan browser, lalu coba lagi.",
-      "network": "Pengenalan suara butuh internet. Periksa koneksimu, atau ketik saja ceritanya.",
-      "unavailable": "Pengenalan suara tidak tersedia di browser ini. Ketik saja ceritanya."
-    }
+    "allSet": "Semua data wajib sudah lengkap. Boarding pass-mu siap diperiksa."
   },
   "itinerary": {
     "title": "Itinerary {destination}",
@@ -370,10 +353,5 @@
     "notes": "Ada yang lain? Tulis sendiri",
     "notesPlaceholder": "Contoh: bawa mobil sendiri, ada yang mabuk laut, ingin lihat matahari terbit",
     "notesHint": "Tulis apa saja yang tidak ada di pilihan. Captain ikut memperhitungkannya."
-  },
-  "mode": {
-    "label": "Cara mengisi",
-    "captain": "Ngobrol dengan Captain",
-    "manual": "Isi manual"
   }
 }

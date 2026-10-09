@@ -76,13 +76,13 @@ function Phone() {
       <div
         role="img"
         aria-label={t.phone.label}
-        className="relative rounded-[3rem] bg-neutral-900 p-2.5 shadow-2xl ring-1 shadow-neutral-950/40 ring-neutral-700"
+        className="relative rounded-[3rem] bg-neutral-900 p-3 shadow-2xl ring-1 shadow-neutral-950/40 ring-neutral-700"
       >
         <div
           aria-hidden="true"
           className="relative flex aspect-[9/19] flex-col overflow-hidden rounded-[2.4rem] bg-background"
         >
-          <span className="absolute top-2.5 left-1/2 h-6 w-24 -translate-x-1/2 rounded-full bg-neutral-950" />
+          <span className="absolute top-3 left-1/2 h-6 w-24 -translate-x-1/2 rounded-full bg-neutral-950" />
 
           <div className="flex h-11 shrink-0 items-center justify-between px-6 pt-1 text-caption font-semibold text-text">
             <span className="tabular-nums">09:41</span>
@@ -93,7 +93,7 @@ function Phone() {
                 <rect x="8.6" y="3" width="3" height="9" rx="1" opacity="0.35" />
                 <rect x="13" y="0" width="3" height="12" rx="1" opacity="0.35" />
               </svg>
-              <WifiOff className="size-3.5" />
+              <WifiOff className="size-4" />
               <BatteryMedium className="size-4 text-text" />
             </span>
           </div>
@@ -101,16 +101,16 @@ function Phone() {
           <div className="flex flex-1 flex-col gap-3 px-4 pt-2 pb-6">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <p className="flex items-center gap-1.5 text-caption text-text-muted">
-                  <span className="size-1.5 rounded-full bg-success" />
+                <p className="flex items-center gap-2 text-caption text-text-muted">
+                  <span className="size-2 rounded-full bg-success" />
                   {t.phone.app}
                 </p>
-                <p className="mt-0.5 flex items-center gap-1 font-heading text-label text-text">
+                <p className="mt-1 flex items-center gap-1 font-heading text-label text-text">
                   <MapPin className="size-4 shrink-0 text-primary" />
                   {t.phone.destination}
                 </p>
               </div>
-              <span className="flex shrink-0 items-center gap-1 rounded-full bg-success-subtle px-2 py-0.5 text-caption font-bold text-on-success-subtle">
+              <span className="flex shrink-0 items-center gap-1 rounded-full bg-success-subtle px-2 py-1 text-caption font-bold text-on-success-subtle">
                 <Check className="size-3" strokeWidth={3} />
                 {t.phone.saved}
               </span>
@@ -180,10 +180,10 @@ function Phone() {
                 </span>
               ))}
 
-              <span className="absolute bottom-3 left-3 flex items-center gap-1.5 rounded-full border border-border bg-background/90 px-2.5 py-1 text-caption font-semibold text-success backdrop-blur-sm">
-                <span className="relative flex size-1.5">
+              <span className="absolute bottom-3 left-3 flex items-center gap-2 rounded-full border border-border bg-background/90 px-3 py-1 text-caption font-semibold text-success backdrop-blur-sm">
+                <span className="relative flex size-2">
                   <span className="absolute inset-0 animate-ping rounded-full bg-success [animation-play-state:paused] group-data-in-view/phone:[animation-play-state:running]" />
-                  <span className="relative size-1.5 rounded-full bg-success" />
+                  <span className="relative size-2 rounded-full bg-success" />
                 </span>
                 {t.phone.network}
               </span>
@@ -195,7 +195,7 @@ function Phone() {
               </span>
               <span className="min-w-0 flex-1 leading-tight">
                 <span className="block text-label text-text">{t.statusPill}</span>
-                <span className="mt-0.5 block text-caption text-text-muted">{t.subStatus}</span>
+                <span className="mt-1 block text-caption text-text-muted">{t.subStatus}</span>
               </span>
             </div>
 
@@ -242,7 +242,7 @@ export default function OfflineSection() {
             <div className="pt-4">
               <a
                 href="/plan"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary hover:bg-primary-hover text-on-primary font-bold px-7 py-3.5 text-label-lg transition-all shadow-md active:scale-[0.98]"
+                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary hover:bg-primary-hover text-on-primary font-bold px-7 py-4 text-label-lg transition-all shadow-md active:scale-[0.98]"
               >
                 <span>{t.offline.cta}</span>
                 <ArrowRight className="size-4" />

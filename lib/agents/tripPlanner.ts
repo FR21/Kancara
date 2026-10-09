@@ -3,40 +3,9 @@ import { GoogleGenAI } from '@google/genai';
 import { findDateRange } from '@/lib/api/sample-dates';
 import { buildCaptainInput, buildCaptainInstruction, readHistory, settleTripEnd } from './captainPrompt';
 
-const ai = new GoogleGenAI({});
-const client = ai;
+const client = new GoogleGenAI({});
 
 const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
-
-// ============================================================================
-// TOOLS UNTUK AI
-// ============================================================================
-const searchPlacesDeclaration = {
-  name: "searchPlaces",
-  type: "function",
-  description: "Cari tempat di Google Maps (misal: 'Hotel murah di Bali', 'Pantai di Lombok')",
-  parameters: {
-    type: "object",
-    properties: {
-      query: { type: "string", description: "Kata kunci pencarian" }
-    },
-    required: ["query"]
-  }
-};
-
-const getTravelTimeDeclaration = {
-  name: "getTravelTime",
-  type: "function",
-  description: "Dapatkan estimasi waktu tempuh dari origin ke destination.",
-  parameters: {
-    type: "object",
-    properties: {
-      origin: { type: "string" },
-      destination: { type: "string" }
-    },
-    required: ["origin", "destination"]
-  }
-};
 
 async function executeSearchPlaces(query: string, locale: string = "id") {
   if (!GOOGLE_MAPS_API_KEY) return [];
@@ -84,7 +53,7 @@ async function executeSearchPlaces(query: string, locale: string = "id") {
         imageUrl
       };
     });
-  } catch(e: any) {
+  } catch {
     return [];
   }
 }
@@ -102,19 +71,12 @@ async function executeGetTravelTime(origin: string, destination: string, locale:
       };
     }
     return { error: "Rute tidak ditemukan" };
-  } catch (e) {
+  } catch {
     return { error: "Gagal menghubungi Maps API" };
   }
 }
 
-const toolExecutors: Record<string, (...args: any[]) => any> = {
-  searchPlaces: (args: any) => executeSearchPlaces(args.query),
-  getTravelTime: (args: any) => executeGetTravelTime(args.origin, args.destination),
-};
-
-// ============================================================================
 // 1. CAPTAIN AGENT (Mengurus Chat & Ekstraksi Data)
-// ============================================================================
 export async function captainAgentReply(requestBody: any) {
   const { story, draft, locale } = requestBody;
   const history = readHistory(requestBody.history);
@@ -188,15 +150,13 @@ export async function captainAgentReply(requestBody: any) {
     const patch = settleTripEnd(reply.draftPatch ?? {}, draft?.startDate, today);
     reply.draftPatch = statedDates ? { ...patch, ...statedDates } : patch;
     return reply;
-  } catch (e) {
+  } catch {
     const message = locale === "en" ? "Sorry, I lost that one. Could you say it again?" : "Maaf, aku ketinggalan yang barusan. Boleh diulang?";
     return { message, action: "ask", draftPatch: {} };
   }
 }
 
-// ============================================================================
 // 2. PLANNER & RULE GUARDIAN (Looping Pembuat Itinerary)
-// ============================================================================
 
 export async function runTripPlanningFlow(requestBody: any) {
   const { draft, locale } = requestBody;
@@ -314,7 +274,7 @@ function evaluateRules(item: any, place: any, draft: any, locale: string = "id")
             
             // Add a small delay to respect API rate limits
             await new Promise(resolve => setTimeout(resolve, 200));
-          } catch(e) {
+          } catch {
             console.error("Gagal memperkaya data untuk", item.title);
           }
         }
@@ -371,7 +331,7 @@ async function runAgent(systemInstruction: string, promptText: string, locale: s
 
   try {
     return JSON.parse(interaction.output_text || "{}");
-  } catch (e) {
+  } catch {
     return { days: [] };
   }
 }
@@ -383,6 +343,8 @@ CRITICAL RULES to follow:
 1. Provide REAL and popular places for titles.
 2. The timings MUST be completely logical and realistic. Account for travel times and don't pack too many places if the pace is 'relaxed'.
 3. Follow the users' constraints strictly (e.g., budget, dietary needs, accessibility).
+4. Besides the fixed choices, the data holds entries people typed themselves: a member's exact "age", "customNeeds" and "customInterests" (level "must" outranks "nice"), the trip's "extras.customTransport", and the free-text "notes". Honour them exactly like the fixed ones.
+5. "budget" is the total for the whole group in Rupiah. When "budgetCurrency" is "USD" the person typed "budgetUsd" dollars and "budget" is that amount in Rupiah.
 Do it perfectly on the first try.`,
     `Please generate a detailed itinerary for:
 ${JSON.stringify(draft, null, 2)}`,

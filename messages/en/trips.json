@@ -34,7 +34,6 @@
     "departs": "Leaves {when}",
     "progress": "{done} of {total} sections filled in",
     "continue": "Continue",
-    "continueLabel": "Continue {name}",
     "violations": {
       "one": "{count} violation",
       "other": "{count} violations"
@@ -84,7 +83,6 @@
     "actions": "Trip actions"
   },
   "menu": {
-    "label": "Menu for {name}",
     "duplicate": "Duplicate",
     "share": "Share",
     "delete": "Delete"
@@ -145,8 +143,6 @@
     "generateFailed": "The itinerary couldn't be created. Check your connection, then try again."
   },
   "placeholder": {
-    "detail": "Itinerary",
-    "today": "Today's schedule",
     "summary": "Trip summary",
     "soon": "This page is being prepared.",
     "back": "Back to My Trips"

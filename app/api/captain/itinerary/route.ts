@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server";
+import { rateLimit } from "@/lib/rate-limit";
 import { runTripPlanningFlow } from "@/lib/agents/tripPlanner";
 
 export async function POST(req: Request) {
+  const limited = rateLimit(req, "captain-itinerary");
+  if (limited) return limited;
+
   try {
     const body = await req.json();
     const itinerary = await runTripPlanningFlow(body);

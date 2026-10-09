@@ -8,8 +8,10 @@ import {
   type PlanDraft,
   type PlanDraftAction,
   MAX_NOTES_CHARS,
+  sameText,
   TRANSPORT_KEYS,
 } from "@/lib/plan-draft";
+import CustomAdd, { CustomChip } from "./CustomEntries";
 import { choiceClass, FIELD_LABEL, INPUT } from "./styles";
 
 type ExtrasEditorProps = {
@@ -46,9 +48,16 @@ export default function ExtrasEditor({ draft, dispatch, text }: ExtrasEditorProp
   const closedGroups = GROUPS.filter((group) => !isOpen(group));
   const openGroups = GROUPS.filter(isOpen);
 
+  // Typing the name of a listed choice picks that choice instead of adding a twin of it.
+  const addTransport = (value: string) => {
+    const listed = TRANSPORT_KEYS.find((transport) => sameText(text.transport[transport], value));
+    if (!listed) dispatch({ type: "addCustomTransport", value });
+    else if (!extras.transport.includes(listed)) dispatch({ type: "toggleTransport", value: listed });
+  };
+
   return (
     <div className="space-y-6">
-      <fieldset>
+      <fieldset className="min-w-0">
         <legend className={FIELD_LABEL}>{text.pass.transportLegend}</legend>
         <div className="mt-2 flex flex-wrap gap-2">
           {TRANSPORT_KEYS.map((transport) => {
@@ -66,6 +75,24 @@ export default function ExtrasEditor({ draft, dispatch, text }: ExtrasEditorProp
               </button>
             );
           })}
+          {extras.customTransport.map((transport) => (
+            <CustomChip
+              key={transport}
+              label={transport}
+              text={text.custom}
+              onRemove={() => dispatch({ type: "removeCustomTransport", value: transport })}
+            />
+          ))}
+        </div>
+        <div className="mt-3">
+          <CustomAdd
+            id="extra-custom-transport"
+            label={text.custom.transport}
+            placeholder={text.custom.transportPlaceholder}
+            count={extras.customTransport.length}
+            text={text.custom}
+            onAdd={addTransport}
+          />
         </div>
       </fieldset>
 
@@ -105,7 +132,7 @@ export default function ExtrasEditor({ draft, dispatch, text }: ExtrasEditorProp
                 key={group.key}
                 type="button"
                 onClick={() => setOpened((current) => [...current, group.key])}
-                className="inline-flex h-11 cursor-pointer items-center gap-1.5 rounded-full border border-dashed border-border-strong pr-4 pl-3 text-label text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-subtle active:scale-[0.97]"
+                className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-dashed border-border-strong pr-4 pl-3 text-label text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-subtle active:scale-[0.97]"
               >
                 <Plus className="size-4 text-primary" aria-hidden="true" />
                 {text.extrasAdd[group.key]}

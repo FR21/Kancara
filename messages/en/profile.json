@@ -2,7 +2,6 @@
   "title": "My Profile",
   "subtitle": "Manage your account settings and preferences.",
   "emailLabel": "Email Address",
-  "uidLabel": "User ID",
   "nameLabel": "Display Name",
   "namePlaceholder": "Enter your name",
   "usernameLabel": "Username",

@@ -14,9 +14,6 @@ export const OUTLINE_BUTTON =
 export const GHOST_BUTTON =
   "inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full px-4 text-label-lg text-text transition-[background-color,scale] duration-150 ease-out hover:bg-surface-muted active:scale-[0.97]";
 
-export const QUICK_CHIP =
-  "inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full border border-border-strong px-4 text-label text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-subtle active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40";
-
 const CHOICE_BASE =
   "inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-label transition-[background-color,border-color,color,scale] duration-150 ease-out active:scale-[0.97]";
 

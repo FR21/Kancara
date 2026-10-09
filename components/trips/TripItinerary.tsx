@@ -3,6 +3,7 @@
 import { ArrowLeft, ArrowRight, Route } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import PageBackdrop from "@/components/layout/PageBackdrop";
 import ErrorAlert from "@/components/plan/ErrorAlert";
 import ItineraryCard from "@/components/plan/ItineraryCard";
 import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
@@ -96,10 +97,11 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
   };
 
   return (
-    <main className="mx-auto w-full max-w-2xl flex-1 px-4 pt-24 pb-16 sm:px-6 sm:pt-28 lg:max-w-5xl xl:px-0">
+    <main className="relative isolate mx-auto w-full max-w-2xl flex-1 px-4 pt-24 pb-16 sm:px-6 sm:pt-28 lg:max-w-5xl xl:px-0">
+      <PageBackdrop />
       <Link href="/trips" className={BACK_LINK}>
         <ArrowLeft
-          className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-x-0.5"
+          className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-x-1"
           aria-hidden="true"
         />
         {text.itinerary.back}

@@ -230,7 +230,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
             ref={smileRef}
             aria-hidden="true"
             data-state="hidden"
-            className="pointer-events-none absolute bottom-0.5 left-0 h-2 w-5 translate-x-[calc(var(--smile-x,0px)-50%)] opacity-0 data-[state=placed]:opacity-100 data-[state=ready]:opacity-100 data-[state=ready]:motion-safe:transition-[translate] data-[state=ready]:motion-safe:duration-500 data-[state=ready]:motion-safe:ease-spring"
+            className="pointer-events-none absolute bottom-1 left-0 h-2 w-5 translate-x-[calc(var(--smile-x,0px)-50%)] opacity-0 data-[state=placed]:opacity-100 data-[state=ready]:opacity-100 data-[state=ready]:motion-safe:transition-[translate] data-[state=ready]:motion-safe:duration-500 data-[state=ready]:motion-safe:ease-spring"
           >
             <Smile className="size-full" />
           </span>
@@ -258,7 +258,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
             ) : (
               <Link
                 href="/login"
-                className="shrink-0 ml-2 inline-flex h-10 items-center justify-center rounded-md bg-primary px-4 text-label text-on-primary shadow-sm transition-[background-color,color,scale] hover:bg-primary-hover active:scale-95"
+                className="shrink-0 ml-2 inline-flex h-10 items-center justify-center rounded-full bg-primary px-5 text-label text-on-primary shadow-sm transition-[background-color,color,scale] hover:bg-primary-hover active:scale-95"
               >
                 {text.login}
               </Link>
@@ -301,7 +301,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
         }`}
       >
         <nav aria-label={text.navLabel}>
-          <ul className="flex flex-col gap-0.5">
+          <ul className="flex flex-col gap-1">
             {NAV_LINKS.map((link) => {
               const active = isActive(link.href);
               return (

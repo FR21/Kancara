@@ -70,7 +70,7 @@ export default function TextField({
             onClick={() => setRevealed((shown) => !shown)}
             aria-label={revealed ? reveal.hide : reveal.show}
             aria-pressed={revealed}
-            className="absolute top-0.5 right-0.5 inline-flex size-11 cursor-pointer items-center justify-center rounded-lg text-text-muted transition-[color,scale] duration-150 ease-out hover:text-text active:scale-[0.97]"
+            className="absolute top-1 right-1 inline-flex size-11 cursor-pointer items-center justify-center rounded-lg text-text-muted transition-[color,scale] duration-150 ease-out hover:text-text active:scale-[0.97]"
           >
             <RevealIcon className="size-5" aria-hidden="true" />
           </button>

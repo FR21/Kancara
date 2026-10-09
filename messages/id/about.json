@@ -1,21 +1,116 @@
 {
-  "title": "Tentang Kancara",
-  "subtitle": "Teman Perjalanan Anda",
-  "description": "Kancara hadir untuk membantu Anda merencanakan dan mengelola perjalanan dengan lebih mudah. Kami percaya bahwa setiap perjalanan harus menjadi pengalaman yang tak terlupakan. Aplikasi ini diciptakan oleh para pengelana untuk para pengelana.",
-  "missionTitle": "Misi Kami",
-  "missionText": "Menyediakan alat terbaik untuk merencanakan liburan impian, mengeksplorasi destinasi baru, dan membagikan momen berharga tanpa hambatan.",
-  "visionTitle": "Visi Kami",
-  "visionText": "Menjadi platform utama bagi para traveler untuk mewujudkan perjalanan yang terorganisir, aman, dan memuaskan.",
-  "historyTitle": "Cerita Kami",
-  "historyText": "Lahir tahun ini dari rasa frustrasi pribadi terhadap perencanaan perjalanan yang rumit, Kancara adalah langkah segar kami untuk membuat setiap perjalanan menjadi lebih mulus. Kami baru saja memulai, dan kami bersemangat untuk membangun alat terbaik bagi para traveler di mana saja.",
-  "valuesTitle": "Nilai-Nilai Kami",
-  "value1Title": "Eksplorasi",
-  "value1Desc": "Kami mendorong rasa ingin tahu dan menemukan hal yang belum diketahui.",
-  "value2Title": "Kesederhanaan",
-  "value2Desc": "Perencanaan perjalanan harus intuitif dan mudah.",
-  "value3Title": "Komunitas",
-  "value3Desc": "Kami percaya pada kekuatan berbagi pengalaman.",
-  "ctaTitle": "Siap Memulai Perjalanan Anda?",
-  "ctaText": "Jadilah yang pertama menjelajahi dunia bersama Kancara.",
-  "ctaButton": "Mulai Rencanakan Sekarang"
+  "hero": {
+    "headline": "Tidak ada yang",
+    "underlined": "tertinggal",
+    "headlineEnd": ".",
+    "lead": "Kancara adalah perencana perjalanan rombongan yang memperhitungkan kebutuhan setiap anggota, dari menyusun rencana sampai pulang lagi."
+  },
+  "pass": {
+    "brand": "Tentang Kancara",
+    "from": "Dari",
+    "to": "Ke",
+    "origin": "Satu suara",
+    "originNote": "Rencana mengikuti yang paling vokal.",
+    "destination": "Semua anggota",
+    "destinationNote": "Rencana yang pas untuk tiap orang.",
+    "fields": [
+      {
+        "label": "Kapten",
+        "value": "Captain"
+      },
+      {
+        "label": "Rombongan",
+        "value": "1 sampai 50 orang"
+      },
+      {
+        "label": "Bahasa",
+        "value": "Indonesia, English"
+      },
+      {
+        "label": "Lepas landas",
+        "value": "2026"
+      }
+    ]
+  },
+  "problem": {
+    "title": "Biasanya, rencana mengikuti suara yang paling keras.",
+    "body": "Yang memakai kursi roda, orang tua dengan balita, teman dengan anggaran terbatas, atau yang punya pantangan makan akhirnya mengalah. Kadang malah memilih tidak ikut.",
+    "answer": "Kancara membalik urutannya. Kebutuhan tiap anggota dicatat dulu, baru rencananya disusun."
+  },
+  "manifest": {
+    "title": "Daftar penumpang",
+    "sample": "Ilustrasi",
+    "switchLabel": "Bandingkan cara menyusun rencana",
+    "usual": "Rencana biasa",
+    "kancara": "Dengan Kancara",
+    "heard": "Didengar",
+    "missed": "Terlewat",
+    "kept": "Dijaga",
+    "passengers": {
+      "bayu": {
+        "name": "Mas Bayu",
+        "need": "Ingin jadwal padat"
+      },
+      "ratna": {
+        "name": "Oma Ratna",
+        "need": "Kursi roda"
+      },
+      "kirana": {
+        "name": "Kirana",
+        "need": "Tidur siang"
+      },
+      "dimas": {
+        "name": "Dimas",
+        "need": "Makanan halal"
+      },
+      "sekar": {
+        "name": "Sekar",
+        "need": "Anggaran terbatas"
+      }
+    }
+  },
+  "principles": {
+    "title": "Yang kami pegang",
+    "lead": "Empat hal yang kami jadikan ukuran setiap kali menambah sesuatu ke Kancara.",
+    "items": [
+      {
+        "title": "Setiap anggota dihitung",
+        "body": "Kebutuhan yang disebutkan harus terlihat di rencana, bukan sekadar tersimpan."
+      },
+      {
+        "title": "Satu menit untuk mulai",
+        "body": "Langkah pertama meminta sesedikit mungkin dari kamu."
+      },
+      {
+        "title": "Jujur soal keadaan",
+        "body": "Data contoh, proses memuat, dan kegagalan selalu diberi label apa adanya."
+      },
+      {
+        "title": "Untuk satu orang atau banyak",
+        "body": "Tidak ada bagian yang mengandaikan jumlah rombongan tertentu."
+      }
+    ]
+  },
+  "status": {
+    "title": "Kancara masih muda, dan kami terbuka soal itu.",
+    "body": "Kancara lahir tahun ini dari kesal melihat rencana liburan yang selalu mengorbankan seseorang. Kami baru mulai, jadi ini yang sudah bisa kamu pakai dan yang masih kami kerjakan.",
+    "nowTitle": "Sudah bisa",
+    "now": [
+      "Menyusun rencana bersama Captain",
+      "Boarding pass untuk memeriksa rencana",
+      "Itinerary per hari yang memeriksa tiap kebutuhan",
+      "Perjalanan Saya dengan jadwal hari ini"
+    ],
+    "nextTitle": "Sedang disiapkan",
+    "next": [
+      "Undangan untuk anggota rombongan",
+      "Akses tanpa sinyal selama perjalanan"
+    ]
+  },
+  "cta": {
+    "title": "Siap berangkat bersama rombonganmu?",
+    "body": "Ceritakan rencanamu ke Captain. Sisanya kami bantu susun.",
+    "primary": "Mulai rencana",
+    "secondary": "Lihat cara kerjanya"
+  }
 }

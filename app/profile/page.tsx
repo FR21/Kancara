@@ -1,7 +1,13 @@
+import type { Metadata } from "next";
 import { verifySession } from "@/lib/auth/session";
 import ProfileContent from "./ProfileContent";
 import { redirect } from "next/navigation";
 import { adminAuth } from "@/lib/firebase/admin";
+import { requestMetadata } from "@/lib/seo";
+
+export function generateMetadata(): Promise<Metadata> {
+  return requestMetadata("profile");
+}
 
 export default async function ProfilePage() {
   const session = await verifySession();

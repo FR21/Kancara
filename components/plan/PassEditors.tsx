@@ -1,11 +1,21 @@
 "use client";
 
 import { Check, CircleAlert, Plus, X } from "lucide-react";
-import { type Dispatch, type KeyboardEvent, useState } from "react";
+import { type Dispatch, type KeyboardEvent, useEffect, useState } from "react";
+import { type Currency, CURRENCIES, idrToUsd, usdToIdr } from "@/lib/currency";
 import type { Messages } from "@/lib/messages";
-import { type PlanDraft, type PlanDraftAction, fillTemplate, hasDateError, PACES } from "@/lib/plan-draft";
+import {
+  type PlanDraft,
+  type PlanDraftAction,
+  fillTemplate,
+  hasDateError,
+  PACES,
+  parseLocalDate,
+} from "@/lib/plan-draft";
+import { useExchangeRate } from "@/lib/use-exchange-rate";
 import { useLocale } from "@/lib/use-locale";
 import Checkbox from "./Checkbox";
+import SegmentedToggle from "./SegmentedToggle";
 import { FIELD_LABEL, INPUT } from "./styles";
 
 type EditorProps = {
@@ -16,7 +26,8 @@ type EditorProps = {
 
 type PickProps = EditorProps & { onPicked: () => void };
 
-const BUDGET_PRESETS = [5_000_000, 10_000_000, 30_000_000];
+const BUDGET_PRESETS: Record<Currency, number[]> = { IDR: [5_000_000, 10_000_000, 30_000_000], USD: [300, 600, 2000] };
+const MAX_BUDGET_DIGITS: Record<Currency, number> = { IDR: 13, USD: 9 };
 const MINUTE_MS = 60_000;
 
 function todayIso(): string {
@@ -155,7 +166,7 @@ export function DatesEditor({ draft, dispatch, text }: EditorProps) {
         </div>
       </div>
       {dateError && (
-        <p id="pass-date-error" className="mt-2 flex items-center gap-1.5 text-body-sm text-error">
+        <p id="pass-date-error" className="mt-2 flex items-center gap-2 text-body-sm text-error">
           <CircleAlert className="size-4 shrink-0" aria-hidden="true" />
           {text.pass.dateError}
         </p>
@@ -173,29 +184,69 @@ export function DatesEditor({ draft, dispatch, text }: EditorProps) {
 
 export function BudgetEditor({ draft, dispatch, text, onPicked }: PickProps) {
   const locale = useLocale();
-  const fullFormat = new Intl.NumberFormat(locale, { style: "currency", currency: "IDR", maximumFractionDigits: 0 });
-  const compactFormat = new Intl.NumberFormat(locale, {
-    style: "currency",
-    currency: "IDR",
-    notation: "compact",
-    maximumFractionDigits: 1,
-  });
+  const rate = useExchangeRate();
+  const copy = text.budget;
+  const currency = draft.budgetCurrency;
+  // The Rupiah amount is what the plan runs on. Dollars are shown as typed, or worked out from the Rupiah.
+  const amounts: Record<Currency, number | null> = {
+    IDR: draft.budget,
+    USD: draft.budgetUsd ?? (draft.budget === null ? null : idrToUsd(draft.budget, rate)),
+  };
+
+  const grouped = new Intl.NumberFormat(locale);
+  const money = (unit: Currency, compact = false) =>
+    new Intl.NumberFormat(locale, {
+      style: "currency",
+      currency: unit,
+      notation: compact ? "compact" : "standard",
+      maximumFractionDigits: compact ? 1 : 0,
+    });
+  const rateValues = { one: money("USD").format(1), rate: money("IDR").format(rate.idrPerUsd) };
+  const rateLine = rate.date
+    ? fillTemplate(copy.rate, {
+        ...rateValues,
+        date: new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric" }).format(
+          parseLocalDate(rate.date),
+        ),
+      })
+    : fillTemplate(copy.rateEstimate, rateValues);
+
+  // Dollars someone typed stay as typed; their Rupiah value follows the rate in use.
+  useEffect(() => {
+    if (draft.budgetUsd === null) return;
+    const idr = usdToIdr(draft.budgetUsd, rate);
+    if (idr !== draft.budget) dispatch({ type: "setBudgetUsd", usd: draft.budgetUsd, idr });
+  }, [draft.budget, draft.budgetUsd, rate, dispatch]);
+
+  const setAmount = (value: number | null) => {
+    if (currency === "IDR") dispatch({ type: "setBudget", value });
+    else dispatch({ type: "setBudgetUsd", usd: value, idr: value === null ? null : usdToIdr(value, rate) });
+  };
 
   const handleChange = (value: string) => {
-    const digits = value.replace(/\D/g, "");
-    dispatch({ type: "setBudget", value: digits ? Number(digits) : null });
+    const digits = value.replace(/\D/g, "").slice(0, MAX_BUDGET_DIGITS[currency]);
+    setAmount(digits ? Number(digits) : null);
   };
 
   const pickPreset = (preset: number) => {
-    dispatch({ type: "setBudget", value: preset });
+    setAmount(preset);
     onPicked();
   };
 
   return (
     <div>
-      <div className="grid gap-2 sm:grid-cols-3">
-        {BUDGET_PRESETS.map((preset) => {
-          const selected = draft.budget === preset;
+      <SegmentedToggle
+        name="budget-currency"
+        label={copy.currencyLegend}
+        options={CURRENCIES}
+        labels={copy.currencies}
+        value={currency}
+        onChange={(value) => dispatch({ type: "setBudgetCurrency", value })}
+      />
+
+      <div className="mt-4 grid gap-2 sm:grid-cols-3">
+        {BUDGET_PRESETS[currency].map((preset) => {
+          const selected = (currency === "IDR" ? draft.budget : draft.budgetUsd) === preset;
           return (
             <button
               key={preset}
@@ -204,59 +255,77 @@ export function BudgetEditor({ draft, dispatch, text, onPicked }: PickProps) {
               onClick={() => pickPreset(preset)}
               className={`${bigChoiceClass(selected)} justify-center font-heading text-h3 font-extrabold tabular-nums`}
             >
-              {compactFormat.format(preset)}
+              {money(currency, true).format(preset)}
             </button>
           );
         })}
       </div>
 
-      <label htmlFor="pass-budget" className={`${FIELD_LABEL} mt-6 block`}>
-        {text.budgetOther}
-      </label>
-      <input
-        id="pass-budget"
-        type="text"
-        inputMode="numeric"
-        autoComplete="off"
-        value={draft.budget ?? ""}
-        placeholder={text.pass.budgetPlaceholder}
-        aria-describedby="pass-budget-preview"
-        onChange={(event) => handleChange(event.target.value)}
-        className={`${BIG_INPUT} mt-2 tabular-nums`}
-      />
-      <p id="pass-budget-preview" aria-live="polite" className="mt-2 min-h-6 text-body-sm text-text-muted tabular-nums">
-        {draft.budget ? fullFormat.format(draft.budget) : ""}
+      <div className="mt-6 grid gap-4 sm:grid-cols-2">
+        {CURRENCIES.map((unit) => {
+          const active = unit === currency;
+          const amount = amounts[unit];
+          // The field being typed in keeps plain digits; the worked-out one is grouped for reading.
+          let shown: number | string = "";
+          if (amount !== null) shown = active ? amount : grouped.format(amount);
+          return (
+            <div key={unit}>
+              <label htmlFor={`pass-budget-${unit}`} className={`${FIELD_LABEL} block`}>
+                {copy.fields[unit]}
+              </label>
+              <input
+                id={`pass-budget-${unit}`}
+                type="text"
+                inputMode="numeric"
+                autoComplete="off"
+                disabled={!active}
+                value={shown}
+                placeholder={active ? copy.placeholders[unit] : copy.auto}
+                aria-describedby="pass-budget-summary"
+                onChange={(event) => handleChange(event.target.value)}
+                className={`${BIG_INPUT} mt-2 tabular-nums disabled:cursor-not-allowed disabled:border-border disabled:bg-surface-muted disabled:text-text-muted`}
+              />
+            </div>
+          );
+        })}
+      </div>
+
+      <p id="pass-budget-summary" aria-live="polite" className="mt-3 min-h-6 text-body-sm text-text tabular-nums">
+        {amounts.IDR !== null && amounts.USD !== null
+          ? `${money("IDR").format(amounts.IDR)} ≈ ${money("USD").format(amounts.USD)}`
+          : ""}
       </p>
+      <p className="mt-1 text-caption text-text-muted">{rateLine}</p>
     </div>
   );
 }
 
-export function PaceEditor({ draft, dispatch, text, onPicked }: PickProps) {
+export function PaceEditor({ draft, dispatch, text }: EditorProps) {
   return (
-    <div className="grid gap-2 sm:grid-cols-2">
-      {PACES.map((pace) => {
-        const selected = draft.pace === pace;
-        return (
-          <button
-            key={pace}
-            type="button"
-            aria-pressed={selected}
-            onClick={() => {
-              dispatch({ type: "setPace", value: pace });
-              onPicked();
-            }}
-            className={bigChoiceClass(selected)}
-          >
-            <span className="min-w-0 flex-1">
-              <span className="block font-heading text-h3 font-extrabold">{text.paces[pace]}</span>
-              <span className={`mt-1 block text-body-sm ${selected ? "text-on-primary" : "text-text-muted"}`}>
-                {text.paceHints[pace]}
+    <fieldset className="min-w-0">
+      <legend className={FIELD_LABEL}>{text.pass.pace}</legend>
+      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+        {PACES.map((pace) => {
+          const selected = draft.pace === pace;
+          return (
+            <button
+              key={pace}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => dispatch({ type: "setPace", value: pace })}
+              className={bigChoiceClass(selected)}
+            >
+              <span className="min-w-0 flex-1">
+                <span className="block font-heading text-h3 font-extrabold">{text.paces[pace]}</span>
+                <span className={`mt-1 block text-body-sm ${selected ? "text-on-primary" : "text-text-muted"}`}>
+                  {text.paceHints[pace]}
+                </span>
               </span>
-            </span>
-            {selected && <Check className="size-5 shrink-0" strokeWidth={3} aria-hidden="true" />}
-          </button>
-        );
-      })}
-    </div>
+              {selected && <Check className="size-5 shrink-0" strokeWidth={3} aria-hidden="true" />}
+            </button>
+          );
+        })}
+      </div>
+    </fieldset>
   );
 }

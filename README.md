@@ -6,8 +6,8 @@
 
 **Your inclusive group travel planner.**
 
-A multi-agent travel companion for groups whose members have different needs,
-from planning all the way to the trip home, even offline.
+Kancara is a multi-agent travel companion for groups with different needs, from
+planning all the way to the trip home.
 
 ![Next.js](https://img.shields.io/badge/Next.js_16-000000?logo=nextdotjs&logoColor=white)
 ![React](https://img.shields.io/badge/React_19-149ECA?logo=react&logoColor=white)
@@ -71,14 +71,13 @@ npm run dev
 Then open **http://localhost:3000**.
 
 Fonts load automatically through `next/font`, so there is nothing extra to install.
-No environment variables are needed yet. When they are, they will be listed in
-`.env.example`. Copy it to `.env`, and never commit `.env`.
+Environment variables go in `.env`, which is never committed.
 
 ### Demo data for My Trips
 
-There is no trips database yet. `/trips` reads from an in-memory store
-(`lib/trips/store.ts`) that is empty for every account and resets when the
-server restarts. To see the page with every card state filled in, list the demo
+There is no trips database yet. `/trips` reads from a stand-in store
+(`lib/trips/store.ts`) that starts empty for every account and keeps what
+people save in `.data/trips.json`, a local file that git ignores. To see the page with every card state filled in, list the demo
 account's email in `.env` and sign in with it:
 
 ```bash
@@ -87,6 +86,23 @@ DEMO_ACCOUNT_EMAILS=demo@example.com
 
 Several emails can be separated with commas. The sample trips live in
 `lib/trips/seed.json`.
+
+### Search and link previews
+
+Titles, descriptions, canonical addresses, link-preview tags, `robots.txt`,
+`sitemap.xml`, `llms.txt`, and the structured data all need to know where the
+site lives. Set it before deploying:
+
+```bash
+NEXT_PUBLIC_SITE_URL=https://your-domain.example
+# Optional: the code from Google Search Console's "HTML tag" verification method
+GOOGLE_SITE_VERIFICATION=
+```
+
+Every public page has an Indonesian address (`/about`) and an English one
+(`/about?lang=en`), and each is rendered in its language on the server. The
+wording search engines see comes from `messages/<locale>/seo.json`, and the
+questions and answers from `faq` in `messages/<locale>/landing.json`.
 
 ### Scripts
 

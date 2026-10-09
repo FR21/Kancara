@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import PlanWorkspace from "@/components/plan/PlanWorkspace";
+import { requestMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
-  title: "Rencanakan Trip | Kancara",
-  description: "Ceritakan kebutuhan rombonganmu dan susun draf rencana trip bersama Kancara.",
-};
+export function generateMetadata(): Promise<Metadata> {
+  return requestMetadata("plan");
+}
 
 export default function PlanPage() {
   return <PlanWorkspace />;

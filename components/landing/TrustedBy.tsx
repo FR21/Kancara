@@ -39,7 +39,7 @@ export default function TrustedBy({ label }: { label: string }) {
               <li
                 key={`${name}-${index}`}
                 aria-hidden={duplicate || undefined}
-                className={`group flex shrink-0 items-center gap-2.5 px-7 text-text-muted/70 transition-colors duration-300 hover:text-primary sm:px-9 ${
+                className={`group flex shrink-0 items-center gap-3 px-7 text-text-muted/70 transition-colors duration-300 hover:text-primary sm:px-9 ${
                   duplicate ? "motion-reduce:hidden" : ""
                 }`}
               >

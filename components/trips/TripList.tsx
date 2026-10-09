@@ -47,7 +47,7 @@ function TripRow({ card, selected, text, onSelect }: TripRowProps) {
   };
 
   return (
-    <li className={`relative transition-colors duration-150 ease-out hover:bg-surface-muted ${selected ? "lg:bg-primary-subtle lg:hover:bg-primary-subtle" : ""}`}>
+    <li className={`group/row relative transition-colors duration-150 ease-out hover:bg-surface-muted ${selected ? "lg:bg-primary-subtle lg:hover:bg-primary-subtle" : ""}`}>
       <div className="flex items-center gap-3 px-4 py-3">
         <StatusMark status={card.status} label={text.status[card.status]} />
         <div className="min-w-0 flex-1">
@@ -81,7 +81,7 @@ function TripRow({ card, selected, text, onSelect }: TripRowProps) {
         <div className="flex shrink-0 items-center">
           <span
             aria-hidden="true"
-            className={`flex size-6 items-center justify-center rounded-full transition-colors duration-150 ease-out ${
+            className={`flex size-6 items-center justify-center rounded-full transition-[background-color,color,translate] duration-200 ease-out group-hover/row:translate-x-1 ${
               selected ? "text-text-muted lg:bg-primary lg:text-on-primary" : "text-text-muted"
             }`}
           >
@@ -97,7 +97,10 @@ function TripRow({ card, selected, text, onSelect }: TripRowProps) {
             className="flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-label-lg text-on-primary transition-[background-color,scale] duration-150 ease-out hover:bg-primary-hover active:scale-[0.97]"
           >
             {text.card.openToday}
-            <ArrowRight className="size-4" aria-hidden="true" />
+            <ArrowRight
+              className="size-4 transition-[translate] duration-200 ease-out group-hover/row:translate-x-1"
+              aria-hidden="true"
+            />
           </Link>
         </div>
       )}

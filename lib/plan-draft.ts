@@ -1,3 +1,5 @@
+import type { Currency } from "./currency";
+
 export const AGE_GROUPS = ["adult", "elderly", "child", "toddler"] as const;
 export type AgeGroup = (typeof AGE_GROUPS)[number];
 
@@ -25,13 +27,20 @@ export type TransportKey = (typeof TRANSPORT_KEYS)[number];
 export const PACES = ["relaxed", "packed"] as const;
 export type Pace = (typeof PACES)[number];
 
+export type CustomInterest = { label: string; level: WishLevel };
+
+// The `custom` fields hold what someone typed because none of the choices fit.
 export type Member = {
   id: string;
   name: string;
   ageGroup: AgeGroup;
+  /** Exact age in years when it was given. It always falls inside `ageGroup`. */
+  age: number | null;
   needs: NeedKey[];
+  customNeeds: string[];
   allergies: string;
   interests: Partial<Record<InterestKey, WishLevel>>;
+  customInterests: CustomInterest[];
 };
 
 export type TripExtras = {
@@ -45,9 +54,10 @@ export type TripExtras = {
   dayStart: string;
   dayEnd: string;
   transport: TransportKey[];
+  customTransport: string[];
 };
 
-export type ExtraTextKey = Exclude<keyof TripExtras, "flexibleDates" | "transport">;
+export type ExtraTextKey = Exclude<keyof TripExtras, "flexibleDates" | "transport" | "customTransport">;
 
 export type PlanDraft = {
   origin: string;
@@ -55,7 +65,11 @@ export type PlanDraft = {
   startDate: string;
   endDate: string;
   members: Member[];
+  /** The total in Rupiah, whichever currency it was typed in. */
   budget: number | null;
+  budgetCurrency: Currency;
+  /** The dollar amount as typed. Null when the budget was typed in Rupiah. */
+  budgetUsd: number | null;
   pace: Pace | null;
   extras: TripExtras;
   notes: string;
@@ -78,6 +92,9 @@ export type DraftPatch = {
 
 export const MAX_MEMBERS = 50;
 export const MAX_NOTES_CHARS = 500;
+export const MAX_AGE = 120;
+export const MAX_CUSTOM_ENTRIES = 8;
+export const MAX_CUSTOM_CHARS = 60;
 
 const EMPTY_EXTRAS: TripExtras = {
   flexibleDates: false,
@@ -90,6 +107,7 @@ const EMPTY_EXTRAS: TripExtras = {
   dayStart: "",
   dayEnd: "",
   transport: [],
+  customTransport: [],
 };
 
 export const EMPTY_DRAFT: PlanDraft = {
@@ -99,13 +117,25 @@ export const EMPTY_DRAFT: PlanDraft = {
   endDate: "",
   members: [],
   budget: null,
+  budgetCurrency: "IDR",
+  budgetUsd: null,
   pace: null,
   extras: EMPTY_EXTRAS,
   notes: "",
 };
 
 export function createMember(ageGroup: AgeGroup = "adult", name = ""): Member {
-  return { id: crypto.randomUUID(), name, ageGroup, needs: [], allergies: "", interests: {} };
+  return {
+    id: crypto.randomUUID(),
+    name,
+    ageGroup,
+    age: null,
+    needs: [],
+    customNeeds: [],
+    allergies: "",
+    interests: {},
+    customInterests: [],
+  };
 }
 
 export type PlanDraftAction =
@@ -116,13 +146,21 @@ export type PlanDraftAction =
   | { type: "addMember"; member: Member }
   | { type: "removeMember"; id: string }
   | { type: "updateMember"; id: string; changes: Partial<Pick<Member, "name" | "ageGroup" | "allergies">> }
+  | { type: "setMemberAge"; id: string; age: number | null }
   | { type: "toggleMemberNeed"; id: string; need: NeedKey }
+  | { type: "addMemberCustomNeed"; id: string; value: string }
+  | { type: "removeMemberCustomNeed"; id: string; value: string }
   | { type: "setMemberInterest"; id: string; interest: InterestKey; level: WishLevel | null }
+  | { type: "setMemberCustomInterest"; id: string; label: string; level: WishLevel | null }
   | { type: "setBudget"; value: number | null }
+  | { type: "setBudgetUsd"; usd: number | null; idr: number | null }
+  | { type: "setBudgetCurrency"; value: Currency }
   | { type: "setPace"; value: Pace }
   | { type: "setExtraText"; key: ExtraTextKey; value: string }
   | { type: "setFlexibleDates"; value: boolean }
   | { type: "toggleTransport"; value: TransportKey }
+  | { type: "addCustomTransport"; value: string }
+  | { type: "removeCustomTransport"; value: string }
   | { type: "patch"; patch: DraftPatch }
   | { type: "appendNote"; value: string }
   | { type: "setNotes"; value: string }
@@ -146,6 +184,57 @@ function setInterest(member: Member, interest: InterestKey, level: WishLevel | n
   return { ...member, interests };
 }
 
+export function sameText(first: string, second: string): boolean {
+  return first.trim().toLowerCase() === second.trim().toLowerCase();
+}
+
+/** The age group an exact age belongs to. */
+export function ageGroupFor(age: number): AgeGroup {
+  if (age < 5) return "toddler";
+  if (age < 18) return "child";
+  return age < 60 ? "adult" : "elderly";
+}
+
+function cleanEntry(value: string): string {
+  return value.replace(/\s+/g, " ").trim().slice(0, MAX_CUSTOM_CHARS).trim();
+}
+
+// A hand-typed entry joins a list once: blank text, a repeat in any letter
+// case, and anything past the limit are left out.
+function addEntry(entries: string[], value: string): string[] {
+  const entry = cleanEntry(value);
+  const repeated = entries.some((existing) => sameText(existing, entry));
+  if (!entry || repeated || entries.length >= MAX_CUSTOM_ENTRIES) return entries;
+  return [...entries, entry];
+}
+
+function removeEntry(entries: string[], value: string): string[] {
+  return entries.filter((entry) => !sameText(entry, value));
+}
+
+// Sets the level of a hand-typed wish, adding the wish when it is new. A null level removes it.
+function setCustomInterest(wishes: CustomInterest[], value: string, level: WishLevel | null): CustomInterest[] {
+  const label = cleanEntry(value);
+  const others = wishes.filter((wish) => !sameText(wish.label, label));
+  if (level === null) return others;
+  if (others.length < wishes.length) {
+    return wishes.map((wish) => (sameText(wish.label, label) ? { ...wish, level } : wish));
+  }
+  if (!label || wishes.length >= MAX_CUSTOM_ENTRIES) return wishes;
+  return [...wishes, { label, level }];
+}
+
+/** Every hand-typed need in the group, once each. */
+export function listCustomNeeds(members: Member[]): string[] {
+  const needs: string[] = [];
+  members
+    .flatMap((member) => member.customNeeds)
+    .forEach((need) => {
+      if (!needs.some((known) => sameText(known, need))) needs.push(need);
+    });
+  return needs;
+}
+
 export function planDraftReducer(draft: PlanDraft, action: PlanDraftAction): PlanDraft {
   switch (action.type) {
     case "replace":
@@ -154,7 +243,7 @@ export function planDraftReducer(draft: PlanDraft, action: PlanDraftAction): Pla
       return { ...draft, origin: action.value };
     case "addDestination": {
       const value = action.value.trim();
-      if (!value || draft.destinations.includes(value)) return draft;
+      if (!value || draft.destinations.some((city) => sameText(city, value))) return draft;
       return { ...draft, destinations: [...draft.destinations, value] };
     }
     case "removeDestination":
@@ -167,7 +256,33 @@ export function planDraftReducer(draft: PlanDraft, action: PlanDraftAction): Pla
     case "removeMember":
       return { ...draft, members: draft.members.filter((member) => member.id !== action.id) };
     case "updateMember":
-      return mapMember(draft, action.id, (member) => ({ ...member, ...action.changes }));
+      return mapMember(draft, action.id, (member) => {
+        const changed = { ...member, ...action.changes };
+        // An exact age that no longer fits the chosen group is dropped instead of left contradicting it.
+        const ageFits = changed.age === null || ageGroupFor(changed.age) === changed.ageGroup;
+        return ageFits ? changed : { ...changed, age: null };
+      });
+    case "setMemberAge":
+      return mapMember(draft, action.id, (member) => ({
+        ...member,
+        age: action.age,
+        ageGroup: action.age === null ? member.ageGroup : ageGroupFor(action.age),
+      }));
+    case "addMemberCustomNeed":
+      return mapMember(draft, action.id, (member) => ({
+        ...member,
+        customNeeds: addEntry(member.customNeeds, action.value),
+      }));
+    case "removeMemberCustomNeed":
+      return mapMember(draft, action.id, (member) => ({
+        ...member,
+        customNeeds: removeEntry(member.customNeeds, action.value),
+      }));
+    case "setMemberCustomInterest":
+      return mapMember(draft, action.id, (member) => ({
+        ...member,
+        customInterests: setCustomInterest(member.customInterests, action.label, action.level),
+      }));
     case "toggleMemberNeed":
       return mapMember(draft, action.id, (member) => ({
         ...member,
@@ -176,7 +291,11 @@ export function planDraftReducer(draft: PlanDraft, action: PlanDraftAction): Pla
     case "setMemberInterest":
       return mapMember(draft, action.id, (member) => setInterest(member, action.interest, action.level));
     case "setBudget":
-      return { ...draft, budget: action.value };
+      return { ...draft, budget: action.value, budgetUsd: null };
+    case "setBudgetUsd":
+      return { ...draft, budget: action.idr, budgetUsd: action.usd };
+    case "setBudgetCurrency":
+      return { ...draft, budgetCurrency: action.value, budgetUsd: null };
     case "setPace":
       return { ...draft, pace: action.value };
     case "setExtraText":
@@ -188,9 +307,21 @@ export function planDraftReducer(draft: PlanDraft, action: PlanDraftAction): Pla
         ...draft,
         extras: { ...draft.extras, transport: toggleItem(draft.extras.transport, action.value) },
       };
+    case "addCustomTransport":
+      return {
+        ...draft,
+        extras: { ...draft.extras, customTransport: addEntry(draft.extras.customTransport, action.value) },
+      };
+    case "removeCustomTransport":
+      return {
+        ...draft,
+        extras: { ...draft.extras, customTransport: removeEntry(draft.extras.customTransport, action.value) },
+      };
     case "patch": {
       const { extras, ...rest } = action.patch;
-      return { ...draft, ...rest, extras: { ...draft.extras, ...extras } };
+      const patched = { ...draft, ...rest, extras: { ...draft.extras, ...extras } };
+      // A budget that arrives in a patch is in Rupiah, so it replaces any dollars typed before.
+      return rest.budget === undefined ? patched : { ...patched, budgetCurrency: "IDR", budgetUsd: null };
     }
     case "setNotes":
       return { ...draft, notes: action.value.slice(0, MAX_NOTES_CHARS) };
@@ -241,7 +372,8 @@ export function countFilledExtras(extras: TripExtras): number {
     "dayEnd",
   ];
   const filledText = textKeys.filter((key) => extras[key].trim() !== "").length;
-  return filledText + (extras.flexibleDates ? 1 : 0) + (extras.transport.length > 0 ? 1 : 0);
+  const hasTransport = extras.transport.length > 0 || extras.customTransport.length > 0;
+  return filledText + (extras.flexibleDates ? 1 : 0) + (hasTransport ? 1 : 0);
 }
 
 /** Optional details the planner has filled in: the extras plus the free-text note. */
@@ -288,10 +420,30 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
 }
 
+function parseAge(value: unknown): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 && value <= MAX_AGE ? value : null;
+}
+
+function parseEntries(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .filter((entry): entry is string => typeof entry === "string")
+    .reduce<string[]>((entries, entry) => addEntry(entries, entry), []);
+}
+
+function parseCustomInterests(value: unknown): CustomInterest[] {
+  if (!Array.isArray(value)) return [];
+  return value.reduce<CustomInterest[]>((wishes, entry) => {
+    if (!isRecord(entry) || typeof entry.label !== "string") return wishes;
+    return setCustomInterest(wishes, entry.label, entry.level === "must" ? "must" : "nice");
+  }, []);
+}
+
 function parseMember(value: unknown): Member | null {
   if (!isRecord(value)) return null;
   const ageGroupRaw = typeof value.ageGroup === "string" ? value.ageGroup.toLowerCase() : "adult";
   const ageGroup = isAgeGroup(ageGroupRaw) ? ageGroupRaw : "adult";
+  const age = parseAge(value.age);
   const interests: Member["interests"] = {};
   if (isRecord(value.interests)) {
     INTEREST_KEYS.forEach((interest) => {
@@ -303,9 +455,12 @@ function parseMember(value: unknown): Member | null {
     id: typeof value.id === "string" && value.id ? value.id : crypto.randomUUID(),
     name: typeof value.name === "string" ? value.name : "",
     ageGroup: ageGroup,
+    age: age !== null && ageGroupFor(age) === ageGroup ? age : null,
     needs: Array.isArray(value.needs) ? value.needs.filter(isNeedKey) : [],
+    customNeeds: parseEntries(value.customNeeds),
     allergies: typeof value.allergies === "string" ? value.allergies : "",
     interests,
+    customInterests: parseCustomInterests(value.customInterests),
   };
 }
 
@@ -328,6 +483,7 @@ function parseExtras(value: unknown): Partial<TripExtras> {
   });
   if (typeof value.flexibleDates === "boolean") extras.flexibleDates = value.flexibleDates;
   if (Array.isArray(value.transport)) extras.transport = value.transport.filter(isTransportKey);
+  if (Array.isArray(value.customTransport)) extras.customTransport = parseEntries(value.customTransport);
   return extras;
 }
 
@@ -339,7 +495,7 @@ export function parseDraftPatch(value: unknown): DraftPatch {
     if (o) patch.origin = o;
   }
 
-  let rawDestinations = value.destinations ?? (value as any).destination;
+  let rawDestinations = value.destinations ?? value.destination;
   if (typeof rawDestinations === "string") {
     rawDestinations = [rawDestinations];
   }
@@ -385,7 +541,14 @@ export function parseDraftPatch(value: unknown): DraftPatch {
 export function parsePlanDraft(value: unknown): PlanDraft | null {
   if (!isRecord(value)) return null;
   const draft = planDraftReducer(EMPTY_DRAFT, { type: "patch", patch: parseDraftPatch(value) });
-  return { ...draft, notes: typeof value.notes === "string" ? value.notes : "" };
+  const inDollars = value.budgetCurrency === "USD";
+  const usd = Number.isInteger(value.budgetUsd) ? Number(value.budgetUsd) : 0;
+  return {
+    ...draft,
+    budgetCurrency: inDollars ? "USD" : "IDR",
+    budgetUsd: inDollars && draft.budget !== null && usd > 0 ? usd : null,
+    notes: typeof value.notes === "string" ? value.notes : "",
+  };
 }
 
 export function fillTemplate(template: string, values: Record<string, number | string>): string {

@@ -1,5 +1,5 @@
 import type { Messages } from "@/lib/messages";
-import { type Member, type NeedKey, fillTemplate, NEED_KEYS } from "@/lib/plan-draft";
+import { type Member, type NeedKey, fillTemplate, listCustomNeeds, NEED_KEYS, sameText } from "@/lib/plan-draft";
 
 type NeedSummaryProps = {
   members: Member[];
@@ -17,7 +17,7 @@ const SERVICE_CODES: Partial<Record<NeedKey, string>> = {
 };
 
 const CHIP =
-  "inline-flex items-center gap-1.5 rounded-full border border-border bg-surface px-2 py-0.5 text-caption font-bold text-text";
+  "inline-flex max-w-full items-center gap-2 rounded-2xl border border-border bg-surface px-2 py-1 text-caption font-bold text-text";
 
 export function NeedSummary({ members, text, className = "" }: NeedSummaryProps) {
   const counted = NEED_KEYS.map((need) => ({
@@ -25,7 +25,11 @@ export function NeedSummary({ members, text, className = "" }: NeedSummaryProps)
     count: members.filter((member) => member.needs.includes(need)).length,
   })).filter((entry) => entry.count > 0);
   const allergic = members.filter((member) => member.allergies.trim() !== "").length;
-  if (counted.length === 0 && allergic === 0) return null;
+  const typed = listCustomNeeds(members).map((need) => ({
+    need,
+    count: members.filter((member) => member.customNeeds.some((entry) => sameText(entry, need))).length,
+  }));
+  if (counted.length === 0 && typed.length === 0 && allergic === 0) return null;
 
   return (
     <ul className={`flex flex-wrap gap-1 ${className}`}>
@@ -37,6 +41,12 @@ export function NeedSummary({ members, text, className = "" }: NeedSummaryProps)
             </span>
           )}
           {text.needs[need]}
+          <span className="text-text-muted tabular-nums">{fillTemplate(text.ticket.times, { count })}</span>
+        </li>
+      ))}
+      {typed.map(({ need, count }) => (
+        <li key={need} className={CHIP}>
+          <span className="min-w-0 wrap-anywhere">{need}</span>
           <span className="text-text-muted tabular-nums">{fillTemplate(text.ticket.times, { count })}</span>
         </li>
       ))}

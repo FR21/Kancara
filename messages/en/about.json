@@ -1,21 +1,116 @@
 {
-  "title": "About Kancara",
-  "subtitle": "Your Travel Companion",
-  "description": "Kancara is here to help you plan and manage your travels more easily. We believe that every trip should be an unforgettable experience. This app is built by travelers for travelers.",
-  "missionTitle": "Our Mission",
-  "missionText": "To provide the best tools for planning dream vacations, exploring new destinations, and sharing precious moments without friction.",
-  "visionTitle": "Our Vision",
-  "visionText": "To be the premier platform for travelers to realize organized, safe, and enjoyable journeys.",
-  "historyTitle": "Our Story",
-  "historyText": "Born this year out of a personal frustration with complicated travel planning, Kancara is our fresh take on making journeys seamless. We are just getting started, and our passion is to build the ultimate tool for travelers everywhere.",
-  "valuesTitle": "Our Core Values",
-  "value1Title": "Exploration",
-  "value1Desc": "We encourage curiosity and discovering the unknown.",
-  "value2Title": "Simplicity",
-  "value2Desc": "Travel planning should be intuitive and straightforward.",
-  "value3Title": "Community",
-  "value3Desc": "We believe in the power of shared experiences.",
-  "ctaTitle": "Ready to Start Your Journey?",
-  "ctaText": "Be among the first to explore the world with Kancara.",
-  "ctaButton": "Start Planning Now"
+  "hero": {
+    "headline": "No one left",
+    "underlined": "behind",
+    "headlineEnd": ".",
+    "lead": "Kancara is a group travel planner that takes every member's needs into account, from planning to the trip home."
+  },
+  "pass": {
+    "brand": "About Kancara",
+    "from": "From",
+    "to": "To",
+    "origin": "One voice",
+    "originNote": "The plan follows whoever speaks up the most.",
+    "destination": "Every member",
+    "destinationNote": "A plan that fits each person.",
+    "fields": [
+      {
+        "label": "Captain",
+        "value": "Captain"
+      },
+      {
+        "label": "Group",
+        "value": "1 to 50 people"
+      },
+      {
+        "label": "Languages",
+        "value": "Indonesia, English"
+      },
+      {
+        "label": "Take-off",
+        "value": "2026"
+      }
+    ]
+  },
+  "problem": {
+    "title": "Usually, the plan follows the loudest voice.",
+    "body": "The member who uses a wheelchair, the parent with a toddler, the friend on a tight budget, or the one with dietary restrictions ends up giving way. Sometimes they just stay home.",
+    "answer": "Kancara turns the order around. Each member's needs go down first, and the plan is built from them."
+  },
+  "manifest": {
+    "title": "Passenger list",
+    "sample": "Illustration",
+    "switchLabel": "Compare ways of planning",
+    "usual": "The usual plan",
+    "kancara": "With Kancara",
+    "heard": "Heard",
+    "missed": "Missed",
+    "kept": "Looked after",
+    "passengers": {
+      "bayu": {
+        "name": "Bayu",
+        "need": "Wants a packed schedule"
+      },
+      "ratna": {
+        "name": "Grandma Ratna",
+        "need": "Wheelchair"
+      },
+      "kirana": {
+        "name": "Kirana",
+        "need": "Nap time"
+      },
+      "dimas": {
+        "name": "Dimas",
+        "need": "Halal food"
+      },
+      "sekar": {
+        "name": "Sekar",
+        "need": "Tight budget"
+      }
+    }
+  },
+  "principles": {
+    "title": "What we hold to",
+    "lead": "Four things we measure against every time we add something to Kancara.",
+    "items": [
+      {
+        "title": "Every member counts",
+        "body": "A need someone states has to show up in the plan, not just get stored."
+      },
+      {
+        "title": "One minute to start",
+        "body": "The first step asks for as little as possible from you."
+      },
+      {
+        "title": "Honest about state",
+        "body": "Sample data, loading, and failures are always labelled for what they are."
+      },
+      {
+        "title": "For one person or many",
+        "body": "Nothing in the flow assumes a fixed group size."
+      }
+    ]
+  },
+  "status": {
+    "title": "Kancara is young, and we're open about it.",
+    "body": "Kancara was born this year out of frustration with holiday plans that always leave someone out. We're just getting started, so here is what you can use today and what we're still working on.",
+    "nowTitle": "Works today",
+    "now": [
+      "Planning a trip with Captain",
+      "A boarding pass to check the plan",
+      "A day-by-day itinerary that checks each need",
+      "My Trips with today's schedule"
+    ],
+    "nextTitle": "In the works",
+    "next": [
+      "Invitations for group members",
+      "Access without a signal during the trip"
+    ]
+  },
+  "cta": {
+    "title": "Ready to set off with your group?",
+    "body": "Tell Captain about your trip. We'll help put the rest together.",
+    "primary": "Start a plan",
+    "secondary": "See how it works"
+  }
 }

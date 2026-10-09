@@ -138,7 +138,7 @@ export default function StopDialog({
               <dl className="grid gap-4 empty:hidden sm:grid-cols-2">
                 {item.address && (
                   <div className="flex items-start gap-3 sm:col-span-2">
-                    <MapPin className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+                    <MapPin className="size-5 shrink-0 text-primary" aria-hidden="true" />
                     <div className="min-w-0">
                       <dt className={FACT_LABEL}>{text.address}</dt>
                       <dd className="text-body-sm text-pretty text-text">{item.address}</dd>
@@ -147,7 +147,7 @@ export default function StopDialog({
                 )}
                 {item.openingHours && (
                   <div className="flex items-start gap-3">
-                    <Clock className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+                    <Clock className="size-5 shrink-0 text-primary" aria-hidden="true" />
                     <div className="min-w-0">
                       <dt className={FACT_LABEL}>{text.openingHours}</dt>
                       <dd className="text-body-sm text-text">{item.openingHours}</dd>
@@ -156,7 +156,7 @@ export default function StopDialog({
                 )}
                 {item.priceLevel && (
                   <div className="flex items-start gap-3">
-                    <Wallet className="mt-0.5 size-5 shrink-0 text-primary" aria-hidden="true" />
+                    <Wallet className="size-5 shrink-0 text-primary" aria-hidden="true" />
                     <div className="min-w-0">
                       <dt className={FACT_LABEL}>{text.price}</dt>
                       <dd className="text-body-sm text-text">{item.priceLevel}</dd>
@@ -165,7 +165,7 @@ export default function StopDialog({
                 )}
                 {item.rating !== undefined && (
                   <div className="flex items-start gap-3">
-                    <Star className="mt-0.5 size-5 shrink-0 fill-primary text-primary" aria-hidden="true" />
+                    <Star className="size-5 shrink-0 fill-primary text-primary" aria-hidden="true" />
                     <div className="min-w-0">
                       <dt className={FACT_LABEL}>{text.ratingLabel}</dt>
                       <dd className="text-body-sm text-text tabular-nums">
@@ -201,7 +201,7 @@ export default function StopDialog({
                 <section>
                   <h3 className={SECTION_TITLE}>{text.afterThis}</h3>
                   <p className="mt-2 flex items-start gap-3 text-body-sm text-pretty text-text tabular-nums">
-                    <Car className="mt-0.5 size-5 shrink-0 text-text-muted" aria-hidden="true" />
+                    <Car className="size-5 shrink-0 text-text-muted" aria-hidden="true" />
                     {fillTemplate(text.afterThisLeg, {
                       duration: item.travelToNext.duration,
                       distance: item.travelToNext.distance,

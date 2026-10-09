@@ -34,9 +34,12 @@ const CONFIRM_MS = 3000;
 function hasDetails(member: Member): boolean {
   return (
     member.name.trim() !== "" ||
+    member.age !== null ||
     member.needs.length > 0 ||
+    member.customNeeds.length > 0 ||
     member.allergies.trim() !== "" ||
-    Object.keys(member.interests).length > 0
+    Object.keys(member.interests).length > 0 ||
+    member.customInterests.length > 0
   );
 }
 
@@ -113,6 +116,7 @@ export default function CrewGrid({ draft, dispatch, text, selectedId, inlinePane
             const active = member.id === selectedId;
             const confirming = member.id === confirmingId;
             const name = getMemberName(member, draft.members, text.ageGroups);
+            const needCount = member.needs.length + member.customNeeds.length;
             return (
               <li key={member.id} className="relative motion-safe:animate-message-in">
                 <button
@@ -127,11 +131,11 @@ export default function CrewGrid({ draft, dispatch, text, selectedId, inlinePane
                 >
                   <span className="relative">
                     <MemberAvatar ageGroup={member.ageGroup} variant={index} className="size-16" />
-                    {member.needs.length > 0 && (
+                    {needCount > 0 && (
                       <span className="absolute -right-1 -bottom-1 flex size-6 items-center justify-center rounded-full border-2 border-surface bg-accent text-caption font-bold text-on-accent tabular-nums">
-                        <span aria-hidden="true">{member.needs.length}</span>
+                        <span aria-hidden="true">{needCount}</span>
                         <span className="sr-only">
-                          {fillTemplate(text.crew.needsCount, { count: member.needs.length })}
+                          {fillTemplate(text.crew.needsCount, { count: needCount })}
                         </span>
                       </span>
                     )}

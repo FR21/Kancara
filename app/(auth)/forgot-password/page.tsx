@@ -89,7 +89,7 @@ export default function ForgotPasswordPage() {
           className="group inline-flex min-h-11 items-center gap-2 rounded-sm text-label text-primary underline-offset-4 hover:underline"
         >
           <ArrowLeft
-            className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-x-0.5"
+            className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-x-1"
             aria-hidden="true"
           />
           {t.forgot.backToLogin}
