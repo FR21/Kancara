@@ -6,6 +6,7 @@ import Link from "next/link";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import AuthHeading from "@/components/auth/AuthHeading";
 import { FormAlert, GoogleButton, OrDivider, PasswordRules, SubmitButton } from "@/components/auth/AuthParts";
+import LegalModal from "@/components/auth/LegalModal";
 import TextField, { FIELD_LABEL, OptionalMark } from "@/components/auth/TextField";
 import { GHOST_BUTTON } from "@/components/plan/styles";
 import GenderSelect from "@/components/profile/GenderSelect";
@@ -36,9 +37,11 @@ const FIRST_FIELD: Record<Step, string> = { account: "register-email", about: "r
 export default function RegisterPage() {
   const t = useMessages("auth");
   const profile = useMessages("profile");
+  const legal = useMessages("legal");
   const { pending, error, run } = useAuthFlow();
 
   const [step, setStep] = useState<Step>("account");
+  const [legalModal, setLegalModal] = useState<"privacy" | "terms" | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -281,6 +284,13 @@ export default function RegisterPage() {
                 />
               </div>
             </div>
+            <div className="mt-2 text-label text-text-muted text-balance text-center sm:text-left">
+              {t.register.agreement1}
+              <button type="button" onClick={() => setLegalModal("terms")} className="text-primary hover:underline underline-offset-4 focus-visible:outline-accent rounded-sm">{t.register.termsLink}</button>
+              {t.register.agreement2}
+              <button type="button" onClick={() => setLegalModal("privacy")} className="text-primary hover:underline underline-offset-4 focus-visible:outline-accent rounded-sm">{t.register.privacyLink}</button>
+              {t.register.agreement3}
+            </div>
             <div className="flex gap-3">
               <button type="button" onClick={() => setStep("account")} disabled={pending} className={GHOST_BUTTON}>
                 <ArrowLeft className="size-4" aria-hidden="true" />
@@ -307,6 +317,13 @@ export default function RegisterPage() {
           {t.register.loginLink}
         </Link>
       </p>
+
+      <LegalModal
+        open={!!legalModal}
+        type={legalModal}
+        text={legal}
+        onClose={() => setLegalModal(null)}
+      />
     </div>
   );
 }
