@@ -23,6 +23,8 @@ import enTravel from "@/messages/en/travel.json";
 import idTravel from "@/messages/id/travel.json";
 import enAbout from "@/messages/en/about.json";
 import idAbout from "@/messages/id/about.json";
+import enTrips from "@/messages/en/trips.json";
+import idTrips from "@/messages/id/trips.json";
 import type { Locale } from "./locale";
 
 // Indonesian is the default locale, so its files define the expected keys.
@@ -36,6 +38,7 @@ const id = {
   profile: idProfile,
   travel: idTravel,
   about: idAbout,
+  trips: idTrips,
 };
 
 export type Messages = typeof id;
@@ -52,6 +55,7 @@ const en = {
   profile: enProfile,
   travel: enTravel,
   about: enAbout,
+  trips: enTrips,
 } satisfies Messages;
 
 export const MESSAGES: Record<Locale, Messages> = { id, en };

@@ -98,7 +98,15 @@
   },
   "result": {
     "title": "Your trip plan",
-    "backToPass": "Change boarding pass"
+    "backToPass": "Change boarding pass",
+    "tripName": "Trip to {destination}",
+    "saving": "Saving to My Trips",
+    "saved": "Saved to My Trips automatically.",
+    "savedNotice": "Plan saved to My Trips.",
+    "viewTrips": "View My Trips",
+    "saveFailed": "The plan wasn't saved to My Trips. Check your connection, then try again.",
+    "saveRetry": "Save again",
+    "dismiss": "Dismiss"
   },
   "ageGroups": {
     "adult": "Adult",
@@ -249,7 +257,41 @@
     "daysLabel": "Choose a day",
     "day": "Day {number}",
     "honours": "Covers",
-    "everyone": "Everyone"
+    "everyone": "Everyone",
+    "stops": {
+      "one": "{count} stop",
+      "other": "{count} stops"
+    },
+    "honoured": {
+      "one": "{count} need covered",
+      "other": "{count} needs covered"
+    },
+    "toCheck": {
+      "one": "{count} to check",
+      "other": "{count} to check"
+    },
+    "check": "Needs a check",
+    "emptyDay": "Nothing planned for this day yet.",
+    "leg": "{duration} · {distance} to the next stop",
+    "rating": "{rating} out of 5",
+    "close": "Close",
+    "now": "Happening now",
+    "next": "Up next",
+    "done": "Done",
+    "more": "+{count}",
+    "hours": "{count} hr",
+    "minutes": "{count} min",
+    "position": "Stop {current} of {total}",
+    "previous": "Previous",
+    "following": "Next",
+    "openMap": "Open in Google Maps",
+    "address": "Address",
+    "openingHours": "Opening hours",
+    "price": "Price",
+    "ratingLabel": "Rating",
+    "forGroup": "For your group",
+    "afterThis": "After this",
+    "afterThisLeg": "{duration} · {distance} to {name}"
   },
   "invite": {
     "title": "Invite the group",
@@ -324,7 +366,10 @@
     "lodging": "Accommodation",
     "mustVisit": "Must-visit places",
     "avoid": "Things to avoid",
-    "occasion": "A special occasion"
+    "occasion": "A special occasion",
+    "notes": "Something else? Write it here",
+    "notesPlaceholder": "For example: we're driving our own car, someone gets seasick, we want to catch a sunrise",
+    "notesHint": "Write anything the options don't cover. Captain takes it into account."
   },
   "mode": {
     "label": "How to fill in",

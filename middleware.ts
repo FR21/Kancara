@@ -10,8 +10,10 @@ export function middleware(request: NextRequest) {
   const isAuthPath = pathname.startsWith("/login") || pathname.startsWith("/register") || pathname.startsWith("/forgot-password");
 
   if (isProtectedPath && !session) {
-    // Redirect to login if accessing protected route without session cookie
+    // Redirect to login if accessing protected route without session cookie,
+    // remembering where the visitor was headed
     const loginUrl = new URL("/login", request.url);
+    loginUrl.searchParams.set("redirect", `${pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(loginUrl);
   }
 

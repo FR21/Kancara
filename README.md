@@ -74,6 +74,20 @@ Fonts load automatically through `next/font`, so there is nothing extra to insta
 No environment variables are needed yet. When they are, they will be listed in
 `.env.example`. Copy it to `.env`, and never commit `.env`.
 
+### Demo data for My Trips
+
+There is no trips database yet. `/trips` reads from an in-memory store
+(`lib/trips/store.ts`) that is empty for every account and resets when the
+server restarts. To see the page with every card state filled in, list the demo
+account's email in `.env` and sign in with it:
+
+```bash
+DEMO_ACCOUNT_EMAILS=demo@example.com
+```
+
+Several emails can be separated with commas. The sample trips live in
+`lib/trips/seed.json`.
+
 ### Scripts
 
 | Command | What it does |

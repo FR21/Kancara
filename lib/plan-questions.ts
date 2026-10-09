@@ -1,4 +1,4 @@
-import { type PlanDraft, countFilledExtras, hasBudget, hasDateError, hasDates } from "@/lib/plan-draft";
+import { type PlanDraft, countFilledDetails, hasBudget, hasDateError, hasDates } from "@/lib/plan-draft";
 
 const QUESTION_KEYS = ["destination", "dates", "crew", "budget", "pace", "origin", "extras"] as const;
 export type QuestionKey = (typeof QUESTION_KEYS)[number];
@@ -17,7 +17,7 @@ export function isAnswered(question: QuestionKey, draft: PlanDraft): boolean {
   if (question === "crew") return draft.members.length > 0;
   if (question === "budget") return hasBudget(draft);
   if (question === "pace") return draft.pace !== null;
-  return countFilledExtras(draft.extras) > 0;
+  return countFilledDetails(draft) > 0;
 }
 
 export function openQuestions(draft: PlanDraft): QuestionKey[] {

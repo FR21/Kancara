@@ -1,0 +1,154 @@
+{
+  "title": "My Trips",
+  "plan": "Plan a trip",
+  "tabs": {
+    "label": "Trip lists",
+    "active": "Active",
+    "history": "History"
+  },
+  "sections": {
+    "ongoing": "In progress",
+    "upcoming": "Upcoming",
+    "drafts": "Drafts"
+  },
+  "status": {
+    "ongoing": "In progress",
+    "upcoming": "Upcoming",
+    "draft": "Draft",
+    "completed": "Completed"
+  },
+  "card": {
+    "untitled": "Untitled trip",
+    "routeTo": "to",
+    "noRoute": "No route yet",
+    "noDates": "No dates yet",
+    "noMembers": "No members yet",
+    "members": {
+      "one": "{count} person",
+      "other": "{count} people"
+    },
+    "moreMembers": "+{count}",
+    "dayOf": "Day {day} of {total}",
+    "next": "Up next",
+    "openToday": "Open today",
+    "departs": "Leaves {when}",
+    "progress": "{done} of {total} sections filled in",
+    "continue": "Continue",
+    "continueLabel": "Continue {name}",
+    "violations": {
+      "one": "{count} violation",
+      "other": "{count} violations"
+    },
+    "offline": {
+      "downloaded": "Available offline",
+      "notDownloaded": "Not downloaded"
+    },
+    "spent": "Spent {spent}",
+    "spentOf": "Spent {spent} of {budget}",
+    "dayShort": "Day {day}/{total}",
+    "filledShort": "{done}/{total} filled in",
+    "toCheck": "Something needs a check"
+  },
+  "list": {
+    "label": "Trip list"
+  },
+  "detail": {
+    "label": "Trip details",
+    "empty": "Pick a trip to see its details.",
+    "close": "Close",
+    "notSet": "Not set yet",
+    "fields": {
+      "dates": "Dates",
+      "duration": "Length",
+      "budget": "Budget",
+      "role": "Your role"
+    },
+    "roles": {
+      "organizer": "Organizer",
+      "member": "Invited member"
+    },
+    "group": "Group",
+    "needs": "Needs being looked after",
+    "sectionsTitle": "Plan progress",
+    "sections": {
+      "route": "Route",
+      "dates": "Dates",
+      "group": "Group",
+      "budget": "Budget",
+      "pace": "Pace"
+    },
+    "sectionDone": "filled in",
+    "sectionMissing": "not filled in yet",
+    "openItinerary": "View itinerary",
+    "openSummary": "View summary",
+    "actions": "Trip actions"
+  },
+  "menu": {
+    "label": "Menu for {name}",
+    "duplicate": "Duplicate",
+    "share": "Share",
+    "delete": "Delete"
+  },
+  "copyName": "Copy of {name}",
+  "delete": {
+    "title": "Delete this trip?",
+    "body": "{name} and its plan will be deleted for every member and can't be brought back.",
+    "cancel": "Cancel",
+    "confirm": "Delete",
+    "pending": "Deleting",
+    "failed": "The trip wasn't deleted. Check your connection, then try again."
+  },
+  "notice": {
+    "duplicated": "New draft created from {name}.",
+    "duplicateFailed": "The trip wasn't duplicated. Try again.",
+    "deleted": "{name} deleted.",
+    "copied": "Link copied.",
+    "shareFailed": "The link wasn't copied. Try again.",
+    "dismiss": "Dismiss"
+  },
+  "history": {
+    "trips": {
+      "one": "{count} trip",
+      "other": "{count} trips"
+    },
+    "countries": {
+      "one": "{count} country",
+      "other": "{count} countries"
+    },
+    "searchLabel": "Search trips",
+    "searchPlaceholder": "Search by city or trip name",
+    "yearLabel": "Year",
+    "allYears": "All",
+    "clear": "Clear filters"
+  },
+  "empty": {
+    "activeTitle": "No trips yet.",
+    "activeBody": "Bring everyone along, with no one left behind.",
+    "history": "Trips you've finished will be kept here.",
+    "search": "No trips match."
+  },
+  "loading": "Loading trips",
+  "error": "The trip list couldn't be loaded. Check your connection, then try again.",
+  "retry": "Try again",
+  "offline": "You're offline. This list may not be up to date.",
+  "itinerary": {
+    "back": "My Trips",
+    "loading": "Loading itinerary",
+    "error": "The itinerary couldn't be loaded. Check your connection, then try again.",
+    "notFound": "This trip wasn't found. It may have been deleted.",
+    "missing": "This trip doesn't have an itinerary yet.",
+    "missingOrganizer": "Captain can build it now from the dates, group, and needs already saved.",
+    "missingMember": "The itinerary shows up here once the organizer creates it.",
+    "missingDraft": "Finish the plan first, then the itinerary is built from it.",
+    "generate": "Create itinerary",
+    "generating": "Captain is putting the itinerary together. It usually takes less than a minute.",
+    "generateFailed": "The itinerary couldn't be created. Check your connection, then try again."
+  },
+  "placeholder": {
+    "detail": "Itinerary",
+    "today": "Today's schedule",
+    "summary": "Trip summary",
+    "soon": "This page is being prepared.",
+    "back": "Back to My Trips"
+  }
+}

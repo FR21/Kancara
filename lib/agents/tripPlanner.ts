@@ -122,10 +122,10 @@ export async function captainAgentReply(requestBody: any) {
   const statedDates = findDateRange(typeof story === "string" ? story : "", new Date());
 
   const interaction = await client.interactions.create({
-    model: 'gemini-3.5-flash',
+    model: 'gemini-3.5-flash-lite',
     input: buildCaptainInput(story, statedDates ? { ...draft, ...statedDates } : draft, history),
     system_instruction: buildCaptainInstruction(locale, today),
-    generation_config: { max_output_tokens: 2048, thinking_level: "low" },
+    generation_config: { max_output_tokens: 2048 },
     response_format: {
       type: "text",
       mime_type: "application/json",
@@ -200,25 +200,10 @@ export async function captainAgentReply(requestBody: any) {
 
 export async function runTripPlanningFlow(requestBody: any) {
   const { draft, locale } = requestBody;
-  console.log("Memulai proses Planner & Guardian (Parallel API Fetch)...");
+  console.log("Memulai proses Planner (Parallel API Fetch)...");
 
-  let currentPlan = await plannerAgent(draft, locale);
-  let isValid = false;
-  let iterations = 0;
-  const MAX_ITERATIONS = 2;
-
-  while (!isValid && iterations < MAX_ITERATIONS) {
-    iterations++;
-    const feedback = await ruleGuardianAgent(currentPlan, draft);
-    
-    if (feedback.startsWith("APPROVE")) {
-      console.log("Rule Guardian: Rencana Disetujui!");
-      isValid = true;
-    } else {
-      console.log(`Rule Guardian: Rencana Ditolak (Iterasi ${iterations}). Alasan:`, feedback);
-      currentPlan = await plannerAgentRevision(draft, currentPlan, feedback, locale);
-    }
-  }
+  // Single-pass planning to save tokens
+  const currentPlan = await plannerAgent(draft, locale);
 
   
 function evaluateRules(item: any, place: any, draft: any, locale: string = "id") {
@@ -295,12 +280,14 @@ function evaluateRules(item: any, place: any, draft: any, locale: string = "id")
 }
 
 
-  // PARALLEL ENRICHMENT
-  console.log("Memulai proses parallel enrichment...");
+  // SEQUENTIAL ENRICHMENT (to prevent API rate limits)
+  console.log("Memulai proses sequential enrichment...");
   if (currentPlan.days && Array.isArray(currentPlan.days)) {
     for (const day of currentPlan.days) {
       if (day.items && Array.isArray(day.items)) {
-        await Promise.all(day.items.map(async (item: any, i: number, arr: any[]) => {
+        for (let i = 0; i < day.items.length; i++) {
+          const item = day.items[i];
+          const arr = day.items;
           try {
             const query = item.title + " " + (draft.destinations?.[0] || "");
             const places = await executeSearchPlaces(query, locale);
@@ -324,10 +311,13 @@ function evaluateRules(item: any, place: any, draft: any, locale: string = "id")
                 item.travelToNext = { distance: t.distance, duration: t.duration };
               }
             }
+            
+            // Add a small delay to respect API rate limits
+            await new Promise(resolve => setTimeout(resolve, 200));
           } catch(e) {
             console.error("Gagal memperkaya data untuk", item.title);
           }
-        }));
+        }
       }
     }
   }
@@ -347,6 +337,10 @@ async function runAgent(systemInstruction: string, promptText: string, locale: s
       schema: {
         type: "object",
         properties: {
+          agentic_evaluation: {
+            type: "string",
+            description: "Step-by-step reasoning: analyze constraints (budget, pace, accessibility, diet), evaluate feasibility, and plan the itinerary strategy BEFORE generating the days. Act as your own Rule Guardian."
+          },
           days: {
             type: "array",
             items: {
@@ -370,7 +364,7 @@ async function runAgent(systemInstruction: string, promptText: string, locale: s
             }
           }
         },
-        required: ["days"]
+        required: ["agentic_evaluation", "days"]
       }
     }
   });
@@ -384,26 +378,14 @@ async function runAgent(systemInstruction: string, promptText: string, locale: s
 
 async function plannerAgent(draft: any, locale: string) {
   return await runAgent(
-    `You are a smart Trip Planner. Create an itinerary based on user data (dates, destinations, preferences). Provide REAL and popular places for titles. The itinerary must be realistic regarding travel time and logical ordering.`,
+    `You are a highly efficient and strict Trip Planner. Create a detailed itinerary based on the user's data (dates, destinations, preferences).
+CRITICAL RULES to follow:
+1. Provide REAL and popular places for titles.
+2. The timings MUST be completely logical and realistic. Account for travel times and don't pack too many places if the pace is 'relaxed'.
+3. Follow the users' constraints strictly (e.g., budget, dietary needs, accessibility).
+Do it perfectly on the first try.`,
     `Please generate a detailed itinerary for:
 ${JSON.stringify(draft, null, 2)}`,
-    locale
-  );
-}
-
-async function ruleGuardianAgent(planJson: any, draft: any) {
-  const interaction = await client.interactions.create({
-    model: 'gemini-3.5-flash-lite',
-    input: `Rules: ${JSON.stringify(draft)} | Itinerary: ${JSON.stringify(planJson)}`,
-    system_instruction: `You are a Rule Guardian. Check the itinerary: are the timings logical and realistic? If YES, reply strictly with "APPROVE". If NO, state the reason briefly.`
-  });
-  return interaction.output_text || "APPROVE";
-}
-
-async function plannerAgentRevision(draft: any, oldPlan: any, feedback: string, locale: string) {
-  return await runAgent(
-    `You are an Expert AI Trip Planner. Revise the previous itinerary based on the Guardian\'s feedback. Ensure the timeline is logical and realistic.`,
-    `Data:${JSON.stringify(draft)} | Previous:${JSON.stringify(oldPlan)} | Feedback:${feedback}`,
     locale
   );
 }
