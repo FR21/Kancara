@@ -1,0 +1,42 @@
+{
+  "privacy": {
+    "title": "Kebijakan Privasi",
+    "lastUpdated": "Terakhir diperbarui: 10 Oktober 2026",
+    "sections": [
+      {
+        "heading": "1. Data yang Dikumpulkan",
+        "body": "Data yang dikumpulkan dari pengguna meliputi, tetapi tidak terbatas pada:\n- Profil anggota, termasuk nama, usia, dan kewarganegaraan.\n- Preferensi dan kebutuhan pengguna, termasuk preferensi makanan dan kebutuhan aksesibilitas.\n- Data lokasi, ketika pengguna menggunakan fitur yang berkaitan dengan peta.\n- Foto struk, untuk mendukung fitur manajemen anggaran."
+      },
+      {
+        "heading": "2. Penggunaan dan Penyimpanan Data",
+        "body": "Data yang dikumpulkan digunakan untuk menyediakan rencana perjalanan yang dipersonalisasi dan meningkatkan kualitas layanan Kancara. Data disimpan dan dikelola dengan langkah-langkah pengamanan yang sesuai serta diakses sesuai dengan kebutuhan penyelenggaraan layanan."
+      },
+      {
+        "heading": "3. Layanan Pihak Ketiga",
+        "body": "Kancara menggunakan layanan pihak ketiga untuk mendukung penyediaan fitur, antara lain:\n- Google Maps, untuk mendukung fitur peta dan lokasi.\n- Gemini dari Google, untuk mendukung pemrosesan berbasis AI dan penyusunan rekomendasi perjalanan.\nLayanan pihak ketiga tersebut memiliki kebijakan privasi dan ketentuan pemrosesan data masing-masing. Pemrosesan data oleh layanan tersebut tunduk pada kebijakan dan ketentuan yang berlaku pada penyedia layanan terkait."
+      },
+      {
+        "heading": "4. Hak Pengguna atas Data Pribadi",
+        "body": "Sesuai dengan peraturan perlindungan data yang berlaku (termasuk GDPR dan UU PDP Indonesia), pengguna memiliki hak atas data pribadinya sesuai dengan ketentuan peraturan perundang-undangan yang berlaku, termasuk hak untuk mengakses, memperbarui atau memperbaiki, serta meminta penghapusan data pribadi dalam kondisi yang diatur oleh hukum.\nPengguna dapat mengajukan permintaan terkait data pribadinya melalui menu Profil atau dengan menghubungi tim dukungan Kancara, sesuai dengan mekanisme yang disediakan oleh layanan."
+      }
+    ]
+  },
+  "terms": {
+    "title": "Syarat & Ketentuan",
+    "lastUpdated": "Terakhir diperbarui: 10 Oktober 2026",
+    "sections": [
+      {
+        "heading": "1. Aturan Penggunaan",
+        "body": "Pengguna wajib menggunakan Kancara secara bertanggung jawab dan tidak menyalahgunakan layanan. Pengguna dilarang mengirimkan permintaan secara berlebihan kepada sistem kecerdasan buatan (AI) atau mengunggah konten yang melanggar hukum."
+      },
+      {
+        "heading": "2. Batasan AI dan Keakuratan Informasi",
+        "body": "Kancara menggunakan kecerdasan buatan (AI) untuk memberikan rekomendasi perjalanan. Meskipun Kancara berupaya memberikan informasi yang akurat, teknologi AI memiliki keterbatasan. Oleh karena itu, pengguna bertanggung jawab untuk memverifikasi informasi penting secara mandiri, termasuk:\n- Status kehalalan makanan atau kesesuaiannya dengan kebutuhan dan pantangan diet.\n- Ketersediaan fasilitas aksesibilitas di lokasi tujuan.\n- Jam operasional dan harga tiket."
+      },
+      {
+        "heading": "3. Tanggung Jawab",
+        "body": "Kancara tidak bertanggung jawab atas kerugian, cedera, atau ketidaknyamanan yang terjadi selama perjalanan sebagai akibat dari penggunaan rekomendasi yang diberikan, sepanjang diperbolehkan oleh hukum yang berlaku. Rekomendasi Kancara hanya berfungsi sebagai panduan. Pengguna tetap bertanggung jawab untuk memverifikasi informasi yang relevan dan mengambil keputusan berdasarkan pertimbangan masing-masing."
+      }
+    ]
+  }
+}

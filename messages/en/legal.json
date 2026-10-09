@@ -1,0 +1,42 @@
+{
+  "privacy": {
+    "title": "Privacy Policy",
+    "lastUpdated": "Last updated: October 10, 2026",
+    "sections": [
+      {
+        "heading": "1. Data We Collect",
+        "body": "The data we collect from users includes, but is not limited to:\n- Member profiles, including names, ages, and nationalities.\n- User preferences and needs, including dietary preferences and accessibility requirements.\n- Location data, when users access map-related features.\n- Receipt images, to support budget management features."
+      },
+      {
+        "heading": "2. How We Use and Store Data",
+        "body": "We use the collected data to provide personalized travel plans and improve Kancara's services. We implement appropriate security measures to protect the data we manage and limit access to it to what is necessary for providing and operating our services."
+      },
+      {
+        "heading": "3. Third-Party Services",
+        "body": "Kancara uses third-party services to support certain features, including:\n- Google Maps, to provide map and location features.\n- Gemini by Google, to support AI-powered processing and generate travel recommendations.\nThese third-party providers maintain their own privacy policies and data processing terms. Any personal data shared with or processed by these providers is subject to their respective policies and applicable terms."
+      },
+      {
+        "heading": "4. User Rights Regarding Personal Data",
+        "body": "In accordance with applicable data protection laws (such as the GDPR and Indonesia's PDP Law), users have rights regarding their personal data, subject to applicable laws and regulations. These rights include the right to access and correct personal data, as well as to request its deletion, subject to applicable legal requirements.\nUsers may submit requests concerning their personal data through the Profile menu or by contacting the Kancara support team, in accordance with the procedures provided by the service."
+      }
+    ]
+  },
+  "terms": {
+    "title": "Terms & Conditions",
+    "lastUpdated": "Last updated: October 10, 2026",
+    "sections": [
+      {
+        "heading": "1. Acceptable Use",
+        "body": "Users must use Kancara responsibly and must not misuse the service. Users must not submit excessive requests to the AI system or upload content that violates applicable laws."
+      },
+      {
+        "heading": "2. AI Limitations and Information Accuracy",
+        "body": "Kancara uses artificial intelligence (AI) to provide travel recommendations. Although we strive to provide accurate information, AI technology has limitations. Users are therefore responsible for independently verifying important information, including:\n- The halal status of food and its suitability for users' dietary needs and restrictions.\n- The availability of accessibility facilities at destinations.\n- Operating hours and ticket prices."
+      },
+      {
+        "heading": "3. Limitation of Liability",
+        "body": "To the extent permitted by applicable law, Kancara is not liable for any losses, injuries, or inconvenience arising from users' reliance on its recommendations during their travels. Kancara's recommendations are provided for informational and guidance purposes only. Users remain responsible for verifying relevant information and making decisions based on their own judgment."
+      }
+    ]
+  }
+}
