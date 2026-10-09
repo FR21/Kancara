@@ -11,7 +11,7 @@ export async function GET(request: NextRequest, context: RouteContext<"/api/trip
   if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await context.params;
-  const plan = getTripPlan(viewer, id);
+  const plan = await getTripPlan(viewer, id);
   if (!plan) return NextResponse.json({ error: "Trip not found" }, { status: 404 });
   return NextResponse.json(plan);
 }
@@ -27,7 +27,7 @@ export async function PUT(request: NextRequest, context: RouteContext<"/api/trip
   if (!input) return NextResponse.json({ error: "The trip is missing required details" }, { status: 400 });
 
   const { id } = await context.params;
-  const card = updateTrip(viewer, id, input);
+  const card = await updateTrip(viewer, id, input);
   if (!card) return NextResponse.json({ error: "Trip not found" }, { status: 404 });
   return NextResponse.json(card);
 }
@@ -40,7 +40,7 @@ export async function DELETE(request: NextRequest, context: RouteContext<"/api/t
   if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await context.params;
-  const result = deleteTrip(viewer, id);
+  const result = await deleteTrip(viewer, id);
   if (result === "notFound") return NextResponse.json({ error: "Trip not found" }, { status: 404 });
   if (result === "forbidden") {
     return NextResponse.json({ error: "Only the organizer can delete a trip" }, { status: 403 });
