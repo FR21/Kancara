@@ -14,6 +14,15 @@ export async function createSession(idToken: string) {
       expiresIn: EXPIRES_IN,
     });
     
+    // Sinkronkan user ke Neon/Prisma setiap kali mereka login!
+    const decodedIdToken = await adminAuth.verifyIdToken(idToken);
+    const { prisma } = await import("@/lib/prisma");
+    await prisma.user.upsert({
+      where: { id: decodedIdToken.uid },
+      update: { email: decodedIdToken.email },
+      create: { id: decodedIdToken.uid, email: decodedIdToken.email },
+    });
+
     const cookieStore = await cookies();
     cookieStore.set(SESSION_COOKIE_NAME, sessionCookie, {
       maxAge: EXPIRES_IN,

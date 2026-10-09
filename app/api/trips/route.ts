@@ -13,11 +13,11 @@ export async function GET(request: NextRequest) {
   if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const params = request.nextUrl.searchParams;
-  if (params.get("tab") !== "history") return NextResponse.json(listActiveTrips(viewer));
+  if (params.get("tab") !== "history") return NextResponse.json(await listActiveTrips(viewer));
 
   const year = Number(params.get("year"));
   return NextResponse.json(
-    listHistoryTrips(viewer, {
+    await listHistoryTrips(viewer, {
       query: (params.get("q") ?? "").slice(0, MAX_QUERY_CHARS),
       year: Number.isInteger(year) && year > 0 ? year : null,
     }),
@@ -33,5 +33,5 @@ export async function POST(request: NextRequest) {
 
   const input = await readTripInput(request);
   if (!input) return NextResponse.json({ error: "The trip is missing required details" }, { status: 400 });
-  return NextResponse.json(createTrip(viewer, input), { status: 201 });
+  return NextResponse.json(await createTrip(viewer, input), { status: 201 });
 }

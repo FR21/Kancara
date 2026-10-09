@@ -2,6 +2,13 @@
 import { GoogleGenAI } from '@google/genai';
 import { findDateRange } from '@/lib/api/sample-dates';
 import { buildCaptainInput, buildCaptainInstruction, readHistory, settleTripEnd } from './captainPrompt';
+import { 
+  searchBookingHotels, 
+  searchTripAdvisorRestaurants, 
+  getCachedAmusementAndAttractions, 
+  type HotelDeal, 
+  type AttractionDeal 
+} from '@/lib/api/rapidapi';
 
 const client = new GoogleGenAI({});
 
@@ -158,12 +165,89 @@ export async function captainAgentReply(requestBody: any) {
 
 // 2. PLANNER & RULE GUARDIAN (Looping Pembuat Itinerary)
 
+function detectTripFocalZone(draft: any): { zone: string; budgetTier: "budget" | "moderate" | "luxury" } {
+  const destStr = (draft?.destinations || []).join(" ") + " " + (draft?.extras?.mustVisit || "") + " " + (draft?.extras?.lodging || "") + " " + (draft?.notes || "");
+  const lower = destStr.toLowerCase();
+  
+  let zone = "";
+  // Deteksi klaster wilayah populer
+  if (lower.includes("pik") || lower.includes("pantai indah kapuk") || lower.includes("ancol") || lower.includes("dufan") || lower.includes("kelapa gading") || lower.includes("muara karang") || lower.includes("pluit") || lower.includes("jakut")) {
+    zone = "Jakarta Utara";
+  } else if (lower.includes("blok m") || lower.includes("senopati") || lower.includes("kemang") || lower.includes("scbd") || lower.includes("cilandak") || lower.includes("pondok indah") || lower.includes("tebet") || lower.includes("jaksel")) {
+    zone = "Jakarta Selatan";
+  } else if (lower.includes("kota tua") || lower.includes("monas") || lower.includes("menteng") || lower.includes("thamrin") || lower.includes("pasar baru") || lower.includes("jakpus")) {
+    zone = "Jakarta Pusat";
+  } else if (lower.includes("grogol") || lower.includes("central park") || lower.includes("tanjung duren") || lower.includes("jakbar")) {
+    zone = "Jakarta Barat";
+  } else if (lower.includes("ubud")) {
+    zone = "Ubud";
+  } else if (lower.includes("canggu") || lower.includes("seminyak") || lower.includes("kuta") || lower.includes("legian")) {
+    zone = "Seminyak Kuta";
+  } else if (lower.includes("uluwatu") || lower.includes("jimbaran") || lower.includes("nusa dua")) {
+    zone = "Nusa Dua Jimbaran";
+  } else if (lower.includes("malioboro") || lower.includes("kraton") || lower.includes("prawirotaman")) {
+    zone = "Malioboro";
+  } else if (lower.includes("kaliurang") || lower.includes("merapi")) {
+    zone = "Kaliurang";
+  } else if (lower.includes("lembang")) {
+    zone = "Lembang";
+  } else if (lower.includes("dago") || lower.includes("riau") || lower.includes("braga")) {
+    zone = "Dago";
+  }
+
+  // Deteksi kategori budget
+  const totalBudget = draft?.budget || 0;
+  const days = (draft?.startDate && draft?.endDate) 
+    ? Math.max(1, Math.round((Date.parse(draft.endDate) - Date.parse(draft.startDate)) / 86400000) + 1) 
+    : 1;
+
+  // Alokasi wajar penginapan per malam (~35% dari budget harian)
+  const estimatedLodgingPerNight = totalBudget > 0 ? (totalBudget * 0.35) / days : 750000;
+  
+  let budgetTier: "budget" | "moderate" | "luxury" = "moderate";
+  if (estimatedLodgingPerNight < 500000) {
+    budgetTier = "budget";
+  } else if (estimatedLodgingPerNight > 1600000) {
+    budgetTier = "luxury";
+  }
+
+  return { zone, budgetTier };
+}
+
 export async function runTripPlanningFlow(requestBody: any) {
   const { draft, locale } = requestBody;
   console.log("Memulai proses Planner (Parallel API Fetch)...");
 
+  // Deteksi klaster wilayah utama dan tingkat budget agar rekomendasi hotel tepat sasaran & tidak monoton
+  const { zone, budgetTier } = detectTripFocalZone(draft);
+  const primaryDestination = draft?.destinations?.[0];
+
+  // Tarik rekomendasi hotel live dari Booking.com (RapidAPI) dengan zona & budget tier spesifik
+  let liveHotels: HotelDeal[] = [];
+  let liveAttractions: AttractionDeal[] = [];
+
+  if (primaryDestination) {
+    try {
+      const [hotels, attractions] = await Promise.all([
+        searchBookingHotels(
+          primaryDestination,
+          draft?.startDate,
+          draft?.endDate,
+          draft?.members?.length || 2,
+          zone || undefined,
+          budgetTier
+        ),
+        getCachedAmusementAndAttractions(primaryDestination, zone || undefined)
+      ]);
+      liveHotels = hotels;
+      liveAttractions = attractions;
+    } catch (e) {
+      console.warn("Gagal mengambil data live hotel/attractions:", e);
+    }
+  }
+
   // Single-pass planning to save tokens
-  const currentPlan = await plannerAgent(draft, locale);
+  const currentPlan = await plannerAgent(draft, locale, liveHotels, liveAttractions, zone, budgetTier);
 
   
 function evaluateRules(item: any, place: any, draft: any, locale: string = "id") {
@@ -240,6 +324,26 @@ function evaluateRules(item: any, place: any, draft: any, locale: string = "id")
 }
 
 
+function cleanPlaceQuery(title: string, destination?: string): string {
+  let cleaned = (title || "").trim();
+  // Bersihkan prefix aksi seperti "Check-in di", "Makan siang di", dll.
+  cleaned = cleaned.replace(
+    /^(check[- ]?in (di |ke )?|menginap di |sarapan (pagi )?(di )?|makan (siang|malam) (di )?|kulineran (di )?|kunjungan (ke )?|menuju (ke )?|belanja di |wisata (ke )?)/i,
+    ""
+  ).trim();
+
+  // Jika setelah dibersihkan hanya menyisakan kata "hotel" atau kosong, arahkan ke pencarian hotel di destinasi
+  if (/^hotel$/i.test(cleaned) || !cleaned) {
+    return destination ? `Hotel terbaik di ${destination}` : "Hotel";
+  }
+
+  const dest = destination?.trim();
+  if (dest && !cleaned.toLowerCase().includes(dest.toLowerCase())) {
+    cleaned = `${cleaned} ${dest}`;
+  }
+  return cleaned.trim();
+}
+
   // SEQUENTIAL ENRICHMENT (to prevent API rate limits)
   console.log("Memulai proses sequential enrichment...");
   if (currentPlan.days && Array.isArray(currentPlan.days)) {
@@ -249,7 +353,7 @@ function evaluateRules(item: any, place: any, draft: any, locale: string = "id")
           const item = day.items[i];
           const arr = day.items;
           try {
-            const query = item.title + " " + (draft.destinations?.[0] || "");
+            const query = cleanPlaceQuery(item.title, draft.destinations?.[0]);
             const places = await executeSearchPlaces(query, locale);
             if (places && Array.isArray(places) && places.length > 0) {
               const place = places[0];
@@ -264,8 +368,8 @@ function evaluateRules(item: any, place: any, draft: any, locale: string = "id")
             // Hitung waktu tempuh ke tempat berikutnya
             if (i < arr.length - 1) {
               const nextItem = arr[i + 1];
-              const q1 = item.title + " " + (draft.destinations?.[0] || "");
-              const q2 = nextItem.title + " " + (draft.destinations?.[0] || "");
+              const q1 = cleanPlaceQuery(item.title, draft.destinations?.[0]);
+              const q2 = cleanPlaceQuery(nextItem.title, draft.destinations?.[0]);
               const t = await executeGetTravelTime(q1, q2, locale);
               if (t.distance && t.duration) {
                 item.travelToNext = { distance: t.distance, duration: t.duration };
@@ -313,7 +417,7 @@ async function runAgent(systemInstruction: string, promptText: string, locale: s
                     type: "object",
                     properties: {
                       time: { type: "string" },
-                      title: { type: "string", description: "Nama tempat yang spesifik" },
+                      title: { type: "string", description: "Specific real venue name on Google Maps (e.g. 'Talassa Jakarta - Cove at Batavia', 'Mercure Jakarta Batavia', 'Museum Nasional Indonesia'). NEVER generic titles like 'Check-in', 'Check-in Hotel', or 'Makan Siang'." },
                       detail: { type: "string" }
                     },
                     required: ["time", "title", "detail"]
@@ -336,15 +440,73 @@ async function runAgent(systemInstruction: string, promptText: string, locale: s
   }
 }
 
-async function plannerAgent(draft: any, locale: string) {
+async function plannerAgent(
+  draft: any,
+  locale: string,
+  liveHotels: HotelDeal[] = [],
+  liveAttractions: AttractionDeal[] = [],
+  focalZone?: string,
+  budgetTier?: "budget" | "moderate" | "luxury"
+) {
+  const isEn = locale === "en";
+  const memberCount = Array.isArray(draft.members) && draft.members.length > 0 ? draft.members.length : 1;
+  const daysCount = (draft.startDate && draft.endDate) 
+    ? Math.max(1, Math.round((Date.parse(draft.endDate) - Date.parse(draft.startDate)) / 86400000) + 1) 
+    : 1;
+  const totalBudget = draft.budget || null;
+  const budgetPerPersonPerDay = totalBudget ? Math.round(totalBudget / (memberCount * daysCount)) : null;
+
+  const zoneInfo = focalZone ? ` (ZONA WISATA UTAMA: ${focalZone}, KATEGORI BUDGET: ${budgetTier?.toUpperCase()})` : "";
+  const liveHotelPrompt = liveHotels.length > 0
+    ? `\n\nREAL LIVE BOOKING.COM HOTEL DEALS FOUND FOR ${draft.destinations?.[0] || 'DESTINATION'}${zoneInfo}:\n` +
+      liveHotels.map((h, i) => `${i + 1}. "${h.name}" - ${h.priceFormatted || "Harga variatif"} (Rating: ${h.rating ? h.rating + "/5" : "N/A"})\n   Alamat/Zona: ${h.address || ""}`).join("\n") +
+      `\nCRITICAL PROXIMITY & ZONE INSTRUCTION:
+- If user did NOT specify extras.lodging, pick one of these real hotels located closest to Day 1's main attractions as the title for your accommodation/check-in stop.
+- ENSURE the hotel is in the SAME geographic zone as the activities (NO cross-city commute!).
+- List the other 2-3 hotel options as alternatives with their exact prices in the detail!`
+    : "";
+
+  const liveAttractionPrompt = liveAttractions.length > 0
+    ? `\n\nVERIFIED POPULAR AMUSEMENT & ATTRACTIONS CATALOGUE (FROM DB CACHE):\n` +
+      liveAttractions.map((a, i) => `${i + 1}. "${a.name}" (${a.category || "Atraksi"}) - ${a.priceFormatted || "Tiket terjangkau"}\n   Deskripsi/Lokasi: ${a.description || a.address || ""}`).join("\n") +
+      `\nIncorporate these verified amusement and attraction places for daytime itinerary stops when relevant to members' interests!`
+    : "";
+
   return await runAgent(
-    `You are a highly efficient and strict Trip Planner. Create a detailed itinerary based on the user's data (dates, destinations, preferences).
-CRITICAL RULES to follow:
-1. Provide REAL and popular places for titles.
-2. The timings MUST be completely logical and realistic. Account for travel times and don't pack too many places if the pace is 'relaxed'.
-3. Follow the users' constraints strictly (e.g., budget, dietary needs, accessibility).
-4. Besides the fixed choices, the data holds entries people typed themselves: a member's exact "age", "customNeeds" and "customInterests" (level "must" outranks "nice"), the trip's "extras.customTransport", and the free-text "notes". Honour them exactly like the fixed ones.
-5. "budget" is the total for the whole group in Rupiah. When "budgetCurrency" is "USD" the person typed "budgetUsd" dollars and "budget" is that amount in Rupiah.
+    `You are an expert, meticulous, and realistic AI Trip Planner. Create a detailed, day-by-day itinerary based on the user's trip plan data.${liveHotelPrompt}${liveAttractionPrompt}
+
+CRITICAL RULES FOR ACCURACY, PLACES & BUDGET:
+1. SPECIFIC REAL VENUES ONLY (NO GENERIC ACTIVITY TITLES):
+   - NEVER use generic activity titles like "Check-in Hotel", "Check in", "Istirahat", "Makan Siang", "Makan Malam", "Kulineran".
+   - "title" MUST ALWAYS BE A REAL, SPECIFIC, SEARCHABLE VENUE/PLACE NAME on Google Maps.
+
+2. HOTEL & ACCOMMODATION RULES (STRICT ZONE & PROXIMITY):
+   - CRITICAL PROXIMITY RULE: The hotel MUST be located in the SAME geographic cluster as Day 1's activities (e.g. if Day 1 activities are in North Jakarta / PIK / Ancol, the hotel MUST be in North Jakarta / PIK, NEVER South Jakarta!).
+   - If user specified "extras.lodging" in the draft, USE THAT HOTEL as the "title" for accommodation/check-in.
+   - If user did NOT specify a hotel: Select 1 REAL HOTEL matching the zone and budget tier as the "title".
+   - In the "detail" of the hotel check-in stop:
+     Provide a brief description AND 2-3 REAL ALTERNATIVE HOTELS nearby with estimated price per night, formatted cleanly:
+     ${isEn 
+       ? "Include nearby hotel alternatives: '• Option 1: [Hotel Name] (~price/night)\n• Option 2: [Hotel Name] (~price/night)'"
+       : "Wajib sertakan rekomendasi opsi hotel terdekat: '• Opsi 1: [Nama Hotel] (~estimasi harga/malam)\n• Opsi 2: [Nama Hotel] (~estimasi harga/malam)'"}
+
+3. DINING & RESTAURANT RULES (BUDGET-AWARE):
+   - For every meal stop (breakfast, lunch, dinner), "title" MUST be a SPECIFIC, REAL RESTAURANT or EATERY NAME.
+   - NEVER name just a general area, complex, or mall (e.g. NEVER write "Makan di Cove at Batavia" or "Mall Central Park"). Instead, write the exact restaurant within that area, e.g. "Talassa Jakarta - Cove at Batavia PIK" or "Remboelan - Senayan City".
+   - BUDGET ALIGNMENT: 
+     ${totalBudget ? `Total group budget is Rp ${totalBudget.toLocaleString('id-ID')} for ${memberCount} people across ${daysCount} days (approx. Rp ${budgetPerPersonPerDay?.toLocaleString('id-ID')} per person/day). Pick restaurants whose price range logically fits this budget! Mention estimated price per person in the detail.` : 'Pick popular, high-value restaurants suitable for travelers and their budget.'}
+   - STRICT DIET & ALLERGIES: Honour halal, vegetarian, vegan, and member allergy constraints strictly. If halal is requested, choose halal-certified or Muslim-friendly spots.
+   - In the "detail": Mention recommended signature dishes, approximate price per person, and 1-2 nearby alternative eateries in the same area.
+
+4. LOGICAL TIMINGS & REALISTIC PACE:
+   - Account for travel distance and traffic between consecutive stops.
+   - If pace is 'relaxed', do not pack more than 3-4 key stops per day with ample rest.
+
+5. SPECIAL NEEDS & CUSTOM WISHES:
+   - Member needs (wheelchair, stroller/no stairs, elderly, toddlers) must be prioritized in venue selection.
+   - Honour members' "customNeeds", "customInterests", and free-text "notes".
+   - Besides the fixed choices, the data holds entries people typed themselves: a member's exact "age", "customNeeds" and "customInterests" (level "must" outranks "nice"), the trip's "extras.customTransport", and the free-text "notes". Honour them exactly like the fixed ones.
+
 Do it perfectly on the first try.`,
     `Please generate a detailed itinerary for:
 ${JSON.stringify(draft, null, 2)}`,

@@ -2,7 +2,7 @@ import "server-only";
 import type { Itinerary } from "@/lib/api/captain";
 import { verifySession } from "@/lib/auth/session";
 import type { PlanDraft } from "@/lib/plan-draft";
-import { loadTrips, saveTrips } from "./persist";
+import { prisma } from "@/lib/prisma";
 import { isSeedTrip, seedTrips } from "./seed";
 import {
   type ActiveTrips,
@@ -11,6 +11,10 @@ import {
   type Trip,
   type TripCard,
   type TripPlanView,
+  type TripRole,
+  type TripState,
+  type OfflineState,
+  type TripActivity,
   toTripCard,
 } from "./trip";
 
@@ -19,22 +23,6 @@ export type HistoryFilter = { query: string; year: number | null };
 export type DeleteResult = "deleted" | "notFound" | "forbidden";
 /** A finished plan to keep. `violations` is left out when the plan was never checked against the group's needs. */
 export type TripInput = { name: string; draft: PlanDraft; violations?: number; itinerary?: Itinerary };
-
-// Stand-in for the trips database: one list per signed-in user, held in memory
-// and written to a JSON file after every change so it survives a restart. It
-// hangs off globalThis so a hot reload in development keeps it. Replace the
-// functions below with real queries; the API routes and the pages only use
-// what this file exports.
-type TripsGlobal = typeof globalThis & { kancaraTrips?: Map<string, Trip[]>; kancaraSeeded?: Set<string> };
-const globalStore = globalThis as TripsGlobal;
-const tripsByUser = (globalStore.kancaraTrips ??= loadTrips());
-const seededUsers = (globalStore.kancaraSeeded ??= new Set<string>());
-
-// Demo seed trips are rebuilt on every start so their dates stay relative to
-// today; only what an account made itself is written to disk.
-function persist(): void {
-  saveTrips(tripsByUser, (trip) => !isSeedTrip(trip));
-}
 
 const TIME_ZONE = "Asia/Jakarta";
 const DATE_FORMAT = new Intl.DateTimeFormat("en-CA", {
@@ -54,8 +42,6 @@ function readClock(now: Date): Clock {
   return { date: DATE_FORMAT.format(now), time: TIME_FORMAT.format(now) };
 }
 
-// Sample trips are only ever given to the accounts listed in
-// DEMO_ACCOUNT_EMAILS (comma separated). Every other account starts empty.
 function isDemoAccount(email: string | null): boolean {
   if (!email) return false;
   const demoEmails = (process.env.DEMO_ACCOUNT_EMAILS ?? "")
@@ -65,14 +51,52 @@ function isDemoAccount(email: string | null): boolean {
   return demoEmails.includes(email.toLowerCase());
 }
 
-function tripsOf(viewer: Viewer): Trip[] {
-  const trips = tripsByUser.get(viewer.uid) ?? [];
-  tripsByUser.set(viewer.uid, trips);
-  if (isDemoAccount(viewer.email) && !seededUsers.has(viewer.uid)) {
-    seededUsers.add(viewer.uid);
+async function ensureUser(viewer: Viewer) {
+  return prisma.user.upsert({
+    where: { id: viewer.uid },
+    update: { email: viewer.email },
+    create: { id: viewer.uid, email: viewer.email },
+  });
+}
+
+// Map Prisma record ke domain Trip
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function fromDbTrip(record: any): Trip {
+  return {
+    id: record.id,
+    name: record.name,
+    state: record.state as TripState,
+    role: record.role as TripRole,
+    draft: record.draft as unknown as PlanDraft,
+    updatedAt: record.updatedAt instanceof Date ? record.updatedAt.toISOString() : String(record.updatedAt),
+    countryCodes: record.countryCodes ?? [],
+    violations: record.violations ?? undefined,
+    offline: (record.offline as OfflineState) ?? undefined,
+    spent: record.spent ?? undefined,
+    today: (record.today as TripActivity[]) ?? undefined,
+    itinerary: (record.itinerary as Itinerary) ?? undefined,
+  };
+}
+
+async function fetchTripsOf(viewer: Viewer): Promise<Trip[]> {
+  await ensureUser(viewer);
+  const records = await prisma.trip.findMany({
+    where: { userId: viewer.uid },
+    orderBy: { updatedAt: "desc" },
+  });
+
+  const trips = records.map(fromDbTrip);
+
+  if (isDemoAccount(viewer.email)) {
     const now = new Date();
-    if (!trips.some(isSeedTrip)) trips.push(...seedTrips(readClock(now).date, now));
+    const clock = readClock(now);
+    const hasAnySeed = trips.some(isSeedTrip);
+    if (!hasAnySeed) {
+      const generated = seedTrips(clock.date, now);
+      return [...trips, ...generated];
+    }
   }
+
   return trips;
 }
 
@@ -89,9 +113,9 @@ function byStartDate(first: TripCard, second: TripCard): number {
   return first.startDate < second.startDate ? -1 : 1;
 }
 
-export function listActiveTrips(viewer: Viewer): ActiveTrips {
+export async function listActiveTrips(viewer: Viewer): Promise<ActiveTrips> {
   const clock = readClock(new Date());
-  const trips = tripsOf(viewer);
+  const trips = await fetchTripsOf(viewer);
   const cards = trips.map((trip) => toTripCard(trip, clock));
   const updatedAt = new Map(trips.map((trip) => [trip.id, trip.updatedAt]));
   const lastChanged = (card: TripCard) => updatedAt.get(card.id) ?? "";
@@ -105,9 +129,10 @@ export function listActiveTrips(viewer: Viewer): ActiveTrips {
   };
 }
 
-export function listHistoryTrips(viewer: Viewer, filter: HistoryFilter): HistoryTrips {
+export async function listHistoryTrips(viewer: Viewer, filter: HistoryFilter): Promise<HistoryTrips> {
   const clock = readClock(new Date());
-  const finished = tripsOf(viewer)
+  const trips = await fetchTripsOf(viewer);
+  const finished = trips
     .map((trip) => ({ trip, card: toTripCard(trip, clock) }))
     .filter(({ card }) => card.status === "completed")
     .map(({ trip, card }) => ({ trip, card, endedOn: card.endDate || trip.updatedAt.slice(0, 10) }))
@@ -130,9 +155,26 @@ export function listHistoryTrips(viewer: Viewer, filter: HistoryFilter): History
 }
 
 /** A trip the viewer can see, with its itinerary when one was saved. Null when there is no such trip. */
-export function getTripPlan(viewer: Viewer, id: string): TripPlanView | null {
-  const trip = tripsOf(viewer).find((entry) => entry.id === id);
-  if (!trip) return null;
+export async function getTripPlan(viewer: Viewer, id: string): Promise<TripPlanView | null> {
+  if (isDemoAccount(viewer.email)) {
+    const clock = readClock(new Date());
+    const demoTrip = seedTrips(clock.date, new Date()).find((t) => t.id === id);
+    if (demoTrip) {
+      return {
+        card: toTripCard(demoTrip, clock),
+        draft: demoTrip.draft,
+        itinerary: demoTrip.itinerary ?? null,
+        today: clock.date,
+      };
+    }
+  }
+
+  const record = await prisma.trip.findFirst({
+    where: { id, userId: viewer.uid },
+  });
+  if (!record) return null;
+
+  const trip = fromDbTrip(record);
   const clock = readClock(new Date());
   return {
     card: toTripCard(trip, clock),
@@ -142,78 +184,100 @@ export function getTripPlan(viewer: Viewer, id: string): TripPlanView | null {
   };
 }
 
-function withPlan(trip: Trip, input: TripInput, now: Date): Trip {
-  const next: Trip = { ...trip, name: input.name, draft: input.draft, updatedAt: now.toISOString() };
-  delete next.violations;
-  delete next.itinerary;
-  if (input.violations !== undefined) next.violations = input.violations;
-  if (input.itinerary !== undefined) next.itinerary = input.itinerary;
-  return next;
-}
-
 /** Saves a finished plan as a trip the viewer organizes. */
-export function createTrip(viewer: Viewer, input: TripInput): TripCard {
+export async function createTrip(viewer: Viewer, input: TripInput): Promise<TripCard> {
+  await ensureUser(viewer);
   const now = new Date();
-  const blank: Trip = {
-    id: crypto.randomUUID(),
-    name: "",
-    state: "PLANNED",
-    role: "organizer",
-    draft: input.draft,
-    updatedAt: "",
-    countryCodes: [],
-  };
-  const trip = withPlan(blank, input, now);
-  tripsOf(viewer).push(trip);
-  persist();
+
+  const created = await prisma.trip.create({
+    data: {
+      userId: viewer.uid,
+      name: input.name,
+      state: "PLANNED",
+      role: "organizer",
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      draft: input.draft as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      itinerary: (input.itinerary ?? null) as any,
+      violations: input.violations,
+      countryCodes: [],
+    },
+  });
+
+  const trip = fromDbTrip(created);
   return toTripCard(trip, readClock(now));
 }
 
 /** Replaces a saved trip's plan, for example after it is generated again. Null when the viewer cannot change it. */
-export function updateTrip(viewer: Viewer, id: string, input: TripInput): TripCard | null {
-  const trips = tripsOf(viewer);
-  const index = trips.findIndex((trip) => trip.id === id);
-  if (index === -1 || trips[index].role !== "organizer") return null;
-  const now = new Date();
-  trips[index] = withPlan(trips[index], input, now);
-  persist();
-  return toTripCard(trips[index], readClock(now));
+export async function updateTrip(viewer: Viewer, id: string, input: TripInput): Promise<TripCard | null> {
+  await ensureUser(viewer);
+
+  const existing = await prisma.trip.findFirst({
+    where: { id, userId: viewer.uid },
+  });
+  if (!existing || existing.role !== "organizer") return null;
+
+  const updated = await prisma.trip.update({
+    where: { id },
+    data: {
+      name: input.name,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      draft: input.draft as any,
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      itinerary: (input.itinerary ?? null) as any,
+      violations: input.violations ?? null,
+      updatedAt: new Date(),
+    },
+  });
+
+  const trip = fromDbTrip(updated);
+  return toTripCard(trip, readClock(new Date()));
 }
 
 /** Copies a trip into a new draft the viewer organizes: same members, needs, and settings, no dates. */
-export function duplicateTrip(viewer: Viewer, id: string, name: string): TripCard | null {
-  const trips = tripsOf(viewer);
-  const source = trips.find((trip) => trip.id === id);
-  if (!source) return null;
+export async function duplicateTrip(viewer: Viewer, id: string, name: string): Promise<TripCard | null> {
+  await ensureUser(viewer);
 
+  const sourceRecord = await prisma.trip.findFirst({
+    where: { id, userId: viewer.uid },
+  });
+  if (!sourceRecord) return null;
+
+  const source = fromDbTrip(sourceRecord);
   const draft = structuredClone(source.draft);
   const now = new Date();
-  const copy: Trip = {
-    id: crypto.randomUUID(),
-    name,
-    state: "DRAFT",
-    role: "organizer",
-    draft: {
-      ...draft,
-      startDate: "",
-      endDate: "",
-      notes: "",
-      members: draft.members.map((member) => ({ ...member, id: crypto.randomUUID() })),
+
+  const created = await prisma.trip.create({
+    data: {
+      userId: viewer.uid,
+      name,
+      state: "DRAFT",
+      role: "organizer",
+      draft: {
+        ...draft,
+        startDate: "",
+        endDate: "",
+        notes: "",
+        members: draft.members.map((member) => ({ ...member, id: crypto.randomUUID() })),
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      } as any,
+      countryCodes: source.countryCodes,
     },
-    updatedAt: now.toISOString(),
-    countryCodes: [...source.countryCodes],
-  };
-  trips.push(copy);
-  persist();
+  });
+
+  const copy = fromDbTrip(created);
   return toTripCard(copy, readClock(now));
 }
 
-export function deleteTrip(viewer: Viewer, id: string): DeleteResult {
-  const trips = tripsOf(viewer);
-  const index = trips.findIndex((trip) => trip.id === id);
-  if (index === -1) return "notFound";
-  if (trips[index].role !== "organizer") return "forbidden";
-  trips.splice(index, 1);
-  persist();
+export async function deleteTrip(viewer: Viewer, id: string): Promise<DeleteResult> {
+  const existing = await prisma.trip.findFirst({
+    where: { id, userId: viewer.uid },
+  });
+  if (!existing) return "notFound";
+  if (existing.role !== "organizer") return "forbidden";
+
+  await prisma.trip.delete({
+    where: { id },
+  });
   return "deleted";
 }

@@ -22,7 +22,7 @@ export async function POST(request: NextRequest, context: RouteContext<"/api/tri
   if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { id } = await context.params;
-  const copy = duplicateTrip(viewer, id, await readName(request));
+  const copy = await duplicateTrip(viewer, id, await readName(request));
   if (!copy) return NextResponse.json({ error: "Trip not found" }, { status: 404 });
   return NextResponse.json(copy, { status: 201 });
 }
