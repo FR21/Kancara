@@ -8,11 +8,11 @@ const LOGO_URL = `${SITE_URL}/images/logo/kancara_full_logo.png`;
 
 /**
  * What Kancara is, for search engines and AI assistants: the organization, the
- * site, the app, and the questions answered on the landing page. Every text
- * comes from the same message files the pages show, so the two cannot drift.
+ * site, and the app. Every text comes from the same message files the pages
+ * show, so the two cannot drift.
  */
 export function siteGraph(locale: Locale) {
-  const { seo, landing } = MESSAGES[locale];
+  const { seo } = MESSAGES[locale];
   const home = `${SITE_URL}${localizedPath("/", locale)}`;
 
   return {
@@ -48,16 +48,21 @@ export function siteGraph(locale: Locale) {
         offers: { "@type": "Offer", price: "0", priceCurrency: "IDR" },
         publisher: { "@id": ORGANIZATION_ID },
       },
-      {
-        "@type": "FAQPage",
-        "@id": `${home}#faq`,
-        inLanguage: locale,
-        mainEntity: landing.faq.items.map((item) => ({
-          "@type": "Question",
-          name: item.question,
-          acceptedAnswer: { "@type": "Answer", text: item.answer },
-        })),
-      },
     ],
+  };
+}
+
+/** The questions answered on the About page, as structured data. It belongs on the page that shows them. */
+export function questionsGraph(locale: Locale) {
+  return {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "@id": `${SITE_URL}${localizedPath("/about", locale)}#faq`,
+    inLanguage: locale,
+    mainEntity: MESSAGES[locale].about.faq.items.map((item) => ({
+      "@type": "Question",
+      name: item.question,
+      acceptedAnswer: { "@type": "Answer", text: item.answer },
+    })),
   };
 }

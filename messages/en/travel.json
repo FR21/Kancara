@@ -37,8 +37,7 @@
     "saving": "Saving…",
     "saved": "Saved",
     "error": "Couldn't save. Check your connection.",
-    "retry": "Try again",
-    "loadError": "Your travel map couldn't be loaded. Reload this page."
+    "retry": "Try again"
   },
   "announce": {
     "marked": "{name} marked as visited",

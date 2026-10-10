@@ -11,10 +11,10 @@ export default function ThemeToggle({ label }: { label: string }) {
   return (
     <button
       type="button"
-      onClick={toggleTheme}
+      onClick={(event) => toggleTheme(event.currentTarget)}
       aria-label={label}
       title={label}
-      className="group inline-flex size-13 cursor-pointer items-center justify-center rounded-full border border-border-strong transition-[border-color,background-color,scale] duration-150 ease-out hover:bg-surface-muted active:scale-[0.97] group-data-over-hero/nav:border-neutral-50/40 group-data-over-hero/nav:hover:bg-neutral-50/10 md:size-10"
+      className="group inline-flex size-13 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-strong transition-[border-color,background-color,scale] duration-150 ease-out hover:bg-surface-muted active:scale-[0.97] group-data-over-hero/nav:border-neutral-50/40 group-data-over-hero/nav:hover:bg-neutral-50/10 lg:size-10"
     >
       {/* Icons swap with CSS, so the server render always matches. */}
       <span className="relative size-5">

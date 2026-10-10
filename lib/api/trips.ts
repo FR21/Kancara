@@ -129,6 +129,7 @@ function parseActive(value: unknown): ActiveTrips {
     ongoing: parseCards(value.ongoing),
     upcoming: parseCards(value.upcoming),
     drafts: parseCards(value.drafts),
+    nextOffset: asCount(value.nextOffset) ?? null,
   };
 }
 
@@ -139,6 +140,7 @@ function parseHistory(value: unknown): HistoryTrips {
     total: asCount(value.total) ?? 0,
     countries: asCount(value.countries) ?? 0,
     years: Array.isArray(value.years) ? value.years.flatMap((entry) => asCount(entry) ?? []) : [],
+    nextOffset: asCount(value.nextOffset) ?? null,
   };
 }
 
@@ -158,13 +160,14 @@ async function send(path: string, init: RequestInit, signal?: AbortSignal, retri
 }
 
 export const trips = {
-  async active(signal: AbortSignal): Promise<ActiveTrips> {
-    const response = await send("?tab=active", { method: "GET" }, signal);
+  /** One page of trips that are not over. `offset` is the `nextOffset` of the page before it. */
+  async active(signal: AbortSignal, offset = 0): Promise<ActiveTrips> {
+    const response = await send(`?tab=active&offset=${offset}`, { method: "GET" }, signal);
     return parseActive(await response.json());
   },
 
-  async history(filter: HistoryFilter, signal: AbortSignal): Promise<HistoryTrips> {
-    const params = new URLSearchParams({ tab: "history" });
+  async history(filter: HistoryFilter, signal: AbortSignal, offset = 0): Promise<HistoryTrips> {
+    const params = new URLSearchParams({ tab: "history", offset: String(offset) });
     if (filter.query.trim() !== "") params.set("q", filter.query.trim());
     if (filter.year !== null) params.set("year", String(filter.year));
     const response = await send(`?${params}`, { method: "GET" }, signal);

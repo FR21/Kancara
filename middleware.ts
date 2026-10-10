@@ -6,20 +6,17 @@ export function middleware(request: NextRequest) {
   const session = request.cookies.get("session");
   const { pathname } = request.nextUrl;
 
-  // Protect all routes inside /trips or /plan (add more as needed)
   const isProtectedPath = pathname.startsWith("/trips") || pathname.startsWith("/plan");
   const isAuthPath = pathname.startsWith("/login") || pathname.startsWith("/register") || pathname.startsWith("/forgot-password");
 
   if (isProtectedPath && !session) {
-    // Redirect to login if accessing protected route without session cookie,
-    // remembering where the visitor was headed
+    // The login page gets the address the visitor was heading to, so it can send them on afterwards.
     const loginUrl = new URL("/login", request.url);
     loginUrl.searchParams.set("redirect", `${pathname}${request.nextUrl.search}`);
     return NextResponse.redirect(loginUrl);
   }
 
   if (isAuthPath && session) {
-    // Redirect to app if already logged in and trying to access auth pages
     return NextResponse.redirect(new URL("/trips", request.url));
   }
 

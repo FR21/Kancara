@@ -173,7 +173,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
         <div
           aria-hidden="true"
           onClick={closeMenu}
-          className="pointer-events-auto fixed inset-0 -z-10 bg-neutral-950/30 md:hidden"
+          className="pointer-events-auto fixed inset-0 -z-10 bg-neutral-950/30 lg:hidden"
         />
       )}
 
@@ -192,7 +192,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
             closeMenu();
             previewSmile(event, "/");
           }}
-          className="flex min-h-11 shrink-0 items-center rounded-sm md:min-h-0"
+          className="flex min-h-11 shrink-0 items-center rounded-sm lg:min-h-0"
         >
           <Image
             src="/images/logo/kancara_wordmark_logo.webp"
@@ -204,7 +204,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
           />
         </Link>
 
-        <nav aria-label={text.navLabel} className="relative hidden md:block">
+        <nav aria-label={text.navLabel} className="relative hidden lg:block">
           <ul ref={navListRef} className="flex items-center gap-1">
             {NAV_LINKS.map((link) => {
               const active = isActive(link.href);
@@ -237,7 +237,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
         </nav>
 
         <div className="flex items-center gap-2">
-          <div className="hidden items-center gap-2 md:flex">
+          <div className="hidden items-center gap-2 lg:flex">
             <LanguageToggle label={text.languageToggle} />
             <ThemeToggle label={text.themeToggle} />
             {isLoggedIn ? (
@@ -272,7 +272,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
             aria-label={menuOpen ? text.closeMenu : text.openMenu}
-            className="relative inline-flex size-11 cursor-pointer items-center justify-center rounded-md text-text transition-[color,background-color,scale] duration-150 ease-out hover:bg-surface-muted active:scale-[0.97] group-data-over-hero/nav:text-neutral-50 group-data-over-hero/nav:hover:bg-neutral-50/10 md:hidden"
+            className="relative inline-flex size-11 cursor-pointer items-center justify-center rounded-md text-text transition-[color,background-color,scale] duration-150 ease-out hover:bg-surface-muted active:scale-[0.97] group-data-over-hero/nav:text-neutral-50 group-data-over-hero/nav:hover:bg-neutral-50/10 lg:hidden"
           >
             <Menu
               aria-hidden="true"
@@ -290,11 +290,10 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
         </div>
       </div>
 
-      {/* Mobile menu */}
       <div
         id="mobile-menu"
         inert={!menuOpen}
-        className={`mx-auto mt-2 max-w-5xl rounded-lg border border-border bg-surface p-2 origin-top-right shadow-lg shadow-neutral-950/10 transition-[opacity,scale,translate] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-opacity md:hidden ${
+        className={`mx-auto mt-2 max-w-5xl rounded-lg border border-border bg-surface p-2 origin-top-right shadow-lg shadow-neutral-950/10 transition-[opacity,scale,translate] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-opacity lg:hidden ${
           menuOpen
             ? "pointer-events-auto duration-250 opacity-100"
             : "-translate-y-1 scale-[0.97] opacity-0 duration-150"

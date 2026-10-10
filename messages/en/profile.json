@@ -32,7 +32,7 @@
     "size": "The image can be 2 MB at most."
   },
   "ageError": "Enter an age between 1 and 120.",
-  "saveDenied": "Couldn't save. Make sure the Firestore and Storage rules in the Firebase Console allow this for you.",
   "nameError": "Enter a name, 2 to 50 characters.",
-  "usernameError": "Usernames are 3 to 20 characters: letters, numbers, dots, or underscores."
+  "usernameError": "Usernames are 3 to 20 characters: letters, numbers, dots, or underscores.",
+  "usernameTaken": "That username is taken. Choose another one."
 }

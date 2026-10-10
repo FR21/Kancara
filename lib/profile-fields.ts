@@ -1,6 +1,7 @@
 export const GENDERS = ["male", "female", "other", "preferNotToSay"] as const;
 
 export const MAX_AGE = 120;
+export const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 const NAME_MIN = 2;
 const NAME_MAX = 50;
 

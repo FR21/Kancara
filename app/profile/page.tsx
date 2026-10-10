@@ -1,30 +1,22 @@
 import type { Metadata } from "next";
-import { verifySession } from "@/lib/auth/session";
-import ProfileContent from "./ProfileContent";
 import { redirect } from "next/navigation";
-import { adminAuth } from "@/lib/firebase/admin";
+import { currentViewer } from "@/lib/account";
+import { getProfile } from "@/lib/profile";
 import { requestMetadata } from "@/lib/seo";
+import ProfileContent from "./ProfileContent";
+import { sessionEndedPath } from "@/lib/auth/routes";
 
 export function generateMetadata(): Promise<Metadata> {
   return requestMetadata("profile");
 }
 
 export default async function ProfilePage() {
-  const session = await verifySession();
-
-  if (!session) {
-    redirect("/login");
-  }
-
-  // Mint a custom token so the client-side Firebase SDK can authenticate in memory
-  const customToken = await adminAuth.createCustomToken(session.uid);
+  const viewer = await currentViewer();
+  if (!viewer) redirect(sessionEndedPath("/profile"));
 
   return (
     <main className="flex-1 pt-28 pb-16 lg:pt-32">
-      <ProfileContent 
-        user={{ email: session.email, uid: session.uid, name: session.name, picture: session.picture }} 
-        customToken={customToken}
-      />
+      <ProfileContent email={viewer.email} profile={await getProfile(viewer)} />
     </main>
   );
 }

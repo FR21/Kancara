@@ -1,7 +1,6 @@
 import { FirebaseError } from "firebase/app";
-import { GoogleAuthProvider, signInWithPopup, updateProfile, type User } from "firebase/auth";
-import { doc, setDoc } from "firebase/firestore";
-import { auth, db } from "@/lib/firebase/client";
+import { GoogleAuthProvider, signInWithPopup, type User } from "firebase/auth";
+import { auth } from "@/lib/firebase/client";
 import { createSession } from "./session";
 
 export type AuthErrorKey =
@@ -12,14 +11,6 @@ export type AuthErrorKey =
   | "tooManyRequests"
   | "network"
   | "default";
-
-export type ProfileDetails = {
-  name: string;
-  username: string;
-  nationality: string;
-  age: string;
-  gender: string;
-};
 
 const ERROR_KEYS: Record<string, AuthErrorKey> = {
   "auth/invalid-credential": "invalidCredentials",
@@ -55,19 +46,4 @@ export async function startSession(user: User): Promise<boolean> {
 export async function signInWithGoogle(): Promise<boolean> {
   const credential = await signInWithPopup(auth, new GoogleAuthProvider());
   return startSession(credential.user);
-}
-
-export async function saveProfileDetails(user: User, details: ProfileDetails): Promise<void> {
-  await updateProfile(user, { displayName: details.name });
-  await setDoc(
-    doc(db, "users", user.uid),
-    {
-      username: details.username,
-      nationality: details.nationality,
-      age: details.age,
-      gender: details.gender,
-      updatedAt: new Date().toISOString(),
-    },
-    { merge: true },
-  );
 }

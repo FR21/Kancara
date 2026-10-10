@@ -107,6 +107,40 @@
       "Akses tanpa sinyal selama perjalanan"
     ]
   },
+  "faq": {
+    "heading": "Pertanyaan yang sering muncul",
+    "subtitle": "Jawaban singkat tentang Kancara.",
+    "items": [
+      {
+        "question": "Apa itu Kancara?",
+        "answer": "Kancara adalah pendamping perjalanan multi-agen untuk rombongan dengan kebutuhan berbeda, dari perencanaan sampai pulang. Kancara menyusun rencana dari kebutuhan setiap anggota, bukan dari suara yang paling keras."
+      },
+      {
+        "question": "Untuk siapa Kancara dibuat?",
+        "answer": "Untuk siapa pun yang bepergian bersama orang lain: keluarga dengan lansia atau balita, rombongan teman, sampai pemimpin tur. Satu rencana bisa memuat 1 sampai 50 orang."
+      },
+      {
+        "question": "Kebutuhan apa saja yang bisa dicatat?",
+        "answer": "Untuk tiap anggota kamu bisa mencatat kebutuhan mobilitas seperti kursi roda, pilihan makanan seperti halal, vegetarian, atau vegan, alergi, waktu istirahat, dan kepekaan terhadap kebisingan atau keramaian. Kebutuhan yang tidak ada di daftar bisa ditulis sendiri."
+      },
+      {
+        "question": "Bagaimana cara kerja Kancara?",
+        "answer": "Isi rute, tanggal, ritme perjalanan, anggota rombongan, dan anggaran. Captain, asisten AI Kancara, lalu menyusun itinerary per hari dan menandai kebutuhan mana yang terpenuhi dan mana yang perlu dicek lagi."
+      },
+      {
+        "question": "Apakah anggaran harus dalam Rupiah?",
+        "answer": "Tidak. Anggaran bisa diisi dalam Rupiah atau dolar AS, dan Kancara menghitung nilai satunya dengan kurs harian."
+      },
+      {
+        "question": "Kancara tersedia dalam bahasa apa?",
+        "answer": "Bahasa Indonesia dan bahasa Inggris. Bahasa bisa diganti kapan saja lewat tombol ID dan EN."
+      }
+    ],
+    "desk": "Meja informasi Kancara",
+    "position": "Pertanyaan {current} dari {total}",
+    "previous": "Pertanyaan sebelumnya",
+    "next": "Pertanyaan berikutnya"
+  },
   "cta": {
     "title": "Siap berangkat bersama rombonganmu?",
     "body": "Ceritakan rencanamu ke Captain. Sisanya kami bantu susun.",

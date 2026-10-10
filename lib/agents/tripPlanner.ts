@@ -4,7 +4,6 @@ import { findDateRange } from '@/lib/api/sample-dates';
 import { buildCaptainInput, buildCaptainInstruction, readHistory, settleTripEnd } from './captainPrompt';
 import { 
   searchBookingHotels, 
-  searchTripAdvisorRestaurants, 
   getCachedAmusementAndAttractions, 
   type HotelDeal, 
   type AttractionDeal 
@@ -216,7 +215,6 @@ function detectTripFocalZone(draft: any): { zone: string; budgetTier: "budget" |
 
 export async function runTripPlanningFlow(requestBody: any) {
   const { draft, locale } = requestBody;
-  console.log("Memulai proses Planner (Parallel API Fetch)...");
 
   // Deteksi klaster wilayah utama dan tingkat budget agar rekomendasi hotel tepat sasaran & tidak monoton
   const { zone, budgetTier } = detectTripFocalZone(draft);
@@ -345,7 +343,6 @@ function cleanPlaceQuery(title: string, destination?: string): string {
 }
 
   // SEQUENTIAL ENRICHMENT (to prevent API rate limits)
-  console.log("Memulai proses sequential enrichment...");
   if (currentPlan.days && Array.isArray(currentPlan.days)) {
     for (const day of currentPlan.days) {
       if (day.items && Array.isArray(day.items)) {

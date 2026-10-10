@@ -6,6 +6,7 @@ import Link from "next/link";
 import ScrollReveal from "@/components/landing/ScrollReveal";
 import { useMessages } from "@/lib/use-messages";
 import { useTilt } from "@/lib/use-tilt";
+import AboutFaq from "./AboutFaq";
 import AboutTicket from "./AboutTicket";
 import ManifestDemo from "./ManifestDemo";
 
@@ -193,6 +194,8 @@ export default function AboutContent() {
           </div>
         </ScrollReveal>
       </section>
+
+      <AboutFaq text={text.faq} className={CONTAINER} />
 
       <section className="relative isolate overflow-clip bg-cta px-4 py-20 sm:px-6 lg:py-28">
         <span aria-hidden="true" className={`${ROUTE_RING} -bottom-40 -left-24 w-80 border-primary/30 lg:w-[28rem]`} />

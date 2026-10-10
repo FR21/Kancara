@@ -1,9 +1,6 @@
 "use client";
 
-import { FirebaseError } from "firebase/app";
-import { signInWithCustomToken, signOut, updateProfile } from "firebase/auth";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { getDownloadURL, ref, uploadBytes } from "firebase/storage";
+import { signOut } from "firebase/auth";
 import { ArrowRight, Camera, Check, CircleAlert, Globe, Loader2, Lock, LogOut } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -11,21 +8,21 @@ import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "r
 import { GHOST_BUTTON, INPUT, OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
 import GenderSelect from "@/components/profile/GenderSelect";
 import ProfilePhoto from "@/components/profile/ProfilePhoto";
-import { createSession, removeSession } from "@/lib/auth/session";
-import { auth, db, storage } from "@/lib/firebase/client";
-import { isAgeValid, isUsernameValid, MAX_AGE } from "@/lib/profile-fields";
+import { ProfileError, saveProfileDetails, uploadProfilePhoto } from "@/lib/api/profile";
+import { removeSession } from "@/lib/auth/session";
+import { auth } from "@/lib/firebase/client";
+import type { Profile } from "@/lib/profile";
+import { isAgeValid, isUsernameValid, MAX_AGE, MAX_PHOTO_BYTES } from "@/lib/profile-fields";
 import { useMessages } from "@/lib/use-messages";
 
 type ProfileContentProps = {
-  user: { email?: string; uid: string; name?: string; picture?: string };
-  customToken?: string;
+  email: string | null;
+  profile: Profile;
 };
 
 const FIELDS = ["name", "username", "nationality", "age", "gender"] as const;
 type FieldKey = (typeof FIELDS)[number];
 type Details = Record<FieldKey, string>;
-
-const MAX_PHOTO_BYTES = 2 * 1024 * 1024;
 
 const FIELD =
   "group sm:grid sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start sm:gap-x-6 motion-safe:animate-message-in";
@@ -34,63 +31,30 @@ const FIELD_LABEL =
 const ENTER_STEP_MS = 40;
 const LOGOUT_BUTTON =
   "group/out inline-flex h-12 cursor-pointer items-center justify-center gap-2 rounded-full border border-border-strong px-6 text-label-lg text-error transition-[background-color,scale] duration-150 ease-out hover:bg-error-subtle active:scale-[0.97] motion-safe:animate-message-in";
+const TAKEN = 409;
+const TOO_LARGE = 413;
+const WRONG_TYPE = 415;
 
-const asText = (value: unknown) => (typeof value === "string" || typeof value === "number" ? String(value) : "");
-
-export default function ProfileContent({ user, customToken }: ProfileContentProps) {
+export default function ProfileContent({ email, profile }: ProfileContentProps) {
   const t = useMessages("profile");
   const travel = useMessages("travel");
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [saved, setSaved] = useState<Details>({
-    name: user.name ?? "",
-    username: "",
-    nationality: "",
-    age: "",
-    gender: "",
+    name: profile.name,
+    username: profile.username,
+    nationality: profile.nationality,
+    age: profile.age,
+    gender: profile.gender,
   });
   const [form, setForm] = useState<Details>(saved);
-  const [photo, setPhoto] = useState(user.picture ?? "");
+  const [photo, setPhoto] = useState(profile.photo ?? "");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
-  const [detailsLoading, setDetailsLoading] = useState(true);
   const [error, setError] = useState("");
   const [succeeded, setSucceeded] = useState(false);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    async function loadDetails() {
-      try {
-        if (!auth.currentUser && customToken) await signInWithCustomToken(auth, customToken);
-        if (!auth.currentUser) return;
-
-        const snapshot = await getDoc(doc(db, "users", user.uid));
-        if (cancelled || !snapshot.exists()) return;
-
-        const data = snapshot.data();
-        const loaded = {
-          username: asText(data.username),
-          nationality: asText(data.nationality),
-          age: asText(data.age),
-          gender: asText(data.gender),
-        };
-        setSaved((current) => ({ ...current, ...loaded }));
-        setForm((current) => ({ ...current, ...loaded }));
-      } catch (caught) {
-        console.error("Failed to load profile details", caught);
-      } finally {
-        if (!cancelled) setDetailsLoading(false);
-      }
-    }
-
-    loadDetails();
-    return () => {
-      cancelled = true;
-    };
-  }, [user.uid, customToken]);
 
   useEffect(
     () => () => {
@@ -114,13 +78,13 @@ export default function ProfileContent({ user, customToken }: ProfileContentProp
     gender: "",
   };
 
-  const displayName = saved.name || user.email?.split("@")[0] || t.fallbackName;
+  const displayName = saved.name || email?.split("@")[0] || t.fallbackName;
   const displayPhoto = previewUrl || photo || null;
   const ageInvalid = !isAgeValid(form.age);
   const usernameInvalid = !isUsernameValid(form.username);
-  const locked = detailsLoading || saving;
+  const locked = saving;
   const dirty = selectedFile !== null || FIELDS.some((field) => form[field] !== saved[field]);
-  const inputClass = `${INPUT} disabled:cursor-not-allowed ${detailsLoading ? "motion-safe:animate-pulse" : ""}`;
+  const inputClass = `${INPUT} disabled:cursor-not-allowed`;
 
   const setField = (field: FieldKey, value: string) => {
     setSucceeded(false);
@@ -162,6 +126,14 @@ export default function ProfileContent({ user, customToken }: ProfileContentProp
     }
   };
 
+  const failureMessage = (caught: unknown) => {
+    const status = caught instanceof ProfileError ? caught.status : 0;
+    if (status === TAKEN) return t.usernameTaken;
+    if (status === TOO_LARGE) return t.photoErrors.size;
+    if (status === WRONG_TYPE) return t.photoErrors.type;
+    return t.error;
+  };
+
   const handleSave = async (event: FormEvent) => {
     event.preventDefault();
     if (usernameInvalid) {
@@ -177,56 +149,30 @@ export default function ProfileContent({ user, customToken }: ProfileContentProp
     setError("");
 
     try {
-      const currentUser = auth.currentUser;
-      if (!currentUser) throw new Error("User not found");
-
       const next: Details = {
         name: form.name.trim(),
-        username: form.username.trim(),
+        // A leading @ is how people write a username, not part of it.
+        username: form.username.trim().replace(/^@/, ""),
         nationality: form.nationality.trim(),
         age: form.age,
         gender: form.gender,
       };
 
-      let nextPhoto = photo;
+      // The photo goes first: when it is refused, nothing else has changed and the form still shows what to fix.
       if (selectedFile) {
-        const fileRef = ref(storage, `users/${user.uid}/profile_${Date.now()}`);
-        await uploadBytes(fileRef, selectedFile);
-        nextPhoto = await getDownloadURL(fileRef);
+        setPhoto(await uploadProfilePhoto(selectedFile));
+        setSelectedFile(null);
+        setPreviewUrl(null);
       }
-
-      await updateProfile(currentUser, { displayName: next.name, photoURL: nextPhoto || null });
-      await setDoc(
-        doc(db, "users", user.uid),
-        {
-          username: next.username,
-          nationality: next.nationality,
-          age: next.age,
-          gender: next.gender,
-          updatedAt: new Date().toISOString(),
-        },
-        { merge: true },
-      );
-
-      const idToken = await currentUser.getIdToken(true);
-      const session = await createSession(idToken);
-      if (!session.success) {
-        setError(session.error || t.error);
-        return;
-      }
+      await saveProfileDetails(next);
 
       setSaved(next);
       setForm(next);
-      setPhoto(nextPhoto);
-      setSelectedFile(null);
-      setPreviewUrl(null);
       setSucceeded(true);
+      // The navbar shows the photo too; it reads it again from the server.
       router.refresh();
     } catch (caught) {
-      console.error(caught);
-      const code = caught instanceof FirebaseError ? caught.code : "";
-      const denied = code.includes("permission-denied") || code === "storage/unauthorized";
-      setError(denied ? t.saveDenied : t.error);
+      setError(failureMessage(caught));
     } finally {
       setSaving(false);
     }
@@ -273,7 +219,7 @@ export default function ProfileContent({ user, customToken }: ProfileContentProp
           </div>
 
           <p className="mt-6 max-w-full font-heading text-h2 wrap-break-word text-text">{displayName}</p>
-          {saved.username && <p className="mt-1 max-w-full text-body break-all text-primary">{saved.username}</p>}
+          {saved.username && <p className="mt-1 max-w-full text-body break-all text-primary">@{saved.username}</p>}
           <p className="mt-4 text-body-sm text-text-muted">{t.photoHint}</p>
           <Link href="/profile/map" className={`group ${OUTLINE_BUTTON} mt-6 w-full max-w-xs`}>
             <Globe
@@ -301,7 +247,6 @@ export default function ProfileContent({ user, customToken }: ProfileContentProp
                     value={form.gender}
                     options={t.genderOptions}
                     disabled={locked}
-                    className={detailsLoading ? "motion-safe:animate-pulse" : ""}
                     onChange={(value) => setField("gender", value)}
                   />
                 )}
@@ -363,7 +308,7 @@ export default function ProfileContent({ user, customToken }: ProfileContentProp
                 <input
                   id="profile-email"
                   type="email"
-                  value={user.email ?? ""}
+                  value={email ?? ""}
                   disabled
                   readOnly
                   className={`${INPUT} cursor-not-allowed bg-surface-muted pr-12 text-text-muted`}

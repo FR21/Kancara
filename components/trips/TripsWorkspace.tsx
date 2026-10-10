@@ -1,10 +1,10 @@
 "use client";
 
-import { Plus, WifiOff } from "lucide-react";
+import { Loader2, Plus, WifiOff } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import ErrorAlert from "@/components/plan/ErrorAlert";
-import { PRIMARY_BUTTON } from "@/components/plan/styles";
+import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
 import { trips } from "@/lib/api/trips";
 import { fillTemplate } from "@/lib/plan-draft";
 import type { ActiveTrips, HistoryTrips, TripCard } from "@/lib/trips/trip";
@@ -53,6 +53,7 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
   const [deleteTarget, setDeleteTarget] = useState<TripCard | null>(null);
   const [deleteState, setDeleteState] = useState<DeleteState>("idle");
   const [notice, setNotice] = useState<Notice | null>(null);
+  const [loadingMore, setLoadingMore] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const noticeIdRef = useRef(0);
   const arrivingIdRef = useRef<string | null>(null);
@@ -130,6 +131,37 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
     setYear(null);
   };
 
+  // Adds the next page to the list on screen. A trip that moved between pages meanwhile is not shown twice.
+  const loadMore = async (offset: number) => {
+    const fresh = (shown: TripCard[], more: TripCard[]) => [
+      ...shown,
+      ...more.filter((card) => !shown.some((known) => known.id === card.id)),
+    ];
+    setLoadingMore(true);
+    try {
+      const signal = new AbortController().signal;
+      if (tab === "active") {
+        const more = await trips.active(signal, offset);
+        setActiveTrips(
+          (current) =>
+            current && {
+              ongoing: fresh(current.ongoing, more.ongoing),
+              upcoming: fresh(current.upcoming, more.upcoming),
+              drafts: fresh(current.drafts, more.drafts),
+              nextOffset: more.nextOffset,
+            },
+        );
+      } else {
+        const more = await trips.history({ query: search, year }, signal, offset);
+        setHistoryTrips((current) => current && { ...more, trips: fresh(current.trips, more.trips) });
+      }
+    } catch {
+      announce("error", text.error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   const selectTrip = (card: TripCard) => {
     setSelectedId(card.id);
     setSheetOpen(true);
@@ -192,6 +224,7 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
     setActiveTrips(
       (current) =>
         current && {
+          ...current,
           ongoing: current.ongoing.filter(keep),
           upcoming: current.upcoming.filter(keep),
           drafts: current.drafts.filter(keep),
@@ -224,6 +257,7 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
   const cards = sections.flatMap((section) => section.cards);
   // Without a pick of the visitor's own, the panel shows the first trip: the one in progress when there is one.
   const selected = cards.find((card) => card.id === selectedId) ?? cards[0] ?? null;
+  const nextOffset = (tab === "active" ? activeTrips?.nextOffset : historyTrips?.nextOffset) ?? null;
   const emptyKind = tab === "active" ? "active" : "history";
   const nothingYet = tab === "active" ? activeTrips !== null && cards.length === 0 : historyTrips?.total === 0;
 
@@ -280,6 +314,17 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
               )}
               {cards.length > 0 && (
                 <TripList sections={sections} selectedId={selected?.id ?? null} text={text} onSelect={selectTrip} />
+              )}
+              {cards.length > 0 && nextOffset !== null && (
+                <button
+                  type="button"
+                  disabled={loadingMore}
+                  onClick={() => loadMore(nextOffset)}
+                  className={`${OUTLINE_BUTTON} w-full`}
+                >
+                  {loadingMore && <Loader2 className="size-4 motion-safe:animate-spin" aria-hidden="true" />}
+                  {text.loadMore}
+                </button>
               )}
             </div>
 

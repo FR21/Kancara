@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Local AI tooling, kept out of git. Its scripts are not part of the app.
+    ".claude/**",
+    ".agents/**",
+    ".impeccable/**",
   ]),
 ]);
 

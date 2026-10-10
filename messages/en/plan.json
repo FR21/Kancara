@@ -3,7 +3,15 @@
   "start": {
     "title": "Where are we going today?",
     "form": "Fill in manually, step by step",
-    "lead": "Just tell it like you would tell a friend. Captain asks for the rest, then prepares your boarding pass and a day-by-day plan."
+    "lead": "Just tell it like you would tell a friend. Captain asks for the rest, then prepares your boarding pass and a day-by-day plan.",
+    "greet": "Say hi to Captain",
+    "greetings": [
+      "Hi, I'm Captain!",
+      "Who is coming along this time?",
+      "Someone uses a wheelchair? Just note it.",
+      "Halal, vegetarian, allergies: I count them all.",
+      "No one gets left behind."
+    ]
   },
   "stages": {
     "label": "Plan stages",

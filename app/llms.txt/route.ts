@@ -8,7 +8,7 @@ import { SITE_URL } from "@/lib/seo";
 function summary(): string {
   const english = MESSAGES.en;
   const local = MESSAGES[DEFAULT_LOCALE];
-  const answers = english.landing.faq.items.map((item) => `- **${item.question}** ${item.answer}`);
+  const answers = english.about.faq.items.map((item) => `- **${item.question}** ${item.answer}`);
 
   return [
     `# ${english.seo.siteName}`,

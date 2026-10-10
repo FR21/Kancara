@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { currentViewer } from "@/lib/account";
 import { rateLimit } from "@/lib/rate-limit";
-import { currentViewer, duplicateTrip } from "@/lib/trips/store";
+import { duplicateTrip } from "@/lib/trips/store";
 
 const MAX_NAME_CHARS = 120;
 

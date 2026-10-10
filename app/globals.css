@@ -218,6 +218,21 @@
  */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
 
+/* Switching theme: the new colours spread from the toggle as a growing circle with a soft rim. lib/theme.ts
+   animates the size and place of the mask below. The browser's own cross-fade is turned off so the old theme
+   stays still underneath until the circle covers it. */
+::view-transition-old(root),
+::view-transition-new(root) {
+  animation: none;
+  mix-blend-mode: normal;
+}
+
+::view-transition-new(root) {
+  mask-image: radial-gradient(circle closest-side, black 55%, transparent 100%);
+  mask-repeat: no-repeat;
+  mask-size: 0 0;
+}
+
 /* Expose semantic tokens as Tailwind utilities (bg-primary, text-text-muted, ...) */
 @theme inline {
   --color-background: var(--background);
@@ -336,16 +351,14 @@
   --animate-pass-print:
     pass-print 450ms cubic-bezier(0.23, 1, 0.32, 1) both, pass-flash 1400ms ease-out both;
   --animate-message-in: message-in 250ms cubic-bezier(0.23, 1, 0.32, 1) both;
-  --animate-typing: typing 1.2s ease-in-out infinite;
   --animate-stamp-in: stamp-in 350ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-signal: signal 1.4s ease-in-out infinite;
   --animate-ticket-in: ticket-in 700ms cubic-bezier(0.23, 1, 0.32, 1) backwards;
-  --animate-orb-breathe: orb-breathe 2.4s ease-in-out infinite;
-  --animate-orb-pulse: orb-pulse 700ms cubic-bezier(0.23, 1, 0.32, 1) both;
-  --animate-orb-bump: orb-bump 350ms cubic-bezier(0.23, 1, 0.32, 1);
   --animate-pop-in: pop-in 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-sheet-up: sheet-up 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-float: float 5s ease-in-out infinite;
+  --animate-shadow-breathe: shadow-breathe 5s ease-in-out infinite;
+  --animate-hop: hop 700ms cubic-bezier(0.23, 1, 0.32, 1);
   --animate-fly-in: fly-in 900ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-grow-x: grow-x 700ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-turn: turn 12s linear infinite;
@@ -353,33 +366,6 @@
   --animate-slide-progress: slide-progress 6s linear both;
   --animate-needle-sway: needle-sway 4s ease-in-out infinite;
   --animate-horizon-rock: horizon-rock 5s ease-in-out infinite;
-
-  @keyframes orb-breathe {
-    0%,
-    100% {
-      scale: 0.86;
-    }
-    50% {
-      scale: 1;
-    }
-  }
-
-  @keyframes orb-pulse {
-    from {
-      opacity: 0.7;
-      scale: 0.8;
-    }
-    to {
-      opacity: 0;
-      scale: 1.5;
-    }
-  }
-
-  @keyframes orb-bump {
-    50% {
-      scale: 1.14;
-    }
-  }
 
   @keyframes ticket-in {
     from {
@@ -459,6 +445,27 @@
     }
   }
 
+  /* The shadow under something that floats: smaller and fainter while it is at its highest. */
+  @keyframes shadow-breathe {
+    50% {
+      opacity: 0.6;
+      scale: 0.8;
+    }
+  }
+
+  /* A jump with one small bounce on landing. */
+  @keyframes hop {
+    30% {
+      translate: 0 -1.5rem;
+    }
+    60% {
+      translate: 0 0;
+    }
+    80% {
+      translate: 0 -0.375rem;
+    }
+  }
+
   /* One slow full turn, for a mark that means "still in progress". */
   @keyframes turn {
     to {
@@ -512,19 +519,6 @@
 
     80% {
       rotate: -4deg;
-    }
-  }
-
-  @keyframes typing {
-    0%,
-    60%,
-    100% {
-      opacity: 0.4;
-      translate: 0 0;
-    }
-    30% {
-      opacity: 1;
-      translate: 0 -0.25rem;
     }
   }
 
@@ -966,19 +960,6 @@
   color: var(--text);
 }
 
-@utility voice-orb {
-  background: radial-gradient(circle at 32% 28%, var(--secondary), var(--primary) 72%);
-  box-shadow: 0 0.5rem 1.5rem color-mix(in oklab, var(--primary) 35%, transparent);
-}
-
-@utility voice-orb-ring {
-  background: color-mix(in oklab, var(--primary) 16%, transparent);
-}
-
 @utility safe-bottom {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
-}
-
-@utility voice-orb-ring-heard {
-  background: color-mix(in oklab, var(--accent) 45%, transparent);
 }

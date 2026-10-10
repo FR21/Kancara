@@ -73,19 +73,40 @@ Then open **http://localhost:3000**.
 Fonts load automatically through `next/font`, so there is nothing extra to install.
 Environment variables go in `.env`, which is never committed.
 
-### Demo data for My Trips
+### Database
 
-There is no trips database yet. `/trips` reads from a stand-in store
-(`lib/trips/store.ts`) that starts empty for every account and keeps what
-people save in `.data/trips.json`, a local file that git ignores. To see the page with every card state filled in, list the demo
-account's email in `.env` and sign in with it:
+Trips, profiles, travel maps, and cached answers from outside services live in
+PostgreSQL (Neon), reached through Prisma. Uploaded profile photos live in a
+private object-storage bucket and are served through the API.
 
-```bash
-DEMO_ACCOUNT_EMAILS=demo@example.com
-```
+`prisma/schema.prisma` describes the tables the app uses.
 
-Several emails can be separated with commas. The sample trips live in
-`lib/trips/seed.json`.
+Conventions every table follows:
+
+| Rule | Example |
+| --- | --- |
+| Tables are plural snake_case, columns snake_case | `visited_countries.country_code` |
+| The primary key is the singular table name plus `_id`, a UUID | `trips.trip_id` |
+| A foreign key has the name of the key it points to | `trips.workspace_id` |
+| Every table has `created_at` and `updated_at`, in UTC | shown in WIB only on screen |
+| Deleting is soft, through `deleted_at` | `trips.deleted_at` |
+| Money is a whole number of Rupiah | `trips.spent_rupiah` |
+| A workspace's data carries `workspace_id`, and queries filter on it | `trips`, `visited_countries` |
+| Columns for what is filtered or sorted, JSONB for the document | `trips.start_date` beside `trips.plan_draft` |
+
+Everything goes through the API: the browser never talks to the database. Lists
+are paged (`limit` and `offset`, 20 rows by default, 50 at most), queries have
+a timeout, and connections are pooled (`lib/prisma.ts`).
+
+**Still to set up outside the code:**
+
+- A database role for the app with read and write rights only, for
+  `DATABASE_URL` to use.
+- Separate Neon branches for development and staging. Today every environment
+  shares one database.
+- Backups: Neon keeps a point-in-time history and encrypts data at rest. The
+  history window and a monthly restore test are settings and a routine on the
+  Neon project, not something this repository can enforce.
 
 ### Search and link previews
 
@@ -102,7 +123,8 @@ GOOGLE_SITE_VERIFICATION=
 Every public page has an Indonesian address (`/about`) and an English one
 (`/about?lang=en`), and each is rendered in its language on the server. The
 wording search engines see comes from `messages/<locale>/seo.json`, and the
-questions and answers from `faq` in `messages/<locale>/landing.json`.
+questions and answers on the About page from `faq` in
+`messages/<locale>/about.json`.
 
 ### Scripts
 

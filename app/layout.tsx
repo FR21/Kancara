@@ -3,12 +3,12 @@ import Footer from "@/components/footer/Footer";
 import LocaleProvider from "@/components/layout/LocaleProvider";
 import SiteChrome from "@/components/layout/SiteChrome";
 import Navbar from "@/components/navbar/Navbar";
+import { currentViewer } from "@/lib/account";
 import { localeInitScript } from "@/lib/locale";
 import { requestLocale } from "@/lib/locale-server";
 import { MESSAGES } from "@/lib/messages";
 import { SITE_URL } from "@/lib/seo";
 import { themeInitScript } from "@/lib/theme";
-import { verifySession } from "@/lib/auth/session";
 import { FONT_CLASSES } from "./fonts";
 import "./globals.css";
 
@@ -32,8 +32,7 @@ export const viewport: Viewport = {
 };
 
 export default async function RootLayout({ children }: LayoutProps<"/">) {
-  const [session, locale] = await Promise.all([verifySession(), requestLocale()]);
-  const isLoggedIn = !!session;
+  const [viewer, locale] = await Promise.all([currentViewer(), requestLocale()]);
 
   return (
     // The inline script sets data-theme and lang before hydration, so React
@@ -48,7 +47,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-screen flex flex-col font-sans overflow-x-clip">
         <LocaleProvider locale={locale}>
           <SiteChrome>
-            <Navbar isLoggedIn={isLoggedIn} picture={session?.picture ?? null} />
+            <Navbar isLoggedIn={viewer !== null} picture={viewer?.picture ?? null} />
           </SiteChrome>
           {children}
           <SiteChrome>

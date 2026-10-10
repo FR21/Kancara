@@ -4,20 +4,19 @@ import { Check, CircleAlert, Globe, Loader2, LocateFixed, Map as MapIcon, Minus,
 import { useEffect, useMemo, useRef, useState } from "react";
 import Checkbox from "@/components/plan/Checkbox";
 import { EASE, INPUT } from "@/components/plan/styles";
+import { saveVisitedCountries } from "@/lib/api/profile";
 import { fillTemplate } from "@/lib/plan-draft";
 import { COUNTRIES, countryNames } from "@/lib/travel/countries";
-import { loadVisited, saveVisited } from "@/lib/travel/visited";
 import { MAX_ZOOM, MIN_ZOOM, type WorldMode } from "@/lib/travel/world-scene";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
 import WorldStage from "./WorldStage";
 
 type TravelMapProps = {
-  uid: string;
-  customToken?: string;
+  initialVisited: string[];
 };
 
-type SaveState = "loading" | "idle" | "saving" | "saved" | "error" | "loadError";
+type SaveState = "idle" | "saving" | "saved" | "error";
 
 const VIEWS = [
   { mode: "globe", Icon: Globe },
@@ -25,19 +24,18 @@ const VIEWS = [
 ] as const;
 const SAVE_DELAY_MS = 600;
 const ZOOM_STEP = 1.5;
-const SKELETON_ROWS = [62, 48, 70, 55, 66, 44, 58];
 const ZOOM_BUTTON =
   "inline-flex size-11 cursor-pointer items-center justify-center text-text transition-[background-color,scale] duration-150 ease-out hover:bg-surface-muted active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40";
 
-export default function TravelMap({ uid, customToken }: TravelMapProps) {
+export default function TravelMap({ initialVisited }: TravelMapProps) {
   const text = useMessages("travel");
   const locale = useLocale();
-  const [visited, setVisited] = useState<ReadonlySet<string>>(new Set());
+  const [visited, setVisited] = useState<ReadonlySet<string>>(() => new Set(initialVisited));
   const [mode, setMode] = useState<WorldMode>("globe");
   const [zoom, setZoom] = useState(MIN_ZOOM);
   const [focus, setFocus] = useState<{ code: string; tick: number } | null>(null);
   const [query, setQuery] = useState("");
-  const [saveState, setSaveState] = useState<SaveState>("loading");
+  const [saveState, setSaveState] = useState<SaveState>("idle");
   const [announcement, setAnnouncement] = useState("");
   const saveTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const latest = useRef<ReadonlySet<string>>(visited);
@@ -51,29 +49,17 @@ export default function TravelMap({ uid, customToken }: TravelMapProps) {
     );
   }, [locale, names]);
 
-  useEffect(() => {
-    let cancelled = false;
-    loadVisited(uid, customToken)
-      .then((codes) => {
-        if (cancelled) return;
-        const loaded = new Set(codes);
-        latest.current = loaded;
-        setVisited(loaded);
-        setSaveState("idle");
-      })
-      .catch(() => {
-        if (!cancelled) setSaveState("loadError");
-      });
-    return () => {
-      cancelled = true;
+  useEffect(
+    () => () => {
       if (saveTimer.current) clearTimeout(saveTimer.current);
-    };
-  }, [uid, customToken]);
+    },
+    [],
+  );
 
   const persist = async () => {
     setSaveState("saving");
     try {
-      await saveVisited(uid, [...latest.current].sort());
+      await saveVisitedCountries([...latest.current].sort());
       setSaveState("saved");
     } catch {
       setSaveState("error");
@@ -107,7 +93,6 @@ export default function TravelMap({ uid, customToken }: TravelMapProps) {
   const marked = matches.filter((country) => visited.has(country.code));
   const unmarked = matches.filter((country) => !visited.has(country.code));
   const count = visited.size;
-  const loading = saveState === "loading";
 
   const renderRow = (code: string) => {
     const name = names.get(code) ?? code;
@@ -157,7 +142,7 @@ export default function TravelMap({ uid, customToken }: TravelMapProps) {
                   type="button"
                   aria-pressed={mode === option}
                   onClick={() => setMode(option)}
-                  className={`relative inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-5 text-label whitespace-nowrap transition-[color,scale] duration-150 ease-out active:scale-[0.97] ${
+                  className={`relative inline-flex h-11 cursor-pointer items-center justify-center gap-2 rounded-full px-4 text-label whitespace-nowrap sm:px-5 transition-[color,scale] duration-150 ease-out active:scale-[0.97] ${
                     mode === option ? "text-on-primary" : "text-text-muted hover:text-text"
                   }`}
                 >
@@ -245,19 +230,17 @@ export default function TravelMap({ uid, customToken }: TravelMapProps) {
                 {text.status.saved}
               </span>
             )}
-            {(saveState === "error" || saveState === "loadError") && (
+            {saveState === "error" && (
               <span role="alert" className="inline-flex flex-wrap items-center gap-2 text-error">
                 <CircleAlert className="size-4 shrink-0" aria-hidden="true" />
-                {saveState === "error" ? text.status.error : text.status.loadError}
-                {saveState === "error" && (
-                  <button
-                    type="button"
-                    onClick={persist}
-                    className="inline-flex min-h-11 cursor-pointer items-center rounded-sm text-label text-primary underline-offset-4 hover:underline"
-                  >
-                    {text.status.retry}
-                  </button>
-                )}
+                {text.status.error}
+                <button
+                  type="button"
+                  onClick={persist}
+                  className="inline-flex min-h-11 cursor-pointer items-center rounded-sm text-label text-primary underline-offset-4 hover:underline"
+                >
+                  {text.status.retry}
+                </button>
               </span>
             )}
           </div>
@@ -281,32 +264,20 @@ export default function TravelMap({ uid, customToken }: TravelMapProps) {
             />
           </div>
 
-          <div
-            aria-busy={loading}
-            className="mt-4 max-h-96 overflow-y-auto overscroll-contain pr-1 [scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin] lg:max-h-[26rem]"
-          >
-            {loading &&
-              SKELETON_ROWS.map((row) => (
-                <div
-                  key={row}
-                  aria-hidden="true"
-                  className="my-3 h-5 rounded-full bg-surface-muted motion-safe:animate-pulse"
-                  style={{ width: `${row}%` }}
-                />
-              ))}
-            {!loading && matches.length === 0 && (
+          <div className="mt-4 max-h-96 overflow-y-auto overscroll-contain pr-1 [scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin] lg:max-h-[26rem]">
+            {matches.length === 0 && (
               <p className="py-4 text-body-sm text-text-muted">{fillTemplate(text.search.empty, { query: query.trim() })}</p>
             )}
-            {count === 0 && needle === "" && !loading && (
+            {count === 0 && needle === "" && (
               <p className="pb-3 text-body-sm text-pretty text-text-muted">{text.empty}</p>
             )}
-            {!loading && marked.length > 0 && (
+            {marked.length > 0 && (
               <>
                 <h2 className="px-2 pb-1 text-label text-text-muted">{text.list.visitedHeading}</h2>
                 <ul>{marked.map((country) => renderRow(country.code))}</ul>
               </>
             )}
-            {!loading && unmarked.length > 0 && (
+            {unmarked.length > 0 && (
               <>
                 <h2 className={`px-2 pb-1 text-label text-text-muted ${marked.length > 0 ? "mt-4" : ""}`}>
                   {text.list.allHeading}

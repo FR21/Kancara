@@ -14,7 +14,7 @@ export default function LanguageToggle({ label }: { label: string }) {
       role="group"
       aria-label={label}
       style={{ "--thumb-index": index } as CSSProperties}
-      className="relative grid grid-cols-2 rounded-full border border-border-strong p-1 transition-colors duration-300 group-data-over-hero/nav:border-neutral-50/40"
+      className="relative grid shrink-0 grid-cols-2 rounded-full border border-border-strong p-1 transition-colors duration-300 group-data-over-hero/nav:border-neutral-50/40"
     >
       <span
         aria-hidden="true"
@@ -30,7 +30,7 @@ export default function LanguageToggle({ label }: { label: string }) {
             aria-label={LOCALE_NAMES[option]}
             aria-pressed={selected}
             onClick={() => setLocale(option)}
-            className={`relative h-11 w-12 cursor-pointer rounded-full text-label transition-[color,scale] duration-150 ease-out active:scale-[0.97] md:h-8 md:w-10 ${
+            className={`relative h-11 w-12 cursor-pointer rounded-full text-label transition-[color,scale] duration-150 ease-out active:scale-[0.97] lg:h-8 lg:w-10 ${
               selected
                 ? "text-on-primary group-data-over-hero/nav:text-neutral-950"
                 : "text-text-muted hover:text-text group-data-over-hero/nav:text-neutral-50/80 group-data-over-hero/nav:hover:text-neutral-50"

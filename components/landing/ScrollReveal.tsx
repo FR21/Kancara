@@ -36,8 +36,8 @@ export default function ScrollReveal({
         }
       },
       {
-        threshold: 0.1, // Trigger when 10% of element is in viewport
-        rootMargin: "0px 0px -40px 0px", // Trigger slightly before it hits bottom of viewport
+        threshold: 0.1,
+        rootMargin: "0px 0px -40px 0px",
       }
     );
 

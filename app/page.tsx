@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import HeroSection from "@/components/landing/HeroSection";
 import StatsSection from "@/components/landing/StatsSection";
 import CoreFlowSection from "@/components/landing/CoreFlowSection";
-import FaqSection from "@/components/landing/FaqSection";
 import OfflineSection from "@/components/landing/OfflineSection";
 import CtaSection from "@/components/landing/CtaSection";
 import JsonLd from "@/components/seo/JsonLd";
@@ -23,7 +22,6 @@ export default async function Home() {
       <HeroSection />
       <StatsSection />
       <CoreFlowSection />
-      <FaqSection />
       <div className="relative">
         <OfflineSection />
         <CtaSection />

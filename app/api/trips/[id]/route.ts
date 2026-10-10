@@ -1,7 +1,8 @@
 import { type NextRequest, NextResponse } from "next/server";
+import { currentViewer } from "@/lib/account";
 import { rateLimit } from "@/lib/rate-limit";
 import { readTripInput } from "@/lib/trips/input";
-import { currentViewer, deleteTrip, getTripPlan, updateTrip } from "@/lib/trips/store";
+import { deleteTrip, getTripPlan, updateTrip } from "@/lib/trips/store";
 
 export async function GET(request: NextRequest, context: RouteContext<"/api/trips/[id]">) {
   const limited = rateLimit(request, "trips-read");

@@ -1,5 +1,3 @@
-import { getFirestore } from "firebase/firestore";
-import { getStorage } from "firebase/storage";
 import { initializeApp, getApps, getApp } from "firebase/app";
 import { getAuth, inMemoryPersistence, setPersistence } from "firebase/auth";
 
@@ -20,5 +18,3 @@ export const auth = getAuth(app);
 if (typeof window !== "undefined") {
   setPersistence(auth, inMemoryPersistence).catch(console.error);
 }
-export const storage = getStorage(app);
-export const db = getFirestore(app);

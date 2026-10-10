@@ -82,8 +82,15 @@ export function countViolations(itinerary: Itinerary): number {
     .reduce((count, item) => count + (item.violations?.length ?? 0), 0);
 }
 
-export type ActiveTrips = { ongoing: TripCard[]; upcoming: TripCard[]; drafts: TripCard[] };
-export type HistoryTrips = { trips: TripCard[]; total: number; countries: number; years: number[] };
+// Lists arrive a page at a time. `nextOffset` is where the next page starts, or null when this was the last one.
+export type ActiveTrips = { ongoing: TripCard[]; upcoming: TripCard[]; drafts: TripCard[]; nextOffset: number | null };
+export type HistoryTrips = {
+  trips: TripCard[];
+  total: number;
+  countries: number;
+  years: number[];
+  nextOffset: number | null;
+};
 
 /** The current date (YYYY-MM-DD) and time (HH:MM) where trips are judged, which is WIB. */
 export type Clock = { date: string; time: string };
@@ -99,10 +106,6 @@ function toUtc(date: string): number {
 
 export function daysBetween(from: string, to: string): number {
   return Math.round((toUtc(to) - toUtc(from)) / DAY_MS);
-}
-
-export function addDays(date: string, days: number): string {
-  return new Date(toUtc(date) + days * DAY_MS).toISOString().slice(0, 10);
 }
 
 function isDated(draft: PlanDraft): boolean {

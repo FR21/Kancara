@@ -1,3 +1,13 @@
+// The tables the app uses. Conventions (see "Database" in the README):
+// - tables are plural snake_case; columns are snake_case
+// - a primary key is the table's singular name plus _id, and is a UUID
+// - a foreign key has the same name as the primary key it points to
+// - every table has created_at and updated_at, stored in UTC
+// - rows people delete are soft-deleted through deleted_at
+// - tables that hold a workspace's data carry workspace_id, and every query filters on it
+// CHECK constraints and the case-insensitive unique index on users.username cannot be written in this file;
+// they exist in the database only.
+
 generator client {
   provider = "prisma-client-js"
 }
@@ -5,44 +15,108 @@ generator client {
 datasource db {
   provider  = "postgresql"
   url       = env("DATABASE_URL")
-  directUrl = env("DATABASE_URL_UNPOOLED") // Wajib untuk migrasi dengan Neon Connection Pooling
+  directUrl = env("DATABASE_URL_UNPOOLED") // Schema changes need a direct connection; the app uses the pooled one.
 }
 
+/// A person who signs in. Firebase Auth owns the sign-in; `firebaseUid` ties its account to this row.
 model User {
-  id    String @id // Ini akan diisi oleh UID Firebase Auth
-  email String?
-  
-  // Relasi
-  trips Trip[]
+  userId          String    @id @default(dbgenerated("gen_random_uuid()")) @map("user_id") @db.Uuid
+  firebaseUid     String    @unique @map("firebase_uid")
+  email           String?
+  displayName     String?   @map("display_name")
+  username        String?
+  nationality     String?
+  age             Int?      @db.SmallInt
+  gender          String?
+  /// Where the profile photo sits in object storage, when the person uploaded one.
+  avatarObjectKey String?   @map("avatar_object_key")
+  avatarUpdatedAt DateTime? @map("avatar_updated_at") @db.Timestamptz(3)
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  workspaces       Workspace[]
+  trips            Trip[]
+  visitedCountries VisitedCountry[]
+
+  @@map("users")
 }
 
+/// The space a person's trips live in. Everyone gets one of their own; `userId` is its owner.
+model Workspace {
+  workspaceId String    @id @default(dbgenerated("gen_random_uuid()")) @map("workspace_id") @db.Uuid
+  userId      String    @unique @map("user_id") @db.Uuid
+  name        String
+  createdAt   DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  user             User             @relation(fields: [userId], references: [userId], onDelete: Restrict)
+  trips            Trip[]
+  visitedCountries VisitedCountry[]
+
+  @@map("workspaces")
+}
+
+/// A saved trip. The columns are what lists filter and sort on; the plan itself is a document in `planDraft`.
 model Trip {
-  id           String   @id @default(uuid())
-  userId       String
-  name         String
-  state        String   // Misal: "PLANNED", "DRAFT", "COMPLETED"
-  role         String   // Misal: "organizer", "member"
-  countryCodes String[] // PostgreSQL mendukung Array String
-  
-  // Data JSON kompleks
-  draft        Json     
-  itinerary    Json?    
-  today        Json?    // TripActivity[] yang diserialisasi ke JSON
-  
-  // Kolom opsional tambahan (untuk fitur masa depan yang tercantum di Trip.ts)
-  violations   Int?
-  offline      String?  // OfflineState
-  spent        Int?
-  
-  updatedAt    DateTime @default(now()) @updatedAt
-  
-  // Relasi
-  user         User     @relation(fields: [userId], references: [id])
+  tripId          String    @id @default(dbgenerated("gen_random_uuid()")) @map("trip_id") @db.Uuid
+  workspaceId     String    @map("workspace_id") @db.Uuid
+  /// The person who saved the trip.
+  userId          String    @map("user_id") @db.Uuid
+  name            String
+  state           String
+  role            String
+  origin          String    @default("")
+  destinations    String[]  @default([])
+  startDate       DateTime? @map("start_date") @db.Date
+  endDate         DateTime? @map("end_date") @db.Date
+  countryCodes    String[]  @default([]) @map("country_codes")
+  violationCount  Int?      @map("violation_count")
+  offlineState    String?   @map("offline_state")
+  spentRupiah     BigInt?   @map("spent_rupiah")
+  planDraft       Json      @map("plan_draft")
+  itinerary       Json?
+  todayActivities Json?     @map("today_activities")
+  createdAt       DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Restrict)
+  user      User      @relation(fields: [userId], references: [userId], onDelete: Restrict)
+
+  @@index([workspaceId, state, startDate])
+  @@index([workspaceId, updatedAt(sort: Desc)])
+  @@map("trips")
 }
 
+/// One country a person marked on their travel map. Unmarking sets `deletedAt`; marking again clears it.
+model VisitedCountry {
+  visitedCountryId String    @id @default(dbgenerated("gen_random_uuid()")) @map("visited_country_id") @db.Uuid
+  workspaceId      String    @map("workspace_id") @db.Uuid
+  userId           String    @map("user_id") @db.Uuid
+  countryCode      String    @map("country_code") @db.Char(2)
+  createdAt        DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt        DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt        DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Restrict)
+  user      User      @relation(fields: [userId], references: [userId], onDelete: Restrict)
+
+  @@unique([workspaceId, userId, countryCode])
+  @@map("visited_countries")
+}
+
+/// Answers from outside services, kept until `expiresAt` so the same question is not paid for twice.
+/// Shared by everyone, so it has no workspace.
 model ApiCache {
-  key       String   @id // contoh: "booking:stays:jakarta"
-  data      Json
-  expiresAt DateTime
-  createdAt DateTime @default(now())
+  apiCacheId String   @id @default(dbgenerated("gen_random_uuid()")) @map("api_cache_id") @db.Uuid
+  cacheKey   String   @unique @map("cache_key")
+  payload    Json
+  expiresAt  DateTime @map("expires_at") @db.Timestamptz(3)
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt  DateTime @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  @@index([expiresAt])
+  @@map("api_caches")
 }

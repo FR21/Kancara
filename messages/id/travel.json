@@ -37,8 +37,7 @@
     "saving": "Menyimpan…",
     "saved": "Tersimpan",
     "error": "Gagal menyimpan. Periksa koneksimu.",
-    "retry": "Coba lagi",
-    "loadError": "Jejak perjalananmu tidak bisa dimuat. Muat ulang halaman ini."
+    "retry": "Coba lagi"
   },
   "announce": {
     "marked": "{name} ditandai sudah dikunjungi",

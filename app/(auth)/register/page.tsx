@@ -10,7 +10,8 @@ import LegalModal from "@/components/auth/LegalModal";
 import TextField, { FIELD_LABEL, OptionalMark } from "@/components/auth/TextField";
 import { GHOST_BUTTON } from "@/components/plan/styles";
 import GenderSelect from "@/components/profile/GenderSelect";
-import { saveProfileDetails, signInWithGoogle, startSession } from "@/lib/auth/client";
+import { saveProfileDetails } from "@/lib/api/profile";
+import { signInWithGoogle, startSession } from "@/lib/auth/client";
 import { useAuthFlow } from "@/lib/auth/use-auth-flow";
 import { emailIssue, isPasswordStrong } from "@/lib/auth/validation";
 import { auth } from "@/lib/firebase/client";
@@ -97,20 +98,21 @@ export default function RegisterPage() {
   const createAccount = () =>
     run(async () => {
       const credential = await createUserWithEmailAndPassword(auth, email.trim(), password);
-      let destination = HOME;
+      if (!(await startSession(credential.user))) return null;
+      // The details are saved through the API, which needs the session that was just started. When that fails
+      // the account still exists, so the newcomer lands on their profile to fill them in again.
       try {
-        await saveProfileDetails(credential.user, {
+        await saveProfileDetails({
           name: name.trim(),
-          username: username.trim(),
+          username: username.trim().replace(/^@/, ""),
           nationality: nationality.trim(),
           age,
           gender,
         });
+        return HOME;
       } catch {
-        console.error("Profile details were not saved at sign-up");
-        destination = PROFILE;
+        return PROFILE;
       }
-      return (await startSession(credential.user)) ? destination : null;
     });
 
   const handleSubmit = async (event: FormEvent) => {

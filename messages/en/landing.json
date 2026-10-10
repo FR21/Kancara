@@ -132,36 +132,6 @@
       "checkIn": "I'm With the Group"
     }
   },
-  "faq": {
-    "heading": "Questions people ask",
-    "subtitle": "Short answers about Kancara.",
-    "items": [
-      {
-        "question": "What is Kancara?",
-        "answer": "Kancara is a multi-agent travel companion for groups with different needs, from planning all the way to the trip home. It builds the plan from every member's needs instead of the loudest voice."
-      },
-      {
-        "question": "Who is Kancara for?",
-        "answer": "Anyone who travels with other people: families with elderly relatives or toddlers, groups of friends, and tour leaders. One plan can hold 1 to 50 people."
-      },
-      {
-        "question": "Which needs can be recorded?",
-        "answer": "For each member you can record mobility needs such as a wheelchair, food choices such as halal, vegetarian, or vegan, allergies, rest times, and sensitivity to noise or crowds. A need that is not on the list can be typed in."
-      },
-      {
-        "question": "How does Kancara work?",
-        "answer": "Enter the route, dates, pace, group members, and budget. Captain, Kancara's AI assistant, then builds a day-by-day itinerary and marks which needs are met and which still need a check."
-      },
-      {
-        "question": "Does the budget have to be in Rupiah?",
-        "answer": "No. The budget can be entered in Rupiah or US dollars, and Kancara works out the other amount with the daily exchange rate."
-      },
-      {
-        "question": "Which languages is Kancara available in?",
-        "answer": "Indonesian and English. You can switch at any time with the ID and EN buttons."
-      }
-    ]
-  },
   "cta": {
     "heading": "Ready to Plan a Seamless Group Trip?",
     "description": "Start building your first inclusive group plan in 60 seconds without complex signups.",

@@ -32,7 +32,7 @@
     "size": "Ukuran gambar maksimal 2 MB."
   },
   "ageError": "Isi umur antara 1 dan 120.",
-  "saveDenied": "Gagal menyimpan. Pastikan aturan (Rules) Firestore & Storage di Firebase Console sudah diizinkan untuk Anda.",
   "nameError": "Isi nama, 2 sampai 50 karakter.",
-  "usernameError": "Username 3 sampai 20 karakter: huruf, angka, titik, atau garis bawah."
+  "usernameError": "Username 3 sampai 20 karakter: huruf, angka, titik, atau garis bawah.",
+  "usernameTaken": "Username itu sudah dipakai. Pilih yang lain."
 }

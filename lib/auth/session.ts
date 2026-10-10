@@ -14,13 +14,14 @@ export async function createSession(idToken: string) {
       expiresIn: EXPIRES_IN,
     });
     
-    // Sinkronkan user ke Neon/Prisma setiap kali mereka login!
+    // Signing in makes sure the person has a row and a workspace in the database. The module is loaded here
+    // because it imports this file in turn.
     const decodedIdToken = await adminAuth.verifyIdToken(idToken);
-    const { prisma } = await import("@/lib/prisma");
-    await prisma.user.upsert({
-      where: { id: decodedIdToken.uid },
-      update: { email: decodedIdToken.email },
-      create: { id: decodedIdToken.uid, email: decodedIdToken.email },
+    const { ensureAccount } = await import("@/lib/account");
+    await ensureAccount({
+      uid: decodedIdToken.uid,
+      email: decodedIdToken.email,
+      name: typeof decodedIdToken.name === "string" ? decodedIdToken.name : null,
     });
 
     const cookieStore = await cookies();

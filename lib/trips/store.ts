@@ -1,28 +1,31 @@
 import "server-only";
-import type { Itinerary } from "@/lib/api/captain";
-import { verifySession } from "@/lib/auth/session";
-import type { PlanDraft } from "@/lib/plan-draft";
+import { Prisma, type Trip as TripRecord } from "@prisma/client";
+import type { Viewer } from "@/lib/account";
+import { type Itinerary, parseItinerary } from "@/lib/api/captain";
+import { type PlanDraft, EMPTY_DRAFT, hasDateError, hasDates, parsePlanDraft } from "@/lib/plan-draft";
 import { prisma } from "@/lib/prisma";
-import { isSeedTrip, seedTrips } from "./seed";
 import {
   type ActiveTrips,
   type Clock,
   type HistoryTrips,
   type Trip,
+  type TripActivity,
   type TripCard,
   type TripPlanView,
-  type TripRole,
-  type TripState,
-  type OfflineState,
-  type TripActivity,
+  OFFLINE_STATES,
   toTripCard,
+  TRIP_ROLES,
+  TRIP_STATES,
 } from "./trip";
 
-export type Viewer = { uid: string; email: string | null };
 export type HistoryFilter = { query: string; year: number | null };
+export type Page = { limit: number; offset: number };
 export type DeleteResult = "deleted" | "notFound" | "forbidden";
 /** A finished plan to keep. `violations` is left out when the plan was never checked against the group's needs. */
 export type TripInput = { name: string; draft: PlanDraft; violations?: number; itinerary?: Itinerary };
+
+// Every query here is limited to the viewer's workspace and skips rows that were deleted. Lists are paged in the
+// database: a page of identifiers is picked in the order the screen shows them, then those rows are read at once.
 
 const TIME_ZONE = "Asia/Jakarta";
 const DATE_FORMAT = new Intl.DateTimeFormat("en-CA", {
@@ -37,144 +40,184 @@ const TIME_FORMAT = new Intl.DateTimeFormat("en-GB", {
   minute: "2-digit",
   hourCycle: "h23",
 });
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+const NOT_FOUND = "P2025";
 
+/** Times are stored in UTC. Which day it is, and so which trips are under way, is judged in WIB. */
 function readClock(now: Date): Clock {
   return { date: DATE_FORMAT.format(now), time: TIME_FORMAT.format(now) };
 }
 
-function isDemoAccount(email: string | null): boolean {
-  if (!email) return false;
-  const demoEmails = (process.env.DEMO_ACCOUNT_EMAILS ?? "")
-    .split(",")
-    .map((entry) => entry.trim().toLowerCase())
-    .filter(Boolean);
-  return demoEmails.includes(email.toLowerCase());
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === "object" && value !== null && !Array.isArray(value);
 }
 
-async function ensureUser(viewer: Viewer) {
-  return prisma.user.upsert({
-    where: { id: viewer.uid },
-    update: { email: viewer.email },
-    create: { id: viewer.uid, email: viewer.email },
-  });
+function readActivities(value: unknown): TripActivity[] | undefined {
+  if (!Array.isArray(value)) return undefined;
+  return value.flatMap((entry) =>
+    isRecord(entry) && typeof entry.time === "string" && typeof entry.title === "string"
+      ? [{ time: entry.time, title: entry.title }]
+      : [],
+  );
 }
 
-// Map Prisma record ke domain Trip
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-function fromDbTrip(record: any): Trip {
-  return {
-    id: record.id,
-    name: record.name,
-    state: record.state as TripState,
-    role: record.role as TripRole,
-    draft: record.draft as unknown as PlanDraft,
-    updatedAt: record.updatedAt instanceof Date ? record.updatedAt.toISOString() : String(record.updatedAt),
-    countryCodes: record.countryCodes ?? [],
-    violations: record.violations ?? undefined,
-    offline: (record.offline as OfflineState) ?? undefined,
-    spent: record.spent ?? undefined,
-    today: (record.today as TripActivity[]) ?? undefined,
-    itinerary: (record.itinerary as Itinerary) ?? undefined,
-  };
-}
-
-async function fetchTripsOf(viewer: Viewer): Promise<Trip[]> {
-  await ensureUser(viewer);
-  const records = await prisma.trip.findMany({
-    where: { userId: viewer.uid },
-    orderBy: { updatedAt: "desc" },
-  });
-
-  const trips = records.map(fromDbTrip);
-
-  if (isDemoAccount(viewer.email)) {
-    const now = new Date();
-    const clock = readClock(now);
-    const hasAnySeed = trips.some(isSeedTrip);
-    if (!hasAnySeed) {
-      const generated = seedTrips(clock.date, now);
-      return [...trips, ...generated];
-    }
+function readItinerary(value: unknown): Itinerary | undefined {
+  try {
+    return parseItinerary(value);
+  } catch {
+    return undefined;
   }
-
-  return trips;
 }
 
-export async function currentViewer(): Promise<Viewer | null> {
-  const session = await verifySession();
-  if (!session) return null;
-  return { uid: session.uid, email: session.email ?? null };
-}
-
-function byStartDate(first: TripCard, second: TripCard): number {
-  if (first.startDate === second.startDate) return 0;
-  if (first.startDate === "") return 1;
-  if (second.startDate === "") return -1;
-  return first.startDate < second.startDate ? -1 : 1;
-}
-
-export async function listActiveTrips(viewer: Viewer): Promise<ActiveTrips> {
-  const clock = readClock(new Date());
-  const trips = await fetchTripsOf(viewer);
-  const cards = trips.map((trip) => toTripCard(trip, clock));
-  const updatedAt = new Map(trips.map((trip) => [trip.id, trip.updatedAt]));
-  const lastChanged = (card: TripCard) => updatedAt.get(card.id) ?? "";
-
+// The plan document goes through the same parser as a plan arriving from the browser, so a trip saved by an
+// older version of the app still has every field the screens read.
+function toTrip(record: TripRecord): Trip {
+  const stored = isRecord(record.planDraft) ? record.planDraft : {};
+  const draft = parsePlanDraft(stored) ?? EMPTY_DRAFT;
   return {
-    ongoing: cards.filter((card) => card.status === "ongoing").sort(byStartDate),
-    upcoming: cards.filter((card) => card.status === "upcoming").sort(byStartDate),
-    drafts: cards
-      .filter((card) => card.status === "draft")
-      .sort((first, second) => lastChanged(second).localeCompare(lastChanged(first))),
+    id: record.tripId,
+    name: record.name,
+    state: TRIP_STATES.find((state) => state === record.state) ?? "DRAFT",
+    role: TRIP_ROLES.find((role) => role === record.role) ?? "member",
+    // A plan without dates is stored with empty strings; they stay empty instead of the "today" a new plan starts with.
+    draft: {
+      ...draft,
+      startDate: typeof stored.startDate === "string" ? stored.startDate : "",
+      endDate: typeof stored.endDate === "string" ? stored.endDate : "",
+    },
+    updatedAt: record.updatedAt.toISOString(),
+    countryCodes: record.countryCodes,
+    violations: record.violationCount ?? undefined,
+    offline: OFFLINE_STATES.find((state) => state === record.offlineState),
+    spent: record.spentRupiah === null ? undefined : Number(record.spentRupiah),
+    today: readActivities(record.todayActivities),
+    itinerary: readItinerary(record.itinerary),
   };
 }
 
-export async function listHistoryTrips(viewer: Viewer, filter: HistoryFilter): Promise<HistoryTrips> {
-  const clock = readClock(new Date());
-  const trips = await fetchTripsOf(viewer);
-  const finished = trips
-    .map((trip) => ({ trip, card: toTripCard(trip, clock) }))
-    .filter(({ card }) => card.status === "completed")
-    .map(({ trip, card }) => ({ trip, card, endedOn: card.endDate || trip.updatedAt.slice(0, 10) }))
-    .sort((first, second) => second.endedOn.localeCompare(first.endedOn));
+function toDate(day: string): Date | null {
+  const date = new Date(`${day}T00:00:00Z`);
+  return Number.isNaN(date.getTime()) ? null : date;
+}
 
-  const yearOf = (endedOn: string) => Number(endedOn.slice(0, 4));
-  const needle = filter.query.trim().toLowerCase();
-  const matches = finished.filter(({ card, endedOn }) => {
-    if (filter.year !== null && yearOf(endedOn) !== filter.year) return false;
-    if (needle === "") return true;
-    return [card.name, card.origin, ...card.destinations].some((entry) => entry.toLowerCase().includes(needle));
-  });
-
+/** The columns lists filter and sort on, taken from the plan so the two can never disagree. */
+function columnsOf(draft: PlanDraft) {
+  const dated = hasDates(draft) && !hasDateError(draft);
+  const startDate = dated ? toDate(draft.startDate) : null;
+  const endDate = dated ? toDate(draft.endDate) : null;
   return {
-    trips: matches.map(({ card }) => card),
-    total: finished.length,
-    countries: new Set(finished.flatMap(({ trip }) => trip.countryCodes)).size,
-    years: [...new Set(finished.map(({ endedOn }) => yearOf(endedOn)))],
+    origin: draft.origin.trim(),
+    destinations: draft.destinations,
+    startDate: startDate && endDate ? startDate : null,
+    endDate: startDate && endDate ? endDate : null,
+    planDraft: draft as unknown as Prisma.InputJsonValue,
+  };
+}
+
+/** The rows for a page of identifiers, in the order the identifiers came in. */
+async function readInOrder(viewer: Viewer, ids: string[]): Promise<Trip[]> {
+  if (ids.length === 0) return [];
+  const records = await prisma.trip.findMany({
+    where: { tripId: { in: ids }, workspaceId: viewer.workspaceId, deletedAt: null },
+  });
+  const byId = new Map(records.map((record) => [record.tripId, toTrip(record)]));
+  return ids.flatMap((id) => byId.get(id) ?? []);
+}
+
+// One more row than the page is asked for; when it comes back there is a next page.
+function nextOffsetOf(found: number, page: Page): number | null {
+  return found > page.limit ? page.offset + page.limit : null;
+}
+
+const finished = (today: string) =>
+  Prisma.sql`("state" = 'COMPLETED' OR ("state" = 'PLANNED' AND "end_date" < ${today}::date))`;
+
+/** Trips that are not over: under way first, then the ones ahead by start date, then drafts by last change. */
+export async function listActiveTrips(viewer: Viewer, page: Page): Promise<ActiveTrips> {
+  const clock = readClock(new Date());
+  const rows = await prisma.$queryRaw<{ trip_id: string }[]>`
+    SELECT "trip_id"
+    FROM "trips"
+    WHERE "workspace_id" = ${viewer.workspaceId}::uuid
+      AND "deleted_at" IS NULL
+      AND ("state" = 'DRAFT' OR ("state" = 'PLANNED' AND ("start_date" IS NULL OR "end_date" >= ${clock.date}::date)))
+    ORDER BY
+      CASE
+        WHEN "state" = 'DRAFT' THEN 2
+        WHEN "start_date" IS NULL OR "start_date" > ${clock.date}::date THEN 1
+        ELSE 0
+      END,
+      CASE WHEN "state" = 'DRAFT' THEN NULL ELSE "start_date" END ASC NULLS LAST,
+      "updated_at" DESC,
+      "trip_id"
+    LIMIT ${page.limit + 1} OFFSET ${page.offset}`;
+
+  const trips = await readInOrder(
+    viewer,
+    rows.slice(0, page.limit).map((row) => row.trip_id),
+  );
+  const cards = trips.map((trip) => toTripCard(trip, clock));
+  return {
+    ongoing: cards.filter((card) => card.status === "ongoing"),
+    upcoming: cards.filter((card) => card.status === "upcoming"),
+    drafts: cards.filter((card) => card.status === "draft"),
+    nextOffset: nextOffsetOf(rows.length, page),
+  };
+}
+
+/** Finished trips, newest first, with totals that cover all of them and not just the page or the filter. */
+export async function listHistoryTrips(viewer: Viewer, filter: HistoryFilter, page: Page): Promise<HistoryTrips> {
+  const clock = readClock(new Date());
+  const mine = Prisma.sql`"workspace_id" = ${viewer.workspaceId}::uuid AND "deleted_at" IS NULL AND ${finished(clock.date)}`;
+  const endedOn = Prisma.sql`coalesce("end_date", ("updated_at" AT TIME ZONE 'UTC')::date)`;
+  const needle = `%${filter.query.trim().replace(/[\\%_]/g, "\\$&")}%`;
+  const matchesYear =
+    filter.year === null ? Prisma.sql`TRUE` : Prisma.sql`extract(year FROM ${endedOn}) = ${filter.year}`;
+  const matchesQuery =
+    filter.query.trim() === ""
+      ? Prisma.sql`TRUE`
+      : Prisma.sql`("name" ILIKE ${needle} OR "origin" ILIKE ${needle} OR EXISTS (
+          SELECT 1 FROM unnest("destinations") AS destination WHERE destination ILIKE ${needle}
+        ))`;
+
+  const [rows, totals] = await Promise.all([
+    prisma.$queryRaw<{ trip_id: string }[]>`
+      SELECT "trip_id"
+      FROM "trips"
+      WHERE ${mine} AND ${matchesYear} AND ${matchesQuery}
+      ORDER BY ${endedOn} DESC, "trip_id"
+      LIMIT ${page.limit + 1} OFFSET ${page.offset}`,
+    prisma.$queryRaw<{ total: number; countries: number; years: number[] | null }[]>`
+      SELECT
+        count(*)::int AS "total",
+        (SELECT count(DISTINCT code)::int FROM "trips", unnest("country_codes") AS code WHERE ${mine}) AS "countries",
+        array_agg(DISTINCT extract(year FROM ${endedOn})::int) AS "years"
+      FROM "trips"
+      WHERE ${mine}`,
+  ]);
+
+  const trips = await readInOrder(
+    viewer,
+    rows.slice(0, page.limit).map((row) => row.trip_id),
+  );
+  return {
+    trips: trips.map((trip) => toTripCard(trip, clock)),
+    total: totals[0]?.total ?? 0,
+    countries: totals[0]?.countries ?? 0,
+    years: [...(totals[0]?.years ?? [])].sort((first, second) => second - first),
+    nextOffset: nextOffsetOf(rows.length, page),
   };
 }
 
 /** A trip the viewer can see, with its itinerary when one was saved. Null when there is no such trip. */
 export async function getTripPlan(viewer: Viewer, id: string): Promise<TripPlanView | null> {
-  if (isDemoAccount(viewer.email)) {
-    const clock = readClock(new Date());
-    const demoTrip = seedTrips(clock.date, new Date()).find((t) => t.id === id);
-    if (demoTrip) {
-      return {
-        card: toTripCard(demoTrip, clock),
-        draft: demoTrip.draft,
-        itinerary: demoTrip.itinerary ?? null,
-        today: clock.date,
-      };
-    }
-  }
-
+  if (!UUID.test(id)) return null;
   const record = await prisma.trip.findFirst({
-    where: { id, userId: viewer.uid },
+    where: { tripId: id, workspaceId: viewer.workspaceId, deletedAt: null },
   });
   if (!record) return null;
 
-  const trip = fromDbTrip(record);
+  const trip = toTrip(record);
   const clock = readClock(new Date());
   return {
     card: toTripCard(trip, clock),
@@ -186,98 +229,86 @@ export async function getTripPlan(viewer: Viewer, id: string): Promise<TripPlanV
 
 /** Saves a finished plan as a trip the viewer organizes. */
 export async function createTrip(viewer: Viewer, input: TripInput): Promise<TripCard> {
-  await ensureUser(viewer);
-  const now = new Date();
-
   const created = await prisma.trip.create({
     data: {
-      userId: viewer.uid,
+      workspaceId: viewer.workspaceId,
+      userId: viewer.userId,
       name: input.name,
       state: "PLANNED",
       role: "organizer",
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      draft: input.draft as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      itinerary: (input.itinerary ?? null) as any,
-      violations: input.violations,
-      countryCodes: [],
+      ...columnsOf(input.draft),
+      itinerary: input.itinerary as unknown as Prisma.InputJsonValue | undefined,
+      violationCount: input.violations,
     },
   });
-
-  const trip = fromDbTrip(created);
-  return toTripCard(trip, readClock(now));
+  return toTripCard(toTrip(created), readClock(new Date()));
 }
 
 /** Replaces a saved trip's plan, for example after it is generated again. Null when the viewer cannot change it. */
 export async function updateTrip(viewer: Viewer, id: string, input: TripInput): Promise<TripCard | null> {
-  await ensureUser(viewer);
-
-  const existing = await prisma.trip.findFirst({
-    where: { id, userId: viewer.uid },
-  });
-  if (!existing || existing.role !== "organizer") return null;
-
-  const updated = await prisma.trip.update({
-    where: { id },
-    data: {
-      name: input.name,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      draft: input.draft as any,
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      itinerary: (input.itinerary ?? null) as any,
-      violations: input.violations ?? null,
-      updatedAt: new Date(),
-    },
-  });
-
-  const trip = fromDbTrip(updated);
-  return toTripCard(trip, readClock(new Date()));
+  if (!UUID.test(id)) return null;
+  try {
+    const updated = await prisma.trip.update({
+      where: { tripId: id, workspaceId: viewer.workspaceId, deletedAt: null, role: "organizer" },
+      data: {
+        name: input.name,
+        ...columnsOf(input.draft),
+        itinerary: (input.itinerary as unknown as Prisma.InputJsonValue | undefined) ?? Prisma.DbNull,
+        violationCount: input.violations ?? null,
+      },
+    });
+    return toTripCard(toTrip(updated), readClock(new Date()));
+  } catch (caught) {
+    if (caught instanceof Prisma.PrismaClientKnownRequestError && caught.code === NOT_FOUND) return null;
+    throw caught;
+  }
 }
 
 /** Copies a trip into a new draft the viewer organizes: same members, needs, and settings, no dates. */
 export async function duplicateTrip(viewer: Viewer, id: string, name: string): Promise<TripCard | null> {
-  await ensureUser(viewer);
+  if (!UUID.test(id)) return null;
+  // Reading the original and writing the copy happen in one transaction, so the copy is never made of half a trip.
+  const created = await prisma.$transaction(async (transaction) => {
+    const source = await transaction.trip.findFirst({
+      where: { tripId: id, workspaceId: viewer.workspaceId, deletedAt: null },
+    });
+    if (!source) return null;
 
-  const sourceRecord = await prisma.trip.findFirst({
-    where: { id, userId: viewer.uid },
+    const { draft, countryCodes } = toTrip(source);
+    return transaction.trip.create({
+      data: {
+        workspaceId: viewer.workspaceId,
+        userId: viewer.userId,
+        name,
+        state: "DRAFT",
+        role: "organizer",
+        countryCodes,
+        ...columnsOf({
+          ...draft,
+          startDate: "",
+          endDate: "",
+          notes: "",
+          members: draft.members.map((member) => ({ ...member, id: crypto.randomUUID() })),
+        }),
+      },
+    });
   });
-  if (!sourceRecord) return null;
-
-  const source = fromDbTrip(sourceRecord);
-  const draft = structuredClone(source.draft);
-  const now = new Date();
-
-  const created = await prisma.trip.create({
-    data: {
-      userId: viewer.uid,
-      name,
-      state: "DRAFT",
-      role: "organizer",
-      draft: {
-        ...draft,
-        startDate: "",
-        endDate: "",
-        notes: "",
-        members: draft.members.map((member) => ({ ...member, id: crypto.randomUUID() })),
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      } as any,
-      countryCodes: source.countryCodes,
-    },
-  });
-
-  const copy = fromDbTrip(created);
-  return toTripCard(copy, readClock(now));
+  return created ? toTripCard(toTrip(created), readClock(new Date())) : null;
 }
 
+/** Deleting a trip hides it: the row stays, marked with the time it was deleted. */
 export async function deleteTrip(viewer: Viewer, id: string): Promise<DeleteResult> {
+  if (!UUID.test(id)) return "notFound";
   const existing = await prisma.trip.findFirst({
-    where: { id, userId: viewer.uid },
+    where: { tripId: id, workspaceId: viewer.workspaceId, deletedAt: null },
+    select: { role: true },
   });
   if (!existing) return "notFound";
   if (existing.role !== "organizer") return "forbidden";
 
-  await prisma.trip.delete({
-    where: { id },
+  await prisma.trip.updateMany({
+    where: { tripId: id, workspaceId: viewer.workspaceId, deletedAt: null },
+    data: { deletedAt: new Date() },
   });
   return "deleted";
 }

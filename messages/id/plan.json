@@ -3,7 +3,15 @@
   "start": {
     "title": "Pergi ke mana kita hari ini?",
     "form": "Isi manual, satu per satu",
-    "lead": "Ceritakan saja seperti ke teman. Captain menanyakan sisanya, lalu menyiapkan boarding pass dan rencana per hari."
+    "lead": "Ceritakan saja seperti ke teman. Captain menanyakan sisanya, lalu menyiapkan boarding pass dan rencana per hari.",
+    "greet": "Sapa Captain",
+    "greetings": [
+      "Halo, aku Captain!",
+      "Siapa saja yang ikut kali ini?",
+      "Ada yang pakai kursi roda? Catat saja.",
+      "Halal, vegetarian, alergi: semua kuhitung.",
+      "Tidak ada yang tertinggal."
+    ]
   },
   "stages": {
     "label": "Tahap rencana",

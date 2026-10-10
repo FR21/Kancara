@@ -9,24 +9,20 @@ import { useMessages } from "@/lib/use-messages";
 
 type HeroCopyProps = {
   text: Messages["landing"]["hero"];
-  layer: "headline" | "actions";
 };
 
-// How far the headline drops for every pixel scrolled while the hero is pinned.
-const HEADLINE_SINK = 0.5;
+// The hero stays pinned for the first half screen of scrolling. Over that stretch the trees, which start low
+// enough to leave the headline and its buttons in open sky, rise to their full height while the copy sinks to
+// meet them. Both distances are in svh, the unit the hero itself is sized in.
+const TREE_DROP_SVH = 20;
+const COPY_SINK_SVH = 25;
+const COPY_FADE_PX = 600;
 
-function HeroCopy({ text, layer }: HeroCopyProps) {
-  const isHeadline = layer === "headline";
-  const Heading = isHeadline ? "h1" : "div";
-  const headlineVisibility = isHeadline ? "" : "invisible";
-  const actionsVisibility = isHeadline ? "invisible" : "pointer-events-auto";
-
+function HeroCopy({ text }: HeroCopyProps) {
   return (
     <div className="absolute inset-0 flex flex-col items-center justify-center">
       <div className="mx-auto w-full max-w-3xl px-4 pt-16 text-center sm:px-6">
-        <Heading
-          className={`font-heading text-5xl leading-[1.05] font-extrabold tracking-tight text-balance text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] motion-safe:animate-rise-in sm:text-6xl lg:text-7xl ${headlineVisibility}`}
-        >
+        <h1 className="font-heading text-5xl leading-[1.05] font-extrabold tracking-tight text-balance text-white drop-shadow-[0_4px_24px_rgba(0,0,0,0.6)] motion-safe:animate-rise-in sm:text-6xl lg:text-7xl">
           {text.headlinePart1} <br />
           <span className="text-accent-300">
             {text.headlinePart2}{" "}
@@ -54,17 +50,13 @@ function HeroCopy({ text, layer }: HeroCopyProps) {
               {text.headlineEnd}
             </span>
           </span>
-        </Heading>
+        </h1>
 
-        <p
-          className={`mx-auto mt-6 max-w-xl text-body font-medium text-pretty text-white/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] motion-safe:animate-rise-in motion-safe:[animation-delay:100ms] sm:mt-8 sm:text-h3 ${headlineVisibility}`}
-        >
+        <p className="mx-auto mt-6 max-w-xl text-body font-medium text-pretty text-white/90 drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] motion-safe:animate-rise-in motion-safe:[animation-delay:100ms] sm:mt-8 sm:text-h3">
           {text.description}
         </p>
 
-        <div
-          className={`mt-8 flex flex-col items-center justify-center gap-2 motion-safe:animate-rise-in motion-safe:[animation-delay:200ms] sm:mt-10 sm:flex-row sm:gap-6 ${actionsVisibility}`}
-        >
+        <div className="pointer-events-auto mt-8 flex flex-col items-center justify-center gap-2 motion-safe:animate-rise-in motion-safe:[animation-delay:200ms] sm:mt-10 sm:flex-row sm:gap-6">
           <a
             href="/plan"
             className="group inline-flex h-14 items-center justify-center gap-2 rounded-full bg-accent-300 px-8 text-label-lg font-bold text-neutral-950 shadow-xl transition-[background-color,scale] duration-150 ease-out hover:bg-accent-200 active:scale-[0.97]"
@@ -88,9 +80,7 @@ function HeroCopy({ text, layer }: HeroCopyProps) {
           </a>
         </div>
 
-        <p
-          className={`mt-6 text-caption font-medium text-white/80 drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] motion-safe:animate-rise-in motion-safe:[animation-delay:300ms] ${isHeadline ? "invisible" : ""}`}
-        >
+        <p className="mt-6 text-caption font-medium text-white/80 drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] motion-safe:animate-rise-in motion-safe:[animation-delay:300ms]">
           {text.note}
         </p>
       </div>
@@ -105,17 +95,16 @@ export default function HeroSection() {
 
   useEffect(() => {
     const handleScroll = () => {
-      // The hero stays pinned for half a screen of scrolling; `pinned` stops growing after that.
-      setScroll({ y: window.scrollY, pinned: Math.min(window.scrollY, window.innerHeight / 2) });
+      // `pinned` runs from 0 to 1 while the hero is pinned, then stays at 1.
+      setScroll({ y: window.scrollY, pinned: Math.min(window.scrollY / (window.innerHeight / 2), 1) });
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  const textOpacity = Math.max(1 - scroll.y / 600, 0);
-  const fade = { opacity: textOpacity, visibility: textOpacity === 0 ? ("hidden" as const) : undefined };
-  // The treeline rises in front of the headline. Sinking the headline to meet it lets the trees cover every line.
-  const sink = reduceMotion ? 0 : scroll.pinned * HEADLINE_SINK;
+  // With reduced motion nothing travels: the trees stay low and the copy only fades.
+  const travelled = reduceMotion ? 0 : scroll.pinned;
+  const copyOpacity = Math.max(1 - scroll.y / COPY_FADE_PX, 0);
 
   return (
     <section className="relative w-full h-[150svh]">
@@ -132,18 +121,22 @@ export default function HeroSection() {
         <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-black/30" />
       </div>
 
+      {/* The trees ignore the pointer, so a button they have risen over can still be pressed. */}
       <div className="absolute inset-0 w-full h-full z-10 overflow-hidden pointer-events-none">
-        <Image
-          src="/images/hero/Grass.webp"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover scale-[1.05] -translate-x-[2%] brightness-70"
-          style={{
-            objectPosition: "60% 95%"
-          }}
-        />
+        <div className="absolute inset-0" style={{ translate: `0 ${TREE_DROP_SVH * (1 - travelled)}svh` }}>
+          <Image
+            src="/images/hero/Treeline.webp"
+            alt=""
+            fill
+            priority
+            // The picture fills a box one and a half screens tall, so on a phone it is drawn far wider than the screen.
+            sizes="max(100vw, 200vh)"
+            className="object-cover scale-[1.05] translate-x-[-2%] brightness-70"
+            style={{
+              objectPosition: "60% 95%"
+            }}
+          />
+        </div>
       </div>
 
       <div
@@ -168,13 +161,13 @@ export default function HeroSection() {
 
       <div
         className="pointer-events-none sticky top-0 z-5 -mt-[100svh] h-svh w-full"
-        style={{ ...fade, translate: `0 ${sink}px` }}
+        style={{
+          opacity: copyOpacity,
+          visibility: copyOpacity === 0 ? "hidden" : undefined,
+          translate: `0 ${COPY_SINK_SVH * travelled}svh`,
+        }}
       >
-        <HeroCopy text={t.hero} layer="headline" />
-      </div>
-
-      <div className="pointer-events-none sticky top-0 z-20 -mt-[100svh] h-svh w-full" style={fade}>
-        <HeroCopy text={t.hero} layer="actions" />
+        <HeroCopy text={t.hero} />
       </div>
 
     </section>

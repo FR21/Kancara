@@ -1,4 +1,5 @@
 import "server-only";
+import type { Prisma } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
 const RAPIDAPI_KEY = process.env.RAPIDAPI_KEY;
@@ -42,6 +43,28 @@ export type AttractionDeal = {
   description?: string;
 };
 
+// The parts of each outside answer that are read here. Both services send far more.
+type BookingStay = {
+  name: string;
+  priceBreakdown?: { grossPrice?: { value?: number; currency?: string } };
+  reviewScore?: number;
+  wishlistName?: string;
+  photoUrls?: string[];
+};
+
+type TripAdvisorPlace = {
+  name: string;
+  title: string;
+  priceTag?: string;
+  price_level?: string;
+  rating?: number | string;
+  averageRating?: number | string;
+  establishmentTypeAndCuisineTags?: string[];
+  address?: string;
+  heroImgUrl?: string;
+  image?: string;
+};
+
 function normalizeKey(str: string): string {
   return str.trim().toLowerCase().replace(/[^a-z0-9]+/g, "-");
 }
@@ -57,11 +80,11 @@ export async function getCachedOrFetch<T>(
 ): Promise<T> {
   try {
     const cached = await prisma.apiCache.findUnique({
-      where: { key: cacheKey },
+      where: { cacheKey },
     });
 
     if (cached && cached.expiresAt > new Date()) {
-      return cached.data as T;
+      return cached.payload as T;
     }
   } catch (err) {
     console.warn("ApiCache lookup failed, proceeding to live fetch:", err);
@@ -74,10 +97,11 @@ export async function getCachedOrFetch<T>(
   if (Array.isArray(liveData) && liveData.length > 0) {
     try {
       const expiresAt = new Date(Date.now() + ttlSeconds * 1000);
+      const payload = liveData as unknown as Prisma.InputJsonValue;
       await prisma.apiCache.upsert({
-        where: { key: cacheKey },
-        update: { data: liveData as any, expiresAt },
-        create: { key: cacheKey, data: liveData as any, expiresAt },
+        where: { cacheKey },
+        update: { payload, expiresAt },
+        create: { cacheKey, payload, expiresAt },
       });
     } catch (saveErr) {
       console.warn("Gagal menyimpan ke ApiCache Neon:", saveErr);
@@ -137,24 +161,24 @@ export async function searchBookingHotels(
 
       if (!searchRes.ok) return [];
       const searchJson = await searchRes.json();
-      let stays = searchJson?.data || [];
+      let stays: BookingStay[] = searchJson?.data || [];
 
       // Sort / filter sesuai budgetTier jika ada
       if (budgetTier === "budget") {
-        stays = [...stays].sort((a: any, b: any) => {
+        stays = [...stays].sort((a, b) => {
           const pa = a.priceBreakdown?.grossPrice?.value || 9999999;
           const pb = b.priceBreakdown?.grossPrice?.value || 9999999;
           return pa - pb;
         });
       } else if (budgetTier === "luxury") {
-        stays = [...stays].sort((a: any, b: any) => {
+        stays = [...stays].sort((a, b) => {
           const pa = a.priceBreakdown?.grossPrice?.value || 0;
           const pb = b.priceBreakdown?.grossPrice?.value || 0;
           return pb - pa;
         });
       }
 
-      return stays.slice(0, 5).map((h: any): HotelDeal => {
+      return stays.slice(0, 5).map((h): HotelDeal => {
         const grossPrice = h.priceBreakdown?.grossPrice?.value;
         const currency = h.priceBreakdown?.grossPrice?.currency || "IDR";
         const formatted = grossPrice
@@ -221,7 +245,7 @@ export async function searchTripAdvisorRestaurants(
 
       if (!Array.isArray(rawList)) return [];
 
-      return rawList.slice(0, 5).map((r: any): RestaurantDeal => {
+      return rawList.slice(0, 5).map((r: TripAdvisorPlace): RestaurantDeal => {
         return {
           name: r.name || r.title,
           priceRange: r.priceTag || r.price_level || undefined,
