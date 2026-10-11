@@ -351,6 +351,14 @@ export default function SavedMembersWorkspace() {
           </button>
           <button
             type="button"
+            aria-pressed={filterGroup === "toddler"}
+            onClick={() => setFilterGroup("toddler")}
+            className={choiceClass(filterGroup === "toddler")}
+          >
+            {planText.ageGroups.toddler}
+          </button>
+          <button
+            type="button"
             aria-pressed={filterGroup === "hasNeeds"}
             onClick={() => setFilterGroup("hasNeeds")}
             className={choiceClass(filterGroup === "hasNeeds")}
