@@ -1,8 +1,10 @@
 "use client";
 
-import { Plus, X } from "lucide-react";
+import { ArrowRight, Plus, Users, X } from "lucide-react";
+import Link from "next/link";
 import { type Dispatch, useEffect, useRef, useState } from "react";
 import type { Messages } from "@/lib/messages";
+import { useLocale } from "@/lib/use-locale";
 import {
   type AgeGroup,
   type Member,
@@ -17,6 +19,7 @@ import {
 import { revealInScroller } from "@/lib/reveal-in-scroller";
 import MemberAvatar from "./MemberAvatar";
 import MemberEditor from "./MemberEditor";
+import SavedProfilesPickerModal from "./SavedProfilesPickerModal";
 import { FIELD_LABEL } from "./styles";
 
 type CrewGridProps = {
@@ -44,6 +47,8 @@ function hasDetails(member: Member): boolean {
 }
 
 export default function CrewGrid({ draft, dispatch, text, selectedId, inlinePanel, onSelect }: CrewGridProps) {
+  const locale = useLocale();
+  const [pickerOpen, setPickerOpen] = useState(false);
   const [confirmingId, setConfirmingId] = useState<string | null>(null);
   const confirmTimerRef = useRef<number | null>(null);
   const full = draft.members.length >= MAX_MEMBERS;
@@ -83,8 +88,44 @@ export default function CrewGrid({ draft, dispatch, text, selectedId, inlinePane
   return (
     <div className="space-y-6">
       <fieldset>
-        <legend className={FIELD_LABEL}>{text.crew.addLegend}</legend>
-        <div className="mt-2 grid grid-cols-2 gap-2">
+        <div className="flex items-center justify-between">
+          <legend className={FIELD_LABEL}>{text.crew.addLegend}</legend>
+        </div>
+
+        <button
+          type="button"
+          onClick={() => setPickerOpen(true)}
+          className="mt-2 flex w-full cursor-pointer items-center justify-between rounded-2xl border border-primary/40 bg-primary-subtle/50 p-3 text-label text-text transition-[background-color,border-color,transform] duration-150 ease-out hover:border-primary hover:bg-primary-subtle active:scale-[0.98]"
+        >
+          <span className="flex items-center gap-3">
+            <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary">
+              <Users className="size-4" aria-hidden="true" />
+            </span>
+            <span className="text-left">
+              <span className="block text-label font-bold text-text">
+                {locale === "id" ? "Pilih dari Profil Tersimpan" : "Select from Saved Profiles"}
+              </span>
+              <span className="block text-caption text-text-muted">
+                {locale === "id"
+                  ? "Gunakan data kebutuhan anggota tanpa wawancara ulang"
+                  : "Load members' saved needs without repeating the interview"}
+              </span>
+            </span>
+          </span>
+          <ArrowRight className="size-4 text-primary" aria-hidden="true" />
+        </button>
+
+        <SavedProfilesPickerModal
+          open={pickerOpen}
+          currentMembers={draft.members}
+          onClose={() => setPickerOpen(false)}
+          onAddMember={(member) => {
+            dispatch({ type: "addMember", member });
+            if (!inlinePanel) onSelect(member.id);
+          }}
+        />
+
+        <div className="mt-3 grid grid-cols-2 gap-2">
           {AGE_GROUPS.map((ageGroup) => (
             <button
               key={ageGroup}
