@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Check, Globe, Search } from "lucide-react";
+import { ArrowRight, Check, Globe, Search, Users } from "lucide-react";
 import Link from "next/link";
 import { choiceClass, INPUT } from "@/components/plan/styles";
 import type { Messages } from "@/lib/messages";
@@ -38,19 +38,32 @@ export default function HistoryTools({
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1">
+      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <p className="text-label-lg text-text tabular-nums">{summary.join(" · ")}</p>
-        <Link
-          href="/profile/map"
-          className="group inline-flex min-h-11 items-center gap-2 rounded-sm text-label text-primary underline-offset-4 hover:underline"
-        >
-          <Globe className="size-4" aria-hidden="true" />
-          {mapLabel}
-          <ArrowRight
-            className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1"
-            aria-hidden="true"
-          />
-        </Link>
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
+          <Link
+            href="/profile/saved-members"
+            className="group inline-flex min-h-11 items-center gap-1.5 rounded-sm text-label text-primary underline-offset-4 hover:underline"
+          >
+            <Users className="size-4" aria-hidden="true" />
+            {locale === "id" ? "Profil Tersimpan" : "Saved Profiles"}
+            <ArrowRight
+              className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1"
+              aria-hidden="true"
+            />
+          </Link>
+          <Link
+            href="/profile/map"
+            className="group inline-flex min-h-11 items-center gap-1.5 rounded-sm text-label text-primary underline-offset-4 hover:underline"
+          >
+            <Globe className="size-4" aria-hidden="true" />
+            {mapLabel}
+            <ArrowRight
+              className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1"
+              aria-hidden="true"
+            />
+          </Link>
+        </div>
       </div>
 
       <div className="flex flex-col gap-3">

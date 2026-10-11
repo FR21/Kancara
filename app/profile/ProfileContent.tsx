@@ -1,7 +1,7 @@
 "use client";
 
 import { signOut } from "firebase/auth";
-import { ArrowRight, Camera, Check, CircleAlert, Globe, Loader2, Lock, LogOut } from "lucide-react";
+import { ArrowRight, Camera, Check, CircleAlert, Globe, Loader2, Lock, LogOut, Users } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
@@ -14,6 +14,7 @@ import { clearOfflineCaches } from "@/lib/offline";
 import { auth } from "@/lib/firebase/client";
 import type { Profile } from "@/lib/profile";
 import { isAgeValid, isUsernameValid, MAX_AGE, MAX_PHOTO_BYTES } from "@/lib/profile-fields";
+import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
 
 type ProfileContentProps = {
@@ -39,6 +40,7 @@ const WRONG_TYPE = 415;
 export default function ProfileContent({ email, profile }: ProfileContentProps) {
   const t = useMessages("profile");
   const travel = useMessages("travel");
+  const locale = useLocale();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -230,6 +232,17 @@ export default function ProfileContent({ email, profile }: ProfileContentProps) 
               aria-hidden="true"
             />
             {travel.open}
+            <ArrowRight
+              className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1"
+              aria-hidden="true"
+            />
+          </Link>
+          <Link href="/profile/saved-members" className={`group ${OUTLINE_BUTTON} mt-3 w-full max-w-xs`}>
+            <Users
+              className="size-4 text-primary transition-transform duration-200 ease-out group-hover:scale-110"
+              aria-hidden="true"
+            />
+            {locale === "id" ? "Profil Anggota Rombongan" : "Saved Member Profiles"}
             <ArrowRight
               className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1"
               aria-hidden="true"

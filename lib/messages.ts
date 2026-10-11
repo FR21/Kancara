@@ -33,6 +33,8 @@ import enSplitBill from "@/messages/en/splitBill.json";
 import idSplitBill from "@/messages/id/splitBill.json";
 import enPacking from "@/messages/en/packing.json";
 import idPacking from "@/messages/id/packing.json";
+import enSavedProfiles from "@/messages/en/savedProfiles.json";
+import idSavedProfiles from "@/messages/id/savedProfiles.json";
 import type { Locale } from "./locale";
 
 // Indonesian is the default locale, so its files define the expected keys.
@@ -51,6 +53,7 @@ const id = {
   legal: idLegal,
   splitBill: idSplitBill,
   packing: idPacking,
+  savedProfiles: idSavedProfiles,
 };
 
 export type Messages = typeof id;
@@ -72,6 +75,7 @@ const en = {
   legal: enLegal,
   splitBill: enSplitBill,
   packing: enPacking,
+  savedProfiles: enSavedProfiles,
 } satisfies Messages;
 
 export const MESSAGES: Record<Locale, Messages> = { id, en };

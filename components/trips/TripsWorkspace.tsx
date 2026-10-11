@@ -1,6 +1,6 @@
 "use client";
 
-import { Loader2, Plus, WifiOff } from "lucide-react";
+import { Loader2, Plus, Users, WifiOff } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import ErrorAlert from "@/components/plan/ErrorAlert";
@@ -8,6 +8,7 @@ import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
 import { trips } from "@/lib/api/trips";
 import { fillTemplate } from "@/lib/plan-draft";
 import type { ActiveTrips, HistoryTrips, TripCard } from "@/lib/trips/trip";
+import { useLocale } from "@/lib/use-locale";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { useMessages } from "@/lib/use-messages";
 import { useOnline } from "@/lib/use-online";
@@ -38,6 +39,7 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
   const text = useMessages("trips");
   const travel = useMessages("travel");
   const needLabels = useMessages("plan").needs;
+  const locale = useLocale();
   const online = useOnline();
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
   const [tab, setTab] = useState<TripTab>(initialTab);
@@ -267,10 +269,16 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
         <h1 ref={headingRef} tabIndex={-1} className="text-h2 text-text outline-none sm:text-h1">
           {text.title}
         </h1>
-        <Link href={PLAN_HREF} className={`${PRIMARY_BUTTON} w-full sm:w-auto`}>
-          <Plus className="size-4" aria-hidden="true" />
-          {text.plan}
-        </Link>
+        <div className="flex flex-wrap items-center gap-3">
+          <Link href="/profile/saved-members" className={OUTLINE_BUTTON}>
+            <Users className="size-4 text-primary" aria-hidden="true" />
+            {locale === "id" ? "Profil Tersimpan" : "Saved Profiles"}
+          </Link>
+          <Link href={PLAN_HREF} className={`${PRIMARY_BUTTON} w-full sm:w-auto`}>
+            <Plus className="size-4" aria-hidden="true" />
+            {text.plan}
+          </Link>
+        </div>
       </header>
 
       <div className="mt-6 motion-safe:animate-message-in motion-safe:[animation-delay:40ms]">

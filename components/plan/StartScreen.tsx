@@ -1,7 +1,9 @@
 "use client";
 
-import { ListChecks } from "lucide-react";
+import { ListChecks, Users } from "lucide-react";
+import Link from "next/link";
 import type { Messages } from "@/lib/messages";
+import { useLocale } from "@/lib/use-locale";
 import CaptainGreeter from "./CaptainGreeter";
 
 type StartScreenProps = {
@@ -10,6 +12,8 @@ type StartScreenProps = {
 };
 
 export default function StartScreen({ text, onStartManual }: StartScreenProps) {
+  const locale = useLocale();
+
   return (
     <div className="relative mx-auto w-full max-w-3xl text-center motion-safe:animate-message-in">
       <div aria-hidden="true" className="parallax-top pointer-events-none absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 opacity-30 blur-[100px] [--parallax-to:10rem]">
@@ -19,7 +23,6 @@ export default function StartScreen({ text, onStartManual }: StartScreenProps) {
       <div className="relative z-10 flex flex-col items-center">
         <CaptainGreeter lines={text.start.greetings} label={text.start.greet} />
 
-
         <h1 tabIndex={-1} className="mt-4 text-4xl font-extrabold tracking-tight text-balance text-text outline-none sm:text-5xl lg:text-6xl">
           {text.start.title}
         </h1>
@@ -27,7 +30,7 @@ export default function StartScreen({ text, onStartManual }: StartScreenProps) {
           {text.start.lead}
         </p>
 
-        <div className="mt-12 flex justify-center">
+        <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
           <button
             type="button"
             onClick={onStartManual}
@@ -37,6 +40,13 @@ export default function StartScreen({ text, onStartManual }: StartScreenProps) {
             <ListChecks className="relative z-10 size-6 transition-transform duration-300 group-hover:scale-110" aria-hidden="true" />
             <span className="relative z-10">{text.start.form}</span>
           </button>
+          <Link
+            href="/profile/saved-members"
+            className="group inline-flex h-14 items-center justify-center gap-3 whitespace-nowrap rounded-full border border-border-strong bg-surface px-7 text-body font-medium text-text shadow-md transition-all duration-300 ease-out hover:-translate-y-1 hover:border-primary hover:bg-surface-muted hover:shadow-lg active:translate-y-0 active:scale-95"
+          >
+            <Users className="size-5 text-primary transition-transform duration-300 group-hover:scale-110" aria-hidden="true" />
+            <span>{locale === "id" ? "Profil Tersimpan" : "Saved Profiles"}</span>
+          </Link>
         </div>
       </div>
     </div>
