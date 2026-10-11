@@ -1,53 +1,52 @@
 import type { Locale } from "@/lib/locale";
-import { type DraftPatch, type NeedKey, type PlanDraft, isNeedKey, parseDraftPatch } from "@/lib/plan-draft";
-import type { QuestionKey } from "@/lib/plan-questions";
+import { type CaptainPackingItem, type NeedKey, type PlanDraft, isNeedKey, parseCaptainPacking } from "@/lib/plan-draft";
+import type { Weather } from "@/lib/weather";
 import { sampleCaptain } from "./captain-sample";
-
-const CAPTAIN_ACTIONS = ["ask", "confirm", "proceed"] as const;
-export type CaptainAction = (typeof CAPTAIN_ACTIONS)[number];
-
-export type CaptainReply = { message: string; draftPatch: DraftPatch; action: CaptainAction };
-export type ChatTurn = { role: "captain" | "user"; text: string };
 
 export type ItineraryCover = { need: NeedKey; memberIds: string[] };
 export type ItineraryViolation = { need: NeedKey; reason: string };
-export type ItineraryItem = { time: string; title: string; detail: string; imageUrl?: string; address?: string; rating?: number; priceLevel?: string; openingHours?: string; travelToNext?: { distance: string; duration: string }; covers: ItineraryCover[]; violations?: ItineraryViolation[] };
+/** When a backup is for: rain, a rest, a full restaurant, or the stop being closed or full. */
+export const BACKUP_KINDS = ["rain", "rest", "meal", "closed"] as const;
+export type BackupKind = (typeof BACKUP_KINDS)[number];
+/** A stop that is a chore on the way, not somewhere to visit: handing laundry in, collecting it, or washing. */
+export const ERRAND_KINDS = ["laundryDrop", "laundryPick", "wash"] as const;
+export type ErrandKind = (typeof ERRAND_KINDS)[number];
+type ItineraryPlace = { title: string; detail: string; imageUrl?: string; address?: string; rating?: number; priceLevel?: string; openingHours?: string; covers: ItineraryCover[]; violations?: ItineraryViolation[] };
+/** A place ready to take a stop's slot. Kind "main" is what the slot held before a backup stood in for it. */
+export type ItineraryBackup = ItineraryPlace & { kind: BackupKind | "main" };
+export type ItineraryItem = ItineraryPlace & {
+  time: string;
+  travelToNext?: { distance: string; duration: string };
+  backups?: ItineraryBackup[];
+  /** Set while a backup stands in this slot: the kind of backup it is. */
+  standIn?: BackupKind;
+  /** Set on a stop the group's laundry choice put there, so it can be taken off again when the choice changes. */
+  errand?: ErrandKind;
+};
 export type ItineraryDay = { date: string; items: ItineraryItem[] };
 export type Itinerary = { days: ItineraryDay[] };
 
 export type Invite = { url: string };
 
-export type ReplyRequest = {
-  story: string;
-  draft: PlanDraft;
-  locale: Locale;
-  focus: QuestionKey | null;
-  history: ChatTurn[];
-};
 export type PlanRequest = { draft: PlanDraft; locale: Locale };
+/** `known` names what is on the packing list already, so Captain adds to it instead of repeating it. */
+export type PackingRequest = PlanRequest & { itinerary: Itinerary | null; weather: Weather | null; known: string[] };
 
 export interface CaptainClient {
-  reply(request: ReplyRequest, signal: AbortSignal): Promise<CaptainReply>;
   itinerary(request: PlanRequest, signal: AbortSignal): Promise<Itinerary>;
   invite(request: PlanRequest, signal: AbortSignal): Promise<Invite>;
+  packing(request: PackingRequest, signal: AbortSignal): Promise<CaptainPackingItem[]>;
 }
 
 export class CaptainError extends Error {}
 
 const BASE_URL = process.env.NEXT_PUBLIC_CAPTAIN_API_URL ?? "";
+const MAX_BACKUPS = 4;
 const REQUEST_TIMEOUT_MS = 60000;
 const RATE_LIMIT_WAIT_MS = 1100;
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
-}
-
-function parseReply(value: unknown): CaptainReply {
-  if (!isRecord(value) || typeof value.message !== "string") {
-    throw new CaptainError("Invalid reply response");
-  }
-  const action = CAPTAIN_ACTIONS.find((entry) => entry === value.action) ?? "ask";
-  return { message: value.message, draftPatch: parseDraftPatch(value.draftPatch), action };
 }
 
 function parseCover(value: unknown): ItineraryCover | null {
@@ -56,21 +55,42 @@ function parseCover(value: unknown): ItineraryCover | null {
   return { need: value.need, memberIds };
 }
 
-function parseItem(value: unknown): ItineraryItem | null {
-  if (!isRecord(value)) return null;
-  if (typeof value.time !== "string" || typeof value.title !== "string") return null;
+function parsePlace(value: Record<string, unknown>, title: string): ItineraryPlace {
   return {
-    time: value.time,
-    title: value.title,
+    title,
     detail: typeof value.detail === "string" ? value.detail : "",
     imageUrl: typeof value.imageUrl === "string" ? value.imageUrl : undefined,
     address: typeof value.address === "string" ? value.address : undefined,
     rating: typeof value.rating === "number" ? value.rating : undefined,
     priceLevel: typeof value.priceLevel === "string" ? value.priceLevel : undefined,
     openingHours: typeof value.openingHours === "string" ? value.openingHours : undefined,
-    travelToNext: isRecord(value.travelToNext) && typeof value.travelToNext.distance === "string" && typeof value.travelToNext.duration === "string" ? { distance: value.travelToNext.distance, duration: value.travelToNext.duration } : undefined,
     covers: Array.isArray(value.covers) ? value.covers.flatMap((cover) => parseCover(cover) ?? []) : [],
     violations: Array.isArray(value.violations) ? value.violations.filter(v => typeof v === "object" && v !== null && "need" in v && "reason" in v) : [],
+  };
+}
+
+const isBackupKind = (value: unknown): value is BackupKind => BACKUP_KINDS.some((kind) => kind === value);
+
+function parseBackup(value: unknown): ItineraryBackup | null {
+  if (!isRecord(value) || typeof value.title !== "string" || value.title.trim() === "") return null;
+  if (value.kind !== "main" && !isBackupKind(value.kind)) return null;
+  return { ...parsePlace(value, value.title), kind: value.kind };
+}
+
+function parseItem(value: unknown): ItineraryItem | null {
+  if (!isRecord(value)) return null;
+  if (typeof value.time !== "string" || typeof value.title !== "string") return null;
+  const errand = ERRAND_KINDS.find((kind) => kind === value.errand);
+  const backups = Array.isArray(value.backups)
+    ? value.backups.flatMap((backup) => parseBackup(backup) ?? []).slice(0, MAX_BACKUPS)
+    : [];
+  return {
+    ...parsePlace(value, value.title),
+    time: value.time,
+    travelToNext: isRecord(value.travelToNext) && typeof value.travelToNext.distance === "string" && typeof value.travelToNext.duration === "string" ? { distance: value.travelToNext.distance, duration: value.travelToNext.duration } : undefined,
+    ...(backups.length > 0 ? { backups } : {}),
+    ...(isBackupKind(value.standIn) ? { standIn: value.standIn } : {}),
+    ...(errand ? { errand } : {}),
   };
 }
 
@@ -94,6 +114,14 @@ function parseInvite(value: unknown): Invite {
   return { url: value.url };
 }
 
+// Captain's items arrive unnamed; each gets an id here so its tick can be remembered.
+function parsePacking(value: unknown): CaptainPackingItem[] {
+  if (!isRecord(value) || !Array.isArray(value.items)) throw new CaptainError("Invalid packing response");
+  return parseCaptainPacking(
+    value.items.map((item) => (isRecord(item) ? { ...item, id: `captain:${crypto.randomUUID()}` } : item)),
+  );
+}
+
 async function post(path: string, body: unknown, signal: AbortSignal, retried = false): Promise<unknown> {
   const timeout = AbortSignal.timeout(REQUEST_TIMEOUT_MS);
   const response = await fetch(`${BASE_URL}${path}`, {
@@ -112,9 +140,9 @@ async function post(path: string, body: unknown, signal: AbortSignal, retried = 
 }
 
 const httpCaptain: CaptainClient = {
-  reply: async (request, signal) => parseReply(await post("/captain/reply", request, signal)),
   itinerary: async (request, signal) => parseItinerary(await post("/captain/itinerary", request, signal)),
   invite: async (request, signal) => parseInvite(await post("/captain/invite", request, signal)),
+  packing: async (request, signal) => parsePacking(await post("/captain/packing", request, signal)),
 };
 
 export const captainIsSample = BASE_URL === "";

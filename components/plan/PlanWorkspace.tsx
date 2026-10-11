@@ -3,7 +3,9 @@
 import { Ticket } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
 import { type Itinerary, captain, captainIsSample } from "@/lib/api/captain";
+import { settleLaundry } from "@/lib/api/laundry";
 import { trips } from "@/lib/api/trips";
+import { chosenOption, countSettled, findConflicts } from "@/lib/mediation";
 import { countViolations } from "@/lib/trips/trip";
 import PageBackdrop from "@/components/layout/PageBackdrop";
 import TripsNotice from "@/components/trips/TripsNotice";
@@ -28,6 +30,7 @@ import { useLocale } from "@/lib/use-locale";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { useMessages } from "@/lib/use-messages";
 import type { Stage } from "./flow";
+import MediationDeck from "./MediationDeck";
 import PassDialog from "./PassDialog";
 import PlanResult, { type SaveState } from "./PlanResult";
 import QuestionDeck from "./QuestionDeck";
@@ -44,6 +47,7 @@ const NOTICE_MS = 5000;
 
 export default function PlanWorkspace() {
   const text = useMessages("plan");
+  const packingText = useMessages("packing");
   const locale = useLocale();
   const savedDraft = useSavedDraft();
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
@@ -52,6 +56,7 @@ export default function PlanWorkspace() {
   const [started, setStarted] = useState(false);
   const [question, setQuestion] = useState<QuestionKey>(QUESTIONS[0]);
   const [fromPass, setFromPass] = useState(false);
+  const [clashIndex, setClashIndex] = useState(0);
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [previewing, setPreviewing] = useState(false);
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
@@ -68,6 +73,8 @@ export default function PlanWorkspace() {
   const showResume = !started && savedDraft !== null && isDraftEmpty(draft);
   const requiredDone = missingRequired(draft).length === 0;
   const planStarted = itinerary !== null || pending === "itinerary" || failed?.kind === "itinerary";
+  const conflicts = findConflicts(draft);
+  const clashesSettled = countSettled(conflicts, draft.agreements) === conflicts.length;
   // Editing one answer from the boarding pass shows that question alone; otherwise the deck runs through all of them.
   const deckQuestions: QuestionKey[] = fromPass ? [question] : [...QUESTIONS];
 
@@ -132,7 +139,9 @@ export default function PlanWorkspace() {
     setSaveState("idle");
     const signal = beginRequest("itinerary");
     try {
-      const plan = await captain.itinerary({ draft, locale }, signal);
+      const built = await captain.itinerary({ draft, locale }, signal);
+      // A trip planned again keeps the laundry stops its packing list asked for.
+      const plan = await settleLaundry(draft, built, packingText.laundry.stops, locale, signal).catch(() => built);
       setItinerary(plan);
       saveTrip(plan);
     } catch {
@@ -140,6 +149,19 @@ export default function PlanWorkspace() {
       setFailed({ kind: "itinerary" });
     }
     if (!signal.aborted) setPending(null);
+  };
+
+  // Opens at the first clash still waiting for a pick, or at the start when the group is only looking again.
+  const openClashes = () => {
+    const firstOpen = conflicts.findIndex((conflict) => chosenOption(conflict, draft.agreements) === null);
+    setClashIndex(Math.max(0, firstOpen));
+    openStage("meet");
+  };
+
+  // A stop switched to a backup is part of the plan from then on, so the saved trip follows.
+  const changeItinerary = (plan: Itinerary) => {
+    setItinerary(plan);
+    saveTrip(plan);
   };
 
   const makeInvite = async () => {
@@ -242,6 +264,18 @@ export default function PlanWorkspace() {
       current: stage === "pass",
       onSelect: requiredDone ? () => openStage("pass") : null,
     },
+    // The step is on the rail only for a group whose wishes clash, so the count stays the number of steps ahead.
+    ...(conflicts.length > 0
+      ? [
+          {
+            key: "meet",
+            label: text.stages.meet,
+            done: requiredDone && clashesSettled,
+            current: stage === "meet",
+            onSelect: requiredDone ? openClashes : null,
+          },
+        ]
+      : []),
     {
       key: "plan",
       label: text.stages.plan,
@@ -311,10 +345,26 @@ export default function PlanWorkspace() {
           text={text}
           hasPlan={itinerary !== null}
           busy={pending !== null}
+          hasClashes={conflicts.length > 0}
           onEdit={editFromPass}
           onAddMember={addMemberFromPass}
-          onMakePlan={makePlan}
+          onMakePlan={conflicts.length > 0 ? openClashes : makePlan}
           onViewPlan={() => setStage("plan")}
+        />
+      )}
+
+      {stage === "meet" && conflicts.length > 0 && (
+        <MediationDeck
+          draft={draft}
+          conflicts={conflicts}
+          index={Math.min(clashIndex, conflicts.length - 1)}
+          text={text}
+          hasPlan={itinerary !== null}
+          busy={pending !== null}
+          onIndexChange={setClashIndex}
+          onPick={(conflict, option) => dispatch({ type: "setAgreement", conflict, option })}
+          onBack={() => setStage("pass")}
+          onFinish={makePlan}
         />
       )}
 
@@ -328,9 +378,12 @@ export default function PlanWorkspace() {
           failed={failed !== null}
           isSample={captainIsSample}
           saveState={saveState}
+          packingHref={tripId && saveState === "saved" ? `/trips/${encodeURIComponent(tripId)}/packing` : null}
           onRetry={retry}
           onInvite={makeInvite}
           onSave={() => itinerary && saveTrip(itinerary)}
+          onChangeItinerary={changeItinerary}
+          onChangeAgreements={openClashes}
           onBackToPass={() => setStage("pass")}
         />
       )}

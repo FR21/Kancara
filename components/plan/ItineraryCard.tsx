@@ -1,14 +1,16 @@
 "use client";
 
-import { Check, ChevronRight, TriangleAlert } from "lucide-react";
+import { Check, ChevronRight, LifeBuoy, TriangleAlert } from "lucide-react";
 import { type KeyboardEvent, useId, useRef, useState } from "react";
 import type { Itinerary, ItineraryCover, ItineraryDay } from "@/lib/api/captain";
+import { countBackups, isLegCurrent, switchToBackup } from "@/lib/backups";
 import type { Messages } from "@/lib/messages";
 import { type Member, fillTemplate, getMemberName, parseLocalDate } from "@/lib/plan-draft";
+import { splitTime, toMinutes } from "@/lib/stop-time";
 import { plural } from "@/lib/trips/format";
 import { useLocale } from "@/lib/use-locale";
 import { useWibNow } from "@/lib/use-wib-now";
-import ItineraryStop, { type StopPhase, splitTime, toMinutes } from "./ItineraryStop";
+import ItineraryStop, { type StopPhase } from "./ItineraryStop";
 import StopDialog from "./StopDialog";
 
 type ItineraryCardProps = {
@@ -21,6 +23,8 @@ type ItineraryCardProps = {
   initialDate?: string;
   /** For a trip in progress: mark what is done, happening now, and up next on today's schedule. */
   live?: boolean;
+  /** Receives the itinerary after a stop is switched to a backup. Absent where the plan is only read. */
+  onChange?: (itinerary: Itinerary) => void;
 };
 
 const MAX_NAMES = 2;
@@ -68,6 +72,7 @@ export default function ItineraryCard({
   isSample,
   initialDate,
   live = false,
+  onChange,
 }: ItineraryCardProps) {
   const locale = useLocale();
   const baseId = useId();
@@ -86,6 +91,7 @@ export default function ItineraryCard({
   const day = itinerary.days[Math.min(selected, dayCount - 1)];
   const honoured = day.items.reduce((count, item) => count + item.covers.length, 0);
   const toCheck = countToCheck(day);
+  const standingBy = countBackups(day);
   const phases = readPhases(day, now);
   const dayName = (index: number) => fillTemplate(text.itinerary.day, { number: index + 1 });
 
@@ -203,6 +209,12 @@ export default function ItineraryCard({
                   {plural(text.itinerary.toCheck, toCheck, locale)}
                 </span>
               )}
+              {standingBy > 0 && (
+                <span className="inline-flex items-center gap-1">
+                  <LifeBuoy className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                  {plural(text.itinerary.backups.ready, standingBy, locale)}
+                </span>
+              )}
             </p>
 
             {day.items.length === 0 && (
@@ -217,6 +229,7 @@ export default function ItineraryCard({
                   phase={phases[index]}
                   order={index}
                   isLast={index === day.items.length - 1}
+                  legCurrent={isLegCurrent(item, day.items[index + 1])}
                   locale={locale}
                   text={text.itinerary}
                   describeCover={describeCover}
@@ -235,7 +248,13 @@ export default function ItineraryCard({
         dayLabel={dayName(selected)}
         destination={destination}
         text={text.itinerary}
+        validated={!isSample}
         describeCover={describeCover}
+        onUseBackup={
+          onChange && openIndex !== null
+            ? (backupIndex) => onChange(switchToBackup(itinerary, day.date, openIndex, backupIndex))
+            : undefined
+        }
         onNavigate={setOpenIndex}
         onClose={() => setOpenIndex(null)}
       />

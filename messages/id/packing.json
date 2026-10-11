@@ -1,0 +1,156 @@
+{
+  "title": "Daftar bawaan",
+  "open": "Daftar bawaan",
+  "openHint": "Disusun dari cuaca dan kebutuhan tiap anggota.",
+  "back": "Itinerary",
+  "loading": "Memuat daftar bawaan",
+  "error": "Daftar bawaan belum bisa dimuat. Periksa koneksimu, lalu coba lagi.",
+  "notFound": "Perjalanan ini tidak ditemukan. Mungkin sudah dihapus.",
+  "notReady": "Daftar bawaan disusun dari tanggal dan rombongan. Lengkapi dulu rencananya.",
+  "retry": "Coba lagi",
+  "progress": "{done} dari {total} siap",
+  "allPacked": "Siap berangkat",
+  "saving": "Menyimpan",
+  "saved": "Tersimpan",
+  "saveFailed": "Perubahan belum tersimpan. Periksa koneksimu, lalu coba lagi.",
+  "offline": "Offline. Perubahan disimpan di perangkat ini dan dikirim saat kembali online.",
+  "offlineUnavailable": "Tidak ada koneksi, dan daftar ini belum pernah dibuka di perangkat ini.",
+  "filters": {
+    "label": "Saring daftar",
+    "all": "Semua",
+    "todo": "Belum siap",
+    "essential": "Penting",
+    "weather": "Karena cuaca"
+  },
+  "empty": {
+    "todo": "Semua sudah masuk tas.",
+    "other": "Tidak ada barang di saringan ini."
+  },
+  "everyone": "Semua",
+  "essential": "Penting",
+  "fromCaptain": "Dari Captain",
+  "times": "×{count}",
+  "remove": "Hapus {name} dari daftar",
+  "removed": {
+    "one": "{count} barang dihapus",
+    "other": "{count} barang dihapus"
+  },
+  "restore": "Kembalikan",
+  "add": {
+    "label": "Tambah barang sendiri",
+    "labelFor": "Tambah barang untuk {name}",
+    "placeholder": "Contoh: kamera",
+    "button": "Tambah",
+    "full": "Sudah {count} barang tambahan. Hapus satu dulu untuk menambah lagi."
+  },
+  "laundry": {
+    "title": "Pakaian untuk {days} hari: mau bagaimana?",
+    "hint": "Hitungannya 2 sampai 3 setel per hari. Lebih dari seminggu, pilih caranya.",
+    "choices": {
+      "wash": "Cuci sendiri di jalan",
+      "laundry": "Laundry terdekat",
+      "all": "Bawa untuk semua hari"
+    },
+    "stops": {
+      "nearest": "Laundry terdekat dari penginapan",
+      "drop": "Antar pakaian kotor rombongan dan tanyakan kapan selesai. Di laundry koin, cucian bisa selesai hari itu juga.",
+      "pick": "Ambil pakaian bersih yang diantar kemarin dan bawa notanya. Lewati kalau cucian sudah dibawa pulang.",
+      "washTitle": "Cuci pakaian di penginapan",
+      "wash": "Cuci malam ini supaya kering sebelum pakaian bersih habis."
+    },
+    "plan": {
+      "laundry": "Sudah masuk itinerary: antar di hari ke-{days}, ambil keesokan harinya.",
+      "wash": "Sudah masuk itinerary: mencuci di malam hari ke-{days}.",
+      "looking": "Mencari laundry terdekat",
+      "waiting": "Tanpa koneksi. Jadwal laundry masuk itinerary begitu koneksi kembali.",
+      "failed": "Laundry terdekat belum bisa dicari, jadi belum masuk itinerary.",
+      "noItinerary": "Itinerary belum dibuat. Jadwal laundry ikut masuk saat itinerary dibuat.",
+      "view": "Lihat itinerary"
+    }
+  },
+  "weather": {
+    "title": "Cuaca di {place}",
+    "loading": "Memuat cuaca",
+    "unavailable": "Cuaca belum bisa diambil, jadi barang karena cuaca belum masuk daftar.",
+    "typical": "Bertanda \"biasanya\": cuaca tanggal yang sama tahun lalu. Prakiraannya muncul 16 hari sebelumnya.",
+    "typicalTag": "Biasanya",
+    "temps": "{max}° / {min}°",
+    "tempsLabel": "paling panas {max} derajat, paling dingin {min} derajat",
+    "rainChance": "Hujan {chance}%",
+    "rainMm": "Hujan {mm} mm",
+    "dry": "Tidak hujan",
+    "sky": {
+      "clear": "Cerah",
+      "partly": "Cerah berawan",
+      "cloudy": "Berawan",
+      "fog": "Berkabut",
+      "drizzle": "Gerimis",
+      "rain": "Hujan",
+      "storm": "Badai petir",
+      "snow": "Salju"
+    }
+  },
+  "captain": {
+    "pending": "Captain sedang membaca catatan rombonganmu.",
+    "failed": "Captain belum bisa menambah saran. Daftar ini tetap lengkap dari aturan dasarnya.",
+    "again": "Minta Captain periksa lagi",
+    "added": {
+      "one": "Captain menambah {count} barang dari yang kalian tulis dan rencanakan.",
+      "other": "Captain menambah {count} barang dari yang kalian tulis dan rencanakan."
+    },
+    "none": "Captain sudah membaca rencana kalian. Tidak ada yang perlu ditambah."
+  },
+  "reasons": {
+    "basics": "Dasar perjalanan",
+    "rainChance": "Hujan {chance}% pada {day}",
+    "rainTypical": "Biasanya hujan pada {day}",
+    "heat": "Panas {temp}° pada {day}",
+    "heatTypical": "Biasanya panas {temp}° pada {day}",
+    "cold": "Dingin {temp}° pada {day}",
+    "coldTypical": "Biasanya dingin {temp}° pada {day}",
+    "atPlace": "{reason} di {place}",
+    "allergy": "Alergi: {allergies}",
+    "own": "Ditambahkan sendiri"
+  },
+  "items": {
+    "ids": "KTP atau paspor, dan tiket",
+    "money": "Uang tunai dan kartu",
+    "chargers": "Charger dan power bank",
+    "personalMeds": "Obat pribadi tiap orang",
+    "firstAid": "P3K kecil",
+    "clothes": "Pakaian {days} hari ({min}–{max} setel)",
+    "toiletries": "Perlengkapan mandi",
+    "laundryKit": "Deterjen travel dan tali jemur",
+    "laundryBag": "Kantong baju kotor",
+    "rainGear": "Jas hujan atau payung",
+    "dryBag": "Kantong kedap air untuk HP dan dokumen",
+    "sunCare": "Topi dan tabir surya",
+    "waterBottle": "Botol minum",
+    "warmLayer": "Jaket",
+    "winterWear": "Sarung tangan, syal, dan pakaian hangat",
+    "diapers": "Popok dan tisu basah",
+    "babyFood": "Susu, makanan, dan botol",
+    "babyMeds": "Obat demam anak dan termometer",
+    "spareOutfits": "Baju ganti ekstra",
+    "comfortToy": "Mainan atau selimut kesayangan",
+    "carrier": "Stroller atau gendongan",
+    "kidSnacks": "Camilan dan botol minum",
+    "kidPlay": "Mainan atau buku untuk di jalan",
+    "contactCard": "Kartu nama dan nomor darurat di saku",
+    "regularMeds": "Obat rutin untuk seluruh hari, plus cadangan",
+    "medNotes": "Salinan resep dan nomor dokter",
+    "comfortShoes": "Sepatu nyaman yang sudah biasa dipakai",
+    "wheelchairKit": "Bantalan duduk dan perlengkapan kursi roda",
+    "walkingAid": "Tongkat atau alat bantu jalan",
+    "foldingStool": "Bangku lipat ringan",
+    "dietSnacks": "Camilan yang sesuai pantangan",
+    "napKit": "Bantal leher dan penutup mata",
+    "earProtection": "Penyumbat telinga atau headphone peredam",
+    "toiletKit": "Tisu, hand sanitizer, dan baju dalam ganti",
+    "allergyMeds": "Obat alergi dari dokter",
+    "allergyCard": "Kartu alergi untuk ditunjukkan di tempat makan",
+    "drivingLicense": "SIM dan dokumen sewa mobil",
+    "transitCard": "Kartu uang elektronik untuk transportasi",
+    "outdoorKit": "Sepatu jalan dan obat nyamuk"
+  }
+}

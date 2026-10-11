@@ -5,6 +5,6 @@ export async function POST(request: Request) {
   const limited = rateLimit(request, "captain-invite");
   if (limited) return limited;
 
-  // Hanya mengembalikan URL mock untuk sekarang
+  // Invitations are not built yet, so every request gets the same stand-in address.
   return NextResponse.json({ url: "https://kancara.app/invite/12345" });
 }

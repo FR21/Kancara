@@ -35,6 +35,10 @@
       "title": "Itinerary",
       "description": "Itinerary per hari untuk perjalanan ini."
     },
+    "tripPacking": {
+      "title": "Daftar bawaan",
+      "description": "Daftar bawaan untuk perjalanan ini, disusun dari cuaca dan kebutuhan tiap anggota."
+    },
     "tripToday": {
       "title": "Jadwal hari ini",
       "description": "Jadwal perjalanan ini untuk hari ini."
@@ -54,6 +58,10 @@
     "terms": {
       "title": "Syarat & Ketentuan",
       "description": "Syarat dan ketentuan penggunaan Kancara."
+    },
+    "offline": {
+      "title": "Offline",
+      "description": "Halaman saat tidak ada koneksi."
     }
   }
 }

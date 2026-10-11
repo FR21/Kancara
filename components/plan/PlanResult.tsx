@@ -1,10 +1,12 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check, CircleAlert, Loader2, RotateCcw } from "lucide-react";
+import { ArrowLeft, ArrowRight, Check, CircleAlert, Loader2, Luggage, RotateCcw } from "lucide-react";
 import Link from "next/link";
 import type { Itinerary } from "@/lib/api/captain";
 import type { Messages } from "@/lib/messages";
 import type { PlanDraft } from "@/lib/plan-draft";
+import { useMessages } from "@/lib/use-messages";
+import AgreementList from "./AgreementList";
 import ErrorAlert from "./ErrorAlert";
 import InviteCard from "./InviteCard";
 import ItineraryCard from "./ItineraryCard";
@@ -21,9 +23,13 @@ type PlanResultProps = {
   failed: boolean;
   isSample: boolean;
   saveState: SaveState;
+  /** Where the saved trip's packing list is. Null until the trip has been saved. */
+  packingHref: string | null;
   onRetry: () => void;
   onInvite: () => void;
   onSave: () => void;
+  onChangeItinerary: (itinerary: Itinerary) => void;
+  onChangeAgreements: () => void;
   onBackToPass: () => void;
 };
 
@@ -40,11 +46,15 @@ export default function PlanResult({
   failed,
   isSample,
   saveState,
+  packingHref,
   onRetry,
   onInvite,
   onSave,
+  onChangeItinerary,
+  onChangeAgreements,
   onBackToPass,
 }: PlanResultProps) {
+  const packingText = useMessages("packing");
   const isSolo = draft.members.length <= 1;
   const canInvite = itinerary !== null && inviteUrl === null && !isSolo && pending === null && !failed;
   const showSave = itinerary !== null && pending !== "itinerary" && saveState !== "idle";
@@ -144,7 +154,27 @@ export default function PlanResult({
           members={draft.members}
           text={text}
           isSample={isSample}
+          onChange={onChangeItinerary}
         />
+      )}
+
+      {itinerary && pending !== "itinerary" && <AgreementList draft={draft} text={text} onChange={onChangeAgreements} />}
+
+      {itinerary && pending !== "itinerary" && packingHref && (
+        <Link
+          href={packingHref}
+          className="group flex items-center gap-4 rounded-2xl border border-border bg-surface px-5 py-4 transition-[border-color,scale] duration-150 ease-out hover:border-primary active:scale-[0.99]"
+        >
+          <Luggage className="size-5 shrink-0 text-primary" aria-hidden="true" />
+          <span className="min-w-0 flex-1">
+            <span className="block text-label-lg text-text">{packingText.open}</span>
+            <span className="mt-1 block text-body-sm text-text-muted">{packingText.openHint}</span>
+          </span>
+          <ArrowRight
+            className="size-4 shrink-0 text-text-muted transition-[translate,color] duration-200 ease-out group-hover:translate-x-1 group-hover:text-primary"
+            aria-hidden="true"
+          />
+        </Link>
       )}
 
       {failed && <ErrorAlert message={text.chat.error} retryLabel={text.chat.retry} onRetry={onRetry} />}

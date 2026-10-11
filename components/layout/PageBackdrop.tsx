@@ -13,8 +13,12 @@ export default function PageBackdrop() {
       className="pointer-events-none absolute top-0 left-1/2 -z-10 h-96 w-screen -translate-x-1/2 overflow-clip"
     >
       <div className="absolute inset-0 bg-linear-to-b from-cta to-background" />
-      <span className={`${RING} -top-28 right-[6%] size-80 border-accent/60 [--parallax-to:14rem]`} />
-      <span className={`${RING} top-16 -left-24 size-64 border-primary/25 [--parallax-to:-7rem]`} />
+      {/* On a phone the rings would run through the title, so the gold one stays in the top corner above it and
+          the teal one waits for a wider screen. */}
+      <span
+        className={`${RING} -top-32 -right-24 size-56 border-accent/60 [--parallax-to:14rem] sm:-top-28 sm:right-[6%] sm:size-80`}
+      />
+      <span className={`${RING} top-16 -left-24 hidden size-64 border-primary/25 [--parallax-to:-7rem] sm:block`} />
       <Plane className="parallax-top absolute top-44 left-[6%] hidden size-6 -rotate-12 text-primary/40 [--parallax-to:-12rem] lg:block" />
       <svg
         viewBox="0 0 1440 240"

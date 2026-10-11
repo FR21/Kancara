@@ -20,7 +20,7 @@ import {
 
 export type HistoryFilter = { query: string; year: number | null };
 export type Page = { limit: number; offset: number };
-export type DeleteResult = "deleted" | "notFound" | "forbidden";
+export type DeleteResult = "deleted" | "notFound";
 /** A finished plan to keep. `violations` is left out when the plan was never checked against the group's needs. */
 export type TripInput = { name: string; draft: PlanDraft; violations?: number; itinerary?: Itinerary };
 
@@ -249,7 +249,7 @@ export async function updateTrip(viewer: Viewer, id: string, input: TripInput): 
   if (!UUID.test(id)) return null;
   try {
     const updated = await prisma.trip.update({
-      where: { tripId: id, workspaceId: viewer.workspaceId, deletedAt: null, role: "organizer" },
+      where: { tripId: id, workspaceId: viewer.workspaceId, deletedAt: null },
       data: {
         name: input.name,
         ...columnsOf(input.draft),
@@ -299,16 +299,9 @@ export async function duplicateTrip(viewer: Viewer, id: string, name: string): P
 /** Deleting a trip hides it: the row stays, marked with the time it was deleted. */
 export async function deleteTrip(viewer: Viewer, id: string): Promise<DeleteResult> {
   if (!UUID.test(id)) return "notFound";
-  const existing = await prisma.trip.findFirst({
-    where: { tripId: id, workspaceId: viewer.workspaceId, deletedAt: null },
-    select: { role: true },
-  });
-  if (!existing) return "notFound";
-  if (existing.role !== "organizer") return "forbidden";
-
-  await prisma.trip.updateMany({
+  const { count } = await prisma.trip.updateMany({
     where: { tripId: id, workspaceId: viewer.workspaceId, deletedAt: null },
     data: { deletedAt: new Date() },
   });
-  return "deleted";
+  return count === 0 ? "notFound" : "deleted";
 }

@@ -35,6 +35,10 @@
       "title": "Itinerary",
       "description": "The day-by-day itinerary for this trip."
     },
+    "tripPacking": {
+      "title": "Packing list",
+      "description": "The packing list for this trip, built from the weather and each member's needs."
+    },
     "tripToday": {
       "title": "Today's schedule",
       "description": "This trip's schedule for today."
@@ -54,6 +58,10 @@
     "terms": {
       "title": "Terms & Conditions",
       "description": "The terms and conditions for using Kancara."
+    },
+    "offline": {
+      "title": "Offline",
+      "description": "The page shown without a connection."
     }
   }
 }
