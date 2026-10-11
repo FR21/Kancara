@@ -29,6 +29,8 @@ import enSeo from "@/messages/en/seo.json";
 import idSeo from "@/messages/id/seo.json";
 import enLegal from "@/messages/en/legal.json";
 import idLegal from "@/messages/id/legal.json";
+import enSplitBill from "@/messages/en/splitBill.json";
+import idSplitBill from "@/messages/id/splitBill.json";
 import enPacking from "@/messages/en/packing.json";
 import idPacking from "@/messages/id/packing.json";
 import type { Locale } from "./locale";
@@ -47,6 +49,7 @@ const id = {
   trips: idTrips,
   seo: idSeo,
   legal: idLegal,
+  splitBill: idSplitBill,
   packing: idPacking,
 };
 
@@ -67,6 +70,7 @@ const en = {
   trips: enTrips,
   seo: enSeo,
   legal: enLegal,
+  splitBill: enSplitBill,
   packing: enPacking,
 } satisfies Messages;
 
