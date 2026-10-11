@@ -136,11 +136,11 @@
     "notFound": "This trip wasn't found. It may have been deleted.",
     "missing": "This trip doesn't have an itinerary yet.",
     "missingOrganizer": "Captain can build it now from the dates, group, and needs already saved.",
-    "missingMember": "The itinerary shows up here once the organizer creates it.",
     "missingDraft": "Finish the plan first, then the itinerary is built from it.",
     "generate": "Create itinerary",
     "generating": "Captain is putting the itinerary together. It usually takes less than a minute.",
-    "generateFailed": "The itinerary couldn't be created. Check your connection, then try again."
+    "generateFailed": "The itinerary couldn't be created. Check your connection, then try again.",
+    "changeFailed": "The change wasn't saved. Check your connection, then try again."
   },
   "placeholder": {
     "summary": "Trip summary",

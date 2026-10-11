@@ -16,6 +16,7 @@
   "stages": {
     "label": "Tahap rencana",
     "pass": "Boarding pass",
+    "meet": "Titik temu",
     "plan": "Rencana",
     "done": "selesai",
     "locked": "belum terbuka",
@@ -93,12 +94,14 @@
     "readyTitle": "Boarding pass kamu siap.",
     "draftTitle": "Boarding pass kamu belum lengkap.",
     "hint": "Periksa dulu. Ketuk bagian mana pun untuk mengubahnya.",
+    "meetHint": "Beberapa keinginan di rombongan ini bertabrakan. Kita cari titik temunya dulu, baru rencananya dibuat.",
     "from": "Dari",
     "to": "Ke",
     "extrasEmpty": "Belum diisi",
     "makePlan": "Buat rencana",
     "remake": "Buat ulang rencana",
     "viewPlan": "Lihat rencana",
+    "toMeet": "Cari titik temu",
     "times": "×{count}",
     "more": "+{count} lainnya",
     "missingLabel": "Belum ada",
@@ -108,6 +111,109 @@
       "group": "rombongan",
       "budget": "anggaran",
       "pace": "ritme"
+    }
+  },
+  "mediation": {
+    "progress": "Titik temu {current} dari {total}",
+    "pickFirst": "Pilih satu jalan tengah dulu.",
+    "optionsLegend": "Jalan tengah",
+    "suggested": "Saran Captain",
+    "sides": {
+      "wants": "Yang ingin",
+      "affected": "Yang terdampak",
+      "resting": "Perlu istirahat",
+      "wishes": "Keinginan yang berebut waktu"
+    },
+    "others": "{count} lainnya",
+    "titles": {
+      "access": "{activity}: belum semua bisa ikut dengan nyaman.",
+      "pace": "Ritme padat terlalu berat untuk sebagian orang.",
+      "time": "Keinginannya lebih banyak dari waktunya."
+    },
+    "hints": {
+      "access": "Ada yang menginginkannya, dan ada yang kebutuhannya membuat kegiatan seperti ini berat. Pilih jalan tengah yang paling pas untuk rombonganmu.",
+      "pace": "Rombongan memilih ritme padat, tapi ada yang perlu jeda. Pilih cara membaginya.",
+      "time": "Ada {wishes} keinginan yang sangat diinginkan, sedangkan waktunya cukup untuk sekitar {slots}. Pilih cara membaginya."
+    },
+    "adaptBody": {
+      "themePark": "Taman bermain yang rutenya datar, banyak tempat duduk, dan ada pertunjukan yang bisa ditonton sambil duduk. Kunjungan dibatasi sekitar 3 jam.",
+      "nature": "Alam tanpa mendaki: jalur datar, dek pandang, atau taman yang toiletnya dekat.",
+      "shopping": "Tempat belanja yang lebih tenang, di jam sepi, dengan tempat duduk tiap beberapa toko.",
+      "food": "Tempat makan yang menunya cocok untuk semua pantangan, jadi rombongan tetap makan semeja."
+    },
+    "options": {
+      "access": {
+        "adapt": {
+          "title": "Pergi bersama, versi ramah semua",
+          "cost": "Yang ingin mendapat versi yang lebih ringan, bukan versi lengkapnya."
+        },
+        "split": {
+          "title": "Berpencar sebentar, lalu kumpul lagi",
+          "body": "Yang ingin pergi sekitar 3 jam, yang lain ke tempat tenang di dekatnya. Setelah itu semua bertemu lagi untuk makan.",
+          "cost": "Rombongan tidak bersama selama itu, dan anak atau yang butuh bantuan harus ditemani orang dewasa."
+        },
+        "swap": {
+          "title": "Ganti dengan yang bisa diikuti semua",
+          "body": "Kegiatan ini tidak masuk rencana. Captain mencari gantinya yang nyaman untuk semua.",
+          "cost": "Yang ingin melepas keinginan ini."
+        }
+      },
+      "pace": {
+        "breaks": {
+          "title": "Tetap padat, dengan jeda tetap",
+          "body": "Ritme padat dipertahankan, dengan istirahat sekitar 90 menit tiap siang untuk semua.",
+          "cost": "Kegiatan per hari berkurang satu."
+        },
+        "split": {
+          "title": "Sebagian istirahat, sebagian lanjut",
+          "body": "Siang hari yang perlu istirahat kembali ke penginapan, yang lain lanjut. Semua bertemu lagi saat makan malam.",
+          "cost": "Rombongan tidak bersama di siang hari, dan yang istirahat perlu ditemani."
+        },
+        "slow": {
+          "title": "Santai untuk semua",
+          "body": "Ritme diubah jadi santai: 2 sampai 3 kegiatan sehari dengan banyak jeda.",
+          "cost": "Tempat yang dikunjungi jauh lebih sedikit."
+        }
+      },
+      "time": {
+        "turns": {
+          "title": "Bergiliran, semua kebagian",
+          "body": "Tiap keinginan mendapat giliran, dengan waktu yang lebih singkat dari biasanya.",
+          "cost": "Tiap kunjungan lebih singkat dan harinya terasa lebih rapat."
+        },
+        "oneEach": {
+          "title": "Satu keinginan per orang dulu",
+          "body": "Tiap orang dijamin satu keinginannya. Sisanya masuk kalau masih ada waktu.",
+          "cost": "Yang punya banyak keinginan hanya dijamin satu."
+        },
+        "split": {
+          "title": "Berpencar sesuai keinginan",
+          "body": "Rombongan dibagi jadi kelompok kecil selama setengah hari, lalu kumpul lagi.",
+          "cost": "Tidak semua momen dijalani bersama, dan anak harus ditemani orang dewasa."
+        }
+      }
+    },
+    "gives": {
+      "none": "Tidak ada yang mengalah",
+      "part": "Mengalah sebagian: {names}",
+      "all": "Melepas keinginan ini: {names}"
+    },
+    "apart": "Berpencar sebentar",
+    "together": "Tetap bersama",
+    "ledger": {
+      "title": "Siapa mengalah",
+      "hint": "Terisi dari pilihanmu sejauh ini.",
+      "none": "Belum mengalah",
+      "part": "Sebagian keinginan ×{count}",
+      "all": "Seluruh keinginan ×{count}",
+      "flag": "{name} mengalah di {count} titik temu. Coba jalan tengah lain di salah satunya, supaya bukan dia terus yang mengalah.",
+      "principle": "Kebutuhan tidak pernah ditawar. Yang dicari jalan tengahnya hanya keinginan."
+    },
+    "summary": {
+      "title": "Titik temu di rencana ini",
+      "change": "Ubah",
+      "pace": "Ritme padat",
+      "time": "Waktu terbatas"
     }
   },
   "result": {
@@ -239,8 +345,7 @@
     "retry": "Coba lagi",
     "makeInvite": "Undang rombongan",
     "itineraryPending": "Captain sedang menyusun itinerary",
-    "itineraryIntro": "Ini itinerary yang memperhitungkan kebutuhan tiap anggota. Pilih hari untuk melihat detailnya.",
-    "allSet": "Semua data wajib sudah lengkap. Boarding pass-mu siap diperiksa."
+    "itineraryIntro": "Ini itinerary yang memperhitungkan kebutuhan tiap anggota. Pilih hari untuk melihat detailnya."
   },
   "itinerary": {
     "title": "Itinerary {destination}",
@@ -282,7 +387,37 @@
     "ratingLabel": "Rating",
     "forGroup": "Untuk rombonganmu",
     "afterThis": "Setelah ini",
-    "afterThisLeg": "{duration} · {distance} ke {name}"
+    "afterThisLeg": "{duration} · {distance} ke {name}",
+    "errands": {
+      "laundryDrop": "Antar laundry",
+      "laundryPick": "Ambil laundry",
+      "wash": "Cuci sendiri"
+    },
+    "backups": {
+      "title": "Rencana cadangan",
+      "hint": "Sudah disiapkan dan dicek untuk rombonganmu sebelum berangkat. Pakai saat rencana utama tidak bisa jalan.",
+      "kinds": {
+        "rain": "Kalau hujan",
+        "rest": "Kalau perlu istirahat",
+        "meal": "Kalau tempat makannya penuh",
+        "closed": "Kalau tutup atau penuh",
+        "main": "Rencana utama"
+      },
+      "use": "Pakai cadangan ini",
+      "restore": "Kembali ke rencana utama",
+      "inUse": "Cadangan dipakai",
+      "inUseNote": "Slot ini sedang memakai cadangan. Rencana utamanya tetap tersimpan di bawah.",
+      "checked": "Cocok untuk rombonganmu",
+      "count": {
+        "one": "{count} cadangan",
+        "other": "{count} cadangan"
+      },
+      "ready": {
+        "one": "{count} cadangan siap",
+        "other": "{count} cadangan siap"
+      },
+      "map": "Buka {name} di Google Maps"
+    }
   },
   "invite": {
     "title": "Undang rombongan",
@@ -293,14 +428,6 @@
     "shareText": "Ikut rencana trip kita di Kancara"
   },
   "sample": {
-    "captured": "Siap, kucatat {items}.",
-    "itemRoute": "rute {value}",
-    "itemDestination": "tujuan {value}",
-    "itemOrigin": "asal {value}",
-    "itemGroup": "{value} orang",
-    "itemBudget": "anggaran {value}",
-    "itemPace": "ritme {value}",
-    "nothing": "Aku belum menangkap detailnya. Coba sebutkan tujuan, jumlah orang, atau anggarannya.",
     "itinerary": {
       "arrive": {
         "title": "Tiba di {destination}",
@@ -346,9 +473,26 @@
         "quiet": "Dipilih tempat yang tenang.",
         "noCrowds": "Datang di jam sepi.",
         "nearToilet": "Toilet dekat dan mudah dijangkau."
+      },
+      "backups": {
+        "rain": {
+          "title": "Tempat dalam ruangan di {destination}",
+          "detail": "Museum atau galeri beratap dekat rute, untuk hari hujan."
+        },
+        "rest": {
+          "title": "Kafe tenang dekat rute",
+          "detail": "Tempat duduk nyaman untuk jeda sebelum lanjut."
+        },
+        "meal": {
+          "title": "Tempat makan pengganti",
+          "detail": "Pilihan lain di area yang sama kalau tempat pertama penuh."
+        },
+        "closed": {
+          "title": "Tempat serupa di {destination}",
+          "detail": "Pilihan lain kalau tempat pertama tutup."
+        }
       }
-    },
-    "itemDates": "tanggal {value}"
+    }
   },
   "extrasAdd": {
     "legend": "Tambahkan kalau perlu",

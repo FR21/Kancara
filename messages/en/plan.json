@@ -16,6 +16,7 @@
   "stages": {
     "label": "Plan stages",
     "pass": "Boarding pass",
+    "meet": "Middle ground",
     "plan": "Plan",
     "done": "done",
     "locked": "not open yet",
@@ -93,12 +94,14 @@
     "readyTitle": "Your boarding pass is ready.",
     "draftTitle": "Your boarding pass is not complete yet.",
     "hint": "Check it first. Tap any part to change it.",
+    "meetHint": "Some wishes in this group clash. We'll find the middle ground first, then make the plan.",
     "from": "From",
     "to": "To",
     "extrasEmpty": "Not filled in",
     "makePlan": "Create plan",
     "remake": "Create plan again",
     "viewPlan": "View plan",
+    "toMeet": "Find the middle ground",
     "times": "×{count}",
     "more": "+{count} more",
     "missingLabel": "Still missing",
@@ -108,6 +111,109 @@
       "group": "group",
       "budget": "budget",
       "pace": "pace"
+    }
+  },
+  "mediation": {
+    "progress": "Clash {current} of {total}",
+    "pickFirst": "Pick one way through first.",
+    "optionsLegend": "Ways to settle it",
+    "suggested": "Captain's pick",
+    "sides": {
+      "wants": "Who wants it",
+      "affected": "Who it's hard on",
+      "resting": "Who needs rest",
+      "wishes": "Wishes competing for time"
+    },
+    "others": "{count} others",
+    "titles": {
+      "access": "{activity}: not everyone can join in comfortably.",
+      "pace": "A packed pace is too much for some.",
+      "time": "More wishes than there is time for."
+    },
+    "hints": {
+      "access": "Some want this, and for others an activity like this is hard on what they need. Pick the middle ground that suits your group.",
+      "pace": "The group chose a packed pace, but some need breaks. Pick how to share it out.",
+      "time": "{wishes} wishes are must-haves, and there is time for about {slots}. Pick how to share it out."
+    },
+    "adaptBody": {
+      "themePark": "A park with step-free routes, plenty of seats, and shows to watch sitting down. The visit is kept to about 3 hours.",
+      "nature": "Nature without the hike: flat paths, a viewing deck, or a garden with toilets close by.",
+      "shopping": "A calmer place to shop, at a quiet hour, with somewhere to sit every few stores.",
+      "food": "Places whose menu suits every diet, so the whole group still eats at one table."
+    },
+    "options": {
+      "access": {
+        "adapt": {
+          "title": "Go together, a version for everyone",
+          "cost": "Those who wanted it get a lighter version, not the full one."
+        },
+        "split": {
+          "title": "Split up for a while, then regroup",
+          "body": "Those who want it go for about 3 hours, and the others go somewhere calm nearby. Everyone meets again for a meal.",
+          "cost": "The group is apart for that time, and children or anyone who needs help must have an adult with them."
+        },
+        "swap": {
+          "title": "Swap it for something everyone can join",
+          "body": "This activity stays out of the plan. Captain finds something else that is comfortable for all.",
+          "cost": "Those who wanted it give this wish up."
+        }
+      },
+      "pace": {
+        "breaks": {
+          "title": "Stay packed, with a fixed break",
+          "body": "The packed pace stays, with a rest of about 90 minutes around midday for everyone.",
+          "cost": "One activity fewer each day."
+        },
+        "split": {
+          "title": "Some rest, some carry on",
+          "body": "Around midday those who need rest go back to the lodging and the others carry on. Everyone meets again for dinner.",
+          "cost": "The group is apart at midday, and whoever rests needs someone with them."
+        },
+        "slow": {
+          "title": "Relaxed for everyone",
+          "body": "The pace changes to relaxed: 2 to 3 activities a day with plenty of breaks.",
+          "cost": "Far fewer places get visited."
+        }
+      },
+      "time": {
+        "turns": {
+          "title": "Take turns, everyone gets theirs",
+          "body": "Every wish gets its turn, each with less time than usual.",
+          "cost": "Each visit is shorter and the days feel fuller."
+        },
+        "oneEach": {
+          "title": "One wish each first",
+          "body": "Each person is sure of one of their wishes. The rest go in if time is left.",
+          "cost": "Whoever has many wishes is only sure of one."
+        },
+        "split": {
+          "title": "Split up by wish",
+          "body": "The group divides into smaller groups for half a day, then regroups.",
+          "cost": "Not every moment is shared, and children need an adult with them."
+        }
+      }
+    },
+    "gives": {
+      "none": "Nobody gives way",
+      "part": "Gives up part: {names}",
+      "all": "Gives up this wish: {names}"
+    },
+    "apart": "Apart for a while",
+    "together": "Stays together",
+    "ledger": {
+      "title": "Who gives way",
+      "hint": "Fills in from your picks so far.",
+      "none": "Hasn't given way",
+      "part": "Part of a wish ×{count}",
+      "all": "A whole wish ×{count}",
+      "flag": "{name} gives way at {count} clashes. Try another way through one of them, so it isn't always them.",
+      "principle": "A need is never traded away. Only wishes meet in the middle."
+    },
+    "summary": {
+      "title": "The middle ground in this plan",
+      "change": "Change",
+      "pace": "Packed pace",
+      "time": "Limited time"
     }
   },
   "result": {
@@ -239,8 +345,7 @@
     "retry": "Try again",
     "makeInvite": "Invite the group",
     "itineraryPending": "Captain is building the itinerary",
-    "itineraryIntro": "Here's an itinerary that accounts for each member's needs. Pick a day to see the details.",
-    "allSet": "All the required details are in. Your boarding pass is ready to check."
+    "itineraryIntro": "Here's an itinerary that accounts for each member's needs. Pick a day to see the details."
   },
   "itinerary": {
     "title": "{destination} itinerary",
@@ -282,7 +387,37 @@
     "ratingLabel": "Rating",
     "forGroup": "For your group",
     "afterThis": "After this",
-    "afterThisLeg": "{duration} · {distance} to {name}"
+    "afterThisLeg": "{duration} · {distance} to {name}",
+    "errands": {
+      "laundryDrop": "Laundry drop-off",
+      "laundryPick": "Laundry pick-up",
+      "wash": "Self-wash"
+    },
+    "backups": {
+      "title": "Backup plan",
+      "hint": "Prepared and checked for your group before you leave. Use one when the main plan can't happen.",
+      "kinds": {
+        "rain": "If it rains",
+        "rest": "If you need a rest",
+        "meal": "If the restaurant is full",
+        "closed": "If it's closed or full",
+        "main": "Main plan"
+      },
+      "use": "Use this backup",
+      "restore": "Back to the main plan",
+      "inUse": "Backup in use",
+      "inUseNote": "This slot is using a backup. The main plan is kept below.",
+      "checked": "Suits your group",
+      "count": {
+        "one": "{count} backup",
+        "other": "{count} backups"
+      },
+      "ready": {
+        "one": "{count} backup ready",
+        "other": "{count} backups ready"
+      },
+      "map": "Open {name} in Google Maps"
+    }
   },
   "invite": {
     "title": "Invite the group",
@@ -293,14 +428,6 @@
     "shareText": "Join our trip plan on Kancara"
   },
   "sample": {
-    "captured": "Got it, I've noted {items}.",
-    "itemRoute": "the route {value}",
-    "itemDestination": "the destination {value}",
-    "itemOrigin": "departure from {value}",
-    "itemGroup": "{value} people",
-    "itemBudget": "a budget of {value}",
-    "itemPace": "a {value} pace",
-    "nothing": "I didn't catch the details. Try mentioning the destination, the number of people, or the budget.",
     "itinerary": {
       "arrive": {
         "title": "Arrive in {destination}",
@@ -346,9 +473,26 @@
         "quiet": "A quiet place was chosen.",
         "noCrowds": "Visit at a quiet hour.",
         "nearToilet": "Toilets close by and easy to reach."
+      },
+      "backups": {
+        "rain": {
+          "title": "An indoor place in {destination}",
+          "detail": "A museum or covered gallery near the route, for a rainy day."
+        },
+        "rest": {
+          "title": "A quiet café near the route",
+          "detail": "Comfortable seats for a break before carrying on."
+        },
+        "meal": {
+          "title": "A replacement restaurant",
+          "detail": "Another choice in the same area if the first one is full."
+        },
+        "closed": {
+          "title": "A similar place in {destination}",
+          "detail": "Another choice if the first one is closed."
+        }
       }
-    },
-    "itemDates": "the dates {value}"
+    }
   },
   "extrasAdd": {
     "legend": "Add if it matters",

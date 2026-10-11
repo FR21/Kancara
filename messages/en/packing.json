@@ -1,0 +1,156 @@
+{
+  "title": "Packing list",
+  "open": "Packing list",
+  "openHint": "Built from the weather and each member's needs.",
+  "back": "Itinerary",
+  "loading": "Loading the packing list",
+  "error": "The packing list couldn't be loaded. Check your connection, then try again.",
+  "notFound": "This trip wasn't found. It may have been deleted.",
+  "notReady": "The packing list is built from the dates and the group. Finish the plan first.",
+  "retry": "Try again",
+  "progress": "{done} of {total} packed",
+  "allPacked": "Ready to go",
+  "saving": "Saving",
+  "saved": "Saved",
+  "saveFailed": "The change wasn't saved. Check your connection, then try again.",
+  "offline": "Offline. Changes are kept on this device and sent once you're back online.",
+  "offlineUnavailable": "There's no connection, and this list was never opened on this device.",
+  "filters": {
+    "label": "Filter the list",
+    "all": "All",
+    "todo": "Not packed",
+    "essential": "Essential",
+    "weather": "For the weather"
+  },
+  "empty": {
+    "todo": "Everything is in the bag.",
+    "other": "Nothing on the list matches this filter."
+  },
+  "everyone": "Everyone",
+  "essential": "Essential",
+  "fromCaptain": "From Captain",
+  "times": "×{count}",
+  "remove": "Remove {name} from the list",
+  "removed": {
+    "one": "{count} item removed",
+    "other": "{count} items removed"
+  },
+  "restore": "Bring back",
+  "add": {
+    "label": "Add your own item",
+    "labelFor": "Add an item for {name}",
+    "placeholder": "For example: camera",
+    "button": "Add",
+    "full": "That's {count} added items. Remove one to add another."
+  },
+  "laundry": {
+    "title": "Clothes for {days} days: how will you manage?",
+    "hint": "The count assumes 2 to 3 outfits a day. For more than a week, pick a way.",
+    "choices": {
+      "wash": "Wash on the road",
+      "laundry": "Nearest laundry",
+      "all": "Bring enough for every day"
+    },
+    "stops": {
+      "nearest": "A laundry near your stay",
+      "drop": "Drop off the group's dirty clothes and ask when they will be ready. At a coin laundry the wash can be done the same day.",
+      "pick": "Collect the clean clothes dropped off yesterday and bring the receipt. Skip this if the wash already came back with you.",
+      "washTitle": "Wash clothes at your stay",
+      "wash": "Wash tonight so the clothes are dry before the clean ones run out."
+    },
+    "plan": {
+      "laundry": "Added to the itinerary: drop-off on day {days}, pick-up the day after.",
+      "wash": "Added to the itinerary: an evening of washing on day {days}.",
+      "looking": "Looking for the nearest laundry",
+      "waiting": "No connection. The laundry stops join the itinerary once you are back online.",
+      "failed": "The nearest laundry couldn't be looked up, so it is not in the itinerary yet.",
+      "noItinerary": "There is no itinerary yet. The laundry stops are added when it is made.",
+      "view": "See the itinerary"
+    }
+  },
+  "weather": {
+    "title": "Weather in {place}",
+    "loading": "Loading the weather",
+    "unavailable": "The weather couldn't be fetched, so nothing for the weather is on the list yet.",
+    "typical": "Marked \"usually\": the weather on the same date last year. The forecast appears 16 days ahead.",
+    "typicalTag": "Usually",
+    "temps": "{max}° / {min}°",
+    "tempsLabel": "high {max} degrees, low {min} degrees",
+    "rainChance": "Rain {chance}%",
+    "rainMm": "Rain {mm} mm",
+    "dry": "No rain",
+    "sky": {
+      "clear": "Clear",
+      "partly": "Partly cloudy",
+      "cloudy": "Cloudy",
+      "fog": "Foggy",
+      "drizzle": "Drizzle",
+      "rain": "Rain",
+      "storm": "Thunderstorm",
+      "snow": "Snow"
+    }
+  },
+  "captain": {
+    "pending": "Captain is reading your group's notes.",
+    "failed": "Captain couldn't add suggestions. This list is still complete from its basic rules.",
+    "again": "Ask Captain to check again",
+    "added": {
+      "one": "Captain added {count} item from what you wrote and planned.",
+      "other": "Captain added {count} items from what you wrote and planned."
+    },
+    "none": "Captain has read your plan. There is nothing to add."
+  },
+  "reasons": {
+    "basics": "Trip basics",
+    "rainChance": "Rain {chance}% on {day}",
+    "rainTypical": "Usually rains on {day}",
+    "heat": "Hot, {temp}° on {day}",
+    "heatTypical": "Usually hot, {temp}° on {day}",
+    "cold": "Cool, {temp}° on {day}",
+    "coldTypical": "Usually cool, {temp}° on {day}",
+    "atPlace": "{reason} in {place}",
+    "allergy": "Allergy: {allergies}",
+    "own": "Added by you"
+  },
+  "items": {
+    "ids": "ID or passport, and tickets",
+    "money": "Cash and cards",
+    "chargers": "Chargers and a power bank",
+    "personalMeds": "Everyone's own medication",
+    "firstAid": "A small first-aid kit",
+    "clothes": "Clothes for {days} days ({min}–{max} outfits)",
+    "toiletries": "Toiletries",
+    "laundryKit": "Travel detergent and a clothesline",
+    "laundryBag": "Laundry bag",
+    "rainGear": "Raincoat or umbrella",
+    "dryBag": "Waterproof pouch for phones and papers",
+    "sunCare": "Hat and sunscreen",
+    "waterBottle": "Water bottle",
+    "warmLayer": "Jacket",
+    "winterWear": "Gloves, scarf, and warm layers",
+    "diapers": "Diapers and wet wipes",
+    "babyFood": "Milk, food, and bottles",
+    "babyMeds": "Children's fever medicine and a thermometer",
+    "spareOutfits": "Extra changes of clothes",
+    "comfortToy": "A favourite toy or blanket",
+    "carrier": "Stroller or carrier",
+    "kidSnacks": "Snacks and a water bottle",
+    "kidPlay": "Toys or books for the road",
+    "contactCard": "Name card and emergency number in a pocket",
+    "regularMeds": "Regular medication for every day, plus spare",
+    "medNotes": "Copy of prescriptions and the doctor's number",
+    "comfortShoes": "Comfortable shoes already broken in",
+    "wheelchairKit": "Seat cushion and wheelchair supplies",
+    "walkingAid": "Cane or walking aid",
+    "foldingStool": "Light folding stool",
+    "dietSnacks": "Snacks that fit the diet",
+    "napKit": "Neck pillow and eye mask",
+    "earProtection": "Earplugs or noise-cancelling headphones",
+    "toiletKit": "Tissues, hand sanitizer, and spare underwear",
+    "allergyMeds": "Allergy medication from the doctor",
+    "allergyCard": "Allergy card to show at restaurants",
+    "drivingLicense": "Driving licence and rental papers",
+    "transitCard": "Transit card",
+    "outdoorKit": "Walking shoes and insect repellent"
+  }
+}

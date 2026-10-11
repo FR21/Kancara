@@ -10,6 +10,7 @@ import GenderSelect from "@/components/profile/GenderSelect";
 import ProfilePhoto from "@/components/profile/ProfilePhoto";
 import { ProfileError, saveProfileDetails, uploadProfilePhoto } from "@/lib/api/profile";
 import { removeSession } from "@/lib/auth/session";
+import { clearOfflineCaches } from "@/lib/offline";
 import { auth } from "@/lib/firebase/client";
 import type { Profile } from "@/lib/profile";
 import { isAgeValid, isUsernameValid, MAX_AGE, MAX_PHOTO_BYTES } from "@/lib/profile-fields";
@@ -119,6 +120,8 @@ export default function ProfileContent({ email, profile }: ProfileContentProps) 
   const handleLogout = async () => {
     try {
       await signOut(auth);
+      // What was kept for offline use belongs to this person, so it goes before the session does.
+      await clearOfflineCaches();
       await removeSession();
       router.push("/login");
     } catch (caught) {

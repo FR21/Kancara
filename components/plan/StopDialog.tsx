@@ -1,18 +1,36 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Car, Clock, ExternalLink, MapPin, Star, Wallet, X } from "lucide-react";
+import {
+  ArrowDown,
+  ArrowLeft,
+  ArrowRight,
+  Car,
+  Clock,
+  ExternalLink,
+  LifeBuoy,
+  MapPin,
+  Repeat2,
+  Star,
+  Wallet,
+  X,
+} from "lucide-react";
 import { type KeyboardEvent, type MouseEvent, useEffect, useRef } from "react";
 import type { ItineraryItem } from "@/lib/api/captain";
+import { isLegCurrent, listBackups } from "@/lib/backups";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
+import { splitTime } from "@/lib/stop-time";
+import { plural } from "@/lib/trips/format";
+import { useLocale } from "@/lib/use-locale";
 import {
   type StopPhase,
+  ErrandBadge,
   formatDuration,
   PhaseBadge,
-  splitTime,
   StopCovers,
   StopViolations,
 } from "./ItineraryStop";
+import StopBackups, { BACKUPS_ID } from "./StopBackups";
 import { OUTLINE_BUTTON } from "./styles";
 
 type StopDialogProps = {
@@ -23,7 +41,11 @@ type StopDialogProps = {
   dayLabel: string;
   destination: string;
   text: Messages["plan"]["itinerary"];
+  /** False for a sample plan, whose places were never held against the group's needs. */
+  validated: boolean;
   describeCover: (cover: ItineraryItem["covers"][number]) => string;
+  /** Switches the open stop to one of its backups. Absent where the plan is only read. */
+  onUseBackup?: (backupIndex: number) => void;
   onNavigate: (index: number) => void;
   onClose: () => void;
 };
@@ -36,7 +58,11 @@ const FACT_LABEL = "text-caption font-bold text-text-muted";
 const SECTION_TITLE = "font-sans text-label text-text";
 
 function mapsUrl(item: ItineraryItem, destination: string): string {
-  const query = [item.title, item.address || destination].filter(Boolean).join(", ");
+  // A laundry stop no place was found for opens a search for laundries around the destination.
+  const query =
+    item.errand && !item.address
+      ? `laundry ${destination}`
+      : [item.title, item.address || destination].filter(Boolean).join(", ");
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
@@ -49,10 +75,13 @@ export default function StopDialog({
   dayLabel,
   destination,
   text,
+  validated,
   describeCover,
+  onUseBackup,
   onNavigate,
   onClose,
 }: StopDialogProps) {
+  const locale = useLocale();
   const dialogRef = useRef<HTMLDialogElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const open = index !== null;
@@ -67,7 +96,7 @@ export default function StopDialog({
 
   // Each stop starts at its top, whatever the last one was scrolled to.
   useEffect(() => {
-    scrollRef.current?.scrollTo({ top: 0 });
+    scrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
   }, [index]);
 
   const closeOnBackdrop = (event: MouseEvent<HTMLDialogElement>) => {
@@ -80,6 +109,12 @@ export default function StopDialog({
     if (target >= 0 && target < items.length) onNavigate(target);
   };
 
+  // The slot now holds another place, so the sheet goes back to its top where that place is named.
+  const switchBackup = (backupIndex: number) => {
+    onUseBackup?.(backupIndex);
+    scrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
+  };
+
   const handleKeyDown = (event: KeyboardEvent<HTMLDialogElement>) => {
     if (event.key === "ArrowRight") step(1);
     if (event.key === "ArrowLeft") step(-1);
@@ -89,6 +124,7 @@ export default function StopDialog({
   const duration = item ? formatDuration(item.time, text) : "";
   const phase = index === null ? null : (phases[index] ?? null);
   const nextItem = index === null ? undefined : items[index + 1];
+  const standingBy = item ? listBackups(item).filter((backup) => backup.kind !== "main").length : 0;
 
   return (
     <dialog
@@ -111,7 +147,7 @@ export default function StopDialog({
             </button>
           </div>
 
-          <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain [scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin]">
+          <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain [scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin] motion-safe:scroll-smooth">
             {item.imageUrl && (
               // eslint-disable-next-line @next/next/no-img-element -- place photos come from a remote API with per-request URLs
               <img src={item.imageUrl} alt="" className="aspect-2/1 w-full bg-surface-muted object-cover sm:aspect-5/2" />
@@ -127,12 +163,41 @@ export default function StopDialog({
                 <h2 id="stop-dialog-title" className="mt-1 text-h3 text-pretty text-text">
                   {item.title}
                 </h2>
-                {phase && (
-                  <p className="mt-3">
-                    <PhaseBadge phase={phase} text={text} />
+                {(phase || item.errand) && (
+                  <p className="mt-3 flex flex-wrap gap-2">
+                    {phase && <PhaseBadge phase={phase} text={text} />}
+                    {item.errand && <ErrandBadge kind={item.errand} text={text} />}
                   </p>
                 )}
                 {item.detail && <p className="mt-3 text-body text-pretty text-text-muted">{item.detail}</p>}
+                {!item.standIn && standingBy > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById(BACKUPS_ID)?.scrollIntoView({ block: "start" })}
+                    className="group/jump mt-4 inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-border-strong px-4 text-label text-text tabular-nums transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-subtle active:scale-[0.97]"
+                  >
+                    <LifeBuoy className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                    {plural(text.backups.ready, standingBy, locale)}
+                    <ArrowDown
+                      className="size-4 shrink-0 text-text-muted transition-[translate] duration-200 ease-out group-hover/jump:translate-y-1"
+                      aria-hidden="true"
+                    />
+                  </button>
+                )}
+                {item.standIn && (
+                  <p
+                    role="status"
+                    className="mt-4 flex items-start gap-3 rounded-2xl bg-primary-subtle px-4 py-3 text-body-sm text-pretty text-on-primary-subtle"
+                  >
+                    <Repeat2 className="size-5 shrink-0" aria-hidden="true" />
+                    <span className="min-w-0">
+                      <span className="block text-label">
+                        {text.backups.inUse} · {text.backups.kinds[item.standIn]}
+                      </span>
+                      {text.backups.inUseNote}
+                    </span>
+                  </p>
+                )}
               </div>
 
               <dl className="grid gap-4 empty:hidden sm:grid-cols-2">
@@ -176,16 +241,18 @@ export default function StopDialog({
                 )}
               </dl>
 
-              <a
-                href={mapsUrl(item, destination)}
-                target="_blank"
-                rel="noopener noreferrer"
-                className={`${OUTLINE_BUTTON} w-full`}
-              >
-                <MapPin className="size-4" aria-hidden="true" />
-                {text.openMap}
-                <ExternalLink className="size-4 text-text-muted" aria-hidden="true" />
-              </a>
+              {item.errand !== "wash" && (
+                <a
+                  href={mapsUrl(item, destination)}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={`${OUTLINE_BUTTON} w-full`}
+                >
+                  <MapPin className="size-4" aria-hidden="true" />
+                  {text.openMap}
+                  <ExternalLink className="size-4 text-text-muted" aria-hidden="true" />
+                </a>
+              )}
 
               {(item.covers.length > 0 || (item.violations?.length ?? 0) > 0) && (
                 <section>
@@ -197,7 +264,16 @@ export default function StopDialog({
                 </section>
               )}
 
-              {nextItem && item.travelToNext && (
+              <StopBackups
+                item={item}
+                destination={destination}
+                text={text}
+                validated={validated}
+                describeCover={describeCover}
+                onUse={onUseBackup ? switchBackup : undefined}
+              />
+
+              {nextItem && isLegCurrent(item, nextItem) && item.travelToNext && (
                 <section>
                   <h3 className={SECTION_TITLE}>{text.afterThis}</h3>
                   <p className="mt-2 flex items-start gap-3 text-body-sm text-pretty text-text tabular-nums">
