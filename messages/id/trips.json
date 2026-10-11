@@ -136,11 +136,11 @@
     "notFound": "Perjalanan ini tidak ditemukan. Mungkin sudah dihapus.",
     "missing": "Perjalanan ini belum punya itinerary.",
     "missingOrganizer": "Captain bisa menyusunnya sekarang dari tanggal, rombongan, dan kebutuhan yang sudah tersimpan.",
-    "missingMember": "Itinerary muncul di sini setelah penyelenggara membuatnya.",
     "missingDraft": "Lengkapi dulu rencananya, lalu itinerary dibuat dari sana.",
     "generate": "Buat itinerary",
     "generating": "Captain sedang menyusun itinerary. Biasanya kurang dari satu menit.",
-    "generateFailed": "Itinerary belum berhasil dibuat. Periksa koneksimu, lalu coba lagi."
+    "generateFailed": "Itinerary belum berhasil dibuat. Periksa koneksimu, lalu coba lagi.",
+    "changeFailed": "Perubahan belum tersimpan. Periksa koneksimu, lalu coba lagi."
   },
   "placeholder": {
     "summary": "Rangkuman perjalanan",

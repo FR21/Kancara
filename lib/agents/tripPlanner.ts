@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { GoogleGenAI } from '@google/genai';
-import { findDateRange } from '@/lib/api/sample-dates';
-import { buildCaptainInput, buildCaptainInstruction, readHistory, settleTripEnd } from './captainPrompt';
+import { BACKUP_KINDS } from '@/lib/api/captain';
+import { mediationBrief } from './mediationBrief';
 import { 
   searchBookingHotels, 
   getCachedAmusementAndAttractions, 
@@ -12,8 +12,9 @@ import {
 const client = new GoogleGenAI({});
 
 const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
+const MAX_BACKUPS_PER_STOP = 2;
 
-async function executeSearchPlaces(query: string, locale: string = "id") {
+export async function executeSearchPlaces(query: string, locale: string = "id") {
   if (!GOOGLE_MAPS_API_KEY) return [];
   try {
     const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
@@ -82,94 +83,11 @@ async function executeGetTravelTime(origin: string, destination: string, locale:
   }
 }
 
-// 1. CAPTAIN AGENT (Mengurus Chat & Ekstraksi Data)
-export async function captainAgentReply(requestBody: any) {
-  const { story, draft, locale } = requestBody;
-  const history = readHistory(requestBody.history);
-  const today = new Date().toISOString().split("T")[0];
-  const statedDates = findDateRange(typeof story === "string" ? story : "", new Date());
-
-  const interaction = await client.interactions.create({
-    model: 'gemini-3.5-flash-lite',
-    input: buildCaptainInput(story, statedDates ? { ...draft, ...statedDates } : draft, history),
-    system_instruction: buildCaptainInstruction(locale, today),
-    generation_config: { max_output_tokens: 2048 },
-    response_format: {
-      type: "text",
-      mime_type: "application/json",
-      schema: {
-        type: "object",
-        properties: {
-          message: { type: "string" },
-          action: { type: "string", enum: ["ask", "confirm", "proceed"] },
-          draftPatch: {
-            type: "object",
-            properties: {
-              origin: { type: "string" },
-              destinations: { type: "array", items: { type: "string" } },
-              startDate: { type: "string", format: "date", description: "Format YYYY-MM-DD. Jangan diisi jika tidak ada." },
-              endDate: { type: "string", format: "date", description: "Format YYYY-MM-DD. Jangan diisi jika tidak ada." },
-              tripDays: { type: "integer", description: "Trip length in days, when the user gave a duration." },
-              members: {
-                type: "array",
-                items: {
-                  type: "object",
-                  required: ["ageGroup"],
-                  properties: {
-                    ageGroup: { type: "string", enum: ["adult", "elderly", "child", "toddler"] },
-                    name: { type: "string" },
-                    needs: { type: "array", items: { type: "string", enum: ["wheelchair", "noStairs", "shortWalks", "halal", "vegetarian", "vegan", "nap", "frequentBreaks", "quiet", "noCrowds", "nearToilet"] } },
-                    allergies: { type: "string", description: "Food allergies or other allergies" },
-                    interests: { 
-                      type: "object", 
-                      properties: {
-                        museum: { type: "string", enum: ["must", "nice"] },
-                        shopping: { type: "string", enum: ["must", "nice"] },
-                        nature: { type: "string", enum: ["must", "nice"] },
-                        food: { type: "string", enum: ["must", "nice"] },
-                        themePark: { type: "string", enum: ["must", "nice"] }
-                      }
-                    }
-                  }
-                }
-              },
-              budget: { type: "number", description: "Total budget in exact numerical Rupiah (e.g., 5000000 for 5 million)." },
-              pace: { type: "string", enum: ["relaxed", "packed"] },
-              extras: {
-                type: "object",
-                properties: {
-                  mustVisit: { type: "string" },
-                  avoid: { type: "string" },
-                  lodging: { type: "string" }
-                }
-              }
-            }
-          }
-        },
-        required: ["message", "action", "draftPatch"]
-      }
-    }
-  });
-
-  try {
-    const reply = JSON.parse(interaction.output_text || "{}");
-    const patch = settleTripEnd(reply.draftPatch ?? {}, draft?.startDate, today);
-    reply.draftPatch = statedDates ? { ...patch, ...statedDates } : patch;
-    return reply;
-  } catch {
-    const message = locale === "en" ? "Sorry, I lost that one. Could you say it again?" : "Maaf, aku ketinggalan yang barusan. Boleh diulang?";
-    return { message, action: "ask", draftPatch: {} };
-  }
-}
-
-// 2. PLANNER & RULE GUARDIAN (Looping Pembuat Itinerary)
-
 function detectTripFocalZone(draft: any): { zone: string; budgetTier: "budget" | "moderate" | "luxury" } {
   const destStr = (draft?.destinations || []).join(" ") + " " + (draft?.extras?.mustVisit || "") + " " + (draft?.extras?.lodging || "") + " " + (draft?.notes || "");
   const lower = destStr.toLowerCase();
   
   let zone = "";
-  // Deteksi klaster wilayah populer
   if (lower.includes("pik") || lower.includes("pantai indah kapuk") || lower.includes("ancol") || lower.includes("dufan") || lower.includes("kelapa gading") || lower.includes("muara karang") || lower.includes("pluit") || lower.includes("jakut")) {
     zone = "Jakarta Utara";
   } else if (lower.includes("blok m") || lower.includes("senopati") || lower.includes("kemang") || lower.includes("scbd") || lower.includes("cilandak") || lower.includes("pondok indah") || lower.includes("tebet") || lower.includes("jaksel")) {
@@ -194,13 +112,12 @@ function detectTripFocalZone(draft: any): { zone: string; budgetTier: "budget" |
     zone = "Dago";
   }
 
-  // Deteksi kategori budget
   const totalBudget = draft?.budget || 0;
   const days = (draft?.startDate && draft?.endDate) 
     ? Math.max(1, Math.round((Date.parse(draft.endDate) - Date.parse(draft.startDate)) / 86400000) + 1) 
     : 1;
 
-  // Alokasi wajar penginapan per malam (~35% dari budget harian)
+  // Lodging fairly takes about 35% of the budget, spread over the trip's days.
   const estimatedLodgingPerNight = totalBudget > 0 ? (totalBudget * 0.35) / days : 750000;
   
   let budgetTier: "budget" | "moderate" | "luxury" = "moderate";
@@ -216,11 +133,10 @@ function detectTripFocalZone(draft: any): { zone: string; budgetTier: "budget" |
 export async function runTripPlanningFlow(requestBody: any) {
   const { draft, locale } = requestBody;
 
-  // Deteksi klaster wilayah utama dan tingkat budget agar rekomendasi hotel tepat sasaran & tidak monoton
+  // The trip's main area and budget tier narrow the hotel search, so the suggestions fit the group and vary.
   const { zone, budgetTier } = detectTripFocalZone(draft);
   const primaryDestination = draft?.destinations?.[0];
 
-  // Tarik rekomendasi hotel live dari Booking.com (RapidAPI) dengan zona & budget tier spesifik
   let liveHotels: HotelDeal[] = [];
   let liveAttractions: AttractionDeal[] = [];
 
@@ -322,15 +238,46 @@ function evaluateRules(item: any, place: any, draft: any, locale: string = "id")
 }
 
 
+// Looks each backup up and runs it through the same checks as a main stop, so what is offered on the day has
+// already been held against the group's needs. Backups that pass every check come first.
+async function checkBackups(item: any, draft: any, locale: string) {
+  const listed: any[] = Array.isArray(item.backups) ? item.backups : [];
+  const usable = listed
+    .filter(
+      (backup) =>
+        BACKUP_KINDS.some((kind) => kind === backup?.kind) &&
+        typeof backup.title === "string" &&
+        backup.title.trim() !== "" &&
+        backup.title.trim().toLowerCase() !== String(item.title).trim().toLowerCase(),
+    )
+    .slice(0, MAX_BACKUPS_PER_STOP);
+  const checked = await Promise.all(
+    usable.map(async (backup) => {
+      const places = await executeSearchPlaces(cleanPlaceQuery(backup.title, draft.destinations?.[0]), locale);
+      const place = places?.[0] || null;
+      const entry: any = {
+        kind: backup.kind,
+        title: backup.title.trim(),
+        detail: typeof backup.detail === "string" ? backup.detail : "",
+        address: place?.address,
+        rating: place?.rating,
+      };
+      evaluateRules(entry, place, draft, locale);
+      return entry;
+    }),
+  );
+  return checked.sort((first, second) => first.violations.length - second.violations.length);
+}
+
 function cleanPlaceQuery(title: string, destination?: string): string {
   let cleaned = (title || "").trim();
-  // Bersihkan prefix aksi seperti "Check-in di", "Makan siang di", dll.
+  // Leading action words such as "Check-in di" or "Makan siang di" are dropped, so only the place is searched.
   cleaned = cleaned.replace(
     /^(check[- ]?in (di |ke )?|menginap di |sarapan (pagi )?(di )?|makan (siang|malam) (di )?|kulineran (di )?|kunjungan (ke )?|menuju (ke )?|belanja di |wisata (ke )?)/i,
     ""
   ).trim();
 
-  // Jika setelah dibersihkan hanya menyisakan kata "hotel" atau kosong, arahkan ke pencarian hotel di destinasi
+  // A title that was only an action leaves "hotel" or nothing; the search then falls back to the destination's hotels.
   if (/^hotel$/i.test(cleaned) || !cleaned) {
     return destination ? `Hotel terbaik di ${destination}` : "Hotel";
   }
@@ -342,7 +289,7 @@ function cleanPlaceQuery(title: string, destination?: string): string {
   return cleaned.trim();
 }
 
-  // SEQUENTIAL ENRICHMENT (to prevent API rate limits)
+  // Stops are looked up one after another, so the outside APIs' rate limits are not hit.
   if (currentPlan.days && Array.isArray(currentPlan.days)) {
     for (const day of currentPlan.days) {
       if (day.items && Array.isArray(day.items)) {
@@ -361,8 +308,8 @@ function cleanPlaceQuery(title: string, destination?: string): string {
               item.openingHours = place.open_now !== undefined ? (place.open_now ? (locale === "en" ? "Open Now" : "Buka Sekarang") : (locale === "en" ? "Closed" : "Tutup")) : item.openingHours;
             }
             evaluateRules(item, places?.[0] || null, draft, locale);
+            item.backups = await checkBackups(item, draft, locale);
             
-            // Hitung waktu tempuh ke tempat berikutnya
             if (i < arr.length - 1) {
               const nextItem = arr[i + 1];
               const q1 = cleanPlaceQuery(item.title, draft.destinations?.[0]);
@@ -415,9 +362,22 @@ async function runAgent(systemInstruction: string, promptText: string, locale: s
                     properties: {
                       time: { type: "string" },
                       title: { type: "string", description: "Specific real venue name on Google Maps (e.g. 'Talassa Jakarta - Cove at Batavia', 'Mercure Jakarta Batavia', 'Museum Nasional Indonesia'). NEVER generic titles like 'Check-in', 'Check-in Hotel', or 'Makan Siang'." },
-                      detail: { type: "string" }
+                      detail: { type: "string" },
+                      backups: {
+                        type: "array",
+                        description: "1 or 2 fallback places for this exact time slot, each one checked against the members' needs.",
+                        items: {
+                          type: "object",
+                          properties: {
+                            kind: { type: "string", enum: [...BACKUP_KINDS] },
+                            title: { type: "string", description: "Specific real venue name on Google Maps, not used anywhere else in the plan." },
+                            detail: { type: "string" }
+                          },
+                          required: ["kind", "title", "detail"]
+                        }
+                      }
                     },
-                    required: ["time", "title", "detail"]
+                    required: ["time", "title", "detail", "backups"]
                   }
                 }
               },
@@ -445,7 +405,6 @@ async function plannerAgent(
   focalZone?: string,
   budgetTier?: "budget" | "moderate" | "luxury"
 ) {
-  const isEn = locale === "en";
   const memberCount = Array.isArray(draft.members) && draft.members.length > 0 ? draft.members.length : 1;
   const daysCount = (draft.startDate && draft.endDate) 
     ? Math.max(1, Math.round((Date.parse(draft.endDate) - Date.parse(draft.startDate)) / 86400000) + 1) 
@@ -460,7 +419,7 @@ async function plannerAgent(
       `\nCRITICAL PROXIMITY & ZONE INSTRUCTION:
 - If user did NOT specify extras.lodging, pick one of these real hotels located closest to Day 1's main attractions as the title for your accommodation/check-in stop.
 - ENSURE the hotel is in the SAME geographic zone as the activities (NO cross-city commute!).
-- List the other 2-3 hotel options as alternatives with their exact prices in the detail!`
+- Offer one or two of the other hotels as that stop's "backups" (kind "closed"), with their exact prices in the backup's detail!`
     : "";
 
   const liveAttractionPrompt = liveAttractions.length > 0
@@ -470,7 +429,7 @@ async function plannerAgent(
     : "";
 
   return await runAgent(
-    `You are an expert, meticulous, and realistic AI Trip Planner. Create a detailed, day-by-day itinerary based on the user's trip plan data.${liveHotelPrompt}${liveAttractionPrompt}
+    `You are an expert, meticulous, and realistic AI Trip Planner. Create a detailed, day-by-day itinerary based on the user's trip plan data.${liveHotelPrompt}${liveAttractionPrompt}${mediationBrief(draft, locale)}
 
 CRITICAL RULES FOR ACCURACY, PLACES & BUDGET:
 1. SPECIFIC REAL VENUES ONLY (NO GENERIC ACTIVITY TITLES):
@@ -481,11 +440,7 @@ CRITICAL RULES FOR ACCURACY, PLACES & BUDGET:
    - CRITICAL PROXIMITY RULE: The hotel MUST be located in the SAME geographic cluster as Day 1's activities (e.g. if Day 1 activities are in North Jakarta / PIK / Ancol, the hotel MUST be in North Jakarta / PIK, NEVER South Jakarta!).
    - If user specified "extras.lodging" in the draft, USE THAT HOTEL as the "title" for accommodation/check-in.
    - If user did NOT specify a hotel: Select 1 REAL HOTEL matching the zone and budget tier as the "title".
-   - In the "detail" of the hotel check-in stop:
-     Provide a brief description AND 2-3 REAL ALTERNATIVE HOTELS nearby with estimated price per night, formatted cleanly:
-     ${isEn 
-       ? "Include nearby hotel alternatives: '• Option 1: [Hotel Name] (~price/night)\n• Option 2: [Hotel Name] (~price/night)'"
-       : "Wajib sertakan rekomendasi opsi hotel terdekat: '• Opsi 1: [Nama Hotel] (~estimasi harga/malam)\n• Opsi 2: [Nama Hotel] (~estimasi harga/malam)'"}
+   - In the "detail" of the hotel check-in stop: a brief description with the estimated price per night. Real alternative hotels nearby go in that stop's "backups" (kind "closed"), each with its estimated price per night in the backup's detail.
 
 3. DINING & RESTAURANT RULES (BUDGET-AWARE):
    - For every meal stop (breakfast, lunch, dinner), "title" MUST be a SPECIFIC, REAL RESTAURANT or EATERY NAME.
@@ -493,7 +448,7 @@ CRITICAL RULES FOR ACCURACY, PLACES & BUDGET:
    - BUDGET ALIGNMENT: 
      ${totalBudget ? `Total group budget is Rp ${totalBudget.toLocaleString('id-ID')} for ${memberCount} people across ${daysCount} days (approx. Rp ${budgetPerPersonPerDay?.toLocaleString('id-ID')} per person/day). Pick restaurants whose price range logically fits this budget! Mention estimated price per person in the detail.` : 'Pick popular, high-value restaurants suitable for travelers and their budget.'}
    - STRICT DIET & ALLERGIES: Honour halal, vegetarian, vegan, and member allergy constraints strictly. If halal is requested, choose halal-certified or Muslim-friendly spots.
-   - In the "detail": Mention recommended signature dishes, approximate price per person, and 1-2 nearby alternative eateries in the same area.
+   - In the "detail": Mention recommended signature dishes and the approximate price per person. Alternative eateries go in "backups", not in the detail.
 
 4. LOGICAL TIMINGS & REALISTIC PACE:
    - Account for travel distance and traffic between consecutive stops.
@@ -503,6 +458,12 @@ CRITICAL RULES FOR ACCURACY, PLACES & BUDGET:
    - Member needs (wheelchair, stroller/no stairs, elderly, toddlers) must be prioritized in venue selection.
    - Honour members' "customNeeds", "customInterests", and free-text "notes".
    - Besides the fixed choices, the data holds entries people typed themselves: a member's exact "age", "customNeeds" and "customInterests" (level "must" outranks "nice"), the trip's "extras.customTransport", and the free-text "notes". Honour them exactly like the fixed ones.
+
+6. A BACKUP PLAN FOR EVERY STOP ("backups"):
+   - Give EVERY stop 1 or 2 backups for the same time slot, so the group already has somewhere to go when the stop cannot happen. They are prepared now because on the day there may be no internet.
+   - "kind" says when the backup is for: "rain" = an INDOOR place for a rainy day (every outdoor stop needs one); "rest" = a calm place close by to sit and recover, such as a café, a lounge, or a shaded seating area; "meal" = a replacement restaurant (every meal stop needs one); "closed" = a similar place for when the stop is closed or full.
+   - A backup "title" is a SPECIFIC REAL venue on Google Maps within about 15 minutes of the stop it replaces. Never reuse a place that appears anywhere else in the plan.
+   - A backup honours every member's needs, diet, and allergies exactly like a main stop does. Its "detail" says in one or two sentences why it suits this group and what to know before going (indoor or outdoor, price, opening hours).
 
 Do it perfectly on the first try.`,
     `Please generate a detailed itinerary for:

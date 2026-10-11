@@ -1,12 +1,13 @@
 "use client";
 
-import { ArrowRight, Check, CircleDashed, CopyPlus, Share2, Trash2, Wallet, X } from "lucide-react";
+import { ArrowRight, Check, CircleDashed, CopyPlus, Luggage, Share2, Trash2, Wallet, X } from "lucide-react";
 import Link from "next/link";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate, PASS_FIELDS } from "@/lib/plan-draft";
 import { formatDays, formatDaysAhead, formatMoney, formatTripDates, plural } from "@/lib/trips/format";
 import { type TripCard, DRAFT_SECTIONS, tripHref } from "@/lib/trips/trip";
 import { useLocale } from "@/lib/use-locale";
+import { useMessages } from "@/lib/use-messages";
 import MemberStack from "./MemberStack";
 import { OfflineBadge, StatusPill, ViolationsBadge } from "./TripBadges";
 import TripRoute from "./TripRoute";
@@ -40,11 +41,10 @@ const NEED =
 // the list; on a phone the same panel rises as a sheet.
 export default function TripDetail({ card, text, needLabels, actions, headingId, onClose }: TripDetailProps) {
   const locale = useLocale();
+  const packingText = useMessages("packing");
   const title = card.name || text.card.untitled;
   const detail = text.detail;
   const hasBadges = card.violations !== undefined || card.offline !== undefined;
-  // Only the organizer may delete; invited members still duplicate and share.
-  const canDelete = card.role === "organizer";
 
   const openLabels = {
     ongoing: text.card.openToday,
@@ -241,6 +241,18 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
           </Link>
 
           <div role="group" aria-label={detail.actions} className="flex flex-wrap gap-2">
+            {card.status !== "draft" && (
+              <Link
+                href={`/trips/${encodeURIComponent(card.id)}/packing`}
+                className={`group/action ${ACTION} text-text hover:bg-surface-muted`}
+              >
+                <Luggage
+                  className="size-4 transition-[rotate] duration-300 ease-spring group-hover/action:-rotate-12"
+                  aria-hidden="true"
+                />
+                {packingText.open}
+              </Link>
+            )}
             <button
               type="button"
               onClick={() => actions.onDuplicate(card)}
@@ -263,19 +275,17 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
               />
               {text.menu.share}
             </button>
-            {canDelete && (
-              <button
-                type="button"
-                onClick={() => actions.onDelete(card)}
-                className={`group/action ${ACTION} text-error hover:border-error hover:bg-error-subtle`}
-              >
-                <Trash2
-                  className="size-4 transition-[rotate] duration-300 ease-spring group-hover/action:rotate-12"
-                  aria-hidden="true"
-                />
-                {text.menu.delete}
-              </button>
-            )}
+            <button
+              type="button"
+              onClick={() => actions.onDelete(card)}
+              className={`group/action ${ACTION} text-error hover:border-error hover:bg-error-subtle`}
+            >
+              <Trash2
+                className="size-4 transition-[rotate] duration-300 ease-spring group-hover/action:rotate-12"
+                aria-hidden="true"
+              />
+              {text.menu.delete}
+            </button>
           </div>
         </div>
       </div>

@@ -13,7 +13,7 @@ import {
 } from "@/lib/trips/trip";
 
 export type HistoryFilter = { query: string; year: number | null };
-export type TripPlan = { name: string; draft: PlanDraft; violations?: number; itinerary: Itinerary };
+export type TripPlan = { name: string; draft: PlanDraft; violations?: number; itinerary?: Itinerary };
 
 export class TripsError extends Error {
   constructor(
@@ -189,6 +189,18 @@ export const trips = {
         throw caught;
       });
     const response = await (id === null ? create() : update(id));
+    const card = parseCard(await response.json());
+    if (!card) throw new TripsError("Invalid save response");
+    return card;
+  },
+
+  /** Changes a trip that is already saved. Unlike `save`, a trip that is gone stays gone. */
+  async update(plan: TripPlan, id: string): Promise<TripCard> {
+    const response = await send(`/${encodeURIComponent(id)}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(plan),
+    });
     const card = parseCard(await response.json());
     if (!card) throw new TripsError("Invalid save response");
     return card;

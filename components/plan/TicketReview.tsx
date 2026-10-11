@@ -12,6 +12,8 @@ type TicketReviewProps = {
   text: Messages["plan"];
   hasPlan: boolean;
   busy: boolean;
+  /** Wishes in the group clash, so the way on leads through finding the middle ground. */
+  hasClashes: boolean;
   onEdit: (question: QuestionKey, memberId?: string) => void;
   onAddMember: () => void;
   onMakePlan: () => void;
@@ -23,6 +25,7 @@ export default function TicketReview({
   text,
   hasPlan,
   busy,
+  hasClashes,
   onEdit,
   onAddMember,
   onMakePlan,
@@ -37,7 +40,7 @@ export default function TicketReview({
         <h1 tabIndex={-1} className="text-h2 text-balance text-text outline-none lg:text-h1">
           {ready ? ticket.readyTitle : ticket.draftTitle}
         </h1>
-        <p className="mt-2 text-body text-text-muted">{ticket.hint}</p>
+        <p className="mt-2 text-body text-pretty text-text-muted">{ready && hasClashes ? ticket.meetHint : ticket.hint}</p>
       </div>
 
       <TicketCard draft={draft} text={text} arriving onEdit={onEdit} onAddMember={onAddMember}>
@@ -48,7 +51,8 @@ export default function TicketReview({
             onClick={onMakePlan}
             className={`${PRIMARY_BUTTON} h-14 w-full px-4 whitespace-nowrap shadow-md shadow-primary/20 disabled:shadow-none`}
           >
-            {hasPlan ? ticket.remake : ticket.makePlan}
+            {hasClashes && ticket.toMeet}
+            {!hasClashes && (hasPlan ? ticket.remake : ticket.makePlan)}
             <ArrowRight className="size-4" aria-hidden="true" />
           </button>
           {hasPlan && (

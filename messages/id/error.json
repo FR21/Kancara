@@ -7,6 +7,11 @@
     "title": "Halaman Tidak Ditemukan",
     "description": "Maaf, kami tidak dapat menemukan halaman yang Anda cari. Mungkin URL-nya salah atau halaman sudah dihapus."
   },
+  "offline": {
+    "title": "Sedang offline",
+    "description": "Halaman ini belum pernah dibuka di perangkat ini. Perjalanan yang sudah pernah dibuka tetap bisa dilihat.",
+    "trips": "Perjalanan Saya"
+  },
   "retry": "Coba Lagi",
   "home": "Ke Beranda"
 }

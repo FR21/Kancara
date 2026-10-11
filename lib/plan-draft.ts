@@ -29,6 +29,11 @@ export type Pace = (typeof PACES)[number];
 
 export type CustomInterest = { label: string; level: WishLevel };
 
+export const OPTION_KEYS = ["adapt", "split", "swap", "breaks", "slow", "turns", "oneEach"] as const;
+export type OptionKey = (typeof OPTION_KEYS)[number];
+/** How the group settled each clash between its wishes: the clash's id, and the option picked (see ./mediation). */
+export type Agreements = Record<string, OptionKey>;
+
 // The `custom` fields hold what someone typed because none of the choices fit.
 export type Member = {
   id: string;
@@ -41,6 +46,27 @@ export type Member = {
   allergies: string;
   interests: Partial<Record<InterestKey, WishLevel>>;
   customInterests: CustomInterest[];
+};
+
+export const LAUNDRY_CHOICES = ["wash", "laundry", "all"] as const;
+/** How a trip longer than a week handles clothes: wash on the road, use a laundry, or carry enough for every day. */
+export type LaundryChoice = (typeof LAUNDRY_CHOICES)[number];
+
+/** An item the group typed into its packing list. `memberId` is null when it is for everyone. */
+export type OwnPackingItem = { id: string; label: string; memberId: string | null };
+/** An item Captain added after reading what the group wrote freely, with the reason in Captain's words. */
+export type CaptainPackingItem = OwnPackingItem & { reason: string; essential: boolean };
+/**
+ * What the group has done with its packing list. The list itself is worked out from the trip each time (see
+ * ./packing); only the ticks, the removals, and the additions are kept. `captain` is null until Captain has read
+ * the trip once.
+ */
+export type PackingState = {
+  checked: string[];
+  removed: string[];
+  own: OwnPackingItem[];
+  captain: CaptainPackingItem[] | null;
+  laundry: LaundryChoice | null;
 };
 
 export type TripExtras = {
@@ -73,6 +99,8 @@ export type PlanDraft = {
   pace: Pace | null;
   extras: TripExtras;
   notes: string;
+  agreements: Agreements;
+  packing: PackingState;
 };
 
 export type PassField = "route" | "dates" | "group" | "budget" | "pace";
@@ -95,6 +123,13 @@ export const MAX_NOTES_CHARS = 500;
 export const MAX_AGE = 120;
 export const MAX_CUSTOM_ENTRIES = 8;
 export const MAX_CUSTOM_CHARS = 60;
+const MAX_AGREEMENTS = 12;
+export const MAX_OWN_PACKING = 30;
+export const MAX_CAPTAIN_PACKING = 8;
+const MAX_PACKING_IDS = 200;
+const MAX_PACKING_ID_CHARS = 80;
+const MAX_PACKING_REASON_CHARS = 140;
+const MAX_CONFLICT_ID_CHARS = 40;
 
 const EMPTY_EXTRAS: TripExtras = {
   flexibleDates: false,
@@ -122,12 +157,14 @@ export const EMPTY_DRAFT: PlanDraft = {
   pace: null,
   extras: EMPTY_EXTRAS,
   notes: "",
+  agreements: {},
+  packing: { checked: [], removed: [], own: [], captain: null, laundry: null },
 };
 
-export function createMember(ageGroup: AgeGroup = "adult", name = ""): Member {
+export function createMember(ageGroup: AgeGroup = "adult"): Member {
   return {
     id: crypto.randomUUID(),
-    name,
+    name: "",
     ageGroup,
     age: null,
     needs: [],
@@ -162,8 +199,14 @@ export type PlanDraftAction =
   | { type: "addCustomTransport"; value: string }
   | { type: "removeCustomTransport"; value: string }
   | { type: "patch"; patch: DraftPatch }
-  | { type: "appendNote"; value: string }
   | { type: "setNotes"; value: string }
+  | { type: "setAgreement"; conflict: string; option: OptionKey }
+  | { type: "togglePacked"; id: string }
+  | { type: "removePackingItem"; id: string }
+  | { type: "restorePackingItems" }
+  | { type: "addOwnPackingItem"; label: string; memberId: string | null }
+  | { type: "setCaptainPacking"; items: CaptainPackingItem[] }
+  | { type: "setLaundry"; choice: LaundryChoice }
   | { type: "replace"; draft: PlanDraft };
 
 function toggleItem<Item>(items: Item[], item: Item): Item[] {
@@ -188,11 +231,14 @@ export function sameText(first: string, second: string): boolean {
   return first.trim().toLowerCase() === second.trim().toLowerCase();
 }
 
-/** The age group an exact age belongs to. */
+/**
+ * The age group an exact age belongs to. The boundaries are the ones WHO's physical activity guidelines use:
+ * under 5 (2019 guidelines for children under 5), then 5 to 17, 18 to 64, and 65 and older (2020 guidelines).
+ */
 export function ageGroupFor(age: number): AgeGroup {
   if (age < 5) return "toddler";
   if (age < 18) return "child";
-  return age < 60 ? "adult" : "elderly";
+  return age < 65 ? "adult" : "elderly";
 }
 
 function cleanEntry(value: string): string {
@@ -325,8 +371,32 @@ export function planDraftReducer(draft: PlanDraft, action: PlanDraftAction): Pla
     }
     case "setNotes":
       return { ...draft, notes: action.value.slice(0, MAX_NOTES_CHARS) };
-    case "appendNote":
-      return { ...draft, notes: draft.notes ? `${draft.notes}\n${action.value}` : action.value };
+    case "setAgreement":
+      return { ...draft, agreements: { ...draft.agreements, [action.conflict]: action.option } };
+    case "togglePacked":
+      return { ...draft, packing: { ...draft.packing, checked: toggleItem(draft.packing.checked, action.id) } };
+    case "removePackingItem": {
+      const packing = draft.packing;
+      // Something the group typed is deleted outright; anything else is only hidden, so it can be brought back.
+      if (packing.own.some((item) => item.id === action.id)) {
+        return { ...draft, packing: { ...packing, own: packing.own.filter((item) => item.id !== action.id) } };
+      }
+      return { ...draft, packing: { ...packing, removed: [...new Set([...packing.removed, action.id])] } };
+    }
+    case "restorePackingItems":
+      return { ...draft, packing: { ...draft.packing, removed: [] } };
+    case "addOwnPackingItem": {
+      const label = cleanEntry(action.label);
+      const own = draft.packing.own;
+      const repeated = own.some((item) => item.memberId === action.memberId && sameText(item.label, label));
+      if (!label || repeated || own.length >= MAX_OWN_PACKING) return draft;
+      const added = { id: `own:${crypto.randomUUID()}`, label, memberId: action.memberId };
+      return { ...draft, packing: { ...draft.packing, own: [...own, added] } };
+    }
+    case "setCaptainPacking":
+      return { ...draft, packing: { ...draft.packing, captain: action.items.slice(0, MAX_CAPTAIN_PACKING) } };
+    case "setLaundry":
+      return { ...draft, packing: { ...draft.packing, laundry: action.choice } };
   }
 }
 
@@ -415,6 +485,8 @@ export const isNeedKey = (value: unknown): value is NeedKey => includes(NEED_KEY
 const isAgeGroup = (value: unknown): value is AgeGroup => includes(AGE_GROUPS, value);
 
 const isTransportKey = (value: unknown): value is TransportKey => includes(TRANSPORT_KEYS, value);
+const isOptionKey = (value: unknown): value is OptionKey => includes(OPTION_KEYS, value);
+const isLaundryChoice = (value: unknown): value is LaundryChoice => includes(LAUNDRY_CHOICES, value);
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === "object" && value !== null;
@@ -487,6 +559,57 @@ function parseExtras(value: unknown): Partial<TripExtras> {
   return extras;
 }
 
+// Whether a pick still fits its clash is checked where it is used: the clashes change as the group does.
+function parseAgreements(value: unknown): Agreements {
+  if (!isRecord(value)) return {};
+  const agreements: Agreements = {};
+  Object.entries(value)
+    .filter(([conflict]) => conflict.length <= MAX_CONFLICT_ID_CHARS)
+    .slice(0, MAX_AGREEMENTS)
+    .forEach(([conflict, option]) => {
+      if (isOptionKey(option)) agreements[conflict] = option;
+    });
+  return agreements;
+}
+
+function parseIds(value: unknown): string[] {
+  if (!Array.isArray(value)) return [];
+  const ids = value.filter((id): id is string => typeof id === "string" && id !== "" && id.length <= MAX_PACKING_ID_CHARS);
+  return [...new Set(ids)].slice(0, MAX_PACKING_IDS);
+}
+
+function parseOwnItem(value: unknown): OwnPackingItem | null {
+  if (!isRecord(value) || typeof value.id !== "string" || typeof value.label !== "string") return null;
+  const label = cleanEntry(value.label);
+  if (!label || value.id === "" || value.id.length > MAX_PACKING_ID_CHARS) return null;
+  return { id: value.id, label, memberId: typeof value.memberId === "string" && value.memberId ? value.memberId : null };
+}
+
+/** Reads what Captain sent or what was stored of it. Anything that is not a named item is left out. */
+export function parseCaptainPacking(value: unknown): CaptainPackingItem[] {
+  if (!Array.isArray(value)) return [];
+  return value
+    .flatMap((entry): CaptainPackingItem[] => {
+      const item = parseOwnItem(entry);
+      if (!item || !isRecord(entry)) return [];
+      const reason = typeof entry.reason === "string" ? entry.reason.replace(/\s+/g, " ").trim() : "";
+      return [{ ...item, reason: reason.slice(0, MAX_PACKING_REASON_CHARS), essential: entry.essential === true }];
+    })
+    .slice(0, MAX_CAPTAIN_PACKING);
+}
+
+/** Reads what the group did with its packing list, as the browser sent it or as it was stored. */
+export function parsePacking(value: unknown): PackingState {
+  if (!isRecord(value)) return EMPTY_DRAFT.packing;
+  return {
+    checked: parseIds(value.checked),
+    removed: parseIds(value.removed),
+    own: Array.isArray(value.own) ? value.own.flatMap((item) => parseOwnItem(item) ?? []).slice(0, MAX_OWN_PACKING) : [],
+    captain: Array.isArray(value.captain) ? parseCaptainPacking(value.captain) : null,
+    laundry: isLaundryChoice(value.laundry) ? value.laundry : null,
+  };
+}
+
 export function parseDraftPatch(value: unknown): DraftPatch {
   if (!isRecord(value)) return {};
   const patch: DraftPatch = {};
@@ -548,6 +671,8 @@ export function parsePlanDraft(value: unknown): PlanDraft | null {
     budgetCurrency: inDollars ? "USD" : "IDR",
     budgetUsd: inDollars && draft.budget !== null && usd > 0 ? usd : null,
     notes: typeof value.notes === "string" ? value.notes : "",
+    agreements: parseAgreements(value.agreements),
+    packing: parsePacking(value.packing),
   };
 }
 

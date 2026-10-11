@@ -43,8 +43,5 @@ export async function DELETE(request: NextRequest, context: RouteContext<"/api/t
   const { id } = await context.params;
   const result = await deleteTrip(viewer, id);
   if (result === "notFound") return NextResponse.json({ error: "Trip not found" }, { status: 404 });
-  if (result === "forbidden") {
-    return NextResponse.json({ error: "Only the organizer can delete a trip" }, { status: 403 });
-  }
   return new NextResponse(null, { status: 204 });
 }

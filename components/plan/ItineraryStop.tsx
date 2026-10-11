@@ -1,7 +1,9 @@
-import { Car, Check, ChevronRight, Star, TriangleAlert } from "lucide-react";
-import type { ItineraryItem } from "@/lib/api/captain";
+import { Car, Check, ChevronRight, LifeBuoy, Repeat2, Star, TriangleAlert, WashingMachine } from "lucide-react";
+import type { ErrandKind, ItineraryItem } from "@/lib/api/captain";
+import { listBackups } from "@/lib/backups";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
+import { splitTime, toMinutes } from "@/lib/stop-time";
 import { plural } from "@/lib/trips/format";
 
 /** Where a stop stands against the clock on the day it happens. */
@@ -12,31 +14,18 @@ type ItineraryStopProps = {
   phase: StopPhase | null;
   order: number;
   isLast: boolean;
+  /** False when this stop or the next one was switched, so the measured leg no longer joins them. */
+  legCurrent: boolean;
   locale: string;
   text: Messages["plan"]["itinerary"];
   describeCover: (cover: ItineraryItem["covers"][number]) => string;
   onOpen: () => void;
 };
 
-const TIME_RANGE = /^\s*(\d{1,2}[:.]\d{2})\s*(?:[-–—]|to|sampai)\s*(\d{1,2}[:.]\d{2})\s*$/i;
-const CLOCK = /^(\d{1,2})[:.](\d{2})$/;
 const MAX_COVERS = 2;
 const CHIP = "inline-flex items-center gap-1 rounded-full px-2 py-1 text-caption font-bold";
 const ENTER_STEP_MS = 60;
 const MAX_STAGGER = 8;
-
-// The planner writes times as free text, usually "09:00 - 12:00". Anything
-// else is shown as it came.
-export function splitTime(time: string): { start: string; end: string } {
-  const match = TIME_RANGE.exec(time);
-  return match ? { start: match[1], end: match[2] } : { start: time.trim(), end: "" };
-}
-
-/** Minutes since midnight for "09:30", or null when the text is not a clock time. */
-export function toMinutes(clock: string): number | null {
-  const match = CLOCK.exec(clock.trim());
-  return match ? Number(match[1]) * 60 + Number(match[2]) : null;
-}
 
 /** "2 hr 30 min" in the reader's language, or an empty string when the stop has no usable end time. */
 export function formatDuration(time: string, text: Messages["plan"]["itinerary"]): string {
@@ -58,7 +47,7 @@ export function StopCovers({
   item,
   label,
   describeCover,
-}: Pick<ItineraryStopProps, "item" | "describeCover"> & { label: string }) {
+}: Pick<ItineraryStopProps, "describeCover"> & { item: Pick<ItineraryItem, "covers">; label: string }) {
   if (item.covers.length === 0) return null;
   return (
     <ul aria-label={label} className="flex flex-wrap gap-2">
@@ -72,7 +61,7 @@ export function StopCovers({
   );
 }
 
-export function StopViolations({ item, label }: { item: ItineraryItem; label: string }) {
+export function StopViolations({ item, label }: { item: Pick<ItineraryItem, "violations">; label: string }) {
   if (!item.violations || item.violations.length === 0) return null;
   return (
     <div className="rounded-2xl bg-warning-subtle px-4 py-3 text-body-sm text-on-warning-subtle">
@@ -86,6 +75,16 @@ export function StopViolations({ item, label }: { item: ItineraryItem; label: st
         ))}
       </ul>
     </div>
+  );
+}
+
+/** Names a stop the group runs as an errand, so it does not read as a place to visit. */
+export function ErrandBadge({ kind, text }: { kind: ErrandKind; text: Messages["plan"]["itinerary"] }) {
+  return (
+    <span className={`${CHIP} bg-surface-muted text-text`}>
+      <WashingMachine className="size-3 shrink-0" aria-hidden="true" />
+      {text.errands[kind]}
+    </span>
   );
 }
 
@@ -116,6 +115,7 @@ export default function ItineraryStop({
   phase,
   order,
   isLast,
+  legCurrent,
   locale,
   text,
   describeCover,
@@ -126,7 +126,15 @@ export default function ItineraryStop({
   const toCheck = item.violations?.length ?? 0;
   const shownCovers = item.covers.slice(0, MAX_COVERS);
   const hiddenCovers = item.covers.length - shownCovers.length;
-  const hasChips = phase !== null || item.covers.length > 0 || toCheck > 0 || item.rating !== undefined;
+  const standingBy = listBackups(item).filter((backup) => backup.kind !== "main").length;
+  const hasChips =
+    phase !== null ||
+    item.errand !== undefined ||
+    item.standIn !== undefined ||
+    item.covers.length > 0 ||
+    toCheck > 0 ||
+    item.rating !== undefined ||
+    standingBy > 0;
   const dot = phase === "now" ? "size-3 bg-primary ring-4 ring-primary/25" : "size-2 bg-border-strong";
 
   return (
@@ -180,6 +188,13 @@ export default function ItineraryStop({
           {hasChips && (
             <span className="mt-3 flex flex-wrap items-center gap-2">
               {phase !== null && <PhaseBadge phase={phase} text={text} />}
+              {item.errand && <ErrandBadge kind={item.errand} text={text} />}
+              {item.standIn && (
+                <span className={`${CHIP} border border-primary text-primary`}>
+                  <Repeat2 className="size-3 shrink-0" aria-hidden="true" />
+                  {text.backups.inUse}
+                </span>
+              )}
               {shownCovers.map((cover) => (
                 <span key={cover.need} className={`${CHIP} bg-success-subtle text-on-success-subtle`}>
                   <Check className="size-3 shrink-0" strokeWidth={3} aria-hidden="true" />
@@ -203,11 +218,17 @@ export default function ItineraryStop({
                   {fillTemplate(text.rating, { rating: item.rating })}
                 </span>
               )}
+              {standingBy > 0 && (
+                <span className="inline-flex items-center gap-1 text-caption text-text-muted tabular-nums">
+                  <LifeBuoy className="size-3 text-primary" aria-hidden="true" />
+                  {plural(text.backups.count, standingBy, locale)}
+                </span>
+              )}
             </span>
           )}
         </button>
 
-        {!isLast && item.travelToNext && (
+        {!isLast && legCurrent && item.travelToNext && (
           <p className="flex items-center gap-2 px-1 pt-3 text-caption text-text-muted tabular-nums">
             <Car className="size-4 shrink-0" aria-hidden="true" />
             {fillTemplate(text.leg, {

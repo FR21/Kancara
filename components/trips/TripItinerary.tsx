@@ -1,13 +1,14 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Route } from "lucide-react";
+import { ArrowLeft, ArrowRight, Luggage, Route } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import PageBackdrop from "@/components/layout/PageBackdrop";
 import ErrorAlert from "@/components/plan/ErrorAlert";
 import ItineraryCard from "@/components/plan/ItineraryCard";
 import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
-import { captain, captainIsSample } from "@/lib/api/captain";
+import { type Itinerary, captain, captainIsSample } from "@/lib/api/captain";
+import { settleLaundry } from "@/lib/api/laundry";
 import { trips, TripsError } from "@/lib/api/trips";
 import { formatDays, formatTripDates, plural } from "@/lib/trips/format";
 import { type TripPlanView, countViolations, tripHref } from "@/lib/trips/trip";
@@ -32,10 +33,12 @@ const BACK_LINK =
 export default function TripItinerary({ tripId, openToday = false }: TripItineraryProps) {
   const text = useMessages("trips");
   const planText = useMessages("plan");
+  const packingText = useMessages("packing");
   const locale = useLocale();
   const [plan, setPlan] = useState<TripPlanView | null>(null);
   const [state, setState] = useState<LoadState>("loading");
   const [build, setBuild] = useState<BuildState>("idle");
+  const [unsaved, setUnsaved] = useState<Itinerary | null>(null);
   const [reloads, setReloads] = useState(0);
   const buildControllerRef = useRef<AbortController | null>(null);
 
@@ -61,7 +64,12 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
     buildControllerRef.current = controller;
     setBuild("building");
     try {
-      const itinerary = await captain.itinerary({ draft: plan.draft, locale }, controller.signal);
+      const built = await captain.itinerary({ draft: plan.draft, locale }, controller.signal);
+      // The laundry choice made on the packing list keeps its place on a newly made schedule. When no laundry
+      // can be looked up the plan is kept as made, and the packing page adds the stops later.
+      const itinerary = await settleLaundry(plan.draft, built, packingText.laundry.stops, locale, controller.signal).catch(
+        () => built,
+      );
       await trips.save(
         {
           name: plan.card.name,
@@ -79,6 +87,27 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
     }
   };
 
+  // A stop switched to a backup stays switched on screen even when saving fails: on the road the change is what
+  // the group is acting on, and it can be sent again once there is a connection.
+  const changeItinerary = async (itinerary: Itinerary) => {
+    if (!plan) return;
+    setPlan({ ...plan, itinerary });
+    setUnsaved(null);
+    try {
+      await trips.update(
+        {
+          name: plan.card.name,
+          draft: plan.draft,
+          violations: captainIsSample ? undefined : countViolations(itinerary),
+          itinerary,
+        },
+        plan.card.id,
+      );
+    } catch {
+      setUnsaved(itinerary);
+    }
+  };
+
   const card = plan?.card;
   const route = card ? [card.origin, card.destinations.join(", ")].filter(Boolean).join(" → ") : "";
   const facts = card
@@ -93,7 +122,7 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
 
   const missingHint = () => {
     if (card?.status === "draft") return text.itinerary.missingDraft;
-    return card?.role === "organizer" ? text.itinerary.missingOrganizer : text.itinerary.missingMember;
+    return text.itinerary.missingOrganizer;
   };
 
   return (
@@ -133,6 +162,14 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
             <p className="mt-2 text-body text-pretty text-text-muted tabular-nums">{facts.join(" · ")}</p>
           )}
 
+          {card.status !== "draft" && (
+            <Link href={`/trips/${encodeURIComponent(card.id)}/packing`} className={`${OUTLINE_BUTTON} mt-4 h-11`}>
+              <Luggage className="size-4" aria-hidden="true" />
+              {packingText.open}
+              <ArrowRight className="size-4 text-text-muted" aria-hidden="true" />
+            </Link>
+          )}
+
           <div className="mt-8">
             {plan.itinerary && (
               <ItineraryCard
@@ -143,7 +180,18 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
                 isSample={false}
                 initialDate={openToday ? plan.today : undefined}
                 live={card.status === "ongoing"}
+                onChange={changeItinerary}
               />
+            )}
+
+            {unsaved && (
+              <div className="mt-4">
+                <ErrorAlert
+                  message={text.itinerary.changeFailed}
+                  retryLabel={text.retry}
+                  onRetry={() => changeItinerary(unsaved)}
+                />
+              </div>
             )}
 
             {!plan.itinerary && build === "building" && (
@@ -168,7 +216,7 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
                     <ArrowRight className="size-4" aria-hidden="true" />
                   </Link>
                 )}
-                {card.status !== "draft" && card.role === "organizer" && (
+                {card.status !== "draft" && (
                   <button type="button" onClick={buildItinerary} className={`${PRIMARY_BUTTON} mt-6`}>
                     <Route className="size-4" aria-hidden="true" />
                     {text.itinerary.generate}
