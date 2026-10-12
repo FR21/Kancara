@@ -1,8 +1,7 @@
-"use client";
-
-import { Check, ChevronRight, LifeBuoy, TriangleAlert } from "lucide-react";
-import { type KeyboardEvent, useId, useRef, useState } from "react";
+import { Check, ChevronRight, Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSun, LifeBuoy, type LucideIcon, Snowflake, Sun, TriangleAlert } from "lucide-react";
+import { type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
 import type { Itinerary, ItineraryCover, ItineraryDay } from "@/lib/api/captain";
+import { fetchWeather } from "@/lib/api/weather";
 import { countBackups, isLegCurrent, switchToBackup } from "@/lib/backups";
 import type { Messages } from "@/lib/messages";
 import { type Member, fillTemplate, getMemberName, parseLocalDate } from "@/lib/plan-draft";
@@ -10,8 +9,20 @@ import { splitTime, toMinutes } from "@/lib/stop-time";
 import { plural } from "@/lib/trips/format";
 import { useLocale } from "@/lib/use-locale";
 import { useWibNow } from "@/lib/use-wib-now";
+import { type Sky, type Weather, type WeatherDay, isRainy, shownSky } from "@/lib/weather";
 import ItineraryStop, { type StopPhase } from "./ItineraryStop";
 import StopDialog from "./StopDialog";
+
+const SKY_ICONS: Record<Sky, LucideIcon> = {
+  clear: Sun,
+  partly: CloudSun,
+  cloudy: Cloud,
+  fog: CloudFog,
+  drizzle: CloudDrizzle,
+  rain: CloudRain,
+  storm: CloudLightning,
+  snow: Snowflake,
+};
 
 type ItineraryCardProps = {
   itinerary: Itinerary;
@@ -106,6 +117,33 @@ export default function ItineraryCard({
     return `${names.join(", ")}${extra}: ${text.needs[cover.need]}`;
   };
 
+  const [weatherMap, setWeatherMap] = useState<Map<string, WeatherDay>>(new Map());
+
+  // Fetch weather for the destination across the trip dates
+  useEffect(() => {
+    if (isSample || !destination || itinerary.days.length === 0) return;
+    const controller = new AbortController();
+    const from = itinerary.days[0].date;
+    const to = itinerary.days[itinerary.days.length - 1].date;
+    const places = [destination];
+
+    fetchWeather(places, from, to, locale, controller.signal)
+      .then((weather) => {
+        const map = new Map<string, WeatherDay>();
+        for (const place of weather.places) {
+          for (const d of place.days) {
+            map.set(d.date, d);
+          }
+        }
+        setWeatherMap(map);
+      })
+      .catch(() => {
+        // Weather is non-blocking enhancement
+      });
+
+    return () => controller.abort();
+  }, [destination, itinerary.days, isSample, locale]);
+
   const selectDay = (index: number) => {
     setSelected(index);
     setOpenIndex(null);
@@ -124,6 +162,9 @@ export default function ItineraryCard({
     event.preventDefault();
     moveTo(selected + (NEXT_KEYS.includes(event.key) ? 1 : -1));
   };
+
+  const selectedDayWeather = weatherMap.get(day.date);
+  const dayIsRainy = selectedDayWeather ? isRainy(selectedDayWeather) : false;
 
   return (
     <section className="overflow-clip rounded-2xl border border-border bg-surface">
@@ -144,6 +185,10 @@ export default function ItineraryCard({
         >
           {itinerary.days.map((entry, index) => {
             const active = index === selected;
+            const dayWeather = weatherMap.get(entry.date);
+            const sky = dayWeather ? shownSky(dayWeather) : null;
+            const WeatherIcon = sky ? SKY_ICONS[sky] : null;
+
             return (
               <button
                 key={entry.date}
@@ -168,6 +213,15 @@ export default function ItineraryCard({
                   </span>
                 </span>
                 <span className="hidden items-center gap-2 lg:flex">
+                  {WeatherIcon && dayWeather && (
+                    <span
+                      title={`${dayWeather.tempMin}° - ${dayWeather.tempMax}°C`}
+                      className={`inline-flex items-center gap-1 text-caption tabular-nums ${active ? "text-primary" : "text-text-muted"}`}
+                    >
+                      <WeatherIcon className="size-4 shrink-0" aria-hidden="true" />
+                      <span>{dayWeather.tempMax}°</span>
+                    </span>
+                  )}
                   {countToCheck(entry) > 0 && (
                     <TriangleAlert className="size-4 shrink-0 text-warning" aria-hidden="true" />
                   )}
@@ -192,14 +246,47 @@ export default function ItineraryCard({
           className="min-w-0 px-4 pt-5 pb-5 sm:px-6 lg:px-8 lg:pt-6 lg:pb-8"
         >
           <div key={day.date} className="motion-safe:animate-message-in">
-            <h3 className="text-h3 text-text">
-              {dayName(selected)} · {longFormat.format(parseLocalDate(day.date))}
-            </h3>
+            <div className="flex flex-wrap items-baseline justify-between gap-2">
+              <h3 className="text-h3 text-text">
+                {dayName(selected)} · {longFormat.format(parseLocalDate(day.date))}
+              </h3>
+              {selectedDayWeather && (
+                <div className="inline-flex items-center gap-2 rounded-full border border-border bg-surface-muted px-3 py-1 text-caption font-medium text-text tabular-nums">
+                  {(() => {
+                    const sky = shownSky(selectedDayWeather);
+                    const Icon = SKY_ICONS[sky];
+                    return (
+                      <>
+                        <Icon className="size-4 text-primary" aria-hidden="true" />
+                        <span>{selectedDayWeather.tempMin}° – {selectedDayWeather.tempMax}°C</span>
+                        {selectedDayWeather.rainChance !== null && selectedDayWeather.rainChance > 20 && (
+                          <span className={isRainy(selectedDayWeather) ? "font-bold text-primary" : "text-text-muted"}>
+                            · 🌧️ {selectedDayWeather.rainChance}%
+                          </span>
+                        )}
+                      </>
+                    );
+                  })()}
+                </div>
+              )}
+            </div>
+
+            {dayIsRainy && selectedDayWeather && (
+              <div className="mt-3 flex items-center gap-2 rounded-xl border border-primary/20 bg-primary-subtle px-3 py-2 text-caption text-text">
+                <CloudRain className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                <p>
+                  {fillTemplate(text.itinerary.weather.rainAlert, {
+                    chance: Math.round(selectedDayWeather.rainChance ?? 50),
+                  })}
+                </p>
+              </div>
+            )}
+
             <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm text-text-muted tabular-nums">
               {plural(text.itinerary.stops, day.items.length, locale)}
               {honoured > 0 && (
                 <span className="inline-flex items-center gap-1 text-success">
-                  <Check className="size-4 shrink-0" strokeWidth={3} aria-hidden="true" />
+                  <Check className="size-4 stroke-3" aria-hidden="true" />
                   {plural(text.itinerary.honoured, honoured, locale)}
                 </span>
               )}

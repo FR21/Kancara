@@ -393,6 +393,12 @@
       "laundryPick": "Ambil laundry",
       "wash": "Cuci sendiri"
     },
+    "weather": {
+      "chance": "Peluang hujan {chance}%",
+      "mm": "Hujan {mm} mm",
+      "typical": "Berdasarkan data historis tahun lalu",
+      "rainAlert": "Potensi hujan {chance}%. Siapkan payung atau pertimbangkan cadangan indoor."
+    },
     "backups": {
       "title": "Rencana cadangan",
       "hint": "Sudah disiapkan dan dicek untuk rombonganmu sebelum berangkat. Pakai saat rencana utama tidak bisa jalan.",

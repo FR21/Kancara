@@ -17,7 +17,7 @@ import {
   isDraftEmpty,
   planDraftReducer,
 } from "@/lib/plan-draft";
-import { saveDraft, useSavedDraft } from "@/lib/plan-draft-store";
+import { clearDraft, saveDraft, useSavedDraft } from "@/lib/plan-draft-store";
 import {
   type QuestionKey,
   isAnswered,
@@ -81,9 +81,9 @@ export default function PlanWorkspace() {
   useEffect(() => () => controllerRef.current?.abort(), []);
 
   useEffect(() => {
-    if (isDraftEmpty(draft)) return;
+    if (isDraftEmpty(draft) || saveState === "saved") return;
     saveDraft(draft);
-  }, [draft]);
+  }, [draft, saveState]);
 
   useEffect(() => {
     if (!arrivedRef.current) {
@@ -127,6 +127,7 @@ export default function PlanWorkspace() {
       setSaveState("saved");
       setSavedCount((count) => count + 1);
       setNoticeOpen(true);
+      clearDraft();
     } catch {
       setSaveState("failed");
     }
@@ -298,7 +299,12 @@ export default function PlanWorkspace() {
           />
           {showResume && (
             <div className="mt-6 flex justify-center px-4 motion-safe:animate-message-in motion-safe:[animation-delay:150ms]">
-              <ResumeBanner savedDraft={savedDraft} text={text.chat} onResume={resumeDraft} />
+              <ResumeBanner
+                savedDraft={savedDraft}
+                text={text.chat}
+                onResume={resumeDraft}
+                onClear={clearDraft}
+              />
             </div>
           )}
         </div>

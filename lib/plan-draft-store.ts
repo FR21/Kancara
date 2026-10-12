@@ -48,3 +48,15 @@ export function saveDraft(draft: PlanDraft) {
   }
   listeners.forEach((listener) => listener());
 }
+
+export function clearDraft() {
+  try {
+    localStorage.removeItem(STORAGE_KEY);
+    cachedRaw = null;
+    cachedDraft = null;
+  } catch {
+    return;
+  }
+  listeners.forEach((listener) => listener());
+}
+

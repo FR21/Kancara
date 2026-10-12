@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, ChevronRight, TriangleAlert } from "lucide-react";
+import { ArrowRight, ChevronRight, Languages, TriangleAlert, UtensilsCrossed } from "lucide-react";
 import Link from "next/link";
 import type { KeyboardEvent } from "react";
 import type { Messages } from "@/lib/messages";
@@ -90,17 +90,30 @@ function TripRow({ card, selected, text, onSelect }: TripRowProps) {
         </div>
       </div>
 
-      {card.status === "ongoing" && (
-        <div className="relative px-4 pb-4 lg:hidden">
+      {card.status !== "draft" && (
+        <div className="relative flex flex-wrap gap-2 px-4 pb-3">
+          {card.status === "ongoing" && (
+            <Link
+              href={tripHref(card)}
+              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full bg-primary px-4 text-label font-bold text-on-primary transition-[background-color,scale] duration-150 ease-out hover:bg-primary-hover active:scale-[0.97]"
+            >
+              {text.card.openToday}
+              <ArrowRight className="size-3.5" aria-hidden="true" />
+            </Link>
+          )}
           <Link
-            href={tripHref(card)}
-            className="flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-label-lg text-on-primary transition-[background-color,scale] duration-150 ease-out hover:bg-primary-hover active:scale-[0.97]"
+            href={`/trips/${encodeURIComponent(card.id)}/dietary-scan`}
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-primary/30 bg-primary-subtle px-3.5 text-caption font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-hover/20 active:scale-[0.97]"
           >
-            {text.card.openToday}
-            <ArrowRight
-              className="size-4 transition-[translate] duration-200 ease-out group-hover/row:translate-x-1"
-              aria-hidden="true"
-            />
+            <UtensilsCrossed className="size-3.5 text-primary" aria-hidden="true" />
+            {locale === "en" ? "Scan Menu" : "Pindai Menu"}
+          </Link>
+          <Link
+            href={`/trips/${encodeURIComponent(card.id)}/translator`}
+            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 text-caption font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-emerald-500 hover:bg-emerald-500/20 active:scale-[0.97]"
+          >
+            <Languages className="size-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+            {locale === "en" ? "Translator" : "Penerjemah"}
           </Link>
         </div>
       )}

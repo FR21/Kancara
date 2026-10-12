@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Luggage, Route } from "lucide-react";
+import { ArrowLeft, ArrowRight, Languages, Luggage, Route, UtensilsCrossed } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import PageBackdrop from "@/components/layout/PageBackdrop";
@@ -163,11 +163,27 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
           )}
 
           {card.status !== "draft" && (
-            <Link href={`/trips/${encodeURIComponent(card.id)}/packing`} className={`${OUTLINE_BUTTON} mt-4 h-11`}>
-              <Luggage className="size-4" aria-hidden="true" />
-              {packingText.open}
-              <ArrowRight className="size-4 text-text-muted" aria-hidden="true" />
-            </Link>
+            <div className="mt-4 flex flex-wrap gap-2">
+              <Link href={`/trips/${encodeURIComponent(card.id)}/packing`} className={`${OUTLINE_BUTTON} h-11`}>
+                <Luggage className="size-4" aria-hidden="true" />
+                {packingText.open}
+                <ArrowRight className="size-4 text-text-muted" aria-hidden="true" />
+              </Link>
+              <Link
+                href={`/trips/${encodeURIComponent(card.id)}/dietary-scan`}
+                className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-primary/40 bg-primary-subtle px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-hover/20 active:scale-[0.97]"
+              >
+                <UtensilsCrossed className="size-4 text-primary" aria-hidden="true" />
+                {locale === "en" ? "Scan Menu & Diet" : "Pindai Menu & Pantangan"}
+              </Link>
+              <Link
+                href={`/trips/${encodeURIComponent(card.id)}/translator`}
+                className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-emerald-500 hover:bg-emerald-500/20 active:scale-[0.97]"
+              >
+                <Languages className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                {locale === "en" ? "Live Translator" : "Penerjemah Obrolan"}
+              </Link>
+            </div>
           )}
 
           <div className="mt-8">
