@@ -48,3 +48,9 @@ next-env.d.ts
 .devin/
 .agents/
 
+
+# AI Skills
+.agents
+.impeccable
+DESIGN.md
+PRODUCT.md
