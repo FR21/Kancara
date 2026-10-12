@@ -1,6 +1,4 @@
 {
-  "featureBadge": "Saved Profiles",
-  "featureSubtitle": "Preparing Next Journey",
   "title": "Saved Member Profiles",
   "subtitle": "Save every member's unique needs, dietary preferences, and travel wishes once. Future trips are planned instantly without repeating the interview.",
   "addMember": "Add Member",
@@ -33,7 +31,6 @@
     "editProfile": "Edit Profile",
     "deleteProfile": "Delete Profile"
   },
-  "footerHint": "Profiles are saved securely in your database account and automatically integrated into /plan.",
   "modal": {
     "titleAdd": "Add New Member Profile",
     "titleEdit": "Edit Member Profile",

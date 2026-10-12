@@ -1,7 +1,7 @@
 // Kancara's service worker: keeps what the visitor has already opened, so a trip's pages and its packing list
 // still open without a connection. Built files are kept by their hashed names; pages and API answers are
 // fetched fresh when they can be and served from the last copy when they cannot.
-const VERSION = "kancara-offline-1";
+const VERSION = "kancara-offline-2";
 const STATIC_CACHE = `${VERSION}-static`;
 const PAGE_CACHE = `${VERSION}-pages`;
 const DATA_CACHE = `${VERSION}-data`;

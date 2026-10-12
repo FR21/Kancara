@@ -1,6 +1,4 @@
 {
-  "featureBadge": "Profil Tersimpan",
-  "featureSubtitle": "Persiapan Perjalanan Berikutnya",
   "title": "Profil Anggota Tersimpan",
   "subtitle": "Kebutuhan, pantangan makan, dan preferensi anggota keluarga disimpan permanen. Saat merencanakan trip baru, langsung gunakan profil tanpa wawancara ulang dari nol.",
   "addMember": "Tambah Anggota",
@@ -33,7 +31,6 @@
     "editProfile": "Edit Profil",
     "deleteProfile": "Hapus Profil"
   },
-  "footerHint": "Profil tersimpan aman di database akun dan terintegrasi otomatis dengan /plan.",
   "modal": {
     "titleAdd": "Tambah Profil Anggota Baru",
     "titleEdit": "Edit Profil Anggota",

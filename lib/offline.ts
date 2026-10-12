@@ -7,7 +7,17 @@ const PENDING_PREFIX = "kancara-packing-pending:";
  * build is kept: the dev server's files do not carry the hashed names the worker relies on.
  */
 export function registerOfflineSupport() {
-  if (process.env.NODE_ENV !== "production" || !("serviceWorker" in navigator)) return;
+  if (!("serviceWorker" in navigator)) return;
+  if (process.env.NODE_ENV !== "production") {
+    // A worker left on this address by a production run would hand the dev server's pages that build's scripts
+    // and styles, so edits would never show. It is removed, with everything it kept.
+    navigator.serviceWorker
+      .getRegistrations()
+      .then((found) => Promise.all(found.map((entry) => entry.unregister())))
+      .then(clearOfflineCaches)
+      .catch(() => undefined);
+    return;
+  }
   navigator.serviceWorker.register("/sw.js", { updateViaCache: "none" }).catch(() => undefined);
 }
 

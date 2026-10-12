@@ -5,11 +5,9 @@ import {
   ArrowRight,
   Check,
   Edit2,
-  Info,
   Plus,
   RotateCcw,
   Search,
-  Sparkles,
   Trash2,
   UserCheck,
   Users,
@@ -215,14 +213,7 @@ export default function SavedMembersWorkspace() {
       {/* Header */}
       <header className="flex flex-wrap items-start justify-between gap-4 motion-safe:animate-message-in">
         <div>
-          <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/30 bg-primary-subtle px-3 py-1 text-caption font-bold text-primary">
-              <Sparkles className="size-3.5" aria-hidden="true" />
-              {t.featureBadge}
-            </span>
-            <span className="text-caption text-text-muted">{t.featureSubtitle}</span>
-          </div>
-          <h1 className="mt-2 text-h2 text-text sm:text-h1">{t.title}</h1>
+          <h1 className="text-h2 text-text sm:text-h1">{t.title}</h1>
           <p className="mt-2 max-w-2xl text-body text-text-muted">{t.subtitle}</p>
         </div>
 
@@ -555,14 +546,6 @@ export default function SavedMembersWorkspace() {
           </div>
         )}
       </section>
-
-      {/* Footer Info */}
-      <footer className="mt-12 flex flex-wrap items-center justify-between gap-4 border-t border-border pt-6 text-body-sm text-text-muted">
-        <div className="flex items-center gap-2">
-          <Info className="size-4 shrink-0 text-primary" aria-hidden="true" />
-          <span>{t.footerHint}</span>
-        </div>
-      </footer>
 
       {/* Editor Modal */}
       <ProfileEditorModal
