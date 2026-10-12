@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Check, CircleDashed, CopyPlus, Luggage, Share2, Trash2, Wallet, X } from "lucide-react";
+import { ArrowRight, Check, CircleDashed, CopyPlus, Languages, Luggage, Share2, Trash2, UtensilsCrossed, Wallet, X } from "lucide-react";
 import Link from "next/link";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate, PASS_FIELDS } from "@/lib/plan-draft";
@@ -242,16 +242,38 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
 
           <div role="group" aria-label={detail.actions} className="flex flex-wrap gap-2">
             {card.status !== "draft" && (
-              <Link
-                href={`/trips/${encodeURIComponent(card.id)}/packing`}
-                className={`group/action ${ACTION} text-text hover:bg-surface-muted`}
-              >
-                <Luggage
-                  className="size-4 transition-[rotate] duration-300 ease-spring group-hover/action:-rotate-12"
-                  aria-hidden="true"
-                />
-                {packingText.open}
-              </Link>
+              <>
+                <Link
+                  href={`/trips/${encodeURIComponent(card.id)}/packing`}
+                  className={`group/action ${ACTION} text-text hover:bg-surface-muted`}
+                >
+                  <Luggage
+                    className="size-4 transition-[rotate] duration-300 ease-spring group-hover/action:-rotate-12"
+                    aria-hidden="true"
+                  />
+                  {packingText.open}
+                </Link>
+                <Link
+                  href={`/trips/${encodeURIComponent(card.id)}/dietary-scan`}
+                  className={`group/action ${ACTION} border-primary/30 text-primary hover:bg-primary-subtle`}
+                >
+                  <UtensilsCrossed
+                    className="size-4 transition-[scale] duration-300 ease-spring group-hover/action:scale-110"
+                    aria-hidden="true"
+                  />
+                  {locale === "en" ? "Dietary Lens" : "Pindai Menu"}
+                </Link>
+                <Link
+                  href={`/trips/${encodeURIComponent(card.id)}/translator`}
+                  className={`group/action ${ACTION} border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10`}
+                >
+                  <Languages
+                    className="size-4 transition-[scale] duration-300 ease-spring group-hover/action:scale-110"
+                    aria-hidden="true"
+                  />
+                  {locale === "en" ? "Live Translator" : "Penerjemah Obrolan"}
+                </Link>
+              </>
             )}
             <button
               type="button"

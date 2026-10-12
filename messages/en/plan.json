@@ -393,6 +393,12 @@
       "laundryPick": "Laundry pick-up",
       "wash": "Self-wash"
     },
+    "weather": {
+      "chance": "{chance}% chance of rain",
+      "mm": "{mm} mm rain",
+      "typical": "Based on typical historical weather",
+      "rainAlert": "{chance}% chance of rain. Pack an umbrella or check indoor backup options."
+    },
     "backups": {
       "title": "Backup plan",
       "hint": "Prepared and checked for your group before you leave. Use one when the main plan can't happen.",
