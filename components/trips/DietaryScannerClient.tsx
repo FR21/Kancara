@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowLeft,
   Camera,
   CheckCircle2,
   Compass,
@@ -15,12 +14,14 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import Link from "next/link";
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import PageBackdrop from "@/components/layout/PageBackdrop";
 import FieldPassModal from "./FieldPassModal";
 import type { DietaryAnalysisResult, MemberDietCheck } from "@/lib/agents/dietaryAgent";
+import Breadcrumbs from "@/components/layout/Breadcrumbs";
+import Notice, { type NoticeMessage } from "@/components/layout/Notice";
 import { useLocale } from "@/lib/use-locale";
+import { useMessages } from "@/lib/use-messages";
 
 type DietaryScannerClientProps = {
   tripId: string;
@@ -53,6 +54,10 @@ export default function DietaryScannerClient({
   const mediaStreamRef = useRef<MediaStream | null>(null);
 
   const isEn = locale === "en";
+  const navText = useMessages("navbar");
+  const packingText = useMessages("packing");
+  const tripsText = useMessages("trips");
+  const [notice, setNotice] = useState<NoticeMessage | null>(null);
 
   const stopCamera = () => {
     if (mediaStreamRef.current) {
@@ -179,7 +184,11 @@ export default function DietaryScannerClient({
     key: "native" | "translation" = "native"
   ) => {
     if (!("speechSynthesis" in window)) {
-      alert("Text-to-speech tidak didukung di browser ini.");
+      setNotice({
+        id: Date.now(),
+        tone: "error",
+        message: isEn ? "This browser cannot read text aloud." : "Browser ini tidak bisa membacakan teks.",
+      });
       return;
     }
 
@@ -255,6 +264,14 @@ export default function DietaryScannerClient({
           {isEn ? "Field Pass (Offline)" : "Paspor Lapangan 🟢"}
         </button>
       </div>
+      <Breadcrumbs
+        label={navText.breadcrumb}
+        items={[
+          { label: navText.links.trips, href: "/trips" },
+          { label: packingText.back, href: `/trips/${encodeURIComponent(tripId)}` },
+          { label: isEn ? "Dietary Lens" : "Pemindai Menu" },
+        ]}
+      />
 
       <div className="mt-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -670,6 +687,7 @@ export default function DietaryScannerClient({
         needs={members.flatMap((m) => m.needs)}
         customNeeds={members.map((m) => m.allergies).filter(Boolean)}
       />
+      <Notice notice={notice} dismissLabel={tripsText.notice.dismiss} onDismiss={() => setNotice(null)} />
     </main>
   );
 }

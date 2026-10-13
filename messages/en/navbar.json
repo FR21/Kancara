@@ -14,6 +14,6 @@
   "languageToggle": "Language",
   "login": "Login",
   "logout": "Logout",
-  "profile": "Profile"
+  "profile": "Profile",
+  "breadcrumb": "Breadcrumb"
 }
-

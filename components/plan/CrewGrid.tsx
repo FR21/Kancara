@@ -41,6 +41,7 @@ function hasDetails(member: Member): boolean {
     member.needs.length > 0 ||
     member.customNeeds.length > 0 ||
     member.allergies.trim() !== "" ||
+    (member.phone ?? "").trim() !== "" ||
     Object.keys(member.interests).length > 0 ||
     member.customInterests.length > 0
   );

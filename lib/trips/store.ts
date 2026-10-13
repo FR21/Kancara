@@ -2,7 +2,7 @@ import "server-only";
 import { Prisma, type Trip as TripRecord } from "@prisma/client";
 import type { Viewer } from "@/lib/account";
 import { type Itinerary, parseItinerary } from "@/lib/api/captain";
-import { type PlanDraft, EMPTY_DRAFT, hasDateError, hasDates, parsePlanDraft } from "@/lib/plan-draft";
+import { type MemberContact, type PlanDraft, EMPTY_DRAFT, hasDateError, hasDates, parsePlanDraft } from "@/lib/plan-draft";
 import { prisma } from "@/lib/prisma";
 import {
   type ActiveTrips,
@@ -21,8 +21,23 @@ import {
 export type HistoryFilter = { query: string; year: number | null };
 export type Page = { limit: number; offset: number };
 export type DeleteResult = "deleted" | "notFound";
-/** A finished plan to keep. `violations` is left out when the plan was never checked against the group's needs. */
-export type TripInput = { name: string; draft: PlanDraft; violations?: number; itinerary?: Itinerary };
+export type UpdateResult = TripCard | "notFound" | "refused";
+/**
+ * A plan to keep. `complete` is false while required parts are still missing, which makes it a draft. `contacts`
+ * are the phone details typed with the plan; they are kept with the trip's members, not in the plan.
+ * `knownMembers` names the members who joined by themselves that the sender has seen: one it has seen and left
+ * out was removed, one it never saw is kept. `violations` is left out when the plan was never checked against
+ * the group's needs.
+ */
+export type TripInput = {
+  name: string;
+  draft: PlanDraft;
+  contacts: MemberContact[];
+  complete: boolean;
+  knownMembers: string[];
+  violations?: number;
+  itinerary?: Itinerary;
+};
 
 // Every query here is limited to the viewer's workspace and skips rows that were deleted. Lists are paged in the
 // database: a page of identifiers is picked in the order the screen shows them, then those rows are read at once.
@@ -41,10 +56,9 @@ const TIME_FORMAT = new Intl.DateTimeFormat("en-GB", {
   hourCycle: "h23",
 });
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-const NOT_FOUND = "P2025";
 
 /** Times are stored in UTC. Which day it is, and so which trips are under way, is judged in WIB. */
-function readClock(now: Date): Clock {
+export function readClock(now: Date): Clock {
   return { date: DATE_FORMAT.format(now), time: TIME_FORMAT.format(now) };
 }
 
@@ -209,32 +223,40 @@ export async function listHistoryTrips(viewer: Viewer, filter: HistoryFilter, pa
   };
 }
 
-/** A trip the viewer can see, with its itinerary when one was saved. Null when there is no such trip. */
+/**
+ * A trip the viewer can see, with its itinerary when one was saved: one they created, or one they joined as a
+ * member, which they can read but not change. Null when there is no such trip.
+ */
 export async function getTripPlan(viewer: Viewer, id: string): Promise<TripPlanView | null> {
   if (!UUID.test(id)) return null;
   const record = await prisma.trip.findFirst({
-    where: { tripId: id, workspaceId: viewer.workspaceId, deletedAt: null },
+    where: {
+      tripId: id,
+      deletedAt: null,
+      OR: [{ workspaceId: viewer.workspaceId }, { members: { some: { userId: viewer.userId, deletedAt: null } } }],
+    },
   });
   if (!record) return null;
 
   const trip = toTrip(record);
   const clock = readClock(new Date());
+  const card = toTripCard(trip, clock);
   return {
-    card: toTripCard(trip, clock),
+    card: record.workspaceId === viewer.workspaceId ? card : { ...card, role: "member" },
     draft: trip.draft,
     itinerary: trip.itinerary ?? null,
     today: clock.date,
   };
 }
 
-/** Saves a finished plan as a trip the viewer organizes. */
+/** Saves a plan as a trip the viewer organizes: a draft while it is incomplete or has no itinerary yet. */
 export async function createTrip(viewer: Viewer, input: TripInput): Promise<TripCard> {
   const created = await prisma.trip.create({
     data: {
       workspaceId: viewer.workspaceId,
       userId: viewer.userId,
       name: input.name,
-      state: "PLANNED",
+      state: input.complete && input.itinerary ? "PLANNED" : "DRAFT",
       role: "organizer",
       ...columnsOf(input.draft),
       itinerary: input.itinerary as unknown as Prisma.InputJsonValue | undefined,
@@ -244,24 +266,56 @@ export async function createTrip(viewer: Viewer, input: TripInput): Promise<Trip
   return toTripCard(toTrip(created), readClock(new Date()));
 }
 
-/** Replaces a saved trip's plan, for example after it is generated again. Null when the viewer cannot change it. */
-export async function updateTrip(viewer: Viewer, id: string, input: TripInput): Promise<TripCard | null> {
-  if (!UUID.test(id)) return null;
-  try {
-    const updated = await prisma.trip.update({
+/**
+ * Replaces a saved trip's plan, for example after it is generated again. A draft becomes a planned trip the first
+ * time it is saved complete with an itinerary; an incomplete plan can only replace a draft. Members who joined
+ * through the group's link while the sender's screen was open are not in its plan yet, so they are carried over.
+ */
+export async function updateTrip(viewer: Viewer, id: string, input: TripInput): Promise<UpdateResult> {
+  if (!UUID.test(id)) return "notFound";
+  const updated = await prisma.$transaction(async (transaction) => {
+    // The plan is one document. The row is held while it is read and written, so someone joining at the same
+    // moment is either seen here or writes after this.
+    await transaction.$queryRaw`SELECT 1 FROM trips WHERE trip_id = ${id}::uuid FOR UPDATE`;
+    const current = await transaction.trip.findFirst({
       where: { tripId: id, workspaceId: viewer.workspaceId, deletedAt: null },
+      select: {
+        state: true,
+        planDraft: true,
+        members: { where: { userId: { not: null }, deletedAt: null }, select: { memberKey: true } },
+      },
+    });
+    if (!current) return "notFound" as const;
+    if (!input.complete && current.state !== "DRAFT") return "refused" as const;
+
+    const sent = new Set(input.draft.members.map((member) => member.id));
+    const joined = new Set(current.members.map((row) => row.memberKey));
+    const stored = isRecord(current.planDraft) && Array.isArray(current.planDraft.members) ? current.planDraft.members : [];
+    const unseen = stored.filter(
+      (member) =>
+        isRecord(member) &&
+        typeof member.id === "string" &&
+        joined.has(member.id) &&
+        !sent.has(member.id) &&
+        !input.knownMembers.includes(member.id),
+    );
+    const columns = columnsOf(input.draft);
+    return transaction.trip.update({
+      where: { tripId: id },
       data: {
         name: input.name,
-        ...columnsOf(input.draft),
-        itinerary: (input.itinerary as unknown as Prisma.InputJsonValue | undefined) ?? Prisma.DbNull,
+        ...(input.complete && input.itinerary && current.state === "DRAFT" ? { state: "PLANNED" } : {}),
+        ...columns,
+        ...(unseen.length > 0
+          ? { planDraft: { ...input.draft, members: [...input.draft.members, ...unseen] } as unknown as Prisma.InputJsonValue }
+          : {}),
+        // A draft kept while its group link is shared names no itinerary; one saved earlier stays.
+        ...(input.itinerary ? { itinerary: input.itinerary as unknown as Prisma.InputJsonValue } : {}),
         violationCount: input.violations ?? null,
       },
     });
-    return toTripCard(toTrip(updated), readClock(new Date()));
-  } catch (caught) {
-    if (caught instanceof Prisma.PrismaClientKnownRequestError && caught.code === NOT_FOUND) return null;
-    throw caught;
-  }
+  });
+  return typeof updated === "string" ? updated : toTripCard(toTrip(updated), readClock(new Date()));
 }
 
 /** Copies a trip into a new draft the viewer organizes: same members, needs, and settings, no dates. */

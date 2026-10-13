@@ -334,16 +334,21 @@
     "occasionPlaceholder": "Example: grandma's birthday on day 3",
     "dayStart": "Daily start",
     "dayEnd": "Daily finish",
-    "transportLegend": "Transport"
+    "transportLegend": "Transport",
+    "carriesPhone": "Carries a phone on the trip?",
+    "carriesYes": "Yes",
+    "carriesNo": "No",
+    "phone": "Phone number (optional)",
+    "phoneHint": "For the WhatsApp, call, and text buttons if they get separated. A number that starts with 0 is read as Indonesian.",
+    "phoneInvalid": "This number can't be read yet. Try it with the country code, for example +62.",
+    "noPhoneHint": "Without a phone, {name} gets a Meeting Card to print from the trip's Help page."
   },
   "chat": {
     "resume": "Continue draft",
     "resumeTitle": "Continue your {destination} draft",
     "resumeProgress": "{done} of {total} sections filled",
-    "typing": "Captain is typing",
     "error": "Captain can't be reached. Check your connection, then try again.",
     "retry": "Try again",
-    "makeInvite": "Invite the group",
     "itineraryPending": "Captain is building the itinerary",
     "itineraryIntro": "Here's an itinerary that accounts for each member's needs. Pick a day to see the details."
   },
@@ -426,12 +431,20 @@
     }
   },
   "invite": {
-    "title": "Invite the group",
-    "linkLabel": "Invite link",
+    "title": "Group link",
+    "body": "One link for the whole group, ready to share right away. Anyone with a Kancara account joins by themselves and shows up here. Anyone without one just picks their name, and their phone has an \"I'm separated\" button.",
+    "make": "Make the group link",
+    "making": "Preparing the link",
+    "failed": "The link couldn't be made. Check your connection, then try again.",
+    "linkLabel": "Group link",
     "copy": "Copy",
     "copied": "Copied",
     "share": "Share",
-    "shareText": "Join our trip plan on Kancara"
+    "shareText": "{trip}: open this link and pick your name. If you get separated from the group, your phone has a help button. {link}",
+    "renew": "Make a new link",
+    "renewHint": "The link you already shared will stop working. The group will need the new one.",
+    "renewConfirm": "Yes, make a new link",
+    "cancel": "Cancel"
   },
   "sample": {
     "itinerary": {

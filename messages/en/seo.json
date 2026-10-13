@@ -39,6 +39,18 @@
       "title": "Packing list",
       "description": "The packing list for this trip, built from the weather and each member's needs."
     },
+    "tripHelp": {
+      "title": "Help",
+      "description": "Help for when a member is separated from the group: the meeting point, emergency contacts, and meeting cards."
+    },
+    "finder": {
+      "title": "Meeting card",
+      "description": "Tell a group that its member is safe with you."
+    },
+    "join": {
+      "title": "Join a trip",
+      "description": "Join a Kancara trip through its invite link."
+    },
     "tripToday": {
       "title": "Today's schedule",
       "description": "This trip's schedule for today."

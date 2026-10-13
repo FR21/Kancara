@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check, CloudOff, Loader2 } from "lucide-react";
+import { ArrowRight, Check, CloudOff, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import PageBackdrop from "@/components/layout/PageBackdrop";
@@ -14,6 +14,7 @@ import { type PlanDraftAction, planDraftReducer } from "@/lib/plan-draft";
 import { formatDays, formatTripDates } from "@/lib/trips/format";
 import { type TripPlanView, tripHref } from "@/lib/trips/trip";
 import { useLocale } from "@/lib/use-locale";
+import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import { useMessages } from "@/lib/use-messages";
 import { useOnline } from "@/lib/use-online";
 import PackingBoard, { type LaundrySync } from "./PackingBoard";
@@ -25,9 +26,6 @@ type SaveState = "idle" | "saving" | "saved" | "failed" | "waiting";
 // Ticking goes fast, so the trip is saved once the hand has rested instead of on every tick.
 const SAVE_DELAY_MS = 700;
 
-const BACK_LINK =
-  "group inline-flex min-h-11 items-center gap-2 rounded-sm text-label text-primary underline-offset-4 hover:underline";
-
 // The packing list of a saved trip. What the group ticks, removes, and adds is kept inside the trip's plan, so
 // it is there again on any device the trip is opened on. Without a connection the changes wait on this device
 // and are sent as soon as one is back.
@@ -35,6 +33,7 @@ export default function PackingList({ tripId }: { tripId: string }) {
   const text = useMessages("packing");
   const planText = useMessages("plan");
   const tripsText = useMessages("trips");
+  const navText = useMessages("navbar");
   const locale = useLocale();
   const online = useOnline();
   const [plan, setPlan] = useState<TripPlanView | null>(null);
@@ -198,16 +197,15 @@ export default function PackingList({ tripId }: { tripId: string }) {
       <PageBackdrop />
       {/* The save status shares the line of the way back, so it never takes a line of its own from the list. */}
       <div className="flex items-center justify-between gap-4">
-        <Link
-          href={card && card.status !== "draft" ? `/trips/${encodeURIComponent(tripId)}` : "/trips"}
-          className={BACK_LINK}
-        >
-          <ArrowLeft
-            className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-x-1"
-            aria-hidden="true"
-          />
-          {card && card.status !== "draft" ? text.back : tripsText.itinerary.back}
-        </Link>
+        <Breadcrumbs
+          label={navText.breadcrumb}
+          items={[
+            { label: navText.links.trips, href: "/trips" },
+            // A draft has no itinerary page to step back to.
+            ...(card && card.status !== "draft" ? [{ label: card.name || text.back, href: `/trips/${encodeURIComponent(tripId)}` }] : []),
+            { label: text.title },
+          ]}
+        />
         <p role="status" className="flex min-w-0 items-center gap-2 text-body-sm text-text-muted">
           {waiting && (
             <>

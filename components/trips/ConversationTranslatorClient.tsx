@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowLeft,
   ArrowRight,
   ArrowUpDown,
   BookOpen,
@@ -21,7 +20,8 @@ import {
   Volume2,
   X,
 } from "lucide-react";
-import Link from "next/link";
+import Breadcrumbs from "@/components/layout/Breadcrumbs";
+import { useMessages } from "@/lib/use-messages";
 import { useEffect, useRef, useState } from "react";
 import PageBackdrop from "@/components/layout/PageBackdrop";
 import FieldPassModal from "./FieldPassModal";
@@ -280,6 +280,8 @@ export default function ConversationTranslatorClient({
 }: ConversationTranslatorClientProps) {
   const locale = useLocale();
   const isEn = locale === "en";
+  const navText = useMessages("navbar");
+  const packingText = useMessages("packing");
 
   const [travelerLang, setTravelerLang] = useState<string>(isEn ? "English" : "Indonesian");
   const [localLang, setLocalLang] = useState<typeof SUPPORTED_LANGUAGES[0]>(() =>
@@ -655,6 +657,14 @@ export default function ConversationTranslatorClient({
             {isEn ? "Field Pass (Offline)" : "Paspor Lapangan 🟢"}
           </button>
         </div>
+        <Breadcrumbs
+          label={navText.breadcrumb}
+          items={[
+            { label: navText.links.trips, href: "/trips" },
+            { label: packingText.back, href: `/trips/${encodeURIComponent(tripId)}` },
+            { label: isEn ? "Translator" : "Penerjemah" },
+          ]}
+        />
 
         {/* Setting Bar: Target Language, Audio Toggle, Flip Mode */}
         <div className="flex flex-wrap items-center gap-2">

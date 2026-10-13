@@ -79,10 +79,4 @@ export const sampleCaptain: CaptainClient = {
     await wait(600, signal);
     return [];
   },
-
-  async invite(_request, signal) {
-    await wait(600, signal);
-    const code = Math.random().toString(36).slice(2, 8);
-    return { url: `${window.location.origin}/plan?invite=${code}` };
-  },
 };

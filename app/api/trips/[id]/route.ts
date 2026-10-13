@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { currentViewer } from "@/lib/account";
 import { rateLimit } from "@/lib/rate-limit";
+import { keepPlanContacts } from "@/lib/safety/store";
 import { readTripInput } from "@/lib/trips/input";
 import { deleteTrip, getTripPlan, updateTrip } from "@/lib/trips/store";
 
@@ -29,7 +30,9 @@ export async function PUT(request: NextRequest, context: RouteContext<"/api/trip
 
   const { id } = await context.params;
   const card = await updateTrip(viewer, id, input);
-  if (!card) return NextResponse.json({ error: "Trip not found" }, { status: 404 });
+  if (card === "notFound") return NextResponse.json({ error: "Trip not found" }, { status: 404 });
+  if (card === "refused") return NextResponse.json({ error: "The trip is missing required details" }, { status: 400 });
+  await keepPlanContacts(viewer, card.id, input.contacts);
   return NextResponse.json(card);
 }
 

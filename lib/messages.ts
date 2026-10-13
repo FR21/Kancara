@@ -32,7 +32,9 @@ import idLegal from "@/messages/id/legal.json";
 import enSplitBill from "@/messages/en/splitBill.json";
 import idSplitBill from "@/messages/id/splitBill.json";
 import enPacking from "@/messages/en/packing.json";
+import enSafety from "@/messages/en/safety.json";
 import idPacking from "@/messages/id/packing.json";
+import idSafety from "@/messages/id/safety.json";
 import enSavedProfiles from "@/messages/en/savedProfiles.json";
 import idSavedProfiles from "@/messages/id/savedProfiles.json";
 import type { Locale } from "./locale";
@@ -53,6 +55,7 @@ const id = {
   legal: idLegal,
   splitBill: idSplitBill,
   packing: idPacking,
+  safety: idSafety,
   savedProfiles: idSavedProfiles,
 };
 
@@ -75,6 +78,7 @@ const en = {
   legal: enLegal,
   splitBill: enSplitBill,
   packing: enPacking,
+  safety: enSafety,
   savedProfiles: enSavedProfiles,
 } satisfies Messages;
 

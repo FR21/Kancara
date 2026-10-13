@@ -334,16 +334,21 @@
     "occasionPlaceholder": "Contoh: ulang tahun nenek di hari ke-3",
     "dayStart": "Mulai harian",
     "dayEnd": "Selesai harian",
-    "transportLegend": "Transportasi"
+    "transportLegend": "Transportasi",
+    "carriesPhone": "Membawa HP selama perjalanan?",
+    "carriesYes": "Ya",
+    "carriesNo": "Tidak",
+    "phone": "Nomor telepon (opsional)",
+    "phoneHint": "Untuk tombol WhatsApp, telepon, dan SMS saat terpisah. Nomor berawalan 0 dibaca sebagai nomor Indonesia.",
+    "phoneInvalid": "Nomor ini belum bisa dibaca. Coba tulis dengan kode negara, misalnya +62.",
+    "noPhoneHint": "Tanpa HP, {name} mendapat Kartu Kumpul untuk dicetak dari halaman Bantuan trip."
   },
   "chat": {
     "resume": "Lanjutkan draf",
     "resumeTitle": "Lanjutkan draf {destination}",
     "resumeProgress": "{done} dari {total} bagian terisi",
-    "typing": "Captain sedang mengetik",
     "error": "Captain tidak bisa dihubungi. Periksa koneksimu, lalu coba lagi.",
     "retry": "Coba lagi",
-    "makeInvite": "Undang rombongan",
     "itineraryPending": "Captain sedang menyusun itinerary",
     "itineraryIntro": "Ini itinerary yang memperhitungkan kebutuhan tiap anggota. Pilih hari untuk melihat detailnya."
   },
@@ -426,12 +431,20 @@
     }
   },
   "invite": {
-    "title": "Undang rombongan",
-    "linkLabel": "Tautan undangan",
+    "title": "Tautan rombongan",
+    "body": "Satu tautan untuk seluruh rombongan, bisa dibagikan sekarang juga. Yang punya akun Kancara langsung bergabung sendiri dan muncul di sini. Yang tidak punya akun cukup memilih namanya, lalu HP-nya punya tombol \"Saya terpisah\".",
+    "make": "Buat tautan rombongan",
+    "making": "Menyiapkan tautan",
+    "failed": "Tautan belum bisa dibuat. Periksa koneksimu, lalu coba lagi.",
+    "linkLabel": "Tautan rombongan",
     "copy": "Salin",
     "copied": "Tersalin",
     "share": "Bagikan",
-    "shareText": "Ikut rencana trip kita di Kancara"
+    "shareText": "{trip}: buka tautan ini dan pilih namamu. Kalau terpisah dari rombongan, HP-mu punya tombol bantuan. {link}",
+    "renew": "Buat tautan baru",
+    "renewHint": "Tautan yang sudah kamu bagikan akan berhenti berfungsi. Rombongan perlu tautan yang baru.",
+    "renewConfirm": "Ya, buat tautan baru",
+    "cancel": "Batal"
   },
   "sample": {
     "itinerary": {

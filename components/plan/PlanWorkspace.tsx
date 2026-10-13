@@ -4,11 +4,12 @@ import { Ticket } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
 import { type Itinerary, captain, captainIsSample } from "@/lib/api/captain";
 import { settleLaundry } from "@/lib/api/laundry";
+import { fetchPack, sendAction } from "@/lib/api/safety";
 import { trips } from "@/lib/api/trips";
 import { chosenOption, countSettled, findConflicts } from "@/lib/mediation";
 import { countViolations } from "@/lib/trips/trip";
 import PageBackdrop from "@/components/layout/PageBackdrop";
-import TripsNotice from "@/components/trips/TripsNotice";
+import Notice from "@/components/layout/Notice";
 import {
   type PlanDraft,
   createMember,
@@ -17,7 +18,7 @@ import {
   isDraftEmpty,
   planDraftReducer,
 } from "@/lib/plan-draft";
-import { clearDraft, saveDraft, useSavedDraft } from "@/lib/plan-draft-store";
+import { clearDraft, forgetDraftTrip, keepDraftTrip, readDraftTrip, saveDraft, useSavedDraft } from "@/lib/plan-draft-store";
 import {
   type QuestionKey,
   isAnswered,
@@ -30,6 +31,7 @@ import { useLocale } from "@/lib/use-locale";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { useMessages } from "@/lib/use-messages";
 import type { Stage } from "./flow";
+import InviteCard, { type InviteState } from "./InviteCard";
 import MediationDeck from "./MediationDeck";
 import PassDialog from "./PassDialog";
 import PlanResult, { type SaveState } from "./PlanResult";
@@ -39,11 +41,11 @@ import StageRail, { type RailStep } from "./StageRail";
 import StartScreen from "./StartScreen";
 import TicketReview from "./TicketReview";
 
-type Pending = "itinerary" | "invite";
-type FailedRequest = { kind: "itinerary" } | { kind: "invite" };
-
 const DESKTOP_QUERY = "(min-width: 1024px)";
-const NOTICE_MS = 5000;
+// How long the plan rests before the draft trip behind the group's link is brought up to date with it.
+const SYNC_MS = 1500;
+// How often the trip is asked who has joined through the group's link.
+const PULL_MS = 5000;
 
 export default function PlanWorkspace() {
   const text = useMessages("plan");
@@ -60,19 +62,24 @@ export default function PlanWorkspace() {
   const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
   const [previewing, setPreviewing] = useState(false);
   const [itinerary, setItinerary] = useState<Itinerary | null>(null);
-  const [inviteUrl, setInviteUrl] = useState<string | null>(null);
-  const [pending, setPending] = useState<Pending | null>(null);
-  const [failed, setFailed] = useState<FailedRequest | null>(null);
+  const [inviteToken, setInviteToken] = useState<string | null>(null);
+  const [inviteState, setInviteState] = useState<InviteState>("idle");
+  const [pending, setPending] = useState(false);
+  const [failed, setFailed] = useState(false);
   const [saveState, setSaveState] = useState<SaveState>("idle");
   const [tripId, setTripId] = useState<string | null>(null);
   const [savedCount, setSavedCount] = useState(0);
   const [noticeOpen, setNoticeOpen] = useState(false);
   const controllerRef = useRef<AbortController | null>(null);
+  // The members who joined by themselves that this plan has taken in. A save names them, so that leaving one out
+  // means the leader removed them, and one the plan never saw is kept (see the trip store).
+  const knownJoinedRef = useRef(new Set<string>());
   const arrivedRef = useRef(false);
 
   const showResume = !started && savedDraft !== null && isDraftEmpty(draft);
   const requiredDone = missingRequired(draft).length === 0;
-  const planStarted = itinerary !== null || pending === "itinerary" || failed?.kind === "itinerary";
+  const planStarted = itinerary !== null || pending || failed;
+  const tripName = fillTemplate(text.result.tripName, { destination: draft.destinations.join(", ") });
   const conflicts = findConflicts(draft);
   const clashesSettled = countSettled(conflicts, draft.agreements) === conflicts.length;
   // Editing one answer from the boarding pass shows that question alone; otherwise the deck runs through all of them.
@@ -94,18 +101,45 @@ export default function PlanWorkspace() {
     document.querySelector<HTMLElement>("main h1")?.focus({ preventScroll: true });
   }, [stage]);
 
+  // While the group's link is out and the plan has no itinerary yet, the draft trip behind the link follows the
+  // plan, so whoever opens the link finds the members as they are now.
   useEffect(() => {
-    if (!noticeOpen) return;
-    const timer = setTimeout(() => setNoticeOpen(false), NOTICE_MS);
+    if (inviteToken === null || tripId === null || itinerary !== null || pending || saveState !== "idle") return;
+    const timer = setTimeout(() => {
+      // A sync that fails is made up for by the next one; the plan on this device is not lost.
+      trips.save({ name: tripName, draft, knownMembers: [...knownJoinedRef.current] }, tripId).catch(() => undefined);
+    }, SYNC_MS);
     return () => clearTimeout(timer);
-  }, [noticeOpen, savedCount]);
+  }, [draft, inviteToken, itinerary, pending, saveState, tripId, tripName]);
 
-  const beginRequest = (kind: Pending) => {
+  // Whoever joins by themselves through the group's link is on the trip, not in this plan yet. They are taken in
+  // as they arrive, so the leader sees them here and the plan is made for them too.
+  useEffect(() => {
+    if (inviteToken === null || tripId === null || pending || (stage !== "details" && stage !== "pass")) return;
+    const pull = async () => {
+      if (document.visibilityState !== "visible") return;
+      try {
+        const pack = await fetchPack({ kind: "trip", tripId });
+        pack.members
+          .filter((member) => member.joined && !knownJoinedRef.current.has(member.key))
+          .forEach((member) => {
+            knownJoinedRef.current.add(member.key);
+            dispatch({ type: "mergeMember", member: { ...createMember(member.ageGroup), id: member.key, name: member.name } });
+          });
+      } catch {
+        // The next round asks again.
+      }
+    };
+    const timer = setInterval(pull, PULL_MS);
+    return () => clearInterval(timer);
+  }, [inviteToken, pending, stage, tripId]);
+
+  const beginRequest = () => {
     controllerRef.current?.abort();
     const controller = new AbortController();
     controllerRef.current = controller;
-    setPending(kind);
-    setFailed(null);
+    setPending(true);
+    setFailed(false);
     return controller.signal;
   };
 
@@ -115,11 +149,12 @@ export default function PlanWorkspace() {
     try {
       const saved = await trips.save(
         {
-          name: fillTemplate(text.result.tripName, { destination: draft.destinations.join(", ") }),
+          name: tripName,
           draft,
           // Sample itineraries are never checked against the group's needs, so no count is sent for them.
           violations: captainIsSample ? undefined : countViolations(plan),
           itinerary: plan,
+          knownMembers: [...knownJoinedRef.current],
         },
         tripId,
       );
@@ -136,9 +171,8 @@ export default function PlanWorkspace() {
   const makePlan = async () => {
     setStage("plan");
     setItinerary(null);
-    setInviteUrl(null);
     setSaveState("idle");
-    const signal = beginRequest("itinerary");
+    const signal = beginRequest();
     try {
       const built = await captain.itinerary({ draft, locale }, signal);
       // A trip planned again keeps the laundry stops its packing list asked for.
@@ -147,9 +181,9 @@ export default function PlanWorkspace() {
       saveTrip(plan);
     } catch {
       if (signal.aborted) return;
-      setFailed({ kind: "itinerary" });
+      setFailed(true);
     }
-    if (!signal.aborted) setPending(null);
+    if (!signal.aborted) setPending(false);
   };
 
   // Opens at the first clash still waiting for a pick, or at the start when the group is only looking again.
@@ -165,22 +199,31 @@ export default function PlanWorkspace() {
     saveTrip(plan);
   };
 
+  // The group's link belongs to a trip. A plan that is not a saved trip yet is kept as a draft one first; it
+  // becomes a planned trip when its itinerary is made.
   const makeInvite = async () => {
-    const signal = beginRequest("invite");
+    setInviteState("preparing");
     try {
-      const invite = await captain.invite({ draft, locale }, signal);
-      setInviteUrl(invite.url);
+      const planSaved = tripId !== null && saveState === "saved";
+      const id = planSaved ? tripId : (await trips.save({ name: tripName, draft, knownMembers: [...knownJoinedRef.current] }, tripId)).id;
+      setTripId(id);
+      if (!planSaved) keepDraftTrip(id);
+      setInviteToken((await fetchPack({ kind: "trip", tripId: id })).inviteToken);
+      setInviteState("idle");
     } catch {
-      if (signal.aborted) return;
-      setFailed({ kind: "invite" });
+      setInviteState("failed");
     }
-    if (!signal.aborted) setPending(null);
   };
 
-  const retry = () => {
-    if (!failed) return;
-    if (failed.kind === "itinerary") makePlan();
-    if (failed.kind === "invite") makeInvite();
+  const renewInvite = async () => {
+    if (tripId === null) return;
+    setInviteState("preparing");
+    try {
+      setInviteToken((await sendAction({ kind: "trip", tripId }, { type: "renewInvite" })).inviteToken);
+      setInviteState("idle");
+    } catch {
+      setInviteState("failed");
+    }
   };
 
   const openQuestion = (target: QuestionKey, memberId: string | null = null) => {
@@ -200,6 +243,7 @@ export default function PlanWorkspace() {
   const resumeDraft = () => {
     if (!savedDraft) return;
     dispatch({ type: "replace", draft: savedDraft });
+    setTripId(readDraftTrip());
     setStarted(true);
     if (missingRequired(savedDraft).length === 0) {
       setStage("pass");
@@ -295,7 +339,10 @@ export default function PlanWorkspace() {
         <div className="flex flex-1 flex-col justify-center pb-12">
           <StartScreen
             text={text}
-            onStartManual={() => startManual(draft)}
+            onStartManual={() => {
+              forgetDraftTrip();
+              startManual(draft);
+            }}
           />
           {showResume && (
             <div className="mt-6 flex justify-center px-4 motion-safe:animate-message-in motion-safe:[animation-delay:150ms]">
@@ -335,6 +382,16 @@ export default function PlanWorkspace() {
             returnLabel={fromPass ? text.deck.backToPass : null}
             isDesktop={isDesktop}
             selectedMemberId={selectedMemberId}
+            crewFooter={
+              <InviteCard
+                link={inviteToken ? `${window.location.origin}/join/${inviteToken}` : null}
+                state={inviteState}
+                tripName={tripName}
+                text={text.invite}
+                onMake={makeInvite}
+                onRenew={renewInvite}
+              />
+            }
             onIndexChange={changeQuestion}
             onBackToStory={() => setStage("story")}
             onFinish={finishDetails}
@@ -350,7 +407,7 @@ export default function PlanWorkspace() {
           draft={draft}
           text={text}
           hasPlan={itinerary !== null}
-          busy={pending !== null}
+          busy={pending}
           hasClashes={conflicts.length > 0}
           onEdit={editFromPass}
           onAddMember={addMemberFromPass}
@@ -366,7 +423,7 @@ export default function PlanWorkspace() {
           index={Math.min(clashIndex, conflicts.length - 1)}
           text={text}
           hasPlan={itinerary !== null}
-          busy={pending !== null}
+          busy={pending}
           onIndexChange={setClashIndex}
           onPick={(conflict, option) => dispatch({ type: "setAgreement", conflict, option })}
           onBack={() => setStage("pass")}
@@ -379,14 +436,12 @@ export default function PlanWorkspace() {
           draft={draft}
           text={text}
           itinerary={itinerary}
-          inviteUrl={inviteUrl}
           pending={pending}
-          failed={failed !== null}
+          failed={failed}
           isSample={captainIsSample}
           saveState={saveState}
           packingHref={tripId && saveState === "saved" ? `/trips/${encodeURIComponent(tripId)}/packing` : null}
-          onRetry={retry}
-          onInvite={makeInvite}
+          onRetry={makePlan}
           onSave={() => itinerary && saveTrip(itinerary)}
           onChangeItinerary={changeItinerary}
           onChangeAgreements={openClashes}
@@ -394,7 +449,7 @@ export default function PlanWorkspace() {
         />
       )}
 
-      <TripsNotice
+      <Notice
         notice={noticeOpen ? { id: savedCount, tone: "success", message: text.result.savedNotice } : null}
         dismissLabel={text.result.dismiss}
         onDismiss={() => setNoticeOpen(false)}
