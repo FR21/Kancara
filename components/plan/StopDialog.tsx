@@ -10,6 +10,7 @@ import {
   LifeBuoy,
   MapPin,
   Repeat2,
+  Sparkles,
   Star,
   Wallet,
   X,
@@ -46,6 +47,8 @@ type StopDialogProps = {
   describeCover: (cover: ItineraryItem["covers"][number]) => string;
   /** Switches the open stop to one of its backups. Absent where the plan is only read. */
   onUseBackup?: (backupIndex: number) => void;
+  /** Opens the adapt modal for this specific stop */
+  onRebuildThisStop?: (index: number) => void;
   onNavigate: (index: number) => void;
   onClose: () => void;
 };
@@ -78,6 +81,7 @@ export default function StopDialog({
   validated,
   describeCover,
   onUseBackup,
+  onRebuildThisStop,
   onNavigate,
   onClose,
 }: StopDialogProps) {
@@ -170,20 +174,32 @@ export default function StopDialog({
                   </p>
                 )}
                 {item.detail && <p className="mt-3 text-body text-pretty text-text-muted">{item.detail}</p>}
-                {!item.standIn && standingBy > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => document.getElementById(BACKUPS_ID)?.scrollIntoView({ block: "start" })}
-                    className="group/jump mt-4 inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-border-strong px-4 text-label text-text tabular-nums transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-subtle active:scale-[0.97]"
-                  >
-                    <LifeBuoy className="size-4 shrink-0 text-primary" aria-hidden="true" />
-                    {plural(text.backups.ready, standingBy, locale)}
-                    <ArrowDown
-                      className="size-4 shrink-0 text-text-muted transition-[translate] duration-200 ease-out group-hover/jump:translate-y-1"
-                      aria-hidden="true"
-                    />
-                  </button>
-                )}
+                <div className="mt-4 flex flex-wrap gap-2">
+                  {!item.standIn && standingBy > 0 && onRebuildThisStop && (
+                    <button
+                      type="button"
+                      onClick={() => onRebuildThisStop(index)}
+                      className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-primary/40 bg-primary-subtle px-4 text-label font-bold text-primary transition hover:border-primary hover:bg-primary-hover/20 active:scale-[0.97]"
+                    >
+                      <Sparkles className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                      {locale === "en" ? "Adapt / Replace Place (P2)" : "Ganti Tempat Ini (Hujan / Tutup / Lelah)"}
+                    </button>
+                  )}
+                  {!item.standIn && standingBy > 0 && (
+                    <button
+                      type="button"
+                      onClick={() => document.getElementById(BACKUPS_ID)?.scrollIntoView({ block: "start" })}
+                      className="group/jump inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-border-strong px-4 text-label text-text tabular-nums transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-subtle active:scale-[0.97]"
+                    >
+                      <LifeBuoy className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                      {plural(text.backups.ready, standingBy, locale)}
+                      <ArrowDown
+                        className="size-4 shrink-0 text-text-muted transition-[translate] duration-200 ease-out group-hover/jump:translate-y-1"
+                        aria-hidden="true"
+                      />
+                    </button>
+                  )}
+                </div>
                 {item.standIn && (
                   <p
                     role="status"

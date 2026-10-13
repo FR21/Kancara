@@ -57,3 +57,46 @@ export function switchToBackup(itinerary: Itinerary, date: string, itemIndex: nu
     ),
   };
 }
+
+/** Finds the best backup index for a given situation (rain, closed, rest, or restore main). */
+export function findBackupIndexForKind(item: ItineraryItem, kind: string): number {
+  const backups = listBackups(item);
+  if (backups.length === 0) return -1;
+
+  if (kind === "main") {
+    return backups.findIndex((b) => b.kind === "main");
+  }
+
+  // Exact kind match (e.g. rain backup when it rains, closed when a place is closed, rest when tired)
+  const exact = backups.findIndex((b) => b.kind === kind);
+  if (exact !== -1) return exact;
+
+  // Fallback to any alternative non-main backup
+  return backups.findIndex((b) => b.kind !== "main");
+}
+
+/** Swaps multiple stops in a day to their chosen backups simultaneously. */
+export function rebuildDayStops(
+  itinerary: Itinerary,
+  date: string,
+  switches: { itemIndex: number; backupIndex: number }[],
+): Itinerary {
+  const switchMap = new Map<number, number>();
+  for (const s of switches) {
+    if (s.backupIndex >= 0) switchMap.set(s.itemIndex, s.backupIndex);
+  }
+
+  return {
+    days: itinerary.days.map((day) =>
+      day.date === date
+        ? {
+            ...day,
+            items: day.items.map((item, index) => {
+              const backupIdx = switchMap.get(index);
+              return backupIdx !== undefined ? swapBackup(item, backupIdx) : item;
+            }),
+          }
+        : day,
+    ),
+  };
+}

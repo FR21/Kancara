@@ -3,6 +3,7 @@
 import {
   Camera,
   CheckCircle2,
+  Compass,
   FileQuestion,
   HelpCircle,
   Loader2,
@@ -15,6 +16,7 @@ import {
 } from "lucide-react";
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import PageBackdrop from "@/components/layout/PageBackdrop";
+import FieldPassModal from "./FieldPassModal";
 import type { DietaryAnalysisResult, MemberDietCheck } from "@/lib/agents/dietaryAgent";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import Notice, { type NoticeMessage } from "@/components/layout/Notice";
@@ -45,6 +47,7 @@ export default function DietaryScannerClient({
   const [result, setResult] = useState<DietaryAnalysisResult | null>(null);
   const [speakingKey, setSpeakingKey] = useState<"native" | "translation" | null>(null);
   const [isCameraActive, setIsCameraActive] = useState(false);
+  const [showFieldPass, setShowFieldPass] = useState(false);
 
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -243,6 +246,24 @@ export default function DietaryScannerClient({
     <main className="relative isolate mx-auto w-full max-w-4xl flex-1 px-4 pt-24 pb-16 sm:px-6 sm:pt-28">
       <PageBackdrop />
 
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <Link
+          href={`/trips/${encodeURIComponent(tripId)}`}
+          className="group inline-flex min-h-11 items-center gap-2 rounded-sm text-label text-primary underline-offset-4 hover:underline"
+        >
+          <ArrowLeft className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-x-1" />
+          {isEn ? "Back to Trip" : "Kembali ke Perjalanan"}
+        </Link>
+
+        <button
+          type="button"
+          onClick={() => setShowFieldPass(true)}
+          className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3.5 py-1.5 text-caption font-bold text-emerald-800 dark:text-emerald-300 shadow-sm transition-all hover:bg-emerald-500/20 active:scale-95"
+        >
+          <Compass className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+          {isEn ? "Field Pass (Offline)" : "Paspor Lapangan 🟢"}
+        </button>
+      </div>
       <Breadcrumbs
         label={navText.breadcrumb}
         items={[
@@ -655,6 +676,17 @@ export default function DietaryScannerClient({
           </div>
         )}
       </div>
+
+      <FieldPassModal
+        isOpen={showFieldPass}
+        onClose={() => setShowFieldPass(false)}
+        tripId={tripId}
+        tripName={tripName}
+        destination={destination}
+        memberCount={members.length}
+        needs={members.flatMap((m) => m.needs)}
+        customNeeds={members.map((m) => m.allergies).filter(Boolean)}
+      />
       <Notice notice={notice} dismissLabel={tripsText.notice.dismiss} onDismiss={() => setNotice(null)} />
     </main>
   );

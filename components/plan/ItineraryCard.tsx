@@ -1,8 +1,8 @@
-import { Check, ChevronRight, Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSun, LifeBuoy, type LucideIcon, Snowflake, Sun, TriangleAlert } from "lucide-react";
+import { Check, ChevronRight, Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSun, LifeBuoy, type LucideIcon, Snowflake, Sparkles, Sun, TriangleAlert } from "lucide-react";
 import { type KeyboardEvent, useEffect, useId, useRef, useState } from "react";
-import type { Itinerary, ItineraryCover, ItineraryDay } from "@/lib/api/captain";
+import type { BackupKind, Itinerary, ItineraryCover, ItineraryDay } from "@/lib/api/captain";
 import { fetchWeather } from "@/lib/api/weather";
-import { countBackups, isLegCurrent, switchToBackup } from "@/lib/backups";
+import { countBackups, isLegCurrent, rebuildDayStops, switchToBackup } from "@/lib/backups";
 import type { Messages } from "@/lib/messages";
 import { type Member, fillTemplate, getMemberName, parseLocalDate } from "@/lib/plan-draft";
 import { splitTime, toMinutes } from "@/lib/stop-time";
@@ -10,6 +10,7 @@ import { plural } from "@/lib/trips/format";
 import { useLocale } from "@/lib/use-locale";
 import { useWibNow } from "@/lib/use-wib-now";
 import { type Sky, type Weather, type WeatherDay, isRainy, shownSky } from "@/lib/weather";
+import DayRebuildModal from "./DayRebuildModal";
 import ItineraryStop, { type StopPhase } from "./ItineraryStop";
 import StopDialog from "./StopDialog";
 
@@ -94,6 +95,9 @@ export default function ItineraryCard({
     ),
   );
   const [openIndex, setOpenIndex] = useState<number | null>(null);
+  const [showRebuildModal, setShowRebuildModal] = useState(false);
+  const [rebuildTrigger, setRebuildTrigger] = useState<BackupKind>("rain");
+  const [rebuildItemIndex, setRebuildItemIndex] = useState<number | undefined>(undefined);
   const now = useWibNow(live);
   const tabRefs = useRef<(HTMLButtonElement | null)[]>([]);
   const shortFormat = new Intl.DateTimeFormat(locale, { weekday: "short", day: "numeric", month: "short" });
@@ -115,6 +119,18 @@ export default function ItineraryCard({
     const names = covered.slice(0, MAX_NAMES).map((member) => getMemberName(member, members, text.ageGroups));
     const extra = covered.length > MAX_NAMES ? ` +${covered.length - MAX_NAMES}` : "";
     return `${names.join(", ")}${extra}: ${text.needs[cover.need]}`;
+  };
+
+  const openRebuildModal = (trigger: BackupKind = "rain", itemIndex?: number) => {
+    setRebuildTrigger(trigger);
+    setRebuildItemIndex(itemIndex);
+    setShowRebuildModal(true);
+  };
+
+  const handleApplyRebuild = (switches: { itemIndex: number; backupIndex: number }[]) => {
+    if (!onChange) return;
+    const newItinerary = rebuildDayStops(itinerary, day.date, switches);
+    onChange(newItinerary);
   };
 
   const [weatherMap, setWeatherMap] = useState<Map<string, WeatherDay>>(new Map());
@@ -272,37 +288,62 @@ export default function ItineraryCard({
             </div>
 
             {dayIsRainy && selectedDayWeather && (
-              <div className="mt-3 flex items-center gap-2 rounded-xl border border-primary/20 bg-primary-subtle px-3 py-2 text-caption text-text">
-                <CloudRain className="size-4 shrink-0 text-primary" aria-hidden="true" />
-                <p>
-                  {fillTemplate(text.itinerary.weather.rainAlert, {
-                    chance: Math.round(selectedDayWeather.rainChance ?? 50),
-                  })}
-                </p>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2 rounded-xl border border-primary/20 bg-primary-subtle px-3 py-2 text-caption text-text">
+                <div className="flex items-center gap-2">
+                  <CloudRain className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                  <p>
+                    {fillTemplate(text.itinerary.weather.rainAlert, {
+                      chance: Math.round(selectedDayWeather.rainChance ?? 50),
+                    })}
+                  </p>
+                </div>
+                {onChange && (
+                  <button
+                    type="button"
+                    onClick={() => openRebuildModal("rain")}
+                    className="inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-primary px-3 py-1 text-caption font-bold text-on-primary transition hover:bg-primary-hover active:scale-95"
+                  >
+                    <Sparkles className="size-3.5" />
+                    {locale === "en" ? "Adapt for Rain" : "Alihkan ke Indoor"}
+                  </button>
+                )}
               </div>
             )}
 
-            <p className="mt-1 flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm text-text-muted tabular-nums">
-              {plural(text.itinerary.stops, day.items.length, locale)}
-              {honoured > 0 && (
-                <span className="inline-flex items-center gap-1 text-success">
-                  <Check className="size-4 stroke-3" aria-hidden="true" />
-                  {plural(text.itinerary.honoured, honoured, locale)}
-                </span>
+            <div className="mt-2 flex flex-wrap items-center justify-between gap-2">
+              <p className="flex flex-wrap items-center gap-x-4 gap-y-1 text-body-sm text-text-muted tabular-nums">
+                {plural(text.itinerary.stops, day.items.length, locale)}
+                {honoured > 0 && (
+                  <span className="inline-flex items-center gap-1 text-success">
+                    <Check className="size-4 stroke-3" aria-hidden="true" />
+                    {plural(text.itinerary.honoured, honoured, locale)}
+                  </span>
+                )}
+                {toCheck > 0 && (
+                  <span className="inline-flex items-center gap-1 text-warning">
+                    <TriangleAlert className="size-4 shrink-0" aria-hidden="true" />
+                    {plural(text.itinerary.toCheck, toCheck, locale)}
+                  </span>
+                )}
+                {standingBy > 0 && (
+                  <span className="inline-flex items-center gap-1">
+                    <LifeBuoy className="size-4 shrink-0 text-primary" aria-hidden="true" />
+                    {plural(text.itinerary.backups.ready, standingBy, locale)}
+                  </span>
+                )}
+              </p>
+
+              {onChange && day.items.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => openRebuildModal("rain")}
+                  className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-primary/40 bg-primary-subtle px-3 py-1 text-caption font-bold text-primary transition hover:border-primary hover:bg-primary-hover/20 active:scale-95"
+                >
+                  <Sparkles className="size-3.5 text-primary" />
+                  {locale === "en" ? "Adapt Rest of Day (P2)" : "⚡ Sesuaikan Jadwal (Hujan / Tutup / Lelah)"}
+                </button>
               )}
-              {toCheck > 0 && (
-                <span className="inline-flex items-center gap-1 text-warning">
-                  <TriangleAlert className="size-4 shrink-0" aria-hidden="true" />
-                  {plural(text.itinerary.toCheck, toCheck, locale)}
-                </span>
-              )}
-              {standingBy > 0 && (
-                <span className="inline-flex items-center gap-1">
-                  <LifeBuoy className="size-4 shrink-0 text-primary" aria-hidden="true" />
-                  {plural(text.itinerary.backups.ready, standingBy, locale)}
-                </span>
-              )}
-            </p>
+            </div>
 
             {day.items.length === 0 && (
               <p className="py-8 text-body-sm text-text-muted">{text.itinerary.emptyDay}</p>
@@ -342,8 +383,32 @@ export default function ItineraryCard({
             ? (backupIndex) => onChange(switchToBackup(itinerary, day.date, openIndex, backupIndex))
             : undefined
         }
+        onRebuildThisStop={
+          onChange && openIndex !== null
+            ? (stopIndex) => {
+                setOpenIndex(null);
+                openRebuildModal("closed", stopIndex);
+              }
+            : undefined
+        }
         onNavigate={setOpenIndex}
         onClose={() => setOpenIndex(null)}
+      />
+
+      <DayRebuildModal
+        isOpen={showRebuildModal}
+        onClose={() => {
+          setShowRebuildModal(false);
+          setRebuildItemIndex(undefined);
+        }}
+        day={day}
+        dayNumber={selected + 1}
+        members={members}
+        destination={destination}
+        weatherRainChance={selectedDayWeather?.rainChance}
+        initialTrigger={rebuildTrigger}
+        initialItemIndex={rebuildItemIndex}
+        onApply={handleApplyRebuild}
       />
     </section>
   );
