@@ -9,7 +9,9 @@ import { FormAlert, GoogleButton, OrDivider, PasswordRules, SubmitButton } from 
 import LegalModal from "@/components/auth/LegalModal";
 import TextField, { FIELD_LABEL, OptionalMark } from "@/components/auth/TextField";
 import { GHOST_BUTTON } from "@/components/plan/styles";
+import CountryPicker from "@/components/profile/CountryPicker";
 import GenderSelect from "@/components/profile/GenderSelect";
+import PhoneField from "@/components/profile/PhoneField";
 import { saveProfileDetails } from "@/lib/api/profile";
 import { signInWithGoogle, startSession } from "@/lib/auth/client";
 import { useAuthFlow } from "@/lib/auth/use-auth-flow";
@@ -17,6 +19,8 @@ import { emailIssue, isPasswordStrong } from "@/lib/auth/validation";
 import { auth } from "@/lib/firebase/client";
 import { fillTemplate } from "@/lib/plan-draft";
 import { isAgeValid, isNameValid, isUsernameValid, MAX_AGE } from "@/lib/profile-fields";
+import { normalizePhone } from "@/lib/safety/contact";
+import { callingCode, joinPhone } from "@/lib/travel/calling-codes";
 import { useMessages } from "@/lib/use-messages";
 
 const HOME = "/trips";
@@ -29,7 +33,7 @@ type Step = (typeof STEPS)[number];
 
 const STEP_FIELDS = {
   account: ["email", "password", "confirm"],
-  about: ["name", "username", "age"],
+  about: ["name", "username", "phone", "age"],
 } as const;
 type CheckedField = (typeof STEP_FIELDS)[Step][number];
 
@@ -49,6 +53,10 @@ export default function RegisterPage() {
   const [name, setName] = useState("");
   const [username, setUsername] = useState("");
   const [nationality, setNationality] = useState("");
+  // The calling code follows the country until someone types their own.
+  const [dial, setDial] = useState("");
+  const [dialTyped, setDialTyped] = useState(false);
+  const [national, setNational] = useState("");
   const [age, setAge] = useState("");
   const [gender, setGender] = useState("");
   const [takenEmail, setTakenEmail] = useState("");
@@ -85,7 +93,13 @@ export default function RegisterPage() {
     confirm: confirmError(),
     name: nameError(),
     username: isUsernameValid(username) ? "" : profile.usernameError,
+    phone: national.trim() === "" || normalizePhone(joinPhone(dial, national)) !== null ? "" : profile.phoneError,
     age: isAgeValid(age) ? "" : profile.ageError,
+  };
+
+  const chooseCountry = (code: string) => {
+    setNationality(code);
+    if (!dialTyped) setDial(callingCode(code));
   };
 
   const stepOf = (field: CheckedField): Step =>
@@ -105,7 +119,8 @@ export default function RegisterPage() {
         await saveProfileDetails({
           name: name.trim(),
           username: username.trim().replace(/^@/, ""),
-          nationality: nationality.trim(),
+          nationality,
+          phone: joinPhone(dial, national),
           age,
           gender,
         });
@@ -246,16 +261,45 @@ export default function RegisterPage() {
               onChange={setUsername}
               onBlur={() => touch("username")}
             />
-            <TextField
-              id="register-nationality"
-              label={profile.nationalityLabel}
-              optionalLabel={t.common.optional}
-              placeholder={profile.nationalityPlaceholder}
-              autoComplete="off"
-              value={nationality}
-              disabled={pending}
-              onChange={setNationality}
-            />
+            <div className="group">
+              <label htmlFor="register-nationality" className={`mb-2 block ${FIELD_LABEL}`}>
+                {profile.nationalityLabel}
+                <OptionalMark label={t.common.optional} />
+              </label>
+              <CountryPicker
+                id="register-nationality"
+                value={nationality}
+                placeholder={profile.nationalityPlaceholder}
+                emptyLabel={profile.countryNoMatch}
+                disabled={pending}
+                onChange={chooseCountry}
+              />
+            </div>
+            <div className="group">
+              <label htmlFor="register-phone" className={`mb-2 block ${FIELD_LABEL}`}>
+                {profile.phoneLabel}
+                <OptionalMark label={t.common.optional} />
+              </label>
+              <PhoneField
+                id="register-phone"
+                dial={dial}
+                national={national}
+                dialLabel={profile.dialLabel}
+                placeholder={profile.phonePlaceholder}
+                disabled={pending}
+                invalid={shown("phone") !== ""}
+                describedBy="register-phone-hint"
+                onDialChange={(value) => {
+                  setDial(value);
+                  setDialTyped(true);
+                }}
+                onNationalChange={setNational}
+                onBlur={() => touch("phone")}
+              />
+              <p id="register-phone-hint" className={`mt-2 text-body-sm text-pretty ${shown("phone") ? "text-error" : "text-text-muted"}`}>
+                {shown("phone") || profile.phoneHint}
+              </p>
+            </div>
             <div className="grid gap-6 sm:grid-cols-2 sm:gap-4">
               <TextField
                 id="register-age"

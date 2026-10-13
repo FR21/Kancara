@@ -1,6 +1,7 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { currentViewer } from "@/lib/account";
 import { rateLimit } from "@/lib/rate-limit";
+import { keepPlanContacts } from "@/lib/safety/store";
 import { readTripInput } from "@/lib/trips/input";
 import { type Page, createTrip, listActiveTrips, listHistoryTrips } from "@/lib/trips/store";
 
@@ -51,5 +52,7 @@ export async function POST(request: NextRequest) {
 
   const input = await readTripInput(request);
   if (!input) return NextResponse.json({ error: "The trip is missing required details" }, { status: 400 });
-  return NextResponse.json(await createTrip(viewer, input), { status: 201 });
+  const card = await createTrip(viewer, input);
+  await keepPlanContacts(viewer, card.id, input.contacts);
+  return NextResponse.json(card, { status: 201 });
 }

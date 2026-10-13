@@ -1,10 +1,12 @@
+import { PUSH_SCOPE } from "./api/push";
 import { type PackingState, parsePacking } from "./plan-draft";
 
 const PENDING_PREFIX = "kancara-packing-pending:";
 
 /**
- * Starts the service worker that keeps opened pages and trips for use without a connection. Only a production
- * build is kept: the dev server's files do not carry the hashed names the worker relies on.
+ * Starts the service worker that keeps opened pages and trips for use without a connection. Serwist builds it
+ * from app/sw.ts, and only in a production build: the dev server's files do not carry the hashed names the
+ * worker relies on.
  */
 export function registerOfflineSupport() {
   if (!("serviceWorker" in navigator)) return;
@@ -13,7 +15,8 @@ export function registerOfflineSupport() {
     // and styles, so edits would never show. It is removed, with everything it kept.
     navigator.serviceWorker
       .getRegistrations()
-      .then((found) => Promise.all(found.map((entry) => entry.unregister())))
+      // The worker that receives push notifications has a scope of its own and no pages to go stale; it stays.
+      .then((found) => Promise.all(found.filter((entry) => !entry.scope.endsWith(PUSH_SCOPE)).map((entry) => entry.unregister())))
       .then(clearOfflineCaches)
       .catch(() => undefined);
     return;

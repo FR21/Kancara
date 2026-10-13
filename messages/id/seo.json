@@ -39,6 +39,18 @@
       "title": "Daftar bawaan",
       "description": "Daftar bawaan untuk perjalanan ini, disusun dari cuaca dan kebutuhan tiap anggota."
     },
+    "tripHelp": {
+      "title": "Bantuan",
+      "description": "Bantuan saat ada anggota rombongan yang terpisah: titik kumpul, kontak darurat, dan Kartu Kumpul."
+    },
+    "finder": {
+      "title": "Kartu Kumpul",
+      "description": "Beri tahu rombongan bahwa anggotanya aman bersama Anda."
+    },
+    "join": {
+      "title": "Gabung ke trip",
+      "description": "Bergabung ke trip Kancara lewat tautan undangan."
+    },
     "tripToday": {
       "title": "Jadwal hari ini",
       "description": "Jadwal perjalanan ini untuk hari ini."

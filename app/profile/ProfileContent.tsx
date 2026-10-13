@@ -2,18 +2,25 @@
 
 import { signOut } from "firebase/auth";
 import { ArrowRight, Camera, Check, CircleAlert, Globe, Loader2, Lock, LogOut, Users } from "lucide-react";
+import Notice from "@/components/layout/Notice";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, type FormEvent, useEffect, useRef, useState } from "react";
 import { GHOST_BUTTON, INPUT, OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
+import CountryPicker from "@/components/profile/CountryPicker";
 import GenderSelect from "@/components/profile/GenderSelect";
+import PhoneField from "@/components/profile/PhoneField";
 import ProfilePhoto from "@/components/profile/ProfilePhoto";
 import { ProfileError, saveProfileDetails, uploadProfilePhoto } from "@/lib/api/profile";
+import { forgetPush } from "@/lib/api/push";
 import { removeSession } from "@/lib/auth/session";
 import { clearOfflineCaches } from "@/lib/offline";
 import { auth } from "@/lib/firebase/client";
 import type { Profile } from "@/lib/profile";
 import { isAgeValid, isUsernameValid, MAX_AGE, MAX_PHOTO_BYTES } from "@/lib/profile-fields";
+import { normalizePhone } from "@/lib/safety/contact";
+import { callingCode, joinPhone, splitPhone } from "@/lib/travel/calling-codes";
+import { countryOf } from "@/lib/travel/country-search";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
 
@@ -22,7 +29,7 @@ type ProfileContentProps = {
   profile: Profile;
 };
 
-const FIELDS = ["name", "username", "nationality", "age", "gender"] as const;
+const FIELDS = ["name", "username", "nationality", "phone", "age", "gender"] as const;
 type FieldKey = (typeof FIELDS)[number];
 type Details = Record<FieldKey, string>;
 
@@ -47,11 +54,16 @@ export default function ProfileContent({ email, profile }: ProfileContentProps) 
   const [saved, setSaved] = useState<Details>({
     name: profile.name,
     username: profile.username,
-    nationality: profile.nationality,
+    nationality: countryOf(profile.nationality),
+    phone: profile.phone,
     age: profile.age,
     gender: profile.gender,
   });
   const [form, setForm] = useState<Details>(saved);
+  // The number is typed as a calling code and the rest; the form holds the two joined.
+  const [dial, setDial] = useState(() => splitPhone(profile.phone).dial || callingCode(countryOf(profile.nationality)));
+  const [national, setNational] = useState(() => splitPhone(profile.phone).national);
+  const [saves, setSaves] = useState(0);
   const [photo, setPhoto] = useState(profile.photo ?? "");
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -70,6 +82,7 @@ export default function ProfileContent({ email, profile }: ProfileContentProps) 
     name: t.nameLabel,
     username: t.usernameLabel,
     nationality: t.nationalityLabel,
+    phone: t.phoneLabel,
     age: t.ageLabel,
     gender: t.genderLabel,
   };
@@ -77,6 +90,7 @@ export default function ProfileContent({ email, profile }: ProfileContentProps) 
     name: t.namePlaceholder,
     username: t.usernamePlaceholder,
     nationality: t.nationalityPlaceholder,
+    phone: t.phonePlaceholder,
     age: t.agePlaceholder,
     gender: "",
   };
@@ -85,6 +99,7 @@ export default function ProfileContent({ email, profile }: ProfileContentProps) 
   const displayPhoto = previewUrl || photo || null;
   const ageInvalid = !isAgeValid(form.age);
   const usernameInvalid = !isUsernameValid(form.username);
+  const phoneInvalid = form.phone !== "" && normalizePhone(form.phone) === null;
   const locked = saving;
   const dirty = selectedFile !== null || FIELDS.some((field) => form[field] !== saved[field]);
   const inputClass = `${INPUT} disabled:cursor-not-allowed`;
@@ -94,8 +109,21 @@ export default function ProfileContent({ email, profile }: ProfileContentProps) 
     setForm((current) => ({ ...current, [field]: value }));
   };
 
+  const setPhone = (nextDial: string, nextNational: string) => {
+    setDial(nextDial);
+    setNational(nextNational);
+    setField("phone", joinPhone(nextDial, nextNational));
+  };
+  // A new country brings its calling code, unless a number is already typed under another one.
+  const chooseCountry = (code: string) => {
+    setField("nationality", code);
+    if (national.trim() === "") setDial(callingCode(code));
+  };
+
   const discardChanges = () => {
     setForm(saved);
+    setDial(splitPhone(saved.phone).dial || callingCode(saved.nationality));
+    setNational(splitPhone(saved.phone).national);
     setSelectedFile(null);
     setPreviewUrl(null);
     setError("");
@@ -121,6 +149,8 @@ export default function ProfileContent({ email, profile }: ProfileContentProps) 
 
   const handleLogout = async () => {
     try {
+      // While the session still stands: the next person on this device must not get this account's notifications.
+      await forgetPush();
       await signOut(auth);
       // What was kept for offline use belongs to this person, so it goes before the session does.
       await clearOfflineCaches();
@@ -145,6 +175,10 @@ export default function ProfileContent({ email, profile }: ProfileContentProps) 
       document.getElementById("profile-username")?.focus();
       return;
     }
+    if (phoneInvalid) {
+      document.getElementById("profile-phone")?.focus();
+      return;
+    }
     if (ageInvalid) {
       document.getElementById("profile-age")?.focus();
       return;
@@ -158,7 +192,8 @@ export default function ProfileContent({ email, profile }: ProfileContentProps) 
         name: form.name.trim(),
         // A leading @ is how people write a username, not part of it.
         username: form.username.trim().replace(/^@/, ""),
-        nationality: form.nationality.trim(),
+        nationality: form.nationality,
+        phone: normalizePhone(form.phone) ?? "",
         age: form.age,
         gender: form.gender,
       };
@@ -174,6 +209,7 @@ export default function ProfileContent({ email, profile }: ProfileContentProps) 
       setSaved(next);
       setForm(next);
       setSucceeded(true);
+      setSaves((count) => count + 1);
       // The navbar shows the photo too; it reads it again from the server.
       router.refresh();
     } catch (caught) {
@@ -289,7 +325,36 @@ export default function ProfileContent({ email, profile }: ProfileContentProps) 
                     )}
                   </div>
                 )}
-                {field !== "gender" && field !== "age" && (
+                {field === "nationality" && (
+                  <CountryPicker
+                    id="profile-nationality"
+                    value={form.nationality}
+                    placeholder={placeholders.nationality}
+                    emptyLabel={t.countryNoMatch}
+                    disabled={locked}
+                    onChange={chooseCountry}
+                  />
+                )}
+                {field === "phone" && (
+                  <div>
+                    <PhoneField
+                      id="profile-phone"
+                      dial={dial}
+                      national={national}
+                      dialLabel={t.dialLabel}
+                      placeholder={placeholders.phone}
+                      disabled={locked}
+                      invalid={phoneInvalid}
+                      describedBy="profile-phone-hint"
+                      onDialChange={(value) => setPhone(value, national)}
+                      onNationalChange={(value) => setPhone(dial, value)}
+                    />
+                    <p id="profile-phone-hint" className={`mt-2 text-body-sm text-pretty ${phoneInvalid ? "text-error" : "text-text-muted"}`}>
+                      {phoneInvalid ? t.phoneError : t.phoneHint}
+                    </p>
+                  </div>
+                )}
+                {(field === "name" || field === "username") && (
                   <div>
                     <input
                       id={`profile-${field}`}
@@ -347,15 +412,11 @@ export default function ProfileContent({ email, profile }: ProfileContentProps) 
             </div>
           )}
 
-          {succeeded && !dirty && (
-            <p
-              role="status"
-              className="mt-6 flex items-center gap-2 text-label text-success motion-safe:animate-message-in sm:justify-end"
-            >
-              <Check className="size-4 motion-safe:animate-stamp-in" aria-hidden="true" />
-              {t.success}
-            </p>
-          )}
+          <Notice
+            notice={succeeded && !dirty ? { id: saves, tone: "success", message: t.success } : null}
+            dismissLabel={t.dismiss}
+            onDismiss={() => setSucceeded(false)}
+          />
 
           <div
             style={{ animationDelay: `${(FIELDS.length + 4) * ENTER_STEP_MS}ms` }}

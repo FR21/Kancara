@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import Footer from "@/components/footer/Footer";
 import LocaleProvider from "@/components/layout/LocaleProvider";
 import OfflineReady from "@/components/layout/OfflineReady";
+import SafetyDock from "@/components/safety/SafetyDock";
 import SiteChrome from "@/components/layout/SiteChrome";
 import Navbar from "@/components/navbar/Navbar";
 import { currentViewer } from "@/lib/account";
@@ -47,6 +48,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       </head>
       <body className="min-h-screen flex flex-col font-sans overflow-x-clip">
         <OfflineReady />
+        <SafetyDock />
         <LocaleProvider locale={locale}>
           <SiteChrome>
             <Navbar isLoggedIn={viewer !== null} picture={viewer?.picture ?? null} />

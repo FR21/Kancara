@@ -6,8 +6,8 @@
   "namePlaceholder": "Enter your name",
   "usernameLabel": "Username",
   "usernamePlaceholder": "@johndoe",
-  "nationalityLabel": "Nationality",
-  "nationalityPlaceholder": "e.g. Indonesian",
+  "nationalityLabel": "Country of origin",
+  "nationalityPlaceholder": "Search for a country",
   "ageLabel": "Age",
   "agePlaceholder": "e.g. 25",
   "genderLabel": "Gender",
@@ -34,5 +34,12 @@
   "ageError": "Enter an age between 1 and 120.",
   "nameError": "Enter a name, 2 to 50 characters.",
   "usernameError": "Usernames are 3 to 20 characters: letters, numbers, dots, or underscores.",
-  "usernameTaken": "That username is taken. Choose another one."
+  "usernameTaken": "That username is taken. Choose another one.",
+  "countryNoMatch": "No country matches.",
+  "phoneLabel": "Phone number",
+  "phonePlaceholder": "812 3456 7890",
+  "dialLabel": "Country code",
+  "phoneHint": "Your group uses it to reach you if you get separated. The country code follows your country of origin.",
+  "phoneError": "This number can't be read yet. Check the country code and the number.",
+  "dismiss": "Dismiss"
 }

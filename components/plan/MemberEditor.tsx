@@ -1,13 +1,14 @@
 "use client";
 
 import { Check, Trash2, X } from "lucide-react";
-import type { Dispatch } from "react";
+import { type Dispatch, useState } from "react";
 import type { Messages } from "@/lib/messages";
 import {
   type Member,
   type PlanDraft,
   type PlanDraftAction,
   AGE_GROUPS,
+  carriesPhoneByDefault,
   fillTemplate,
   getMemberName,
   INTEREST_KEYS,
@@ -17,6 +18,7 @@ import {
   NEED_KEYS,
   sameText,
 } from "@/lib/plan-draft";
+import { MAX_PHONE_CHARS, normalizePhone } from "@/lib/safety/contact";
 import Checkbox from "./Checkbox";
 import CustomAdd, { CustomChip } from "./CustomEntries";
 import SegmentedToggle from "./SegmentedToggle";
@@ -37,6 +39,11 @@ const MAX_ALLERGY_CHARS = 120;
 
 export default function MemberEditor({ member, draft, dispatch, text, onRemoved }: MemberEditorProps) {
   const displayName = getMemberName(member, draft.members, text.ageGroups);
+  const carriesPhone = member.carriesPhone ?? carriesPhoneByDefault(member.ageGroup);
+  // A number is judged once the field is left, not while it is still being typed.
+  const [phoneChecked, setPhoneChecked] = useState(false);
+  const phone = member.phone ?? "";
+  const phoneInvalid = phoneChecked && phone.trim() !== "" && normalizePhone(phone) === null;
 
   const removeMember = () => {
     dispatch({ type: "removeMember", id: member.id });
@@ -282,6 +289,58 @@ export default function MemberEditor({ member, draft, dispatch, text, onRemoved 
           />
         </div>
       </fieldset>
+
+      <fieldset className="min-w-0">
+        <legend className={FIELD_LABEL}>{text.pass.carriesPhone}</legend>
+        <div className="mt-2 flex flex-wrap gap-2">
+          {[true, false].map((choice) => {
+            const selected = carriesPhone === choice;
+            return (
+              <button
+                key={String(choice)}
+                type="button"
+                aria-pressed={selected}
+                onClick={() => dispatch({ type: "updateMember", id: member.id, changes: { carriesPhone: choice } })}
+                className={choiceClass(selected)}
+              >
+                {selected && <Check className="size-4" strokeWidth={3} aria-hidden="true" />}
+                {choice ? text.pass.carriesYes : text.pass.carriesNo}
+              </button>
+            );
+          })}
+        </div>
+        {!carriesPhone && (
+          <p className="mt-2 text-caption text-pretty text-text-muted">{fillTemplate(text.pass.noPhoneHint, { name: displayName })}</p>
+        )}
+      </fieldset>
+
+      {carriesPhone && (
+        <div>
+          <label htmlFor="member-phone" className={FIELD_LABEL}>
+            {text.pass.phone}
+          </label>
+          <input
+            id="member-phone"
+            type="tel"
+            inputMode="tel"
+            autoComplete="off"
+            maxLength={MAX_PHONE_CHARS}
+            value={phone}
+            placeholder="+62 812 3456 7890"
+            aria-describedby="member-phone-hint"
+            aria-invalid={phoneInvalid}
+            onChange={(event) => {
+              setPhoneChecked(false);
+              dispatch({ type: "updateMember", id: member.id, changes: { phone: event.target.value } });
+            }}
+            onBlur={() => setPhoneChecked(true)}
+            className={`${INPUT} mt-2 tabular-nums`}
+          />
+          <p id="member-phone-hint" className={`mt-2 text-caption text-pretty ${phoneInvalid ? "text-error" : "text-text-muted"}`}>
+            {phoneInvalid ? text.pass.phoneInvalid : text.pass.phoneHint}
+          </p>
+        </div>
+      )}
 
       <div className="border-t border-border pt-4">
         <button

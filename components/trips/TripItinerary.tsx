@@ -1,12 +1,13 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Languages, Luggage, Route, UtensilsCrossed } from "lucide-react";
+import { ArrowRight, Languages, LifeBuoy, Luggage, Route, UtensilsCrossed } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import PageBackdrop from "@/components/layout/PageBackdrop";
 import ErrorAlert from "@/components/plan/ErrorAlert";
 import ItineraryCard from "@/components/plan/ItineraryCard";
 import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
+import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import { type Itinerary, captain, captainIsSample } from "@/lib/api/captain";
 import { settleLaundry } from "@/lib/api/laundry";
 import { trips, TripsError } from "@/lib/api/trips";
@@ -24,9 +25,6 @@ type TripItineraryProps = {
 type LoadState = "loading" | "failed" | "notFound";
 type BuildState = "idle" | "building" | "failed";
 
-const BACK_LINK =
-  "group inline-flex min-h-11 items-center gap-2 rounded-sm text-label text-primary underline-offset-4 hover:underline";
-
 // A saved trip's itinerary, read back from My Trips. It shows the same
 // day-by-day route the planner saw when the plan was made. A trip saved
 // without one can have it built here from the details it already holds.
@@ -34,6 +32,8 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
   const text = useMessages("trips");
   const planText = useMessages("plan");
   const packingText = useMessages("packing");
+  const safetyText = useMessages("safety");
+  const navText = useMessages("navbar");
   const locale = useLocale();
   const [plan, setPlan] = useState<TripPlanView | null>(null);
   const [state, setState] = useState<LoadState>("loading");
@@ -128,13 +128,10 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
   return (
     <main className="relative isolate mx-auto w-full max-w-2xl flex-1 px-4 pt-24 pb-16 sm:px-6 sm:pt-28 lg:max-w-5xl xl:px-0">
       <PageBackdrop />
-      <Link href="/trips" className={BACK_LINK}>
-        <ArrowLeft
-          className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-x-1"
-          aria-hidden="true"
-        />
-        {text.itinerary.back}
-      </Link>
+      <Breadcrumbs
+        label={navText.breadcrumb}
+        items={[{ label: navText.links.trips, href: "/trips" }, { label: card?.name || text.card.untitled }]}
+      />
 
       {!plan && state === "loading" && (
         <div role="status" className="mt-4 space-y-6 motion-safe:animate-pulse">
@@ -167,6 +164,11 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
               <Link href={`/trips/${encodeURIComponent(card.id)}/packing`} className={`${OUTLINE_BUTTON} h-11`}>
                 <Luggage className="size-4" aria-hidden="true" />
                 {packingText.open}
+                <ArrowRight className="size-4 text-text-muted" aria-hidden="true" />
+              </Link>
+              <Link href={`/trips/${encodeURIComponent(card.id)}/help`} className={`${OUTLINE_BUTTON} h-11`}>
+                <LifeBuoy className="size-4" aria-hidden="true" />
+                {safetyText.open}
                 <ArrowRight className="size-4 text-text-muted" aria-hidden="true" />
               </Link>
               <Link

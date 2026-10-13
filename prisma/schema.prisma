@@ -25,9 +25,12 @@ model User {
   email           String?
   displayName     String?   @map("display_name")
   username        String?
+  /// The country the person is from, as its two-letter code. Rows from before the country picker hold free text.
   nationality     String?
   age             Int?      @db.SmallInt
   gender          String?
+  /// The person's own phone number, sealed (see lib/secret-box). It goes with them into the trips they join.
+  phoneNumberCipher String? @map("phone_number_cipher")
   /// Where the profile photo sits in object storage, when the person uploaded one.
   avatarObjectKey String?   @map("avatar_object_key")
   avatarUpdatedAt DateTime? @map("avatar_updated_at") @db.Timestamptz(3)
@@ -38,6 +41,8 @@ model User {
   workspaces       Workspace[]
   trips            Trip[]
   visitedCountries VisitedCountry[]
+  tripMembers      TripMember[]
+  pushSubscriptions PushSubscription[]
 
   @@map("users")
 }
@@ -51,9 +56,14 @@ model Workspace {
   updatedAt   DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
   deletedAt   DateTime? @map("deleted_at") @db.Timestamptz(3)
 
-  user             User             @relation(fields: [userId], references: [userId], onDelete: Restrict)
-  trips            Trip[]
-  visitedCountries VisitedCountry[]
+  user               User                @relation(fields: [userId], references: [userId], onDelete: Restrict)
+  trips              Trip[]
+  visitedCountries   VisitedCountry[]
+  tripMembers        TripMember[]
+  pushSubscriptions  PushSubscription[]
+  tripSafetySettings TripSafetySetting[]
+  missingReports     MissingReport[]
+  emergencyContacts  EmergencyContact[]
 
   @@map("workspaces")
 }
@@ -82,12 +92,38 @@ model Trip {
   updatedAt       DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
   deletedAt       DateTime? @map("deleted_at") @db.Timestamptz(3)
 
-  workspace Workspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Restrict)
-  user      User      @relation(fields: [userId], references: [userId], onDelete: Restrict)
+  workspace         Workspace          @relation(fields: [workspaceId], references: [workspaceId], onDelete: Restrict)
+  user              User               @relation(fields: [userId], references: [userId], onDelete: Restrict)
+  members           TripMember[]
+  safetySetting     TripSafetySetting?
+  missingReports    MissingReport[]
+  emergencyContacts EmergencyContact[]
 
   @@index([workspaceId, state, startDate])
   @@index([workspaceId, updatedAt(sort: Desc)])
   @@map("trips")
+}
+
+/// One device an account turned push notifications on with. A device belongs to one account at a time.
+model PushSubscription {
+  pushSubscriptionId String    @id @default(dbgenerated("gen_random_uuid()")) @map("push_subscription_id") @db.Uuid
+  workspaceId        String    @map("workspace_id") @db.Uuid
+  userId             String    @map("user_id") @db.Uuid
+  /// The device's Firebase token, encrypted before it is stored; see lib/secret-box.ts.
+  tokenCipher        String    @map("token_cipher")
+  /// A keyed hash of the token, to tell whether a device is already known without reading the token.
+  tokenHash          String    @unique @map("token_hash")
+  /// The language the device was using when it turned notifications on, which they are written in.
+  locale             String    @default("id")
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt          DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Restrict)
+  user      User      @relation(fields: [userId], references: [userId], onDelete: Restrict)
+
+  @@index([workspaceId])
+  @@map("push_subscriptions")
 }
 
 /// One country a person marked on their travel map. Unmarking sets `deletedAt`; marking again clears it.
@@ -119,4 +155,115 @@ model ApiCache {
 
   @@index([expiresAt])
   @@map("api_caches")
+}
+
+/// One member of a trip's plan as a person to reach: their number, whether they carry a phone, and the account that
+/// joined the trip as them. Who they are (name, age, needs) stays in the trip's plan document. The partial unique
+/// index that lets an account be one member per trip exists in the database only.
+model TripMember {
+  tripMemberId      String    @id @default(dbgenerated("gen_random_uuid()")) @map("trip_member_id") @db.Uuid
+  workspaceId       String    @map("workspace_id") @db.Uuid
+  tripId            String    @map("trip_id") @db.Uuid
+  /// The member's id inside the plan document.
+  memberKey         String    @map("member_key")
+  /// The account that joined the trip as this member, when one did.
+  userId            String?   @map("user_id") @db.Uuid
+  /// Encrypted before it is stored; see lib/secret-box.ts.
+  phoneNumberCipher String?   @map("phone_number_cipher")
+  hasPhone          Boolean   @default(true) @map("has_phone")
+  /// When someone confirmed this member's meeting card was saved or printed.
+  cardSavedAt       DateTime? @map("card_saved_at") @db.Timestamptz(3)
+  createdAt         DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt         DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt         DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  workspace       Workspace       @relation(fields: [workspaceId], references: [workspaceId], onDelete: Restrict)
+  trip            Trip            @relation(fields: [tripId], references: [tripId], onDelete: Restrict)
+  user            User?           @relation(fields: [userId], references: [userId], onDelete: Restrict)
+  searchesFor     MissingReport[] @relation("MissingMember")
+  searchesStarted MissingReport[] @relation("ReportingMember")
+
+  @@unique([tripId, memberKey])
+  @@index([workspaceId])
+  @@map("trip_members")
+}
+
+/// What a trip keeps for finding someone: the second number printed on the meeting cards, the meeting point, and
+/// the version of its invite link (raising it makes every earlier link stop working).
+model TripSafetySetting {
+  tripSafetySettingId        String    @id @default(dbgenerated("gen_random_uuid()")) @map("trip_safety_setting_id") @db.Uuid
+  workspaceId                String    @map("workspace_id") @db.Uuid
+  tripId                     String    @unique @map("trip_id") @db.Uuid
+  /// Encrypted before it is stored; see lib/secret-box.ts.
+  secondaryPhoneNumberCipher String?   @map("secondary_phone_number_cipher")
+  inviteVersion              Int       @default(1) @map("invite_version")
+  meetingPointLabel          String?   @map("meeting_point_label")
+  meetingPointNote           String?   @map("meeting_point_note")
+  /// Taken from the phone of the member who set the point, never from a map service.
+  meetingPointLatitude       Float?    @map("meeting_point_latitude")
+  meetingPointLongitude      Float?    @map("meeting_point_longitude")
+  meetingPointSetAt          DateTime? @map("meeting_point_set_at") @db.Timestamptz(3)
+  createdAt                  DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                  DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt                  DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Restrict)
+  trip      Trip      @relation(fields: [tripId], references: [tripId], onDelete: Restrict)
+
+  @@index([workspaceId])
+  @@map("trip_safety_settings")
+}
+
+/// One search for one member, from the moment someone asks for help until the member is found. A member has one
+/// open search at a time (a partial unique index in the database). The location is shared once, by consent.
+model MissingReport {
+  missingReportId        String    @id @default(dbgenerated("gen_random_uuid()")) @map("missing_report_id") @db.Uuid
+  workspaceId            String    @map("workspace_id") @db.Uuid
+  tripId                 String    @map("trip_id") @db.Uuid
+  missingTripMemberId    String    @map("missing_trip_member_id") @db.Uuid
+  /// Empty when a finder, who is no member, started the search.
+  reportedByTripMemberId String?   @map("reported_by_trip_member_id") @db.Uuid
+  /// SOS, TRIP_LEAD, or FINDER.
+  source                 String    @db.VarChar(15)
+  /// SEARCHING, ON_THE_WAY, or FOUND.
+  status                 String    @db.VarChar(15)
+  /// When the missing member answered that they are lost.
+  confirmedLostAt        DateTime? @map("confirmed_lost_at") @db.Timestamptz(3)
+  sharedLatitude         Float?    @map("shared_latitude")
+  sharedLongitude        Float?    @map("shared_longitude")
+  sharedAt               DateTime? @map("shared_at") @db.Timestamptz(3)
+  resolvedAt             DateTime? @map("resolved_at") @db.Timestamptz(3)
+  createdAt              DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt              DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  workspace     Workspace   @relation(fields: [workspaceId], references: [workspaceId], onDelete: Restrict)
+  trip          Trip        @relation(fields: [tripId], references: [tripId], onDelete: Restrict)
+  missingMember TripMember  @relation("MissingMember", fields: [missingTripMemberId], references: [tripMemberId], onDelete: Restrict)
+  reportedBy    TripMember? @relation("ReportingMember", fields: [reportedByTripMemberId], references: [tripMemberId], onDelete: Restrict)
+
+  @@index([tripId, status, createdAt(sort: Desc)])
+  @@index([workspaceId])
+  @@map("missing_reports")
+}
+
+/// A number the group can call at a place on the trip: an information desk, security, the lodging's front desk.
+/// National emergency numbers are not rows here; they ship inside the app so they work without a connection.
+model EmergencyContact {
+  emergencyContactId String    @id @default(dbgenerated("gen_random_uuid()")) @map("emergency_contact_id") @db.Uuid
+  workspaceId        String    @map("workspace_id") @db.Uuid
+  tripId             String    @map("trip_id") @db.Uuid
+  placeName          String    @map("place_name")
+  /// INFO_DESK, SECURITY, LODGING, GUIDE, or OTHER.
+  labelKey           String    @map("label_key") @db.VarChar(30)
+  phoneNumber        String    @map("phone_number") @db.VarChar(20)
+  createdAt          DateTime  @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime  @default(now()) @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt          DateTime? @map("deleted_at") @db.Timestamptz(3)
+
+  workspace Workspace @relation(fields: [workspaceId], references: [workspaceId], onDelete: Restrict)
+  trip      Trip      @relation(fields: [tripId], references: [tripId], onDelete: Restrict)
+
+  @@index([workspaceId])
+  @@map("emergency_contacts")
 }

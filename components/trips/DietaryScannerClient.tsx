@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowLeft,
   Camera,
   CheckCircle2,
   FileQuestion,
@@ -14,11 +13,13 @@ import {
   X,
   XCircle,
 } from "lucide-react";
-import Link from "next/link";
 import { type ChangeEvent, useEffect, useRef, useState } from "react";
 import PageBackdrop from "@/components/layout/PageBackdrop";
 import type { DietaryAnalysisResult, MemberDietCheck } from "@/lib/agents/dietaryAgent";
+import Breadcrumbs from "@/components/layout/Breadcrumbs";
+import Notice, { type NoticeMessage } from "@/components/layout/Notice";
 import { useLocale } from "@/lib/use-locale";
+import { useMessages } from "@/lib/use-messages";
 
 type DietaryScannerClientProps = {
   tripId: string;
@@ -50,6 +51,10 @@ export default function DietaryScannerClient({
   const mediaStreamRef = useRef<MediaStream | null>(null);
 
   const isEn = locale === "en";
+  const navText = useMessages("navbar");
+  const packingText = useMessages("packing");
+  const tripsText = useMessages("trips");
+  const [notice, setNotice] = useState<NoticeMessage | null>(null);
 
   const stopCamera = () => {
     if (mediaStreamRef.current) {
@@ -176,7 +181,11 @@ export default function DietaryScannerClient({
     key: "native" | "translation" = "native"
   ) => {
     if (!("speechSynthesis" in window)) {
-      alert("Text-to-speech tidak didukung di browser ini.");
+      setNotice({
+        id: Date.now(),
+        tone: "error",
+        message: isEn ? "This browser cannot read text aloud." : "Browser ini tidak bisa membacakan teks.",
+      });
       return;
     }
 
@@ -234,13 +243,14 @@ export default function DietaryScannerClient({
     <main className="relative isolate mx-auto w-full max-w-4xl flex-1 px-4 pt-24 pb-16 sm:px-6 sm:pt-28">
       <PageBackdrop />
 
-      <Link
-        href={`/trips/${encodeURIComponent(tripId)}`}
-        className="group inline-flex min-h-11 items-center gap-2 rounded-sm text-label text-primary underline-offset-4 hover:underline"
-      >
-        <ArrowLeft className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-x-1" />
-        {isEn ? "Back to Trip" : "Kembali ke Perjalanan"}
-      </Link>
+      <Breadcrumbs
+        label={navText.breadcrumb}
+        items={[
+          { label: navText.links.trips, href: "/trips" },
+          { label: packingText.back, href: `/trips/${encodeURIComponent(tripId)}` },
+          { label: isEn ? "Dietary Lens" : "Pemindai Menu" },
+        ]}
+      />
 
       <div className="mt-4">
         <div className="flex flex-wrap items-center justify-between gap-3">
@@ -645,6 +655,7 @@ export default function DietaryScannerClient({
           </div>
         )}
       </div>
+      <Notice notice={notice} dismissLabel={tripsText.notice.dismiss} onDismiss={() => setNotice(null)} />
     </main>
   );
 }

@@ -3,7 +3,6 @@
 import {
   AlertTriangle,
   ArrowRight,
-  Check,
   Edit2,
   Plus,
   RotateCcw,
@@ -14,6 +13,7 @@ import {
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useMemo, useState } from "react";
+import Notice, { type NoticeMessage } from "@/components/layout/Notice";
 import PageBackdrop from "@/components/layout/PageBackdrop";
 import MemberAvatar from "@/components/plan/MemberAvatar";
 import { NeedChip } from "@/components/plan/NeedChips";
@@ -41,6 +41,7 @@ export default function SavedMembersWorkspace() {
   const router = useRouter();
   const planText = useMessages("plan");
   const t = useMessages("savedProfiles");
+  const tripsText = useMessages("trips");
 
   const { profiles, save, remove } = useSavedProfiles();
   const existingDraft = useSavedDraft();
@@ -51,12 +52,9 @@ export default function SavedMembersWorkspace() {
   const [editingProfile, setEditingProfile] = useState<SavedMemberProfile | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<SavedMemberProfile | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toast, setToast] = useState<NoticeMessage | null>(null);
 
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3500);
-  };
+  const showToast = (message: string) => setToast({ id: Date.now(), tone: "success", message });
 
   const filteredProfiles = useMemo(() => {
     return profiles.filter((p) => {
@@ -240,16 +238,7 @@ export default function SavedMembersWorkspace() {
         </div>
       </header>
 
-      {/* Toast Announcement */}
-      {toastMessage && (
-        <div
-          role="status"
-          className="fixed bottom-6 right-6 z-50 flex items-center gap-2 rounded-2xl border border-primary bg-surface px-5 py-3 text-label text-text shadow-xl shadow-neutral-950/20 motion-safe:animate-message-in"
-        >
-          <Check className="size-4 text-success" aria-hidden="true" />
-          {toastMessage}
-        </div>
-      )}
+      <Notice notice={toast} dismissLabel={tripsText.notice.dismiss} onDismiss={() => setToast(null)} />
 
       {/* Stats Summary Bar */}
       <section

@@ -1,0 +1,92 @@
+"use client";
+
+import { Check, CircleAlert, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+
+export type NoticeMessage = { id: number; tone: "success" | "error"; message: string };
+
+type NoticeProps = {
+  /** The notice to show, or null for none. A new `id` is a new notice, even with the same words. */
+  notice: NoticeMessage | null;
+  dismissLabel: string;
+  /** How long it stays before it leaves by itself. An error stays until it is dismissed. */
+  duration?: number;
+  onDismiss: () => void;
+};
+
+const DEFAULT_MS = 5000;
+// As long as the leave animation in globals.css, with a little to spare for a browser that never reports its end.
+const LEAVE_MS = 220;
+
+// The one notice of the whole app: a short line about something that just happened. It drops in from the top
+// edge, where it covers nothing a thumb is reaching for, shows how long it will stay as a line that runs out, and
+// lifts away again. The live region stays mounted while empty, so screen readers announce a notice the moment it
+// is filled in.
+export default function Notice({ notice, dismissLabel, duration = DEFAULT_MS, onDismiss }: NoticeProps) {
+  // The notice on screen outlives the one asked for by the length of its leave, so it can be seen going.
+  const [shown, setShown] = useState<NoticeMessage | null>(notice);
+  const [leaving, setLeaving] = useState(false);
+  const dismissRef = useRef(onDismiss);
+  useEffect(() => {
+    dismissRef.current = onDismiss;
+  });
+
+  if (notice && notice.id !== shown?.id) {
+    setShown(notice);
+    setLeaving(false);
+  }
+  if (!notice && shown && !leaving) setLeaving(true);
+
+  const stays = shown?.tone === "error";
+  useEffect(() => {
+    if (!shown || leaving || stays) return;
+    const timer = setTimeout(() => dismissRef.current(), duration);
+    return () => clearTimeout(timer);
+  }, [shown, leaving, stays, duration]);
+
+  useEffect(() => {
+    if (!leaving) return;
+    const timer = setTimeout(() => {
+      setShown(null);
+      setLeaving(false);
+    }, LEAVE_MS);
+    return () => clearTimeout(timer);
+  }, [leaving]);
+
+  return (
+    <div role="status" className="pointer-events-none fixed inset-x-0 top-0 z-60 flex justify-center px-4 pt-[max(1rem,env(safe-area-inset-top))]">
+      {shown && (
+        <div
+          key={shown.id}
+          className={`pointer-events-auto relative flex max-w-md items-center gap-3 overflow-clip rounded-2xl border border-border bg-background py-2 pr-2 pl-4 shadow-lg shadow-neutral-950/10 ${
+            leaving ? "motion-safe:animate-notice-out" : "motion-safe:animate-notice-in"
+          }`}
+        >
+          {shown.tone === "success" ? (
+            <Check className="size-5 shrink-0 text-success motion-safe:animate-stamp-in motion-safe:[animation-delay:120ms]" strokeWidth={3} aria-hidden="true" />
+          ) : (
+            <CircleAlert className="size-5 shrink-0 text-error" aria-hidden="true" />
+          )}
+          <p className="min-w-0 flex-1 text-body-sm text-pretty text-text">{shown.message}</p>
+          <button
+            type="button"
+            aria-label={dismissLabel}
+            title={dismissLabel}
+            onClick={onDismiss}
+            className="inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-text-muted transition-[background-color,color,scale] duration-150 ease-out hover:bg-surface-muted hover:text-text active:scale-[0.97]"
+          >
+            <X className="size-4" aria-hidden="true" />
+          </button>
+          {/* The time left, as a line along the foot that runs out. It is decoration: the notice leaves on its timer. */}
+          {!stays && !leaving && (
+            <span
+              aria-hidden="true"
+              className="absolute inset-x-0 bottom-0 h-0.5 origin-left bg-success/60 motion-safe:animate-notice-time"
+              style={{ animationDuration: `${duration}ms` }}
+            />
+          )}
+        </div>
+      )}
+    </div>
+  );
+}

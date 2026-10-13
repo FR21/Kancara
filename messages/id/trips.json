@@ -130,7 +130,6 @@
   "retry": "Coba lagi",
   "offline": "Kamu sedang offline. Daftar ini mungkin belum yang terbaru.",
   "itinerary": {
-    "back": "Perjalanan Saya",
     "loading": "Memuat itinerary",
     "error": "Itinerary belum bisa dimuat. Periksa koneksimu, lalu coba lagi.",
     "notFound": "Perjalanan ini tidak ditemukan. Mungkin sudah dihapus.",
@@ -144,8 +143,7 @@
   },
   "placeholder": {
     "summary": "Rangkuman perjalanan",
-    "soon": "Halaman ini sedang disiapkan.",
-    "back": "Kembali ke Perjalanan Saya"
+    "soon": "Halaman ini sedang disiapkan."
   },
   "loadMore": "Tampilkan lebih banyak"
 }
