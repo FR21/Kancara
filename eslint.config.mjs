@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // The service worker Serwist builds from app/sw.ts.
+    "public/sw.js",
+    "public/swe-worker-*.js",
     // Local AI tooling, kept out of git. Its scripts are not part of the app.
     ".claude/**",
     ".agents/**",

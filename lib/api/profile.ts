@@ -5,6 +5,8 @@ export type ProfileDetails = {
   name: string;
   username: string;
   nationality: string;
+  /** In international form, or empty. */
+  phone: string;
   age: string;
   gender: string;
 };

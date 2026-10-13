@@ -2,6 +2,7 @@ import { useSyncExternalStore } from "react";
 import { type PlanDraft, parsePlanDraft } from "./plan-draft";
 
 const STORAGE_KEY = "kancara-plan-draft-v2";
+const TRIP_KEY = "kancara-plan-draft-trip";
 const listeners = new Set<() => void>();
 
 let cachedRaw: string | null = null;
@@ -49,9 +50,36 @@ export function saveDraft(draft: PlanDraft) {
   listeners.forEach((listener) => listener());
 }
 
+/** The draft trip the plan on this device was kept as when its group link was made, so resuming carries on in it. */
+export function readDraftTrip(): string | null {
+  try {
+    return localStorage.getItem(TRIP_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function keepDraftTrip(tripId: string) {
+  try {
+    localStorage.setItem(TRIP_KEY, tripId);
+  } catch {
+    // The link works all the same; a plan resumed later is kept as a new trip.
+  }
+}
+
+/** A plan started afresh has nothing to do with the trip an earlier one was kept as. */
+export function forgetDraftTrip() {
+  try {
+    localStorage.removeItem(TRIP_KEY);
+  } catch {
+    // Nothing was kept, so there is nothing to forget.
+  }
+}
+
 export function clearDraft() {
   try {
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(TRIP_KEY);
     cachedRaw = null;
     cachedDraft = null;
   } catch {

@@ -17,6 +17,13 @@ type HeroCopyProps = {
 const TREE_DROP_SVH = 20;
 const COPY_SINK_SVH = 25;
 const COPY_FADE_PX = 600;
+// As the hero leaves the screen its layers part: the trees hang back while the two waves rise, the far one
+// much further than the near one. The trees' distance is in svh, the waves' in percent of their own height.
+// The near wave closes the hero's lower edge, so it never starts lower than its lowest crest allows.
+const TREE_LAG_SVH = 20;
+const FAR_WAVE_FROM = 30;
+const FAR_WAVE_TO = -20;
+const NEAR_WAVE_FROM = 16;
 
 function HeroCopy({ text }: HeroCopyProps) {
   return (
@@ -91,23 +98,34 @@ function HeroCopy({ text }: HeroCopyProps) {
 export default function HeroSection() {
   const t = useMessages("landing");
   const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
-  const [scroll, setScroll] = useState({ y: 0, pinned: 0 });
+  const [scroll, setScroll] = useState({ y: 0, pinned: 0, leaving: 0 });
 
   useEffect(() => {
     const handleScroll = () => {
-      // `pinned` runs from 0 to 1 while the hero is pinned, then stays at 1.
-      setScroll({ y: window.scrollY, pinned: Math.min(window.scrollY / (window.innerHeight / 2), 1) });
+      // `pinned` runs from 0 to 1 while the hero is pinned, then stays at 1. `leaving` picks up where it ends and
+      // runs from 0 to 1 over the next screen of scrolling, while the hero's lower edge crosses the screen.
+      const half = window.innerHeight / 2;
+      setScroll({
+        y: window.scrollY,
+        pinned: Math.min(window.scrollY / half, 1),
+        leaving: Math.min(Math.max((window.scrollY - half) / window.innerHeight, 0), 1),
+      });
     };
     window.addEventListener("scroll", handleScroll, { passive: true });
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // With reduced motion nothing travels: the trees stay low and the copy only fades.
+  // With reduced motion nothing travels: the trees stay low, the waves stay at rest, and the copy only fades.
   const travelled = reduceMotion ? 0 : scroll.pinned;
+  const treeLag = reduceMotion ? 0 : TREE_LAG_SVH * scroll.leaving;
+  const farWave = reduceMotion ? 0 : FAR_WAVE_FROM + (FAR_WAVE_TO - FAR_WAVE_FROM) * scroll.leaving;
+  const nearWave = reduceMotion ? 0 : NEAR_WAVE_FROM * (1 - scroll.leaving);
   const copyOpacity = Math.max(1 - scroll.y / COPY_FADE_PX, 0);
 
   return (
-    <section className="relative w-full h-[150svh]">
+    // Nothing of the hero is drawn past its own edges, so the copy cannot show through over the section below.
+    // The bottom is let out by a pixel for the waves, which overlap the next section by that much to hide the seam.
+    <section className="relative w-full h-[150svh] [clip-path:inset(0_0_-1px_0)]">
 
       <div className="sticky top-0 w-full h-svh overflow-hidden pointer-events-none z-0">
         <Image
@@ -123,7 +141,10 @@ export default function HeroSection() {
 
       {/* The trees ignore the pointer, so a button they have risen over can still be pressed. */}
       <div className="absolute inset-0 w-full h-full z-10 overflow-hidden pointer-events-none">
-        <div className="absolute inset-0" style={{ translate: `0 ${TREE_DROP_SVH * (1 - travelled)}svh` }}>
+        <div
+          className="absolute inset-0"
+          style={{ translate: `0 ${TREE_DROP_SVH * (1 - travelled) + treeLag}svh` }}
+        >
           <Image
             src="/images/hero/Treeline.webp"
             alt=""
@@ -146,7 +167,8 @@ export default function HeroSection() {
         <svg
           viewBox="0 0 1440 120"
           preserveAspectRatio="none"
-          className="parallax-y absolute inset-0 size-full fill-section-muted opacity-50 [--parallax-from:8%] [--parallax-to:-8%] dark:fill-primary-900 dark:opacity-70"
+          className="absolute inset-0 size-full fill-section-muted opacity-50 dark:fill-primary-900 dark:opacity-70"
+          style={{ translate: `0 ${farWave}%` }}
         >
           <path d="M0 72C150 44 260 36 380 38C520 40 600 60 760 60C900 60 1020 34 1160 30C1280 27 1380 44 1440 56V120H0Z" />
         </svg>
@@ -154,6 +176,7 @@ export default function HeroSection() {
           viewBox="0 0 1440 120"
           preserveAspectRatio="none"
           className="absolute inset-0 size-full fill-section-muted"
+          style={{ translate: `0 ${nearWave}%` }}
         >
           <path d="M0 96C240 54 470 72 720 84S1200 46 1440 80V120H0Z" />
         </svg>

@@ -18,7 +18,7 @@ import TripDetail, { type TripActions } from "./TripDetail";
 import TripList, { type TripListSection, tripRowId } from "./TripList";
 import TripSheet from "./TripSheet";
 import TripsEmpty from "./TripsEmpty";
-import TripsNotice, { type Notice } from "./TripsNotice";
+import Notice, { type NoticeMessage } from "@/components/layout/Notice";
 import TripsSkeleton from "./TripsSkeleton";
 import TripTabs, { type TripTab, TRIPS_PANEL_ID, tripTabId } from "./TripTabs";
 
@@ -31,7 +31,6 @@ type DeleteState = "idle" | "pending" | "failed";
 const PLAN_HREF = "/plan";
 const DESKTOP_QUERY = "(min-width: 1024px)";
 const SEARCH_DELAY_MS = 250;
-const NOTICE_MS = 5000;
 const DETAIL_HEADING_ID = "trip-detail-title";
 const SHEET_HEADING_ID = "trip-sheet-title";
 
@@ -54,7 +53,7 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
   const [reloads, setReloads] = useState(0);
   const [deleteTarget, setDeleteTarget] = useState<TripCard | null>(null);
   const [deleteState, setDeleteState] = useState<DeleteState>("idle");
-  const [notice, setNotice] = useState<Notice | null>(null);
+  const [notice, setNotice] = useState<NoticeMessage | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
   const headingRef = useRef<HTMLHeadingElement>(null);
   const noticeIdRef = useRef(0);
@@ -85,12 +84,6 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
     return () => clearTimeout(timer);
   }, [query]);
 
-  useEffect(() => {
-    if (!notice) return;
-    const timer = setTimeout(() => setNotice(null), NOTICE_MS);
-    return () => clearTimeout(timer);
-  }, [notice]);
-
   // A draft made by "duplicate" is brought into view and focused once its row is on screen.
   useEffect(() => {
     if (tab !== "active" || !arrivingIdRef.current) return;
@@ -109,7 +102,7 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
     headingRef.current?.focus();
   }, [deleteTarget]);
 
-  const announce = (tone: Notice["tone"], message: string) => {
+  const announce = (tone: NoticeMessage["tone"], message: string) => {
     noticeIdRef.current += 1;
     setNotice({ id: noticeIdRef.current, tone, message });
   };
@@ -382,7 +375,7 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
         onCancel={cancelDelete}
         onConfirm={confirmDelete}
       />
-      <TripsNotice notice={notice} dismissLabel={text.notice.dismiss} onDismiss={() => setNotice(null)} />
+      <Notice notice={notice} dismissLabel={text.notice.dismiss} onDismiss={() => setNotice(null)} />
     </div>
   );
 }

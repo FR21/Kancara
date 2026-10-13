@@ -13,7 +13,8 @@ import {
 } from "@/lib/trips/trip";
 
 export type HistoryFilter = { query: string; year: number | null };
-export type TripPlan = { name: string; draft: PlanDraft; violations?: number; itinerary?: Itinerary };
+/** `knownMembers` names the members who joined by themselves that this screen has taken into its plan (see the trip store). */
+export type TripPlan = { name: string; draft: PlanDraft; violations?: number; itinerary?: Itinerary; knownMembers?: string[] };
 
 export class TripsError extends Error {
   constructor(

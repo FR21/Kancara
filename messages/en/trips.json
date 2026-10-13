@@ -130,7 +130,6 @@
   "retry": "Try again",
   "offline": "You're offline. This list may not be up to date.",
   "itinerary": {
-    "back": "My Trips",
     "loading": "Loading itinerary",
     "error": "The itinerary couldn't be loaded. Check your connection, then try again.",
     "notFound": "This trip wasn't found. It may have been deleted.",
@@ -144,8 +143,7 @@
   },
   "placeholder": {
     "summary": "Trip summary",
-    "soon": "This page is being prepared.",
-    "back": "Back to My Trips"
+    "soon": "This page is being prepared."
   },
   "loadMore": "Show more"
 }

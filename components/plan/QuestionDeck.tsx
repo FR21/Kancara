@@ -1,7 +1,7 @@
 "use client";
 
 import { ArrowLeft, ArrowRight } from "lucide-react";
-import { type Dispatch, useEffect, useRef } from "react";
+import { type Dispatch, type ReactNode, useEffect, useRef } from "react";
 import type { Messages } from "@/lib/messages";
 import { type PlanDraft, type PlanDraftAction, fillTemplate } from "@/lib/plan-draft";
 import { type QuestionKey, isAnswered, isOptional, missingIn } from "@/lib/plan-questions";
@@ -19,6 +19,8 @@ type QuestionDeckProps = {
   returnLabel: string | null;
   isDesktop: boolean;
   selectedMemberId: string | null;
+  /** Shown under the members in the group step. */
+  crewFooter?: ReactNode;
   onIndexChange: (index: number) => void;
   onBackToStory: () => void;
   onFinish: () => void;
@@ -36,6 +38,7 @@ export default function QuestionDeck({
   returnLabel,
   isDesktop,
   selectedMemberId,
+  crewFooter,
   onIndexChange,
   onBackToStory,
   onFinish,
@@ -128,7 +131,12 @@ export default function QuestionDeck({
             {copy.title}
           </h1>
           {copy.hint && <p className="mt-4 text-body leading-relaxed text-text-muted">{copy.hint}</p>}
-          {isCrew && <div className="mt-8">{answer}</div>}
+          {isCrew && (
+            <div className="mt-8 space-y-6">
+              {answer}
+              {crewFooter}
+            </div>
+          )}
         </div>
 
         <div className={`mt-8 min-w-0 lg:mt-0 ${isCrew && isDesktop ? "relative min-h-96" : ""}`}>

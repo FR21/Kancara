@@ -13,6 +13,6 @@
   "languageToggle": "Bahasa",
   "login": "Masuk",
   "logout": "Keluar",
-  "profile": "Profil"
+  "profile": "Profil",
+  "breadcrumb": "Jejak halaman"
 }
-

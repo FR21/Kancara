@@ -1,4 +1,5 @@
 import type { Currency } from "./currency";
+import { MAX_PHONE_CHARS } from "./safety/contact";
 
 export const AGE_GROUPS = ["adult", "elderly", "child", "toddler"] as const;
 export type AgeGroup = (typeof AGE_GROUPS)[number];
@@ -46,7 +47,14 @@ export type Member = {
   allergies: string;
   interests: Partial<Record<InterestKey, WishLevel>>;
   customInterests: CustomInterest[];
+  /** The number the group reaches this member on. Left out until someone types one; empty once it is cleared. */
+  phone?: string;
+  /** Whether the member carries a phone on the trip. Left out until someone says. */
+  carriesPhone?: boolean;
 };
+
+/** What the plan says about reaching one member. `null` is "never said", which leaves what is kept as it is. */
+export type MemberContact = { memberId: string; phone: string | null; carriesPhone: boolean | null };
 
 export const LAUNDRY_CHOICES = ["wash", "laundry", "all"] as const;
 /** How a trip longer than a week handles clothes: wash on the road, use a laundry, or carry enough for every day. */
@@ -161,6 +169,11 @@ export const EMPTY_DRAFT: PlanDraft = {
   packing: { checked: [], removed: [], own: [], captain: null, laundry: null },
 };
 
+/** Children and toddlers are taken not to carry a phone until someone says otherwise. */
+export function carriesPhoneByDefault(ageGroup: AgeGroup): boolean {
+  return ageGroup !== "child" && ageGroup !== "toddler";
+}
+
 export function createMember(ageGroup: AgeGroup = "adult"): Member {
   return {
     id: crypto.randomUUID(),
@@ -181,8 +194,10 @@ export type PlanDraftAction =
   | { type: "removeDestination"; index: number }
   | { type: "setDate"; field: "startDate" | "endDate"; value: string }
   | { type: "addMember"; member: Member }
+  /** Takes in a member who joined through the group's link, unless the plan has them already. */
+  | { type: "mergeMember"; member: Member }
   | { type: "removeMember"; id: string }
-  | { type: "updateMember"; id: string; changes: Partial<Pick<Member, "name" | "ageGroup" | "allergies">> }
+  | { type: "updateMember"; id: string; changes: Partial<Pick<Member, "name" | "ageGroup" | "allergies" | "phone" | "carriesPhone">> }
   | { type: "setMemberAge"; id: string; age: number | null }
   | { type: "toggleMemberNeed"; id: string; need: NeedKey }
   | { type: "addMemberCustomNeed"; id: string; value: string }
@@ -298,6 +313,9 @@ export function planDraftReducer(draft: PlanDraft, action: PlanDraftAction): Pla
       return { ...draft, [action.field]: action.value };
     case "addMember":
       if (draft.members.length >= MAX_MEMBERS) return draft;
+      return { ...draft, members: [...draft.members, action.member] };
+    case "mergeMember":
+      if (draft.members.length >= MAX_MEMBERS || draft.members.some((member) => member.id === action.member.id)) return draft;
       return { ...draft, members: [...draft.members, action.member] };
     case "removeMember":
       return { ...draft, members: draft.members.filter((member) => member.id !== action.id) };
@@ -426,6 +444,31 @@ export function missingFields(draft: PlanDraft): PassField[] {
   return missing;
 }
 
+/** What the plan says about reaching each member, for the members it says anything about. */
+export function contactsOf(draft: PlanDraft): MemberContact[] {
+  return draft.members.flatMap((member) =>
+    member.phone === undefined && member.carriesPhone === undefined
+      ? []
+      : [{ memberId: member.id, phone: member.phone ?? null, carriesPhone: member.carriesPhone ?? null }],
+  );
+}
+
+/**
+ * The plan without anyone's phone number. Numbers are kept sealed with the trip's members, so they are taken out
+ * of the plan before it is stored and before it is handed to Captain.
+ */
+export function withoutContacts(draft: PlanDraft): PlanDraft {
+  return {
+    ...draft,
+    members: draft.members.map((member) => {
+      const kept = { ...member };
+      delete kept.phone;
+      delete kept.carriesPhone;
+      return kept;
+    }),
+  };
+}
+
 export function isDraftEmpty(draft: PlanDraft): boolean {
   return missingFields(draft).length === PASS_FIELDS.length && draft.origin.trim() === "" && draft.destinations.length === 0;
 }
@@ -533,6 +576,8 @@ function parseMember(value: unknown): Member | null {
     allergies: typeof value.allergies === "string" ? value.allergies : "",
     interests,
     customInterests: parseCustomInterests(value.customInterests),
+    ...(typeof value.phone === "string" ? { phone: value.phone.slice(0, MAX_PHONE_CHARS) } : {}),
+    ...(typeof value.carriesPhone === "boolean" ? { carriesPhone: value.carriesPhone } : {}),
   };
 }
 

@@ -6,8 +6,8 @@
   "namePlaceholder": "Masukkan nama Anda",
   "usernameLabel": "Username",
   "usernamePlaceholder": "@johndoe",
-  "nationalityLabel": "Kewarganegaraan",
-  "nationalityPlaceholder": "Contoh: Indonesia",
+  "nationalityLabel": "Asal negara",
+  "nationalityPlaceholder": "Cari negara",
   "ageLabel": "Umur",
   "agePlaceholder": "Contoh: 25",
   "genderLabel": "Jenis Kelamin",
@@ -34,5 +34,12 @@
   "ageError": "Isi umur antara 1 dan 120.",
   "nameError": "Isi nama, 2 sampai 50 karakter.",
   "usernameError": "Username 3 sampai 20 karakter: huruf, angka, titik, atau garis bawah.",
-  "usernameTaken": "Username itu sudah dipakai. Pilih yang lain."
+  "usernameTaken": "Username itu sudah dipakai. Pilih yang lain.",
+  "countryNoMatch": "Tidak ada negara yang cocok.",
+  "phoneLabel": "Nomor telepon",
+  "phonePlaceholder": "812 3456 7890",
+  "dialLabel": "Kode negara",
+  "phoneHint": "Dipakai rombonganmu untuk menghubungimu saat terpisah. Kode negara mengikuti asal negara.",
+  "phoneError": "Nomor ini belum bisa dibaca. Periksa kode negara dan nomornya.",
+  "dismiss": "Tutup"
 }

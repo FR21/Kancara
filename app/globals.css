@@ -366,6 +366,32 @@
   --animate-slide-progress: slide-progress 6s linear both;
   --animate-needle-sway: needle-sway 4s ease-in-out infinite;
   --animate-horizon-rock: horizon-rock 5s ease-in-out infinite;
+  --animate-notice-in: notice-in 320ms cubic-bezier(0.23, 1, 0.32, 1) both;
+  --animate-notice-out: notice-out 200ms cubic-bezier(0.4, 0, 1, 1) both;
+  --animate-notice-time: notice-time 5s linear both;
+
+  /* A notice drops in from the top edge, settling as it lands, and lifts away faster than it came. */
+  @keyframes notice-in {
+    from {
+      opacity: 0;
+      translate: 0 -1.5rem;
+      scale: 0.96;
+    }
+  }
+
+  @keyframes notice-out {
+    to {
+      opacity: 0;
+      translate: 0 -1rem;
+      scale: 0.98;
+    }
+  }
+
+  @keyframes notice-time {
+    to {
+      scale: 0 1;
+    }
+  }
 
   @keyframes ticket-in {
     from {
@@ -543,7 +569,7 @@
   @keyframes signal {
     0%,
     100% {
-      opacity: 0;
+      opacity: 0.35;
     }
     35% {
       opacity: 1;

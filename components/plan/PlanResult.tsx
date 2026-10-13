@@ -8,9 +8,8 @@ import type { PlanDraft } from "@/lib/plan-draft";
 import { useMessages } from "@/lib/use-messages";
 import AgreementList from "./AgreementList";
 import ErrorAlert from "./ErrorAlert";
-import InviteCard from "./InviteCard";
 import ItineraryCard from "./ItineraryCard";
-import { GHOST_BUTTON, PRIMARY_BUTTON } from "./styles";
+import { GHOST_BUTTON } from "./styles";
 
 export type SaveState = "idle" | "saving" | "saved" | "failed";
 
@@ -18,15 +17,14 @@ type PlanResultProps = {
   draft: PlanDraft;
   text: Messages["plan"];
   itinerary: Itinerary | null;
-  inviteUrl: string | null;
-  pending: "itinerary" | "invite" | null;
+  /** True while the itinerary is being made. */
+  pending: boolean;
   failed: boolean;
   isSample: boolean;
   saveState: SaveState;
   /** Where the saved trip's packing list is. Null until the trip has been saved. */
   packingHref: string | null;
   onRetry: () => void;
-  onInvite: () => void;
   onSave: () => void;
   onChangeItinerary: (itinerary: Itinerary) => void;
   onChangeAgreements: () => void;
@@ -41,23 +39,19 @@ export default function PlanResult({
   draft,
   text,
   itinerary,
-  inviteUrl,
   pending,
   failed,
   isSample,
   saveState,
   packingHref,
   onRetry,
-  onInvite,
   onSave,
   onChangeItinerary,
   onChangeAgreements,
   onBackToPass,
 }: PlanResultProps) {
   const packingText = useMessages("packing");
-  const isSolo = draft.members.length <= 1;
-  const canInvite = itinerary !== null && inviteUrl === null && !isSolo && pending === null && !failed;
-  const showSave = itinerary !== null && pending !== "itinerary" && saveState !== "idle";
+  const showSave = itinerary !== null && !pending && saveState !== "idle";
 
   return (
     <div className="space-y-6 motion-safe:animate-message-in">
@@ -67,19 +61,9 @@ export default function PlanResult({
             {text.result.title}
           </h1>
           <p className="mt-2 text-body text-pretty text-text-muted">
-            {pending === "itinerary" ? text.chat.itineraryPending : text.chat.itineraryIntro}
+            {pending ? text.chat.itineraryPending : text.chat.itineraryIntro}
           </p>
         </div>
-        {canInvite && (
-          <button
-            type="button"
-            onClick={onInvite}
-            className={`${PRIMARY_BUTTON} w-full shadow-md shadow-primary/20 sm:w-auto`}
-          >
-            {text.chat.makeInvite}
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </button>
-        )}
       </div>
 
       {showSave && (
@@ -124,19 +108,7 @@ export default function PlanResult({
         </div>
       )}
 
-      {pending === "invite" && (
-        <p role="status" className="text-body-sm text-text-muted">
-          {text.chat.typing}
-        </p>
-      )}
-
-      {inviteUrl && (
-        <div className="motion-safe:animate-message-in">
-          <InviteCard url={inviteUrl} text={text.invite} />
-        </div>
-      )}
-
-      {pending === "itinerary" && (
+      {pending && (
         <div role="status" className="space-y-3 rounded-2xl border border-border bg-surface p-5 motion-safe:animate-pulse">
           <span className="sr-only">{text.chat.itineraryPending}</span>
           <div className="h-4 w-40 rounded-full bg-surface-muted" />
@@ -158,9 +130,9 @@ export default function PlanResult({
         />
       )}
 
-      {itinerary && pending !== "itinerary" && <AgreementList draft={draft} text={text} onChange={onChangeAgreements} />}
+      {itinerary && !pending && <AgreementList draft={draft} text={text} onChange={onChangeAgreements} />}
 
-      {itinerary && pending !== "itinerary" && packingHref && (
+      {itinerary && !pending && packingHref && (
         <Link
           href={packingHref}
           className="group flex items-center gap-4 rounded-2xl border border-border bg-surface px-5 py-4 transition-[border-color,scale] duration-150 ease-out hover:border-primary active:scale-[0.99]"

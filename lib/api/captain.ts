@@ -1,5 +1,12 @@
 import type { Locale } from "@/lib/locale";
-import { type CaptainPackingItem, type NeedKey, type PlanDraft, isNeedKey, parseCaptainPacking } from "@/lib/plan-draft";
+import {
+  type CaptainPackingItem,
+  type NeedKey,
+  type PlanDraft,
+  isNeedKey,
+  parseCaptainPacking,
+  withoutContacts,
+} from "@/lib/plan-draft";
 import type { Weather } from "@/lib/weather";
 import { sampleCaptain } from "./captain-sample";
 
@@ -26,15 +33,12 @@ export type ItineraryItem = ItineraryPlace & {
 export type ItineraryDay = { date: string; items: ItineraryItem[] };
 export type Itinerary = { days: ItineraryDay[] };
 
-export type Invite = { url: string };
-
 export type PlanRequest = { draft: PlanDraft; locale: Locale };
 /** `known` names what is on the packing list already, so Captain adds to it instead of repeating it. */
 export type PackingRequest = PlanRequest & { itinerary: Itinerary | null; weather: Weather | null; known: string[] };
 
 export interface CaptainClient {
   itinerary(request: PlanRequest, signal: AbortSignal): Promise<Itinerary>;
-  invite(request: PlanRequest, signal: AbortSignal): Promise<Invite>;
   packing(request: PackingRequest, signal: AbortSignal): Promise<CaptainPackingItem[]>;
 }
 
@@ -107,13 +111,6 @@ export function parseItinerary(value: unknown): Itinerary {
   return { days };
 }
 
-function parseInvite(value: unknown): Invite {
-  if (!isRecord(value) || typeof value.url !== "string") {
-    throw new CaptainError("Invalid invite response");
-  }
-  return { url: value.url };
-}
-
 // Captain's items arrive unnamed; each gets an id here so its tick can be remembered.
 function parsePacking(value: unknown): CaptainPackingItem[] {
   if (!isRecord(value) || !Array.isArray(value.items)) throw new CaptainError("Invalid packing response");
@@ -140,9 +137,10 @@ async function post(path: string, body: unknown, signal: AbortSignal, retried = 
 }
 
 const httpCaptain: CaptainClient = {
-  itinerary: async (request, signal) => parseItinerary(await post("/captain/itinerary", request, signal)),
-  invite: async (request, signal) => parseInvite(await post("/captain/invite", request, signal)),
-  packing: async (request, signal) => parsePacking(await post("/captain/packing", request, signal)),
+  itinerary: async (request, signal) =>
+    parseItinerary(await post("/captain/itinerary", { ...request, draft: withoutContacts(request.draft) }, signal)),
+  packing: async (request, signal) =>
+    parsePacking(await post("/captain/packing", { ...request, draft: withoutContacts(request.draft) }, signal)),
 };
 
 export const captainIsSample = BASE_URL === "";

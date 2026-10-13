@@ -1,7 +1,6 @@
 "use client";
 
 import {
-  ArrowLeft,
   ArrowRight,
   ArrowUpDown,
   BookOpen,
@@ -21,7 +20,8 @@ import {
   Volume2,
   X,
 } from "lucide-react";
-import Link from "next/link";
+import Breadcrumbs from "@/components/layout/Breadcrumbs";
+import { useMessages } from "@/lib/use-messages";
 import { useEffect, useRef, useState } from "react";
 import PageBackdrop from "@/components/layout/PageBackdrop";
 import type { TranslationResult } from "@/lib/agents/translatorAgent";
@@ -279,6 +279,8 @@ export default function ConversationTranslatorClient({
 }: ConversationTranslatorClientProps) {
   const locale = useLocale();
   const isEn = locale === "en";
+  const navText = useMessages("navbar");
+  const packingText = useMessages("packing");
 
   const [travelerLang, setTravelerLang] = useState<string>(isEn ? "English" : "Indonesian");
   const [localLang, setLocalLang] = useState<typeof SUPPORTED_LANGUAGES[0]>(() =>
@@ -635,13 +637,14 @@ export default function ConversationTranslatorClient({
 
       {/* Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link
-          href={`/trips/${encodeURIComponent(tripId)}`}
-          className="group inline-flex min-h-11 items-center gap-2 rounded-sm text-label text-primary underline-offset-4 hover:underline"
-        >
-          <ArrowLeft className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-x-1" />
-          {isEn ? "Back to Trip" : "Kembali ke Perjalanan"}
-        </Link>
+        <Breadcrumbs
+          label={navText.breadcrumb}
+          items={[
+            { label: navText.links.trips, href: "/trips" },
+            { label: packingText.back, href: `/trips/${encodeURIComponent(tripId)}` },
+            { label: isEn ? "Translator" : "Penerjemah" },
+          ]}
+        />
 
         {/* Setting Bar: Target Language, Audio Toggle, Flip Mode */}
         <div className="flex flex-wrap items-center gap-2">
