@@ -90,7 +90,7 @@ function TripRow({ card, selected, text, onSelect }: TripRowProps) {
         </div>
       </div>
 
-      {card.status !== "draft" && (
+      {card.status !== "draft" && card.status !== "completed" && (
         <div className="relative flex flex-wrap gap-2 px-4 pb-3">
           {card.status === "ongoing" && (
             <Link
@@ -101,20 +101,24 @@ function TripRow({ card, selected, text, onSelect }: TripRowProps) {
               <ArrowRight className="size-3.5" aria-hidden="true" />
             </Link>
           )}
-          <Link
-            href={`/trips/${encodeURIComponent(card.id)}/dietary-scan`}
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-primary/30 bg-primary-subtle px-3.5 text-caption font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-hover/20 active:scale-[0.97]"
-          >
-            <UtensilsCrossed className="size-3.5 text-primary" aria-hidden="true" />
-            {locale === "en" ? "Scan Menu" : "Pindai Menu"}
-          </Link>
-          <Link
-            href={`/trips/${encodeURIComponent(card.id)}/translator`}
-            className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 text-caption font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-emerald-500 hover:bg-emerald-500/20 active:scale-[0.97]"
-          >
-            <Languages className="size-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-            {locale === "en" ? "Translator" : "Penerjemah"}
-          </Link>
+          {card.status === "upcoming" && (
+            <>
+              <Link
+                href={`/trips/${encodeURIComponent(card.id)}/dietary-scan`}
+                className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-primary/30 bg-primary-subtle px-3.5 text-caption font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-hover/20 active:scale-[0.97]"
+              >
+                <UtensilsCrossed className="size-3.5 text-primary" aria-hidden="true" />
+                {locale === "en" ? "Scan Menu" : "Pindai Menu"}
+              </Link>
+              <Link
+                href={`/trips/${encodeURIComponent(card.id)}/translator`}
+                className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 text-caption font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-emerald-500 hover:bg-emerald-500/20 active:scale-[0.97]"
+              >
+                <Languages className="size-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                {locale === "en" ? "Translator" : "Penerjemah"}
+              </Link>
+            </>
+          )}
         </div>
       )}
     </li>

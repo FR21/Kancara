@@ -24,6 +24,7 @@ import {
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import PageBackdrop from "@/components/layout/PageBackdrop";
+import FieldPassModal from "./FieldPassModal";
 import type { TranslationResult } from "@/lib/agents/translatorAgent";
 import { useLocale } from "@/lib/use-locale";
 
@@ -295,6 +296,7 @@ export default function ConversationTranslatorClient({
   const [autoSpeak, setAutoSpeak] = useState(true);
   const [isFaceToFace, setIsFaceToFace] = useState(false);
   const [micError, setMicError] = useState<string | null>(null);
+  const [showFieldPass, setShowFieldPass] = useState(false);
 
   const recognitionRef = useRef<any>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -635,13 +637,24 @@ export default function ConversationTranslatorClient({
 
       {/* Header Bar */}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Link
-          href={`/trips/${encodeURIComponent(tripId)}`}
-          className="group inline-flex min-h-11 items-center gap-2 rounded-sm text-label text-primary underline-offset-4 hover:underline"
-        >
-          <ArrowLeft className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-x-1" />
-          {isEn ? "Back to Trip" : "Kembali ke Perjalanan"}
-        </Link>
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/trips/${encodeURIComponent(tripId)}`}
+            className="group inline-flex min-h-11 items-center gap-2 rounded-sm text-label text-primary underline-offset-4 hover:underline"
+          >
+            <ArrowLeft className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-x-1" />
+            {isEn ? "Back to Trip" : "Kembali ke Perjalanan"}
+          </Link>
+
+          <button
+            type="button"
+            onClick={() => setShowFieldPass(true)}
+            className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-3.5 py-1.5 text-caption font-bold text-emerald-800 dark:text-emerald-300 shadow-sm transition-all hover:bg-emerald-500/20 active:scale-95"
+          >
+            <Compass className="size-3.5 text-emerald-600 dark:text-emerald-400" />
+            {isEn ? "Field Pass (Offline)" : "Paspor Lapangan 🟢"}
+          </button>
+        </div>
 
         {/* Setting Bar: Target Language, Audio Toggle, Flip Mode */}
         <div className="flex flex-wrap items-center gap-2">
@@ -1029,6 +1042,15 @@ export default function ConversationTranslatorClient({
           </div>
         </div>
       </div>
+
+      <FieldPassModal
+        isOpen={showFieldPass}
+        onClose={() => setShowFieldPass(false)}
+        tripId={tripId}
+        tripName={tripName}
+        destination={destination}
+        memberCount={1}
+      />
     </main>
   );
 }

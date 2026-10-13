@@ -1,8 +1,9 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Languages, Luggage, Route, UtensilsCrossed } from "lucide-react";
+import { ArrowLeft, ArrowRight, Compass, Languages, Luggage, Route, Trophy, UtensilsCrossed } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
+import FieldPassModal from "./FieldPassModal";
 import PageBackdrop from "@/components/layout/PageBackdrop";
 import ErrorAlert from "@/components/plan/ErrorAlert";
 import ItineraryCard from "@/components/plan/ItineraryCard";
@@ -40,6 +41,7 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
   const [build, setBuild] = useState<BuildState>("idle");
   const [unsaved, setUnsaved] = useState<Itinerary | null>(null);
   const [reloads, setReloads] = useState(0);
+  const [showFieldPass, setShowFieldPass] = useState(false);
   const buildControllerRef = useRef<AbortController | null>(null);
 
   useEffect(() => {
@@ -164,25 +166,54 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
 
           {card.status !== "draft" && (
             <div className="mt-4 flex flex-wrap gap-2">
-              <Link href={`/trips/${encodeURIComponent(card.id)}/packing`} className={`${OUTLINE_BUTTON} h-11`}>
-                <Luggage className="size-4" aria-hidden="true" />
-                {packingText.open}
-                <ArrowRight className="size-4 text-text-muted" aria-hidden="true" />
-              </Link>
-              <Link
-                href={`/trips/${encodeURIComponent(card.id)}/dietary-scan`}
-                className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-primary/40 bg-primary-subtle px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-hover/20 active:scale-[0.97]"
-              >
-                <UtensilsCrossed className="size-4 text-primary" aria-hidden="true" />
-                {locale === "en" ? "Scan Menu & Diet" : "Pindai Menu & Pantangan"}
-              </Link>
-              <Link
-                href={`/trips/${encodeURIComponent(card.id)}/translator`}
-                className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-emerald-500 hover:bg-emerald-500/20 active:scale-[0.97]"
-              >
-                <Languages className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-                {locale === "en" ? "Live Translator" : "Penerjemah Obrolan"}
-              </Link>
+              {card.status === "completed" ? (
+                <Link
+                  href={`/trips/${encodeURIComponent(card.id)}/summary`}
+                  className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-amber-500 hover:bg-amber-500/20 active:scale-[0.97]"
+                >
+                  <Trophy className="size-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+                  {locale === "en" ? "Trip Recap & Memories" : "Ringkasan & Memori Perjalanan"}
+                </Link>
+              ) : (
+                <>
+                  <Link href={`/trips/${encodeURIComponent(card.id)}/packing`} className={`${OUTLINE_BUTTON} h-11`}>
+                    <Luggage className="size-4" aria-hidden="true" />
+                    {packingText.open}
+                    <ArrowRight className="size-4 text-text-muted" aria-hidden="true" />
+                  </Link>
+                  <Link
+                    href={`/trips/${encodeURIComponent(card.id)}/dietary-scan`}
+                    className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-primary/40 bg-primary-subtle px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-hover/20 active:scale-[0.97]"
+                  >
+                    <UtensilsCrossed className="size-4 text-primary" aria-hidden="true" />
+                    {locale === "en" ? "Scan Menu & Diet" : "Pindai Menu & Pantangan"}
+                  </Link>
+                  <Link
+                    href={`/trips/${encodeURIComponent(card.id)}/translator`}
+                    className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-emerald-500 hover:bg-emerald-500/20 active:scale-[0.97]"
+                  >
+                    <Languages className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                    {locale === "en" ? "Live Translator" : "Penerjemah Obrolan"}
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setShowFieldPass(true)}
+                    className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-emerald-500 hover:bg-emerald-500/20 active:scale-[0.97]"
+                  >
+                    <Compass className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
+                    {locale === "en" ? "Field Pass (Offline)" : "Paspor Lapangan 🟢"}
+                  </button>
+                  {card.status === "ongoing" && (
+                    <Link
+                      href={`/trips/${encodeURIComponent(card.id)}/summary`}
+                      className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-amber-500 hover:bg-amber-500/20 active:scale-[0.97]"
+                    >
+                      <Trophy className="size-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
+                      {locale === "en" ? "Trip Recap" : "Ringkasan & Memori"}
+                    </Link>
+                  )}
+                </>
+              )}
             </div>
           )}
 
@@ -247,6 +278,18 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
               </div>
             )}
           </div>
+
+          <FieldPassModal
+            isOpen={showFieldPass}
+            onClose={() => setShowFieldPass(false)}
+            tripId={card.id}
+            tripName={card.name}
+            destination={card.destinations[0] ?? ""}
+            memberCount={card.memberCount}
+            needs={card.needs}
+            customNeeds={card.customNeeds}
+            lodgingText={plan.draft.extras?.lodging}
+          />
         </div>
       )}
     </main>

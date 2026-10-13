@@ -6,6 +6,7 @@ export const NAV_LINKS: NavLink[] = [
   { href: "/", key: "home" },
   { href: "/plan", key: "plan" },
   { href: "/trips", key: "trips" },
+  { href: "/split-bill", key: "splitBill" },
   { href: "/about", key: "about" },
 ];
 

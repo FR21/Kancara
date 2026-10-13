@@ -9,7 +9,6 @@ import {
   ArrowRight,
   ArrowLeft,
   ReceiptText,
-  Wallet,
   Copy,
   Check,
   Users,
@@ -18,7 +17,6 @@ import {
   Download,
   ChevronDown,
   ChevronUp,
-  RotateCcw,
   Compass,
   Utensils,
   Car,
@@ -26,6 +24,8 @@ import {
   Ticket,
   ShoppingBag,
   MoreHorizontal,
+  RotateCcw,
+  Circle,
 } from "lucide-react";
 import PageBackdrop from "@/components/layout/PageBackdrop";
 import MemberAvatar from "@/components/plan/MemberAvatar";
@@ -38,7 +38,8 @@ import {
   GHOST_BUTTON,
   choiceClass,
 } from "@/components/plan/styles";
-import { fillTemplate } from "@/lib/plan-draft";
+import { fillTemplate, type AgeGroup } from "@/lib/plan-draft";
+import { useSavedProfiles } from "@/lib/saved-members-store";
 import { useMessages } from "@/lib/use-messages";
 import { useLocale } from "@/lib/use-locale";
 import type { Expense, SplitBillResponse } from "@/app/api/split-bill/route";
@@ -54,9 +55,8 @@ type ExpenseItem = Expense & {
 type Stage = "crew" | "expenses" | "results";
 
 const STORAGE_KEY = "kancara-split-bill-draft-v1";
+const SETTLED_STORAGE_KEY = "kancara-split-bill-settled-v1";
 
-const SAMPLE_MEMBERS_ID = ["Raka", "Nadia", "Budi", "Sarah"];
-const SAMPLE_MEMBERS_EN = ["Alex", "Emma", "Liam", "Sophia"];
 
 const CATEGORIES = [
   { key: "food", icon: Utensils, labelKey: "categoryFood" as const, color: "text-amber-600 bg-amber-50 border-amber-200" },
@@ -93,9 +93,14 @@ export default function SplitBillClient() {
   const [downloading, setDownloading] = useState(false);
   const [importNotification, setImportNotification] = useState<string | null>(null);
 
+  const { profiles } = useSavedProfiles();
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
+  const [selectedImportIds, setSelectedImportIds] = useState<string[]>([]);
+  const [confirmedSettlements, setConfirmedSettlements] = useState<Record<string, boolean>>({});
+
   const receiptRef = useRef<HTMLDivElement | null>(null);
 
-  // Restore saved draft on mount
+  // Restore saved draft & settlement confirmations on mount
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
@@ -107,6 +112,10 @@ export default function SplitBillClient() {
         if (Array.isArray(parsed.expenses) && parsed.expenses.length > 0) {
           setExpenses(parsed.expenses);
         }
+      }
+      const rawSettled = localStorage.getItem(SETTLED_STORAGE_KEY);
+      if (rawSettled) {
+        setConfirmedSettlements(JSON.parse(rawSettled));
       }
     } catch {
       // Ignore parse error
@@ -138,63 +147,113 @@ export default function SplitBillClient() {
     }
   };
 
-  const handleFillSample = () => {
-    const sampleList = locale === "id" ? SAMPLE_MEMBERS_ID : SAMPLE_MEMBERS_EN;
-    const combined = Array.from(new Set([...members, ...sampleList]));
-    setMembers(combined);
-    if (!newPayer) setNewPayer(combined[0]);
-  };
+  // Aggregate saved profiles from Neon DB /api/saved-profiles, localStorage, and draft trip
+  const allAvailableProfiles = useMemo(() => {
+    type ImportableProfile = {
+      id: string;
+      name: string;
+      relationship?: string;
+      ageGroup: AgeGroup;
+      notes?: string;
+    };
 
-  const handleImportSavedMembers = () => {
-    let importedNames: string[] = [];
+    const list: ImportableProfile[] = [];
+    const seen = new Set<string>();
+
+    // 1. From saved profiles (Neon DB /api/saved-profiles + localStorage store)
+    if (Array.isArray(profiles)) {
+      for (const p of profiles) {
+        const trimmed = p.name?.trim();
+        if (trimmed && !seen.has(trimmed.toLowerCase())) {
+          seen.add(trimmed.toLowerCase());
+          list.push({
+            id: p.id,
+            name: trimmed,
+            relationship: p.relationship || (locale === "id" ? "Keluarga" : "Family"),
+            ageGroup: p.ageGroup || "adult",
+            notes: p.notes,
+          });
+        }
+      }
+    }
+
+    // 2. From trip plan draft in localStorage if any additional members exist
     try {
       const planRaw = localStorage.getItem("kancara-plan-draft-v2");
       if (planRaw) {
         const plan = JSON.parse(planRaw);
         if (Array.isArray(plan.members)) {
-          const names = plan.members
-            .map((m: { name?: string }) => m.name?.trim())
-            .filter((n: string | undefined): n is string => Boolean(n));
-          importedNames.push(...names);
+          for (const m of plan.members) {
+            const mName = m?.name?.trim();
+            if (mName && !seen.has(mName.toLowerCase())) {
+              seen.add(mName.toLowerCase());
+              list.push({
+                id: m.id || crypto.randomUUID(),
+                name: mName,
+                relationship: "Trip Plan",
+                ageGroup: m.ageGroup || "adult",
+              });
+            }
+          }
         }
       }
-    } catch {
-      // Ignore
-    }
+    } catch {}
 
-    if (importedNames.length === 0) {
-      setImportNotification(t.importNoSaved);
-      setTimeout(() => setImportNotification(null), 3000);
+    return list;
+  }, [profiles, locale]);
+
+  const unaddedProfiles = useMemo(
+    () => allAvailableProfiles.filter((p) => !members.includes(p.name)),
+    [allAvailableProfiles, members],
+  );
+
+  const handleOpenImportModal = () => {
+    // Pre-select all unadded profiles by default
+    setSelectedImportIds(unaddedProfiles.map((p) => p.id));
+    setIsImportModalOpen(true);
+  };
+
+  const handleToggleSelectImport = (id: string) => {
+    setSelectedImportIds((curr) =>
+      curr.includes(id) ? curr.filter((item) => item !== id) : [...curr, id],
+    );
+  };
+
+  const handleToggleSelectAll = () => {
+    if (selectedImportIds.length === unaddedProfiles.length && unaddedProfiles.length > 0) {
+      setSelectedImportIds([]);
+    } else {
+      setSelectedImportIds(unaddedProfiles.map((p) => p.id));
+    }
+  };
+
+  const handleImportSingle = (name: string) => {
+    if (members.includes(name)) return;
+    const updated = [...members, name];
+    setMembers(updated);
+    if (!newPayer) setNewPayer(updated[0]);
+    setImportNotification(fillTemplate(t.importSuccess, { count: 1 }));
+    setTimeout(() => setImportNotification(null), 3000);
+  };
+
+  const handleConfirmBatchImport = () => {
+    const toAdd = allAvailableProfiles
+      .filter((p) => selectedImportIds.includes(p.id) && !members.includes(p.name))
+      .map((p) => p.name);
+
+    if (toAdd.length === 0) {
+      setIsImportModalOpen(false);
       return;
     }
 
-    const merged = Array.from(new Set([...members, ...importedNames]));
-    const countAdded = merged.length - members.length;
+    const merged = Array.from(new Set([...members, ...toAdd]));
     setMembers(merged);
     if (!newPayer && merged.length > 0) setNewPayer(merged[0]);
-
-    setImportNotification(fillTemplate(t.importSuccess, { count: countAdded > 0 ? countAdded : merged.length }));
+    setImportNotification(fillTemplate(t.importSuccess, { count: toAdd.length }));
     setTimeout(() => setImportNotification(null), 3500);
+    setIsImportModalOpen(false);
   };
 
-  const handleReset = () => {
-    if (window.confirm(t.resetConfirm)) {
-      setMembers([]);
-      setExpenses([]);
-      setResult(null);
-      setNewDesc("");
-      setNewAmount("");
-      setNewTax("");
-      setNewExtra("");
-      setNewConsumers([]);
-      setStage("crew");
-      try {
-        localStorage.removeItem(STORAGE_KEY);
-      } catch {
-        // Ignore
-      }
-    }
-  };
 
   const handleRemoveMember = (m: string) => {
     const remaining = members.filter((x) => x !== m);
@@ -461,6 +520,60 @@ export default function SplitBillClient() {
     });
   }, [members, expenses]);
 
+  const toggleSettlementConfirmed = (key: string) => {
+    setConfirmedSettlements((prev) => {
+      const next = { ...prev, [key]: !prev[key] };
+      try {
+        localStorage.setItem(SETTLED_STORAGE_KEY, JSON.stringify(next));
+      } catch {}
+      return next;
+    });
+  };
+
+  const handleMarkAllSettlementsPaid = () => {
+    if (!result?.settlements) return;
+    const next: Record<string, boolean> = { ...confirmedSettlements };
+    result.settlements.forEach((s) => {
+      const key = `${s.from}->${s.to}:${s.amount}`;
+      next[key] = true;
+    });
+    setConfirmedSettlements(next);
+    try {
+      localStorage.setItem(SETTLED_STORAGE_KEY, JSON.stringify(next));
+    } catch {}
+  };
+
+  const handleResetSettlementConfirmations = () => {
+    setConfirmedSettlements({});
+    try {
+      localStorage.removeItem(SETTLED_STORAGE_KEY);
+    } catch {}
+  };
+
+  const settlementStats = useMemo(() => {
+    if (!result || !result.settlements || result.settlements.length === 0) {
+      return { totalCount: 0, paidCount: 0, totalAmount: 0, paidAmount: 0, isAllPaid: false, percentage: 0 };
+    }
+    const totalCount = result.settlements.length;
+    let paidCount = 0;
+    let totalAmount = 0;
+    let paidAmount = 0;
+
+    result.settlements.forEach((s) => {
+      const key = `${s.from}->${s.to}:${s.amount}`;
+      totalAmount += s.amount;
+      if (confirmedSettlements[key]) {
+        paidCount++;
+        paidAmount += s.amount;
+      }
+    });
+
+    const isAllPaid = totalCount > 0 && paidCount === totalCount;
+    const percentage = totalCount > 0 ? Math.round((paidCount / totalCount) * 100) : 0;
+
+    return { totalCount, paidCount, totalAmount, paidAmount, isAllPaid, percentage };
+  }, [result, confirmedSettlements]);
+
   // Copy plain text summary without emojis
   const handleCopySummary = () => {
     if (!result) return;
@@ -500,8 +613,11 @@ export default function SplitBillClient() {
       lines.push(`- ${t.noDebts}`);
     } else {
       result.settlements.forEach((s) => {
-        lines.push(`- ${s.from} -> ${s.to}: Rp ${s.amount.toLocaleString(numLocale)}`);
+        const isPaid = !!confirmedSettlements[`${s.from}->${s.to}:${s.amount}`];
+        lines.push(`- ${s.from} -> ${s.to}: Rp ${s.amount.toLocaleString(numLocale)} [${isPaid ? "LUNAS" : "BELUM BAYAR"}]`);
       });
+      lines.push("");
+      lines.push(`Status Pembayaran: ${settlementStats.paidCount}/${settlementStats.totalCount} lunas (${settlementStats.percentage}%)`);
     }
 
     navigator.clipboard.writeText(lines.join("\n"));
@@ -682,7 +798,10 @@ export default function SplitBillClient() {
       } else {
         result.settlements.forEach((s) => {
           y += 35;
-          ctx.fillStyle = "#DC2626";
+          const key = `${s.from}->${s.to}:${s.amount}`;
+          const isPaid = !!confirmedSettlements[key];
+
+          ctx.fillStyle = isPaid ? "#15803D" : "#DC2626";
           ctx.font = "bold 15px sans-serif";
           ctx.fillText(s.from, 45, y);
 
@@ -694,9 +813,19 @@ export default function SplitBillClient() {
           ctx.font = "bold 15px sans-serif";
           ctx.fillText(s.to, 340, y);
 
-          ctx.fillStyle = "#0F172A";
+          ctx.fillStyle = isPaid ? "#15803D" : "#0F172A";
           ctx.font = "bold 16px sans-serif";
-          ctx.fillText(`Rp ${s.amount.toLocaleString(numLocale)}`, 700, y);
+          ctx.fillText(`Rp ${s.amount.toLocaleString(numLocale)}`, 620, y);
+
+          if (isPaid) {
+            ctx.fillStyle = "#15803D";
+            ctx.font = "bold 13px sans-serif";
+            ctx.fillText("[LUNAS]", 800, y);
+          } else {
+            ctx.fillStyle = "#94A3B8";
+            ctx.font = "13px sans-serif";
+            ctx.fillText("[BELUM]", 800, y);
+          }
         });
       }
 
@@ -781,28 +910,9 @@ export default function SplitBillClient() {
           <div className="aspect-square w-[500px] rounded-full bg-gradient-to-tr from-primary/40 to-transparent" />
         </div>
 
-        <div className="flex flex-wrap items-center justify-center gap-3">
-          <div className="inline-flex items-center gap-2 rounded-full border border-primary/25 bg-primary-subtle px-4 py-1.5 text-caption font-bold tracking-wider text-primary uppercase shadow-sm">
-            <Wallet className="size-4" />
-            <span>{t.badge}</span>
-          </div>
-
-          {(members.length > 0 || expenses.length > 0) && (
-            <button
-              type="button"
-              onClick={handleReset}
-              className="inline-flex cursor-pointer items-center gap-1.5 rounded-full border border-border bg-surface px-3 py-1 text-caption text-text-muted transition-colors hover:border-error hover:bg-error-subtle hover:text-error"
-              title={t.resetBill}
-            >
-              <RotateCcw className="size-3.5" />
-              <span>{t.resetBill}</span>
-            </button>
-          )}
-        </div>
-
         <h1
           tabIndex={-1}
-          className="mt-4 font-heading text-4xl font-extrabold tracking-tight text-balance text-text outline-none sm:text-5xl lg:text-6xl"
+          className="font-heading text-4xl font-extrabold tracking-tight text-balance text-text outline-none sm:text-5xl lg:text-6xl"
         >
           {t.title}
         </h1>
@@ -939,24 +1049,18 @@ export default function SplitBillClient() {
               <div className="flex flex-wrap items-center gap-2">
                 <button
                   type="button"
-                  onClick={handleImportSavedMembers}
-                  className={`${OUTLINE_BUTTON} h-10 px-4 text-caption text-primary hover:border-primary`}
+                  onClick={handleOpenImportModal}
+                  className={`${OUTLINE_BUTTON} h-10 px-4 text-caption text-primary hover:border-primary flex items-center gap-2`}
                   title={t.importFromPlan}
                 >
-                  <Compass className="size-4" />
-                  {t.importPrompt}
+                  <Users className="size-4" />
+                  <span>{t.importPrompt}</span>
+                  {unaddedProfiles.length > 0 && (
+                    <span className="rounded-full bg-primary/20 px-2 py-0.5 text-[10px] font-bold text-primary">
+                      {unaddedProfiles.length}
+                    </span>
+                  )}
                 </button>
-
-                {members.length === 0 && (
-                  <button
-                    type="button"
-                    onClick={handleFillSample}
-                    className={`${OUTLINE_BUTTON} h-10 px-4 text-caption text-primary hover:border-primary`}
-                  >
-                    <Sparkles className="size-4" />
-                    {t.sampleMembers}
-                  </button>
-                )}
               </div>
             </div>
 
@@ -1568,6 +1672,39 @@ export default function SplitBillClient() {
                       </div>
 
                       <div className="flex items-center gap-3 self-end sm:self-auto">
+                        {(() => {
+                          const memberDebts = result?.settlements.filter((s) => s.from === mb.name) || [];
+                          if (mb.netBalance < 0 && memberDebts.length > 0) {
+                            const paidCount = memberDebts.filter(
+                              (s) => !!confirmedSettlements[`${s.from}->${s.to}:${s.amount}`]
+                            ).length;
+                            const isFullyPaid = paidCount === memberDebts.length;
+
+                            return (
+                              <span
+                                className={`hidden sm:inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 text-caption font-bold ${
+                                  isFullyPaid
+                                    ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                                    : "bg-surface-muted text-text-muted border border-border"
+                                }`}
+                              >
+                                {isFullyPaid ? (
+                                  <>
+                                    <CheckCircle2 className="size-3.5 text-emerald-500" />
+                                    <span>Lunas Terkonfirmasi</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Circle className="size-3.5" />
+                                    <span>{paidCount}/{memberDebts.length} Terbayar</span>
+                                  </>
+                                )}
+                              </span>
+                            );
+                          }
+                          return null;
+                        })()}
+
                         <div
                           className={`rounded-full px-3.5 py-1 text-label font-bold text-caption ${
                             mb.netBalance > 0
@@ -1644,27 +1781,103 @@ export default function SplitBillClient() {
               </div>
             </div>
 
+            {/* Payment Confirmation Tracker */}
+            {result.settlements.length > 0 && (
+              <div className="rounded-2xl border border-border bg-surface-muted/60 p-4 sm:p-5 space-y-3">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <span className="font-heading font-bold text-text text-body">
+                        Status Konfirmasi Pembayaran
+                      </span>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-caption font-bold ${
+                          settlementStats.isAllPaid
+                            ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30"
+                            : "bg-amber-500/15 text-amber-600 dark:text-amber-400 border border-amber-500/30"
+                        }`}
+                      >
+                        {settlementStats.isAllPaid ? (
+                          <>
+                            <CheckCircle2 className="size-3.5" />
+                            <span>Semua Lunas</span>
+                          </>
+                        ) : (
+                          `${settlementStats.paidCount}/${settlementStats.totalCount} Terbayar`
+                        )}
+                      </span>
+                    </div>
+                    <p className="text-caption text-text-muted mt-0.5">
+                      Rp {settlementStats.paidAmount.toLocaleString(numLocale)} dari Rp {settlementStats.totalAmount.toLocaleString(numLocale)} ({settlementStats.percentage}%) telah dikonfirmasi
+                    </p>
+                  </div>
+
+                  <div className="flex items-center gap-2 self-end sm:self-auto">
+                    {!settlementStats.isAllPaid ? (
+                      <button
+                        type="button"
+                        onClick={handleMarkAllSettlementsPaid}
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 text-caption font-bold rounded-xl bg-emerald-600 text-white hover:bg-emerald-700 transition-colors shadow-sm cursor-pointer"
+                      >
+                        <Check className="size-3.5" />
+                        Tandai Semua Lunas
+                      </button>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={handleResetSettlementConfirmations}
+                        className="flex items-center gap-1.5 px-3.5 py-1.5 text-caption font-semibold rounded-xl border border-border bg-background text-text-muted hover:text-text hover:bg-surface transition-colors cursor-pointer"
+                      >
+                        <RotateCcw className="size-3.5" />
+                        Reset Status
+                      </button>
+                    )}
+                  </div>
+                </div>
+
+                {/* Progress bar */}
+                <div className="w-full h-2 rounded-full bg-border overflow-hidden">
+                  <div
+                    className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                    style={{ width: `${settlementStats.percentage}%` }}
+                  />
+                </div>
+              </div>
+            )}
+
             <div className="space-y-3 pt-2">
               {result.settlements.length > 0 ? (
                 result.settlements.map((s, idx) => {
                   const fromIdx = members.indexOf(s.from);
                   const toIdx = members.indexOf(s.to);
                   const isItemCopied = copiedItem === idx;
+                  const key = `${s.from}->${s.to}:${s.amount}`;
+                  const isPaid = !!confirmedSettlements[key];
 
                   return (
                     <div
                       key={idx}
-                      className="group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border border-border bg-background p-5 shadow-sm hover:border-primary/40 transition-colors"
+                      className={`group flex flex-col sm:flex-row sm:items-center justify-between gap-4 rounded-2xl border p-5 shadow-sm transition-all ${
+                        isPaid
+                          ? "border-emerald-500/40 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.08]"
+                          : "border-border bg-background hover:border-primary/40"
+                      }`}
                     >
                       <div className="flex flex-wrap items-center gap-3">
                         {/* Debtor */}
-                        <div className="flex items-center gap-2 rounded-full border border-error/20 bg-error-subtle px-3 py-1.5 text-label font-bold text-error">
+                        <div
+                          className={`flex items-center gap-2 rounded-full border px-3 py-1.5 text-label font-bold ${
+                            isPaid
+                              ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300"
+                              : "border-error/20 bg-error-subtle text-error"
+                          }`}
+                        >
                           <MemberAvatar
                             ageGroup="adult"
                             variant={fromIdx >= 0 ? fromIdx : 0}
                             className="size-7"
                           />
-                          <span>{s.from}</span>
+                          <span className={isPaid ? "line-through opacity-80" : ""}>{s.from}</span>
                         </div>
 
                         {/* Route Line & Arrow */}
@@ -1685,20 +1898,66 @@ export default function SplitBillClient() {
                           />
                           <span>{s.to}</span>
                         </div>
+
+                        {/* Lunas Badge */}
+                        {isPaid && (
+                          <span className="inline-flex items-center gap-1 rounded-full px-2.5 py-0.5 text-caption font-bold bg-emerald-500/15 text-emerald-600 dark:text-emerald-400 border border-emerald-500/30">
+                            <CheckCircle2 className="size-3.5" />
+                            Lunas
+                          </span>
+                        )}
                       </div>
 
-                      {/* Amount & Copy button */}
-                      <div className="flex items-center gap-3 self-end sm:self-auto">
-                        <div className="rounded-xl border border-border bg-surface px-4 py-2 shadow-inner">
-                          <span className="font-heading text-h3 font-extrabold text-text">
+                      {/* Amount & Actions */}
+                      <div className="flex flex-wrap items-center gap-2.5 self-end sm:self-auto">
+                        <div
+                          className={`rounded-xl border px-4 py-2 shadow-inner transition-colors ${
+                            isPaid
+                              ? "border-emerald-500/30 bg-emerald-500/10"
+                              : "border-border bg-surface"
+                          }`}
+                        >
+                          <span
+                            className={`font-heading text-h3 font-extrabold ${
+                              isPaid
+                                ? "text-emerald-600 dark:text-emerald-400 line-through opacity-80"
+                                : "text-text"
+                            }`}
+                          >
                             Rp {s.amount.toLocaleString(numLocale)}
                           </span>
                         </div>
+
+                        {/* Toggle Payment Confirmation Button */}
+                        <button
+                          type="button"
+                          onClick={() => toggleSettlementConfirmed(key)}
+                          title={isPaid ? "Klik untuk membatalkan konfirmasi bayar" : "Klik untuk konfirmasi bahwa uang sudah dibayar/diterima"}
+                          className={`flex items-center gap-1.5 px-3.5 py-2 rounded-xl text-caption font-bold transition-all cursor-pointer ${
+                            isPaid
+                              ? "bg-emerald-600 text-white hover:bg-emerald-700 shadow-sm"
+                              : "border border-border bg-surface hover:border-emerald-500/50 hover:bg-emerald-500/10 text-text-muted hover:text-emerald-600 dark:hover:text-emerald-400"
+                          }`}
+                        >
+                          {isPaid ? (
+                            <>
+                              <CheckCircle2 className="size-4 text-white" />
+                              <span>Sudah Bayar</span>
+                            </>
+                          ) : (
+                            <>
+                              <Circle className="size-4" />
+                              <span>Konfirmasi Bayar</span>
+                            </>
+                          )}
+                        </button>
+
+                        {/* Copy Single Debt */}
                         <button
                           type="button"
                           onClick={() => handleCopySingleDebt(s, idx)}
                           title="Salin pesan tagihan"
-                          className="flex size-10 items-center justify-center rounded-full border border-border text-text-muted hover:border-primary hover:text-primary transition-colors cursor-pointer"
+                          className="flex size-10 items-center justify-center rounded-full border border-border text-text-muted hover:border-primary hover:text-primary transition-colors cursor-pointer shrink-0"
                         >
                           {isItemCopied ? (
                             <Check className="size-4 text-success" />
@@ -1739,6 +1998,204 @@ export default function SplitBillClient() {
             >
               {t.changeMembers}
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Saved Members Picker Modal */}
+      {isImportModalOpen && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="import-members-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-neutral-950/70 backdrop-blur-sm animate-fade-in"
+          onClick={(e) => {
+            if (e.target === e.currentTarget) setIsImportModalOpen(false);
+          }}
+        >
+          <div className="relative w-full max-w-2xl max-h-[85vh] flex flex-col rounded-3xl border border-border bg-surface text-text shadow-2xl overflow-hidden motion-safe:animate-message-in">
+            {/* Header */}
+            <header className="flex items-center justify-between border-b border-border px-6 py-5">
+              <div className="flex items-center gap-3.5">
+                <div className="flex size-11 items-center justify-center rounded-2xl bg-primary text-on-primary shadow-sm shadow-primary/20">
+                  <Users className="size-5" aria-hidden="true" />
+                </div>
+                <div>
+                  <h2 id="import-members-title" className="font-heading text-h3 font-bold text-text">
+                    {locale === "id" ? "Impor Anggota Tersimpan" : "Import Saved Members"}
+                  </h2>
+                  <p className="mt-0.5 text-caption text-text-muted">
+                    {locale === "id"
+                      ? "Pilih profil anggota keluarga atau rombongan dari riwayat perjalanan Anda."
+                      : "Select family or group members from your saved profiles and trips."}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsImportModalOpen(false)}
+                aria-label={locale === "id" ? "Tutup dialog" : "Close dialog"}
+                className="inline-flex size-10 cursor-pointer items-center justify-center rounded-full text-text-muted transition-colors hover:bg-surface-muted hover:text-text active:scale-95"
+              >
+                <X className="size-5" aria-hidden="true" />
+              </button>
+            </header>
+
+            {/* Content List */}
+            <div className="flex-1 overflow-y-auto px-6 py-5 space-y-3">
+              {allAvailableProfiles.length === 0 ? (
+                <div className="py-12 text-center text-text-muted">
+                  <Users className="mx-auto size-12 opacity-30 mb-3" aria-hidden="true" />
+                  <p className="text-body font-bold text-text">
+                    {locale === "id"
+                      ? "Belum ada profil anggota tersimpan."
+                      : "No saved member profiles found."}
+                  </p>
+                  <p className="mt-1 text-caption text-text-muted max-w-sm mx-auto">
+                    {locale === "id"
+                      ? "Simpan profil rombongan atau anggota keluarga Anda agar dapat digunakan ulang di setiap perjalanan dan pembagian tagihan."
+                      : "Save your group or family profiles to reuse them across all trips and bill splits."}
+                  </p>
+                  <a
+                    href="/profile/saved-members"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="mt-4 inline-flex items-center gap-1.5 rounded-full bg-primary px-5 py-2 text-caption font-bold text-on-primary shadow-sm hover:bg-primary-hover"
+                  >
+                    <Plus className="size-4" />
+                    {locale === "id" ? "Tambah Profil Baru" : "Add New Profile"}
+                  </a>
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center justify-between pb-1">
+                    <span className="text-caption font-bold text-text-muted">
+                      {allAvailableProfiles.length} {locale === "id" ? "profil ditemukan" : "profiles found"}
+                    </span>
+                    {unaddedProfiles.length > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleToggleSelectAll}
+                        className="text-caption font-bold text-primary hover:underline cursor-pointer"
+                      >
+                        {selectedImportIds.length === unaddedProfiles.length
+                          ? (locale === "id" ? "Batalkan Semua" : "Deselect All")
+                          : (locale === "id" ? "Pilih Semua yang Belum Ada" : "Select All Unadded")}
+                      </button>
+                    )}
+                  </div>
+
+                  <div className="space-y-2.5">
+                    {allAvailableProfiles.map((p, idx) => {
+                      const alreadyAdded = members.includes(p.name);
+                      const isSelected = selectedImportIds.includes(p.id);
+
+                      return (
+                        <div
+                          key={p.id}
+                          onClick={() => {
+                            if (!alreadyAdded) handleToggleSelectImport(p.id);
+                          }}
+                          className={`flex items-center justify-between gap-3 rounded-2xl border p-3.5 transition-all ${
+                            alreadyAdded
+                              ? "border-border/60 bg-surface-muted/50 opacity-60 cursor-default"
+                              : isSelected
+                                ? "border-primary bg-primary-subtle/40 ring-1 ring-primary/40 cursor-pointer shadow-sm"
+                                : "border-border bg-surface hover:border-primary/40 hover:bg-surface-muted cursor-pointer"
+                          }`}
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <input
+                              type="checkbox"
+                              checked={alreadyAdded || isSelected}
+                              disabled={alreadyAdded}
+                              onChange={() => handleToggleSelectImport(p.id)}
+                              onClick={(e) => e.stopPropagation()}
+                              aria-label={p.name}
+                              className="size-4.5 rounded border-border text-primary accent-primary cursor-pointer disabled:cursor-not-allowed"
+                            />
+                            <MemberAvatar
+                              ageGroup={p.ageGroup || "adult"}
+                              variant={idx}
+                              className="size-11 shrink-0"
+                            />
+                            <div className="min-w-0">
+                              <div className="flex items-center gap-2">
+                                <span className="font-heading text-body font-bold text-text truncate">
+                                  {p.name}
+                                </span>
+                                {p.relationship && (
+                                  <span className="rounded-full bg-primary-subtle px-2 py-0.5 text-[11px] font-semibold text-primary shrink-0">
+                                    {p.relationship}
+                                  </span>
+                                )}
+                              </div>
+                              {p.notes && (
+                                <p className="text-[11px] text-text-muted truncate mt-0.5">
+                                  {p.notes}
+                                </p>
+                              )}
+                            </div>
+                          </div>
+
+                          <div className="shrink-0" onClick={(e) => e.stopPropagation()}>
+                            {alreadyAdded ? (
+                              <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 px-2.5 py-1 text-caption font-bold">
+                                <Check className="size-3.5" />
+                                {locale === "id" ? "Sudah di Tagihan" : "Added"}
+                              </span>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleImportSingle(p.name)}
+                                className="inline-flex items-center gap-1 rounded-full bg-primary/10 hover:bg-primary text-primary hover:text-on-primary px-3 py-1 text-caption font-bold transition-colors cursor-pointer"
+                              >
+                                <Plus className="size-3.5" />
+                                {locale === "id" ? "Tambah" : "Add"}
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              )}
+            </div>
+
+            {/* Footer */}
+            <footer className="flex flex-wrap items-center justify-between gap-3 border-t border-border bg-surface px-6 py-4">
+              <a
+                href="/profile/saved-members"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-caption font-semibold text-primary underline-offset-4 hover:underline"
+              >
+                {locale === "id" ? "Kelola profil di pengaturan akun →" : "Manage saved profiles in settings →"}
+              </a>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => setIsImportModalOpen(false)}
+                  className="rounded-full border border-border px-4 py-2 text-caption font-bold text-text hover:bg-surface-muted cursor-pointer"
+                >
+                  {locale === "id" ? "Tutup" : "Close"}
+                </button>
+                {selectedImportIds.length > 0 && (
+                  <button
+                    type="button"
+                    onClick={handleConfirmBatchImport}
+                    className="inline-flex items-center gap-1.5 rounded-full bg-primary hover:bg-primary-hover px-5 py-2 text-caption font-bold text-on-primary shadow-md active:scale-95 cursor-pointer"
+                  >
+                    <Plus className="size-4" />
+                    {locale === "id"
+                      ? `Tambahkan (${selectedImportIds.length}) Anggota`
+                      : `Add (${selectedImportIds.length}) Members`}
+                  </button>
+                )}
+              </div>
+            </footer>
           </div>
         </div>
       )}

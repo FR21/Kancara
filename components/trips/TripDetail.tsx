@@ -1,13 +1,15 @@
 "use client";
 
-import { ArrowRight, Check, CircleDashed, CopyPlus, Languages, Luggage, Share2, Trash2, UtensilsCrossed, Wallet, X } from "lucide-react";
+import { ArrowRight, Check, CircleDashed, Compass, CopyPlus, Languages, Luggage, Share2, Trash2, UtensilsCrossed, Wallet, X } from "lucide-react";
 import Link from "next/link";
+import { useState } from "react";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate, PASS_FIELDS } from "@/lib/plan-draft";
 import { formatDays, formatDaysAhead, formatMoney, formatTripDates, plural } from "@/lib/trips/format";
 import { type TripCard, DRAFT_SECTIONS, tripHref } from "@/lib/trips/trip";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
+import FieldPassModal from "./FieldPassModal";
 import MemberStack from "./MemberStack";
 import { OfflineBadge, StatusPill, ViolationsBadge } from "./TripBadges";
 import TripRoute from "./TripRoute";
@@ -41,6 +43,7 @@ const NEED =
 // the list; on a phone the same panel rises as a sheet.
 export default function TripDetail({ card, text, needLabels, actions, headingId, onClose }: TripDetailProps) {
   const locale = useLocale();
+  const [showFieldPass, setShowFieldPass] = useState(false);
   const packingText = useMessages("packing");
   const title = card.name || text.card.untitled;
   const detail = text.detail;
@@ -241,7 +244,7 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
           </Link>
 
           <div role="group" aria-label={detail.actions} className="flex flex-wrap gap-2">
-            {card.status !== "draft" && (
+            {card.status !== "completed" && card.status !== "draft" && (
               <>
                 <Link
                   href={`/trips/${encodeURIComponent(card.id)}/packing`}
@@ -273,19 +276,32 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
                   />
                   {locale === "en" ? "Live Translator" : "Penerjemah Obrolan"}
                 </Link>
+                <button
+                  type="button"
+                  onClick={() => setShowFieldPass(true)}
+                  className={`group/action ${ACTION} border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 font-bold hover:bg-emerald-500/20`}
+                >
+                  <Compass
+                    className="size-4 text-emerald-600 dark:text-emerald-400 transition-[scale] duration-300 ease-spring group-hover/action:scale-110"
+                    aria-hidden="true"
+                  />
+                  {locale === "en" ? "Field Pass (Offline)" : "Paspor Lapangan 🟢"}
+                </button>
               </>
             )}
-            <button
-              type="button"
-              onClick={() => actions.onDuplicate(card)}
-              className={`group/action ${ACTION} text-text hover:bg-surface-muted`}
-            >
-              <CopyPlus
-                className="size-4 transition-[scale] duration-300 ease-spring group-hover/action:scale-125"
-                aria-hidden="true"
-              />
-              {text.menu.duplicate}
-            </button>
+            {card.status !== "completed" && (
+              <button
+                type="button"
+                onClick={() => actions.onDuplicate(card)}
+                className={`group/action ${ACTION} text-text hover:bg-surface-muted`}
+              >
+                <CopyPlus
+                  className="size-4 transition-[scale] duration-300 ease-spring group-hover/action:scale-125"
+                  aria-hidden="true"
+                />
+                {text.menu.duplicate}
+              </button>
+            )}
             <button
               type="button"
               onClick={() => actions.onShare(card)}
@@ -311,6 +327,17 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
           </div>
         </div>
       </div>
+
+      <FieldPassModal
+        isOpen={showFieldPass}
+        onClose={() => setShowFieldPass(false)}
+        tripId={card.id}
+        tripName={card.name}
+        destination={card.destinations[0] ?? ""}
+        memberCount={card.memberCount}
+        needs={card.needs}
+        customNeeds={card.customNeeds}
+      />
     </article>
   );
 }
