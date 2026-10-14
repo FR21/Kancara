@@ -1,126 +1,125 @@
 {
   "hero": {
-    "headlinePart1": "Beragam Kebutuhan.",
+    "headlinePart1": "Beragam kebutuhan.",
     "headlinePart2": "Satu",
-    "headlineUnderlined": "Perjalanan",
+    "headlineUnderlined": "perjalanan",
     "headlineEnd": ".",
     "description": "Rencanakan trip rombongan yang pas untuk semua anggota, tetap terhubung walau tanpa sinyal.",
-    "ctaPrimary": "Mulai Rencana",
-    "ctaSecondary": "Lihat Cerita",
+    "ctaPrimary": "Mulai rencana",
+    "ctaSecondary": "Lihat ceritanya",
     "note": "Mulai dalam 60 detik · Tanpa komitmen"
   },
   "stats": {
-    "heading": "Dampak Nyata Perjalanan Inklusif",
+    "heading": "Dampak nyata perjalanan inklusif",
     "subtitle": "Berdasarkan umpan balik pasca perjalanan dari 3.200+ ketua rombongan",
     "card1Value": "12.480+",
-    "card1Label": "Wisatawan Terhubung",
+    "card1Label": "Wisatawan terhubung",
     "card2Value": "98%",
-    "card2Label": "Suara & Kebutuhan Anggota Terfasilitasi",
-    "card2Rating": "4.9/5",
-    "card3Value": "8.5 Jam",
-    "card3Label": "Penghematan Waktu Perencanaan",
-    "card3Before": "Sebelum (11 Jam)",
-    "card3WithUs": "Kancara (2.5 Jam)",
-    "card4Value": "Tanpa Sinyal",
-    "card4Label": "Rombongan Tetap Bisa Terhubung",
-    "card1Growth": "↑ 18% bulan ini",
-    "footerNote": "✓ Berdasarkan data pasca perjalanan dari 3.200+ kelompok rombongan",
+    "card2Label": "Suara dan kebutuhan anggota terfasilitasi",
+    "card2Rating": "4,9/5",
+    "card3Value": "8,5 jam",
+    "card3Label": "Waktu perencanaan yang dihemat",
+    "card3Before": "Sebelumnya (11 jam)",
+    "card3WithUs": "Kancara (2,5 jam)",
+    "card4Value": "Tanpa sinyal",
+    "card4Label": "Rombongan tetap bisa terhubung",
+    "card1Growth": "18% bulan ini",
     "trustedBy": "Dipercaya oleh"
   },
   "steps": {
-    "heading": "Alur Perjalanan Bersama Kancara",
+    "heading": "Alur perjalanan bersama Kancara",
     "subtitle": "Dari wawancara awal hingga momen berharga di perjalanan.",
     "liveLabel": "Live",
     "items": [
       {
         "number": "01",
-        "title": "Pahami Kebutuhan Bersama",
-        "subheading": "Needs Interview via AI Chat & Voice",
+        "title": "Pahami kebutuhan bersama",
+        "subheading": "Wawancara kebutuhan lewat chat dan suara AI",
         "description": "Sampaikan anggaran, kebutuhan makanan Halal, alergen, lansia, dan balita. AI Kancara menemukan titik temu terbaik bagi semua anggota.",
         "cta": "Jelajahi langkah ini",
-        "chartTitle": "Hasil Titik Temu Rombongan",
+        "chartTitle": "Titik temu rombongan",
         "chartItems": [
           {
-            "label": "Kuliner Halal & Bebas Alergen",
-            "val": "94%"
+            "label": "Kuliner halal dan bebas alergen",
+            "value": "94%"
           },
           {
-            "label": "Wisata Alam & Ramah Lansia",
-            "val": "88%"
+            "label": "Wisata alam ramah lansia",
+            "value": "88%"
           },
           {
-            "label": "Jadwal Istirahat Balita",
-            "val": "78%"
+            "label": "Jadwal istirahat balita",
+            "value": "78%"
           }
         ],
         "chartPill": "AI menemukan 3 rekomendasi ideal"
       },
       {
         "number": "02",
-        "title": "Rencanakan Tanpa Hambatan",
-        "subheading": "Validasi Tanpa Pelanggaran oleh Rule Guardian",
+        "title": "Rencanakan tanpa hambatan",
+        "subheading": "Pemeriksaan tanpa pelanggaran oleh Rule Guardian",
         "description": "Rule Guardian memeriksa rute dan tempat secara otomatis. Menjamin nol pelanggaran terhadap kebutuhan wajib anggota.",
         "cta": "Jelajahi langkah ini",
-        "chartTitle": "Validasi Syarat Wajib Rombongan",
+        "chartTitle": "Pemeriksaan syarat wajib rombongan",
         "chartItems": [
           {
-            "label": "Validasi Makanan & Diet Khusus",
-            "val": "100%"
+            "label": "Pemeriksaan makanan dan diet khusus",
+            "value": "100%"
           },
           {
-            "label": "Rute Aksesibel & Kursi Roda",
-            "val": "100%"
+            "label": "Rute ramah kursi roda",
+            "value": "100%"
           },
           {
-            "label": "Kenyamanan Waktu Istirahat",
-            "val": "96%"
+            "label": "Waktu istirahat yang nyaman",
+            "value": "96%"
           }
         ],
-        "chartPill": "0 Pelanggaran Syarat Wajib"
+        "chartPill": "0 pelanggaran syarat wajib"
       },
       {
         "number": "03",
-        "title": "Adaptasi Real Time di Lapangan",
-        "subheading": "Perencanaan Ulang Langsung & Penyeimbang Preferensi",
+        "title": "Menyesuaikan langsung di lapangan",
+        "subheading": "Penyusunan ulang langsung dan penyeimbang preferensi",
         "description": "Saat cuaca buruk atau ada anggota kelelahan, Companion langsung menyusun ulang rute secara adaptif tanpa mengorbankan siapapun.",
         "cta": "Jelajahi langkah ini",
-        "chartTitle": "Adaptasi Jadwal Otomatis",
+        "chartTitle": "Penyesuaian jadwal otomatis",
         "chartItems": [
           {
-            "label": "Respon Perubahan Cuaca",
-            "val": "Instan"
+            "label": "Respons perubahan cuaca",
+            "value": "Instan"
           },
           {
-            "label": "Rekomendasi Tempat Alternatif",
-            "val": "Siap"
+            "label": "Rekomendasi tempat alternatif",
+            "value": "Siap"
           },
           {
-            "label": "Titik Kumpul Darurat Rombongan",
-            "val": "Aktif"
+            "label": "Titik kumpul darurat rombongan",
+            "value": "Aktif"
           }
         ],
-        "chartPill": "Penyesuaian Real Time Berhasil"
+        "chartPill": "Penyesuaian langsung aktif"
       }
     ]
   },
   "offline": {
-    "titlePart1": "Sinyal Bisa Hilang.",
-    "titlePart2": "Rombongan Tetap Terhubung.",
+    "titlePart1": "Sinyal bisa hilang.",
+    "titlePart2": "Rombongan tetap terhubung.",
     "description": "Seluruh itinerary, peta rute, kontak darurat, dan pembaca menu OCR tersimpan otomatis di ponsel sebelum berangkat. Tetap berfungsi penuh tanpa internet.",
     "points": [
       "Peta rute offline & itinerary adaptif",
       "Check in antar anggota rombongan tanpa sinyal",
       "Dokumen perjalanan & kontak darurat siap 100%"
     ],
-    "cta": "Coba Fitur Offline",
-    "statusPill": "Semua Anggota Terhubung",
+    "cta": "Coba fitur offline",
+    "statusPill": "Semua anggota terhubung",
     "subStatus": "Tersinkronisasi lokal · Tanpa internet",
     "offlineCard": {
       "title": "Offline",
       "body": "Tetap terhubung"
     },
     "calmCard": {
-      "title": "Travel calm",
+      "title": "Tetap tenang",
       "body": "Berfungsi tanpa sinyal"
     },
     "phone": {
@@ -129,14 +128,14 @@
       "saved": "Tersimpan",
       "destination": "Pine Ridge Camp",
       "network": "Peer-to-peer aktif",
-      "checkIn": "Saya Bersama Rombongan"
+      "checkIn": "Saya bersama rombongan"
     }
   },
   "cta": {
-    "heading": "Siap Merencanakan Liburan Rombongan yang Nyaman?",
+    "heading": "Siap merencanakan liburan rombongan yang nyaman?",
     "description": "Mulai susun rencana rombongan inklusif pertamamu dalam 60 detik tanpa perlu pendaftaran rumit.",
-    "ctaPrimary": "Mulai Rencana Sekarang",
-    "ctaSecondary": "Pelajari Mode Offline",
-    "note": "100% Gratis . PWA Siap Diinstall ke HP"
+    "ctaPrimary": "Mulai rencana sekarang",
+    "ctaSecondary": "Pelajari mode offline",
+    "note": "100% gratis · Siap dipasang di ponsel"
   }
 }

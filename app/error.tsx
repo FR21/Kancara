@@ -1,9 +1,9 @@
 "use client";
 
 import { useEffect } from "react";
-import { ErrorState } from "@/components/ui/error-state";
+import { ErrorState } from "@/components/ui/ErrorState";
 
-export default function Error({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
+export default function ErrorPage({ error, retry }: { error: Error & { digest?: string }; retry: () => void }) {
   useEffect(() => {
     console.error(error);
   }, [error]);

@@ -1,7 +1,6 @@
 {
   "title": "Packing list",
   "open": "Packing list",
-  "openHint": "Built from the weather and each member's needs.",
   "back": "Itinerary",
   "loading": "Loading the packing list",
   "error": "The packing list couldn't be loaded. Check your connection, then try again.",
@@ -20,7 +19,8 @@
     "all": "All",
     "todo": "Not packed",
     "essential": "Essential",
-    "weather": "For the weather"
+    "weather": "For the weather",
+    "option": "{name} ({count})"
   },
   "empty": {
     "todo": "Everything is in the bag.",

@@ -19,7 +19,6 @@
   },
   "card": {
     "untitled": "Untitled trip",
-    "routeTo": "to",
     "noRoute": "No route yet",
     "noDates": "No dates yet",
     "noMembers": "No members yet",
@@ -80,7 +79,7 @@
     "sectionMissing": "not filled in yet",
     "openItinerary": "View itinerary",
     "openSummary": "View summary",
-    "actions": "Trip actions"
+    "more": "More actions for {name}"
   },
   "menu": {
     "duplicate": "Duplicate",
@@ -123,7 +122,9 @@
     "activeTitle": "No trips yet.",
     "activeBody": "Bring everyone along, with no one left behind.",
     "history": "Trips you've finished will be kept here.",
-    "search": "No trips match."
+    "search": "No trips match.",
+    "searchTitle": "No trips match",
+    "historyTitle": "No past trips yet"
   },
   "loading": "Loading trips",
   "error": "The trip list couldn't be loaded. Check your connection, then try again.",
@@ -141,9 +142,15 @@
     "generateFailed": "The itinerary couldn't be created. Check your connection, then try again.",
     "changeFailed": "The change wasn't saved. Check your connection, then try again."
   },
-  "placeholder": {
-    "summary": "Trip summary",
-    "soon": "This page is being prepared."
+  "loadMore": "Show more",
+  "tools": {
+    "label": "Trip tools",
+    "packing": "Packing list",
+    "help": "Help",
+    "menuScan": "Scan a menu",
+    "translator": "Translator",
+    "fieldPass": "Field pass",
+    "recap": "Trip recap"
   },
-  "loadMore": "Show more"
+  "savedProfiles": "Saved profiles"
 }

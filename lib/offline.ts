@@ -1,4 +1,4 @@
-import { PUSH_SCOPE } from "./api/push";
+import { PUSH_SCOPE } from "@/lib/client/push";
 import { type PackingState, parsePacking } from "./plan-draft";
 
 const PENDING_PREFIX = "kancara-packing-pending:";
@@ -24,8 +24,22 @@ export function registerOfflineSupport() {
   navigator.serviceWorker.register("/sw.js", { updateViaCache: "none" }).catch(() => undefined);
 }
 
-/** Forgets every page and answer kept for offline use. Called on sign-out, since they belong to that person. */
+// What this device keeps for itself rather than for the person signed in: the language and the theme.
+const DEVICE_KEYS = ["kancara-locale", "kancara-theme"];
+
+/**
+ * Forgets every page and answer kept for offline use, and everything the app stored in this browser for the
+ * person (plan drafts with health notes, help packs with phone numbers, saved profiles, split bills). Called on
+ * sign-out, since all of it belongs to that person; the language and the theme stay with the device.
+ */
 export async function clearOfflineCaches() {
+  try {
+    Object.keys(localStorage)
+      .filter((key) => /^kancara[-_]/.test(key) && !DEVICE_KEYS.includes(key))
+      .forEach((key) => localStorage.removeItem(key));
+  } catch {
+    // No storage here: nothing was kept.
+  }
   try {
     navigator.serviceWorker?.controller?.postMessage("clear");
     const keys = await caches.keys();

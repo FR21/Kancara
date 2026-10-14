@@ -1,356 +1,197 @@
 import "server-only";
-import { Prisma } from "@prisma/client";
 import type { Viewer } from "@/lib/account";
+import type { MemoryAuthor, MemoryPage, TripMemory } from "@/lib/client/trip-memories";
+import { deleteObject, putObject } from "@/lib/object-storage";
 import { prisma } from "@/lib/prisma";
-import { deleteObject, putObject } from "@/lib/storage";
 
-export type TripMemory = {
-  id: string;
-  tripId: string;
+export type MemoryInput = {
+  placeTitle: string;
+  dayNumber: number;
+  note: string;
+  rating: number | null;
+  /** The member the memory is from, when someone records it for them. Empty means the viewer. */
+  authorName: string;
+};
+export type MemoryPhoto = { content: ArrayBuffer; extension: string; contentType: string };
+export type RemoveResult = "removed" | "notFound" | "refused";
+
+export const MAX_PLACE_TITLE = 100;
+export const MAX_NOTE = 1000;
+export const MAX_AUTHOR_NAME = 50;
+export const MAX_DAY_NUMBER = 366;
+const PAGE_SIZE = 24;
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+type TripAccess = { tripId: string; workspaceId: string; organizer: boolean };
+type MemoryRecord = {
+  tripMemoryId: string;
   userId: string;
   authorName: string;
   placeTitle: string;
   dayNumber: number;
   note: string;
-  rating: number;
-  photoKey?: string;
-  photoUrl?: string;
-  createdAt: string;
+  rating: number | null;
+  photoObjectKey: string | null;
+  createdAt: Date;
 };
 
-export type TripExpense = {
-  id: string;
-  tripId: string;
-  title: string;
-  amount: number;
-  paidBy: string;
-  paidById?: string;
-  sharedBy: string[];
-  receiptKey?: string;
-  receiptUrl?: string;
-  createdAt: string;
-};
-
-export type TripSummaryData = {
-  memories: TripMemory[];
-  expenses: TripExpense[];
-  settledMap: Record<string, boolean>;
-};
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
-
-function getDraftObject(planDraft: unknown): Record<string, unknown> {
-  if (typeof planDraft === "object" && planDraft !== null && !Array.isArray(planDraft)) {
-    return planDraft as Record<string, unknown>;
-  }
-  return {};
-}
-
-function parseMemories(raw: unknown): TripMemory[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.flatMap((item): TripMemory[] => {
-    if (typeof item !== "object" || item === null) return [];
-    const rec = item as Record<string, unknown>;
-    if (typeof rec.id !== "string" || typeof rec.placeTitle !== "string") return [];
-    return [
-      {
-        id: rec.id,
-        tripId: typeof rec.tripId === "string" ? rec.tripId : "",
-        userId: typeof rec.userId === "string" ? rec.userId : "",
-        authorName: typeof rec.authorName === "string" ? rec.authorName : "Member",
-        placeTitle: rec.placeTitle,
-        dayNumber: typeof rec.dayNumber === "number" ? rec.dayNumber : 1,
-        note: typeof rec.note === "string" ? rec.note : "",
-        rating: typeof rec.rating === "number" ? rec.rating : 5,
-        photoKey: typeof rec.photoKey === "string" ? rec.photoKey : undefined,
-        photoUrl: typeof rec.photoUrl === "string" ? rec.photoUrl : undefined,
-        createdAt: typeof rec.createdAt === "string" ? rec.createdAt : new Date().toISOString(),
-      },
-    ];
-  });
-}
-
-function parseExpenses(raw: unknown): TripExpense[] {
-  if (!Array.isArray(raw)) return [];
-  return raw.flatMap((item): TripExpense[] => {
-    if (typeof item !== "object" || item === null) return [];
-    const rec = item as Record<string, unknown>;
-    if (typeof rec.id !== "string" || typeof rec.title !== "string" || typeof rec.amount !== "number") return [];
-    return [
-      {
-        id: rec.id,
-        tripId: typeof rec.tripId === "string" ? rec.tripId : "",
-        title: rec.title,
-        amount: rec.amount,
-        paidBy: typeof rec.paidBy === "string" ? rec.paidBy : "Saya",
-        paidById: typeof rec.paidById === "string" ? rec.paidById : undefined,
-        sharedBy: Array.isArray(rec.sharedBy) ? rec.sharedBy.filter((s): s is string => typeof s === "string") : [],
-        receiptKey: typeof rec.receiptKey === "string" ? rec.receiptKey : undefined,
-        receiptUrl: typeof rec.receiptUrl === "string" ? rec.receiptUrl : undefined,
-        createdAt: typeof rec.createdAt === "string" ? rec.createdAt : new Date().toISOString(),
-      },
-    ];
-  });
-}
-
-function parseSettledMap(raw: unknown): Record<string, boolean> {
-  if (typeof raw !== "object" || raw === null || Array.isArray(raw)) return {};
-  const res: Record<string, boolean> = {};
-  for (const [key, val] of Object.entries(raw as Record<string, unknown>)) {
-    if (typeof val === "boolean") res[key] = val;
-  }
-  return res;
-}
-
-/** Get all summary data (memories, expenses, settlements) for a trip */
-export async function getTripSummaryData(viewer: Viewer, tripId: string): Promise<TripSummaryData | null> {
+// Everyone in the group shares one album: the organizer, whose workspace holds the trip, and every member who
+// joined it with their own account. Memories live in the trip's workspace, whoever wrote them.
+async function findTrip(viewer: Viewer, tripId: string): Promise<TripAccess | null> {
   if (!UUID.test(tripId)) return null;
   const trip = await prisma.trip.findFirst({
-    where: { tripId, workspaceId: viewer.workspaceId, deletedAt: null },
-    select: { planDraft: true },
+    where: {
+      tripId,
+      deletedAt: null,
+      OR: [{ workspaceId: viewer.workspaceId }, { members: { some: { userId: viewer.userId, deletedAt: null } } }],
+    },
+    select: { tripId: true, workspaceId: true },
   });
   if (!trip) return null;
+  return { ...trip, organizer: trip.workspaceId === viewer.workspaceId };
+}
 
-  const draft = getDraftObject(trip.planDraft);
+/** The photo is private, so it is served through the API, which checks the viewer may see it. */
+function photoPath(tripId: string, memoryId: string): string {
+  return `/api/trips/${tripId}/memories/${memoryId}/photo`;
+}
+
+function toMemory(record: MemoryRecord, tripId: string, viewer: Viewer, trip: TripAccess): TripMemory {
   return {
-    memories: parseMemories(draft.memories),
-    expenses: parseExpenses(draft.expenses),
-    settledMap: parseSettledMap(draft.settledMap),
+    id: record.tripMemoryId,
+    authorName: record.authorName,
+    placeTitle: record.placeTitle,
+    dayNumber: record.dayNumber,
+    note: record.note,
+    rating: record.rating,
+    photoUrl: record.photoObjectKey ? photoPath(tripId, record.tripMemoryId) : null,
+    createdAt: record.createdAt.toISOString(),
+    removable: trip.organizer || record.userId === viewer.userId,
   };
 }
 
-/** Add a memory moment, optionally uploading photo to Neon S3 Object Storage */
+const MEMORY_FIELDS = {
+  tripMemoryId: true,
+  userId: true,
+  authorName: true,
+  placeTitle: true,
+  dayNumber: true,
+  note: true,
+  rating: true,
+  photoObjectKey: true,
+  createdAt: true,
+} as const;
+
+/**
+ * One page of a trip's memories, newest first, optionally from one author only, with every author and how many
+ * memories each has. Null when the viewer cannot see the trip.
+ */
+export async function listTripMemories(
+  viewer: Viewer,
+  tripId: string,
+  offset: number,
+  author: string | null,
+): Promise<MemoryPage | null> {
+  const trip = await findTrip(viewer, tripId);
+  if (!trip) return null;
+
+  const scope = { tripId: trip.tripId, workspaceId: trip.workspaceId, deletedAt: null };
+  const [records, groups] = await Promise.all([
+    prisma.tripMemory.findMany({
+      where: author === null ? scope : { ...scope, authorName: author },
+      orderBy: [{ createdAt: "desc" }, { tripMemoryId: "asc" }],
+      skip: offset,
+      take: PAGE_SIZE + 1,
+      select: MEMORY_FIELDS,
+    }),
+    prisma.tripMemory.groupBy({ by: ["authorName"], where: scope, _count: { _all: true } }),
+  ]);
+
+  const authors: MemoryAuthor[] = groups
+    .map((group) => ({ name: group.authorName, count: group._count._all }))
+    .sort((first, second) => first.name.localeCompare(second.name));
+  return {
+    memories: records.slice(0, PAGE_SIZE).map((record) => toMemory(record, trip.tripId, viewer, trip)),
+    authors,
+    total: authors.reduce((sum, entry) => sum + entry.count, 0),
+    // One more row than the page is asked for; when it comes back there is a next page.
+    nextOffset: records.length > PAGE_SIZE ? offset + PAGE_SIZE : null,
+  };
+}
+
+/**
+ * Records a memory for a trip the viewer belongs to. The photo goes to object storage first, under the memory's
+ * own id, and is removed again when the row cannot be written, so no file is left that nothing points at.
+ */
 export async function addTripMemory(
   viewer: Viewer,
   tripId: string,
-  input: {
-    placeTitle: string;
-    dayNumber: number;
-    note: string;
-    rating: number;
-    authorName?: string;
-  },
-  photo?: {
-    buffer: ArrayBuffer;
-    extension: string;
-    mimeType: string;
-  },
+  input: MemoryInput,
+  photo: MemoryPhoto | null,
 ): Promise<TripMemory | null> {
-  if (!UUID.test(tripId)) return null;
-
-  const trip = await prisma.trip.findFirst({
-    where: { tripId, workspaceId: viewer.workspaceId, deletedAt: null },
-    select: { planDraft: true },
-  });
+  const trip = await findTrip(viewer, tripId);
   if (!trip) return null;
 
-  const momentId = crypto.randomUUID();
-  let photoKey: string | undefined = undefined;
-  let photoUrl: string | undefined = undefined;
+  const memoryId = crypto.randomUUID();
+  const photoObjectKey = photo ? `trips/${trip.tripId}/memories/${viewer.userId}/${memoryId}.${photo.extension}` : null;
+  if (photo && photoObjectKey) await putObject(photoObjectKey, photo.content, photo.contentType, false);
 
-  // Upload to Google Cloud Storage if photo is attached
-  // Folder structure: trips/{tripId}/memories/{userId}/{momentId}.{ext}
-  if (photo) {
-    photoKey = `trips/${tripId}/memories/${viewer.userId}/${momentId}.${photo.extension}`;
-    photoUrl = await putObject(photoKey, photo.buffer, photo.mimeType);
-  }
-
-  // Resolve author name
-  let authorName = input.authorName?.trim();
+  let authorName = input.authorName;
   if (!authorName) {
-    const user = await prisma.user.findUnique({
-      where: { userId: viewer.userId },
-      select: { displayName: true },
+    const user = await prisma.user.findUnique({ where: { userId: viewer.userId }, select: { displayName: true } });
+    authorName = user?.displayName?.trim().slice(0, MAX_AUTHOR_NAME) ?? "";
+  }
+
+  try {
+    const record = await prisma.tripMemory.create({
+      data: {
+        tripMemoryId: memoryId,
+        workspaceId: trip.workspaceId,
+        tripId: trip.tripId,
+        userId: viewer.userId,
+        authorName,
+        placeTitle: input.placeTitle,
+        dayNumber: input.dayNumber,
+        note: input.note,
+        rating: input.rating,
+        photoObjectKey,
+      },
+      select: MEMORY_FIELDS,
     });
-    authorName = user?.displayName || "Saya";
+    return toMemory(record, trip.tripId, viewer, trip);
+  } catch (caught) {
+    if (photoObjectKey) await deleteObject(photoObjectKey).catch(() => undefined);
+    throw caught;
   }
-
-  const newMemory: TripMemory = {
-    id: momentId,
-    tripId,
-    userId: viewer.userId,
-    authorName,
-    placeTitle: input.placeTitle.trim().slice(0, 100),
-    dayNumber: input.dayNumber || 1,
-    note: input.note.trim().slice(0, 1000),
-    rating: Math.max(1, Math.min(5, input.rating || 5)),
-    photoKey,
-    photoUrl,
-    createdAt: new Date().toISOString(),
-  };
-
-  const draft = getDraftObject(trip.planDraft);
-  const currentMemories = parseMemories(draft.memories);
-  const updatedMemories = [newMemory, ...currentMemories];
-
-  await prisma.trip.update({
-    where: { tripId },
-    data: {
-      planDraft: {
-        ...draft,
-        memories: updatedMemories,
-      } as unknown as Prisma.InputJsonValue,
-    },
-  });
-
-  return newMemory;
 }
 
-/** Delete a memory and purge its photo from S3 if present */
-export async function deleteTripMemory(viewer: Viewer, tripId: string, memoryId: string): Promise<boolean> {
-  if (!UUID.test(tripId)) return false;
+/**
+ * Hides a memory from the album. Whoever recorded it may, and so may the organizer. The photo stays in storage
+ * with the row, as soft deletion keeps everything; the API stops serving it at once.
+ */
+export async function removeTripMemory(viewer: Viewer, tripId: string, memoryId: string): Promise<RemoveResult> {
+  if (!UUID.test(memoryId)) return "notFound";
+  const trip = await findTrip(viewer, tripId);
+  if (!trip) return "notFound";
 
-  const trip = await prisma.trip.findFirst({
-    where: { tripId, workspaceId: viewer.workspaceId, deletedAt: null },
-    select: { planDraft: true },
-  });
-  if (!trip) return false;
+  const where = { tripMemoryId: memoryId, tripId: trip.tripId, workspaceId: trip.workspaceId, deletedAt: null };
+  const memory = await prisma.tripMemory.findFirst({ where, select: { userId: true } });
+  if (!memory) return "notFound";
+  if (!trip.organizer && memory.userId !== viewer.userId) return "refused";
 
-  const draft = getDraftObject(trip.planDraft);
-  const currentMemories = parseMemories(draft.memories);
-  const target = currentMemories.find((m) => m.id === memoryId);
-  if (!target) return false;
-
-  // Delete from S3 if it had a photo
-  if (target.photoKey) {
-    await deleteObject(target.photoKey).catch(() => undefined);
-  }
-
-  const updatedMemories = currentMemories.filter((m) => m.id !== memoryId);
-  await prisma.trip.update({
-    where: { tripId },
-    data: {
-      planDraft: {
-        ...draft,
-        memories: updatedMemories,
-      } as unknown as Prisma.InputJsonValue,
-    },
-  });
-
-  return true;
+  const { count } = await prisma.tripMemory.updateMany({ where, data: { deletedAt: new Date() } });
+  return count === 0 ? "notFound" : "removed";
 }
 
-/** Add a trip shared expense with optional receipt in S3 */
-export async function addTripExpense(
-  viewer: Viewer,
-  tripId: string,
-  input: {
-    title: string;
-    amount: number;
-    paidBy: string;
-    sharedBy: string[];
-  },
-  receipt?: {
-    buffer: ArrayBuffer;
-    extension: string;
-    mimeType: string;
-  },
-): Promise<TripExpense | null> {
-  if (!UUID.test(tripId)) return null;
-
-  const trip = await prisma.trip.findFirst({
-    where: { tripId, workspaceId: viewer.workspaceId, deletedAt: null },
-    select: { planDraft: true },
-  });
+/** Where a memory's photo is kept, when the viewer may see it and it has one. */
+export async function memoryPhotoKey(viewer: Viewer, tripId: string, memoryId: string): Promise<string | null> {
+  if (!UUID.test(memoryId)) return null;
+  const trip = await findTrip(viewer, tripId);
   if (!trip) return null;
 
-  const expenseId = crypto.randomUUID();
-  let receiptKey: string | undefined = undefined;
-  let receiptUrl: string | undefined = undefined;
-
-  // Upload receipt to Google Cloud Storage: trips/{tripId}/receipts/{userId}/{expenseId}.{ext}
-  if (receipt) {
-    receiptKey = `trips/${tripId}/receipts/${viewer.userId}/${expenseId}.${receipt.extension}`;
-    receiptUrl = await putObject(receiptKey, receipt.buffer, receipt.mimeType);
-  }
-
-  const newExpense: TripExpense = {
-    id: expenseId,
-    tripId,
-    title: input.title.trim().slice(0, 100),
-    amount: Math.round(input.amount),
-    paidBy: input.paidBy.trim().slice(0, 50) || "Saya",
-    paidById: viewer.userId,
-    sharedBy: input.sharedBy.map((s) => s.trim().slice(0, 50)).filter(Boolean),
-    receiptKey,
-    receiptUrl,
-    createdAt: new Date().toISOString(),
-  };
-
-  const draft = getDraftObject(trip.planDraft);
-  const currentExpenses = parseExpenses(draft.expenses);
-  const updatedExpenses = [...currentExpenses, newExpense];
-
-  await prisma.trip.update({
-    where: { tripId },
-    data: {
-      planDraft: {
-        ...draft,
-        expenses: updatedExpenses,
-      } as unknown as Prisma.InputJsonValue,
-    },
+  const memory = await prisma.tripMemory.findFirst({
+    where: { tripMemoryId: memoryId, tripId: trip.tripId, workspaceId: trip.workspaceId, deletedAt: null },
+    select: { photoObjectKey: true },
   });
-
-  return newExpense;
-}
-
-/** Delete an expense and its receipt from S3 */
-export async function deleteTripExpense(viewer: Viewer, tripId: string, expenseId: string): Promise<boolean> {
-  if (!UUID.test(tripId)) return false;
-
-  const trip = await prisma.trip.findFirst({
-    where: { tripId, workspaceId: viewer.workspaceId, deletedAt: null },
-    select: { planDraft: true },
-  });
-  if (!trip) return false;
-
-  const draft = getDraftObject(trip.planDraft);
-  const currentExpenses = parseExpenses(draft.expenses);
-  const target = currentExpenses.find((e) => e.id === expenseId);
-  if (!target) return false;
-
-  if (target.receiptKey) {
-    await deleteObject(target.receiptKey).catch(() => undefined);
-  }
-
-  const updatedExpenses = currentExpenses.filter((e) => e.id !== expenseId);
-  await prisma.trip.update({
-    where: { tripId },
-    data: {
-      planDraft: {
-        ...draft,
-        expenses: updatedExpenses,
-      } as unknown as Prisma.InputJsonValue,
-    },
-  });
-
-  return true;
-}
-
-/** Update settlement status */
-export async function updateTripSettledMap(
-  viewer: Viewer,
-  tripId: string,
-  settledMap: Record<string, boolean>,
-): Promise<boolean> {
-  if (!UUID.test(tripId)) return false;
-
-  const trip = await prisma.trip.findFirst({
-    where: { tripId, workspaceId: viewer.workspaceId, deletedAt: null },
-    select: { planDraft: true },
-  });
-  if (!trip) return false;
-
-  const draft = getDraftObject(trip.planDraft);
-  await prisma.trip.update({
-    where: { tripId },
-    data: {
-      planDraft: {
-        ...draft,
-        settledMap,
-      } as unknown as Prisma.InputJsonValue,
-    },
-  });
-
-  return true;
+  return memory?.photoObjectKey ?? null;
 }

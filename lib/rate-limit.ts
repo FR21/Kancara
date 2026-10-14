@@ -24,15 +24,15 @@ function forgetIdleClients(now: number): void {
 }
 
 /**
- * Allows each client three requests a second to one API. Returns a 429
- * response to send back when the client is over the limit, otherwise null.
+ * Allows each client three requests a second to one API (or `perSecond` where a page needs more at once, such as
+ * the photos of a day's stops). Returns a 429 response to send back when the client is over the limit, otherwise null.
  */
-export function rateLimit(request: Request, api: string): Response | null {
+export function rateLimit(request: Request, api: string, perSecond = MAX_REQUESTS): Response | null {
   const now = Date.now();
   const key = `${api}:${clientOf(request)}`;
   const recent = (hitsByKey.get(key) ?? []).filter((time) => now - time < WINDOW_MS);
 
-  if (recent.length >= MAX_REQUESTS) {
+  if (recent.length >= perSecond) {
     hitsByKey.set(key, recent);
     return Response.json(
       { error: "Too many requests. Try again in a moment." },

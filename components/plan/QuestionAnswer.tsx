@@ -16,7 +16,6 @@ type QuestionAnswerProps = {
   selectedMemberId: string | null;
   inlineMemberPanel: boolean;
   onSelectMember: (id: string | null) => void;
-  onPicked: () => void;
 };
 
 export default function QuestionAnswer({
@@ -27,7 +26,6 @@ export default function QuestionAnswer({
   selectedMemberId,
   inlineMemberPanel,
   onSelectMember,
-  onPicked,
 }: QuestionAnswerProps) {
   const editorProps = { draft, dispatch, text };
 
@@ -51,6 +49,6 @@ export default function QuestionAnswer({
       />
     );
   }
-  if (question === "budget") return <BudgetEditor {...editorProps} onPicked={onPicked} />;
+  if (question === "budget") return <BudgetEditor {...editorProps} />;
   return <ExtrasEditor {...editorProps} />;
 }

@@ -1,5 +1,5 @@
 import Image from "next/image";
-import MemberAvatar from "@/components/plan/MemberAvatar";
+import MemberAvatar from "@/components/ui/MemberAvatar";
 
 type ProfilePhotoProps = {
   src: string | null;

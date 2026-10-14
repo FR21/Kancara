@@ -1,8 +1,8 @@
 {
-  "title": "Profil Saya",
+  "title": "Profil saya",
   "subtitle": "Kelola pengaturan dan preferensi akun Anda.",
-  "emailLabel": "Alamat Email",
-  "nameLabel": "Nama Tampilan",
+  "emailLabel": "Alamat email",
+  "nameLabel": "Nama tampilan",
   "namePlaceholder": "Masukkan nama Anda",
   "usernameLabel": "Username",
   "usernamePlaceholder": "@johndoe",
@@ -10,17 +10,17 @@
   "nationalityPlaceholder": "Cari negara",
   "ageLabel": "Umur",
   "agePlaceholder": "Contoh: 25",
-  "genderLabel": "Jenis Kelamin",
+  "genderLabel": "Jenis kelamin",
   "genderOptions": {
-    "none": "Pilih Jenis Kelamin",
+    "none": "Pilih jenis kelamin",
     "male": "Laki-laki",
     "female": "Perempuan",
     "other": "Lainnya",
     "preferNotToSay": "Tidak ingin menyebutkan"
   },
   "cancel": "Batal",
-  "saveButton": "Simpan Perubahan",
-  "saving": "Menyimpan...",
+  "saveButton": "Simpan perubahan",
+  "saving": "Menyimpan…",
   "logoutButton": "Keluar",
   "success": "Profil berhasil diperbarui!",
   "error": "Gagal memperbarui profil.",
@@ -41,5 +41,7 @@
   "dialLabel": "Kode negara",
   "phoneHint": "Dipakai rombonganmu untuk menghubungimu saat terpisah. Kode negara mengikuti asal negara.",
   "phoneError": "Nomor ini belum bisa dibaca. Periksa kode negara dan nomornya.",
+  "savedMembersLink": "Profil anggota rombongan",
+  "logoutError": "Belum berhasil keluar. Periksa koneksimu, lalu coba lagi.",
   "dismiss": "Tutup"
 }

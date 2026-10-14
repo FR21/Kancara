@@ -32,6 +32,8 @@
   --color-primary-800: #004649;
   --color-primary-900: #003133;
   --color-primary-950: #012526;
+  /* The deep night-teal under the call-to-action band and the offline card in dark surroundings. */
+  --color-night: #052b3b;
 
   --color-secondary-50: #ebfafd;
   --color-secondary-100: #d5f3f9;
@@ -144,7 +146,7 @@
     var(--color-neutral-100),
     color-mix(in srgb, var(--color-neutral-900) 50%, var(--color-neutral-950))
   );
-  --cta: light-dark(var(--color-primary-100), #052b3b);
+  --cta: light-dark(var(--color-primary-100), var(--color-night));
 
   --primary: light-dark(var(--color-primary-700), var(--color-primary-400));
   --primary-hover: light-dark(var(--color-primary-800), var(--color-primary-300));
@@ -212,11 +214,202 @@
 }
 
 /*
+ * Browsers without light-dark() (Safari before 17.5, Chrome before 123, Firefox before 120) drop every token
+ * above and would paint the app without color. They get the same two palettes from the system setting and
+ * data-theme instead. Generated from the tokens above: change a value there, change it here.
+ */
+@supports not (color: light-dark(#000, #fff)) {
+  :root {
+    --background: #ffffff;
+    --surface: var(--color-neutral-50);
+    --surface-muted: var(--color-neutral-100);
+    --border: var(--color-neutral-200);
+    --border-strong: var(--color-neutral-500);
+    --text: var(--color-neutral-900);
+    --text-muted: var(--color-neutral-600);
+    --section-muted: var(--color-neutral-100);
+    --cta: var(--color-primary-100);
+    --primary: var(--color-primary-700);
+    --primary-hover: var(--color-primary-800);
+    --on-primary: #ffffff;
+    --primary-subtle: var(--color-primary-50);
+    --on-primary-subtle: var(--color-primary-800);
+    --secondary: var(--color-secondary-500);
+    --secondary-hover: var(--color-secondary-400);
+    --on-secondary: var(--color-neutral-950);
+    --accent: var(--color-accent-300);
+    --accent-hover: var(--color-accent-400);
+    --on-accent: var(--color-neutral-950);
+    --error: var(--color-error-600);
+    --on-error: #ffffff;
+    --error-subtle: var(--color-error-50);
+    --on-error-subtle: var(--color-error-700);
+    --warning: var(--color-warning-700);
+    --on-warning: #ffffff;
+    --warning-subtle: var(--color-warning-50);
+    --on-warning-subtle: var(--color-warning-800);
+    --success: var(--color-success-700);
+    --on-success: #ffffff;
+    --success-subtle: var(--color-success-50);
+    --on-success-subtle: var(--color-success-800);
+    --info: var(--color-info-700);
+    --on-info: #ffffff;
+    --info-subtle: var(--color-info-50);
+    --on-info-subtle: var(--color-info-800);
+    --footer: var(--color-primary-800);
+    --footer-far: var(--color-primary-200);
+    --footer-mid: var(--color-primary-400);
+    --footer-border: var(--color-primary-700);
+    --globe-ocean: var(--color-primary-100);
+    --globe-land: #ffffff;
+    --globe-border: var(--color-primary-300);
+    --globe-visited-border: var(--color-accent-600);
+    --globe-glow: color-mix(in srgb, var(--color-secondary-400) 45%, transparent);
+    --globe-shade: rgb(0 49 51 / 0.2);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --background: var(--color-neutral-950);
+      --surface: var(--color-neutral-900);
+      --surface-muted: var(--color-neutral-800);
+      --border: var(--color-neutral-800);
+      --border-strong: var(--color-neutral-500);
+      --text: var(--color-neutral-50);
+      --text-muted: var(--color-neutral-400);
+      --section-muted: color-mix(in srgb, var(--color-neutral-900) 50%, var(--color-neutral-950));
+      --cta: var(--color-night);
+      --primary: var(--color-primary-400);
+      --primary-hover: var(--color-primary-300);
+      --on-primary: var(--color-neutral-950);
+      --primary-subtle: var(--color-primary-950);
+      --on-primary-subtle: var(--color-primary-200);
+      --secondary: var(--color-secondary-400);
+      --secondary-hover: var(--color-secondary-300);
+      --on-secondary: var(--color-neutral-950);
+      --accent: var(--color-accent-300);
+      --accent-hover: var(--color-accent-200);
+      --on-accent: var(--color-neutral-950);
+      --error: var(--color-error-400);
+      --on-error: var(--color-neutral-950);
+      --error-subtle: var(--color-error-950);
+      --on-error-subtle: var(--color-error-200);
+      --warning: var(--color-warning-400);
+      --on-warning: var(--color-neutral-950);
+      --warning-subtle: var(--color-warning-950);
+      --on-warning-subtle: var(--color-warning-200);
+      --success: var(--color-success-400);
+      --on-success: var(--color-neutral-950);
+      --success-subtle: var(--color-success-950);
+      --on-success-subtle: var(--color-success-200);
+      --info: var(--color-info-400);
+      --on-info: var(--color-neutral-950);
+      --info-subtle: var(--color-info-950);
+      --on-info-subtle: var(--color-info-200);
+      --footer: var(--color-primary-950);
+      --footer-far: var(--color-primary-800);
+      --footer-mid: var(--color-primary-900);
+      --footer-border: var(--color-primary-900);
+      --globe-ocean: var(--color-primary-900);
+      --globe-land: var(--color-primary-700);
+      --globe-border: var(--color-primary-500);
+      --globe-visited-border: var(--color-accent-100);
+      --globe-glow: color-mix(in srgb, var(--color-secondary-400) 55%, transparent);
+      --globe-shade: rgb(0 0 0 / 0.3);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --background: var(--color-neutral-950);
+    --surface: var(--color-neutral-900);
+    --surface-muted: var(--color-neutral-800);
+    --border: var(--color-neutral-800);
+    --border-strong: var(--color-neutral-500);
+    --text: var(--color-neutral-50);
+    --text-muted: var(--color-neutral-400);
+    --section-muted: color-mix(in srgb, var(--color-neutral-900) 50%, var(--color-neutral-950));
+    --cta: var(--color-night);
+    --primary: var(--color-primary-400);
+    --primary-hover: var(--color-primary-300);
+    --on-primary: var(--color-neutral-950);
+    --primary-subtle: var(--color-primary-950);
+    --on-primary-subtle: var(--color-primary-200);
+    --secondary: var(--color-secondary-400);
+    --secondary-hover: var(--color-secondary-300);
+    --on-secondary: var(--color-neutral-950);
+    --accent: var(--color-accent-300);
+    --accent-hover: var(--color-accent-200);
+    --on-accent: var(--color-neutral-950);
+    --error: var(--color-error-400);
+    --on-error: var(--color-neutral-950);
+    --error-subtle: var(--color-error-950);
+    --on-error-subtle: var(--color-error-200);
+    --warning: var(--color-warning-400);
+    --on-warning: var(--color-neutral-950);
+    --warning-subtle: var(--color-warning-950);
+    --on-warning-subtle: var(--color-warning-200);
+    --success: var(--color-success-400);
+    --on-success: var(--color-neutral-950);
+    --success-subtle: var(--color-success-950);
+    --on-success-subtle: var(--color-success-200);
+    --info: var(--color-info-400);
+    --on-info: var(--color-neutral-950);
+    --info-subtle: var(--color-info-950);
+    --on-info-subtle: var(--color-info-200);
+    --footer: var(--color-primary-950);
+    --footer-far: var(--color-primary-800);
+    --footer-mid: var(--color-primary-900);
+    --footer-border: var(--color-primary-900);
+    --globe-ocean: var(--color-primary-900);
+    --globe-land: var(--color-primary-700);
+    --globe-border: var(--color-primary-500);
+    --globe-visited-border: var(--color-accent-100);
+    --globe-glow: color-mix(in srgb, var(--color-secondary-400) 55%, transparent);
+    --globe-shade: rgb(0 0 0 / 0.3);
+  }
+}
+
+/*
  * dark: variant follows data-theme (set before first paint by the script in
  * app/layout.tsx). Only needed for things tokens can't express, such as
  * swapping icons. Colors switch on their own.
  */
 @custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
+/*
+ * Corners. One rule for every corner in the app: an inner corner is the outer corner minus the padding between
+ * them. A surface (card, panel, list frame, sheet, dialog) keeps its content --surface-pad from its edge and
+ * rounds its corners to that padding plus 8px, so a field, image, or box inside it at that padding sits
+ * concentric with it (8px, rounded-lg). Change the padding and the corner follows; surfaces side by side share
+ * their corner because they share the padding.
+ *
+ *   p-surface, px-surface, ...   the padding a surface's corner assumes: 16px on a phone, 24px from 640px
+ *   rounded-surface (-t, -b)     the surface's corner: 24px on a phone, 32px from 640px
+ *   surface-compact              a tighter surface for repeated standalone items: 12px padding, 20px corner
+ *   rounded-lg                   anything inside a surface: fields, the button on a field's row, images, boxes
+ *   rounded-media (12px)         a stop's photo or icon tile; the row padded around it takes rounded-media-frame
+ *   rounded-full                 pills: buttons, chips, badges, toggles, avatars
+ *   rounded-sm                   only the focus outline of an inline text link
+ */
+:root {
+  --surface-pad: 1rem;
+}
+
+@media (width >= 40rem) {
+  :root {
+    --surface-pad: 1.5rem;
+  }
+}
+
+@utility surface-compact {
+  --surface-pad: 0.75rem;
+}
+
+/* A list arriving: each item 40ms after the one before, at most eight steps. Set --item-index on each item. */
+@utility animate-list-in {
+  animation: var(--animate-message-in);
+  animation-delay: calc(min(var(--item-index, 0), 8) * 40ms);
+}
 
 /* Switching theme: the new colours spread from the toggle as a growing circle with a soft rim. lib/theme.ts
    animates the size and place of the mask below. The browser's own cross-fade is turned off so the old theme
@@ -235,6 +428,12 @@
 
 /* Expose semantic tokens as Tailwind utilities (bg-primary, text-text-muted, ...) */
 @theme inline {
+  /* Inline, so each element computes them from its own --surface-pad (see Corners above). 0.5rem is rounded-lg. */
+  --radius-surface: calc(var(--surface-pad) + 0.5rem);
+  /* A 12px photo or icon tile, and the row around it: its padding plus 12px. */
+  --radius-media: 0.75rem;
+  --radius-media-frame: calc(var(--surface-pad) + 0.75rem);
+  --spacing-surface: var(--surface-pad);
   --color-background: var(--background);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
@@ -357,11 +556,7 @@
   --animate-pop-in: pop-in 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-sheet-up: sheet-up 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-float: float 5s ease-in-out infinite;
-  --animate-shadow-breathe: shadow-breathe 5s ease-in-out infinite;
-  --animate-hop: hop 700ms cubic-bezier(0.23, 1, 0.32, 1);
-  --animate-fly-in: fly-in 900ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-grow-x: grow-x 700ms cubic-bezier(0.23, 1, 0.32, 1) both;
-  --animate-turn: turn 12s linear infinite;
   --animate-lock-nudge: lock-nudge 400ms ease-in-out;
   --animate-slide-progress: slide-progress 6s linear both;
   --animate-needle-sway: needle-sway 4s ease-in-out infinite;
@@ -395,11 +590,11 @@
 
   @keyframes ticket-in {
     from {
-      clip-path: inset(0 0 100% 0 round 1.5rem);
+      clip-path: inset(0 0 100% 0 round calc(var(--surface-pad) + 0.5rem));
       translate: 0 -1rem;
     }
     to {
-      clip-path: inset(0 0 0 0 round 1.5rem);
+      clip-path: inset(0 0 0 0 round calc(var(--surface-pad) + 0.5rem));
       translate: 0 0;
     }
   }
@@ -449,14 +644,6 @@
     }
   }
 
-  /* The plane on a route line arriving from where the trip starts. */
-  @keyframes fly-in {
-    from {
-      opacity: 0;
-      translate: -3rem 0;
-    }
-  }
-
   /* A progress fill growing from the left edge. Pair with origin-left. */
   @keyframes grow-x {
     from {
@@ -468,34 +655,6 @@
   @keyframes float {
     50% {
       translate: 0 -0.5rem;
-    }
-  }
-
-  /* The shadow under something that floats: smaller and fainter while it is at its highest. */
-  @keyframes shadow-breathe {
-    50% {
-      opacity: 0.6;
-      scale: 0.8;
-    }
-  }
-
-  /* A jump with one small bounce on landing. */
-  @keyframes hop {
-    30% {
-      translate: 0 -1.5rem;
-    }
-    60% {
-      translate: 0 0;
-    }
-    80% {
-      translate: 0 -0.375rem;
-    }
-  }
-
-  /* One slow full turn, for a mark that means "still in progress". */
-  @keyframes turn {
-    to {
-      rotate: 360deg;
     }
   }
 
@@ -589,8 +748,6 @@
  * footer-settle  layer drifts from --footer-depth to 0 (parallax depth)
  * footer-draw    reveals left to right, like a route being drawn
  * footer-arrive  fades and rises in near the end of the range
- * footer-flow    dotted route marches toward the mascot (time-based loop,
- *                runs only while an ancestor has [data-in-view])
  */
 @keyframes footer-settle {
   from {
@@ -615,13 +772,6 @@
   65% {
     opacity: 0;
     transform: translateY(0.75rem) scale(0.85);
-  }
-}
-
-/* One period of the route's dash pattern (strokeDasharray "0.5 9"). */
-@keyframes footer-flow {
-  to {
-    stroke-dashoffset: -9.5;
   }
 }
 
@@ -666,15 +816,6 @@
   }
 }
 
-@utility footer-flow {
-  @media (prefers-reduced-motion: no-preference) {
-    animation: footer-flow 1s linear infinite paused;
-
-    [data-in-view] & {
-      animation-play-state: running;
-    }
-  }
-}
 
 @property --glow-size {
   syntax: "<length>";
@@ -731,12 +872,6 @@
   }
   to {
     translate: 0 var(--parallax-to, 0px);
-  }
-}
-
-@keyframes marquee {
-  to {
-    translate: -50% 0;
   }
 }
 
@@ -867,22 +1002,6 @@
   }
 }
 
-@utility marquee {
-  animation: marquee 36s linear infinite paused;
-
-  [data-in-view] & {
-    animation-play-state: running;
-  }
-
-  [data-in-view] &:hover {
-    animation-play-state: paused;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    animation: none;
-  }
-}
-
 /* ---------- Base styles ---------- */
 @layer base {
 
@@ -945,6 +1064,7 @@
 }
 
 @utility avatar-hair {
+  fill: color-mix(in oklab, var(--avatar-tone) 45%, var(--color-neutral-950));
   fill: light-dark(
     color-mix(in oklab, var(--avatar-tone) 45%, var(--color-neutral-950)),
     color-mix(in oklab, var(--avatar-tone) 60%, var(--color-neutral-700))
@@ -953,6 +1073,7 @@
 
 @utility avatar-hair-line {
   fill: none;
+  stroke: color-mix(in oklab, var(--avatar-tone) 45%, var(--color-neutral-950));
   stroke: light-dark(
     color-mix(in oklab, var(--avatar-tone) 45%, var(--color-neutral-950)),
     color-mix(in oklab, var(--avatar-tone) 60%, var(--color-neutral-700))

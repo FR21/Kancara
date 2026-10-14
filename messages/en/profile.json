@@ -1,8 +1,8 @@
 {
-  "title": "My Profile",
+  "title": "My profile",
   "subtitle": "Manage your account settings and preferences.",
-  "emailLabel": "Email Address",
-  "nameLabel": "Display Name",
+  "emailLabel": "Email address",
+  "nameLabel": "Display name",
   "namePlaceholder": "Enter your name",
   "usernameLabel": "Username",
   "usernamePlaceholder": "@johndoe",
@@ -12,16 +12,16 @@
   "agePlaceholder": "e.g. 25",
   "genderLabel": "Gender",
   "genderOptions": {
-    "none": "Select Gender",
+    "none": "Select gender",
     "male": "Male",
     "female": "Female",
     "other": "Other",
     "preferNotToSay": "Prefer not to say"
   },
   "cancel": "Cancel",
-  "saveButton": "Save Changes",
-  "saving": "Saving...",
-  "logoutButton": "Log Out",
+  "saveButton": "Save changes",
+  "saving": "Saving…",
+  "logoutButton": "Log out",
   "success": "Profile updated successfully!",
   "error": "Failed to update profile.",
   "fallbackName": "User",
@@ -41,5 +41,7 @@
   "dialLabel": "Country code",
   "phoneHint": "Your group uses it to reach you if you get separated. The country code follows your country of origin.",
   "phoneError": "This number can't be read yet. Check the country code and the number.",
+  "savedMembersLink": "Saved member profiles",
+  "logoutError": "Couldn't log out. Check your connection, then try again.",
   "dismiss": "Dismiss"
 }

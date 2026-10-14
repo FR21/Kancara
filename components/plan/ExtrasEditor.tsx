@@ -1,18 +1,20 @@
 "use client";
 
-import { Check, Plus } from "lucide-react";
+import { Check, Plus, X } from "lucide-react";
 import { type Dispatch, useState } from "react";
 import type { Messages } from "@/lib/messages";
 import {
   type ExtraTextKey,
   type PlanDraft,
   type PlanDraftAction,
+  fillTemplate,
   MAX_NOTES_CHARS,
   sameText,
   TRANSPORT_KEYS,
 } from "@/lib/plan-draft";
-import CustomAdd, { CustomChip } from "./CustomEntries";
-import { choiceClass, FIELD_LABEL, INPUT } from "./styles";
+import CustomAdd, { CustomChip } from "@/components/plan/CustomAdd";
+import IconButton from "@/components/ui/IconButton";
+import { buttonClass, choiceClass, FIELD_LABEL, INPUT, TEXTAREA } from "@/components/ui/styles";
 
 type ExtrasEditorProps = {
   draft: PlanDraft;
@@ -48,6 +50,11 @@ export default function ExtrasEditor({ draft, dispatch, text }: ExtrasEditorProp
   const closedGroups = GROUPS.filter((group) => !isOpen(group));
   const openGroups = GROUPS.filter(isOpen);
 
+  const removeGroup = (group: Group) => {
+    group.fields.forEach((field) => dispatch({ type: "setExtraText", key: field, value: "" }));
+    setOpened((current) => current.filter((key) => key !== group.key));
+  };
+
   // Typing the name of a listed choice picks that choice instead of adding a twin of it.
   const addTransport = (value: string) => {
     const listed = TRANSPORT_KEYS.find((transport) => sameText(text.transport[transport], value));
@@ -79,12 +86,12 @@ export default function ExtrasEditor({ draft, dispatch, text }: ExtrasEditorProp
             <CustomChip
               key={transport}
               label={transport}
-              text={text.custom}
+              removeLabel={fillTemplate(text.custom.remove, { name: transport })}
               onRemove={() => dispatch({ type: "removeCustomTransport", value: transport })}
             />
           ))}
         </div>
-        <div className="mt-3">
+        <div className="mt-4">
           <CustomAdd
             id="extra-custom-transport"
             label={text.custom.transport}
@@ -96,32 +103,50 @@ export default function ExtrasEditor({ draft, dispatch, text }: ExtrasEditorProp
         </div>
       </fieldset>
 
-      {openGroups.map((group) => (
-        <div
-          key={group.key}
-          className={`motion-safe:animate-message-in ${group.kind === "time" ? "grid grid-cols-2 gap-4" : ""}`}
-        >
-          {group.fields.map((field) => {
-            const placeholderKey = PLACEHOLDERS[field];
-            return (
-              <div key={field}>
-                <label htmlFor={`extra-${field}`} className={FIELD_LABEL}>
-                  {text.pass[field]}
+      {openGroups.map((group) => {
+        const title = text.extrasAdd[group.key];
+        const single = group.fields.length === 1;
+        return (
+          <div key={group.key} className="motion-safe:animate-message-in">
+            {/* The title row carries the way out: the field's own label when the group is one field. */}
+            <div className="-my-2 flex items-center justify-between gap-2">
+              {single ? (
+                <label htmlFor={`extra-${group.fields[0]}`} className={FIELD_LABEL}>
+                  {text.pass[group.fields[0]]}
                 </label>
-                <input
-                  id={`extra-${field}`}
-                  type={group.kind}
-                  autoComplete="off"
-                  value={extras[field]}
-                  placeholder={placeholderKey ? text.pass[placeholderKey] : undefined}
-                  onChange={(event) => dispatch({ type: "setExtraText", key: field, value: event.target.value })}
-                  className={`${INPUT} mt-2`}
-                />
-              </div>
-            );
-          })}
-        </div>
-      ))}
+              ) : (
+                <p className={FIELD_LABEL}>{title}</p>
+              )}
+              <IconButton label={fillTemplate(text.custom.remove, { name: title })} onClick={() => removeGroup(group)}>
+                <X className="size-4" aria-hidden="true" />
+              </IconButton>
+            </div>
+            <div className={group.kind === "time" ? "mt-2 grid grid-cols-2 gap-4" : "mt-2"}>
+              {group.fields.map((field) => {
+                const placeholderKey = PLACEHOLDERS[field];
+                return (
+                  <div key={field}>
+                    {!single && (
+                      <label htmlFor={`extra-${field}`} className="mb-2 block text-caption font-bold text-text-muted">
+                        {text.pass[field]}
+                      </label>
+                    )}
+                    <input
+                      id={`extra-${field}`}
+                      type={group.kind}
+                      autoComplete="off"
+                      value={extras[field]}
+                      placeholder={placeholderKey ? text.pass[placeholderKey] : undefined}
+                      onChange={(event) => dispatch({ type: "setExtraText", key: field, value: event.target.value })}
+                      className={INPUT}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        );
+      })}
 
       {closedGroups.length > 0 && (
         <fieldset>
@@ -132,7 +157,7 @@ export default function ExtrasEditor({ draft, dispatch, text }: ExtrasEditorProp
                 key={group.key}
                 type="button"
                 onClick={() => setOpened((current) => [...current, group.key])}
-                className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-dashed border-border-strong pr-4 pl-3 text-label text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-subtle active:scale-[0.97]"
+                className={`${buttonClass("outline", "small")} border-dashed`}
               >
                 <Plus className="size-4 text-primary" aria-hidden="true" />
                 {text.extrasAdd[group.key]}
@@ -153,7 +178,7 @@ export default function ExtrasEditor({ draft, dispatch, text }: ExtrasEditorProp
           value={draft.notes}
           placeholder={text.extrasAdd.notesPlaceholder}
           onChange={(event) => dispatch({ type: "setNotes", value: event.target.value })}
-          className="mt-2 block w-full resize-y rounded-lg border border-border-strong bg-background px-4 py-3 text-body text-text transition-colors duration-150 placeholder:text-text-muted"
+          className={`${TEXTAREA} mt-2 block resize-y`}
         />
         <p className="mt-2 text-caption text-text-muted">{text.extrasAdd.notesHint}</p>
       </div>

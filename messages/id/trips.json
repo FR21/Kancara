@@ -19,7 +19,6 @@
   },
   "card": {
     "untitled": "Perjalanan tanpa nama",
-    "routeTo": "ke",
     "noRoute": "Rute belum diisi",
     "noDates": "Tanggal belum diisi",
     "noMembers": "Belum ada anggota",
@@ -80,7 +79,7 @@
     "sectionMissing": "belum diisi",
     "openItinerary": "Lihat itinerary",
     "openSummary": "Lihat rangkuman",
-    "actions": "Aksi perjalanan"
+    "more": "Tindakan lain untuk {name}"
   },
   "menu": {
     "duplicate": "Duplikat",
@@ -123,7 +122,9 @@
     "activeTitle": "Belum ada perjalanan.",
     "activeBody": "Ajak semua orang, tanpa ada yang tertinggal.",
     "history": "Perjalanan yang sudah selesai akan tersimpan di sini.",
-    "search": "Tidak ada perjalanan yang cocok."
+    "search": "Tidak ada perjalanan yang cocok.",
+    "searchTitle": "Tidak ada perjalanan yang cocok",
+    "historyTitle": "Belum ada riwayat perjalanan"
   },
   "loading": "Memuat perjalanan",
   "error": "Daftar perjalanan belum bisa dimuat. Periksa koneksimu, lalu coba lagi.",
@@ -141,9 +142,15 @@
     "generateFailed": "Itinerary belum berhasil dibuat. Periksa koneksimu, lalu coba lagi.",
     "changeFailed": "Perubahan belum tersimpan. Periksa koneksimu, lalu coba lagi."
   },
-  "placeholder": {
-    "summary": "Rangkuman perjalanan",
-    "soon": "Halaman ini sedang disiapkan."
+  "loadMore": "Tampilkan lebih banyak",
+  "tools": {
+    "label": "Alat perjalanan",
+    "packing": "Daftar bawaan",
+    "help": "Bantuan",
+    "menuScan": "Pindai menu",
+    "translator": "Penerjemah",
+    "fieldPass": "Paspor lapangan",
+    "recap": "Ringkasan perjalanan"
   },
-  "loadMore": "Tampilkan lebih banyak"
+  "savedProfiles": "Profil tersimpan"
 }

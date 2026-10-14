@@ -1,17 +1,34 @@
 {
   "title": "Plan a trip",
   "start": {
-    "title": "Where are we going today?",
-    "form": "Fill in manually, step by step",
-    "lead": "Just tell it like you would tell a friend. Captain asks for the rest, then prepares your boarding pass and a day-by-day plan.",
-    "greet": "Say hi to Captain",
-    "greetings": [
-      "Hi, I'm Captain!",
-      "Who is coming along this time?",
-      "Someone uses a wheelchair? Just note it.",
-      "Halal, vegetarian, allergies: I count them all.",
-      "No one gets left behind."
-    ]
+    "title": "Plan a trip for the group",
+    "lead": "Four short questions, one at a time. Then the boarding pass and a day-by-day plan for everyone are ready.",
+    "form": "Start planning",
+    "captain": "Hi, I'm Captain. I'll stay with you until your boarding pass is ready.",
+    "savedProfiles": "Use saved profiles",
+    "routeLabel": "The plan's steps",
+    "route": {
+      "trip": {
+        "name": "Trip",
+        "asks": "Where from, where to, when, and how relaxed."
+      },
+      "crew": {
+        "name": "Group",
+        "asks": "Who is coming and what each of them needs."
+      },
+      "budget": {
+        "name": "Budget",
+        "asks": "Roughly what it comes to for everyone."
+      },
+      "extras": {
+        "name": "Extras",
+        "asks": "Lodging, a special occasion, or places to avoid. You can skip it."
+      },
+      "pass": {
+        "name": "Boarding pass",
+        "asks": "Check everything, then the day-by-day plan is made."
+      }
+    }
   },
   "stages": {
     "label": "Plan stages",
@@ -57,7 +74,8 @@
     "required": "Still missing: {items}.",
     "previewNote": "This is a preview. Finish the questions to continue.",
     "previewClose": "Close",
-    "previewTitle": "Boarding pass preview"
+    "previewTitle": "Boarding pass preview",
+    "routeSketch": "Trip route: {route}"
   },
   "crew": {
     "addLegend": "Add a person",
@@ -66,7 +84,8 @@
     "needsCount": "Needs: {count}",
     "selectHint": "Tap a character to set their name and needs.",
     "removeConfirm": "Remove?",
-    "removeConfirmLabel": "Tap again to remove {name}"
+    "removeConfirmLabel": "Tap again to remove {name}",
+    "savedTitle": "Pick from saved profiles"
   },
   "paceHints": {
     "relaxed": "2 to 3 activities a day, plenty of breaks.",
@@ -86,9 +105,10 @@
       "IDR": "Example: 30000000",
       "USD": "Example: 2000"
     },
-    "auto": "Filled in for you",
     "rate": "Rate: {one} = {rate}, as of {date}.",
-    "rateEstimate": "Estimated rate: {one} = {rate}."
+    "rateEstimate": "Estimated rate: {one} = {rate}.",
+    "quick": "Quick fill",
+    "auto": "Filled in for you"
   },
   "ticket": {
     "readyTitle": "Your boarding pass is ready.",
@@ -350,7 +370,8 @@
     "error": "Captain can't be reached. Check your connection, then try again.",
     "retry": "Try again",
     "itineraryPending": "Captain is building the itinerary",
-    "itineraryIntro": "Here's an itinerary that accounts for each member's needs. Pick a day to see the details."
+    "itineraryIntro": "Here's an itinerary that accounts for each member's needs. Pick a day to see the details.",
+    "clearDraft": "Delete draft"
   },
   "itinerary": {
     "title": "{destination} itinerary",
@@ -363,17 +384,12 @@
       "one": "{count} stop",
       "other": "{count} stops"
     },
-    "honoured": {
-      "one": "{count} need covered",
-      "other": "{count} needs covered"
-    },
     "toCheck": {
       "one": "{count} to check",
       "other": "{count} to check"
     },
     "check": "Needs a check",
     "emptyDay": "Nothing planned for this day yet.",
-    "leg": "{duration} · {distance} to the next stop",
     "rating": "{rating} out of 5",
     "close": "Close",
     "now": "Happening now",
@@ -400,7 +416,6 @@
     },
     "weather": {
       "chance": "{chance}% chance of rain",
-      "mm": "{mm} mm rain",
       "typical": "Based on typical historical weather",
       "rainAlert": "{chance}% chance of rain. Pack an umbrella or check indoor backup options."
     },
@@ -428,6 +443,77 @@
         "other": "{count} backups ready"
       },
       "map": "Open {name} in Google Maps"
+    },
+    "adjust": {
+      "open": "Adjust today's plan",
+      "forRain": "Move indoors",
+      "title": "Adjust day {number}",
+      "what": "What changed?",
+      "kinds": {
+        "rain": "Rain",
+        "rest": "Group is tired",
+        "meal": "Restaurant is full",
+        "closed": "Place is closed"
+      },
+      "which": "Places to replace",
+      "whichHint": "Only the ticked places change. The rest of the day stays as planned.",
+      "all": "Tick all",
+      "noBackup": "No backup for this place yet.",
+      "others": "Other backups",
+      "fits": "Every chosen backup was checked against your group's needs.",
+      "apply": {
+        "one": "Replace {count} place",
+        "other": "Replace {count} places"
+      },
+      "cancel": "Cancel"
+    },
+    "timeline": {
+      "today": "today",
+      "dayHeading": "{day} · {date}",
+      "byCar": "{distance} by car",
+      "issues": {
+        "one": "{count} issue",
+        "other": "{count} issues"
+      },
+      "travelCar": "Car {duration} · {distance}",
+      "rest": "Rest {duration} · {names}",
+      "restMore": "+{count}",
+      "needMet": "met",
+      "needPartly": "{need} partly",
+      "backupsFor": "Backups for {name}",
+      "map": "Map",
+      "mapTitle": "Map of day {number}",
+      "mapLoading": "Loading the map…",
+      "mapUnavailable": "The map can't load here yet. Open each place in Google Maps:",
+      "openInMaps": "open in Google Maps",
+      "categories": {
+        "meal": "Meal",
+        "cafe": "Café",
+        "attraction": "Attraction",
+        "museum": "Museum",
+        "nature": "Nature",
+        "shopping": "Shopping",
+        "worship": "Place of worship",
+        "lodging": "Lodging",
+        "transport": "Transport",
+        "other": "Place"
+      }
+    },
+    "pdf": {
+      "download": "Download PDF",
+      "making": "Preparing the PDF…",
+      "failed": "The PDF couldn't be made. Try again in a moment.",
+      "dates": "{from} – {to}",
+      "footer": "Made with Kancara · Page {page} of {total}",
+      "columns": {
+        "number": "No",
+        "time": "Time",
+        "place": "Place",
+        "kind": "Kind · price",
+        "needs": "Group needs",
+        "rating": "Rating",
+        "next": "To the next place"
+      }
     }
   },
   "invite": {

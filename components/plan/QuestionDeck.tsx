@@ -1,14 +1,17 @@
 "use client";
 
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight, Ticket } from "lucide-react";
 import { type Dispatch, type ReactNode, useEffect, useRef } from "react";
 import type { Messages } from "@/lib/messages";
 import { type PlanDraft, type PlanDraftAction, fillTemplate } from "@/lib/plan-draft";
 import { type QuestionKey, isAnswered, isOptional, missingIn } from "@/lib/plan-questions";
 import { useLocale } from "@/lib/use-locale";
+import CaptainNote from "./CaptainNote";
+import RouteSketch from "./RouteSketch";
+import DeckFooter, { FORWARD_ARROW } from "./DeckFooter";
 import MemberEditor from "./MemberEditor";
 import QuestionAnswer from "./QuestionAnswer";
-import { GHOST_BUTTON, PRIMARY_BUTTON } from "./styles";
+import { GHOST_BUTTON, PRIMARY_BUTTON, TEXT_LINK } from "@/components/ui/styles";
 
 type QuestionDeckProps = {
   draft: PlanDraft;
@@ -25,9 +28,9 @@ type QuestionDeckProps = {
   onBackToStory: () => void;
   onFinish: () => void;
   onSelectMember: (id: string | null) => void;
+  /** Opens the boarding pass as it stands. Null for a question opened from the pass itself. */
+  onPreviewPass: (() => void) | null;
 };
-
-const ADVANCE_MS = 320;
 
 export default function QuestionDeck({
   draft,
@@ -43,10 +46,10 @@ export default function QuestionDeck({
   onBackToStory,
   onFinish,
   onSelectMember,
+  onPreviewPass,
 }: QuestionDeckProps) {
   const locale = useLocale();
   const headingRef = useRef<HTMLHeadingElement>(null);
-  const advanceTimerRef = useRef<number | null>(null);
   const question = questions[index];
   const single = returnLabel !== null;
   const copy = text.deck.questions[question];
@@ -68,12 +71,6 @@ export default function QuestionDeck({
     window.scrollTo({ top: 0 });
   }, [question]);
 
-  useEffect(
-    () => () => {
-      if (advanceTimerRef.current !== null) window.clearTimeout(advanceTimerRef.current);
-    },
-    [],
-  );
 
   const goNext = () => {
     if (isLast || single) {
@@ -91,11 +88,6 @@ export default function QuestionDeck({
     onIndexChange(index - 1);
   };
 
-  const advanceSoon = () => {
-    if (advanceTimerRef.current !== null) window.clearTimeout(advanceTimerRef.current);
-    advanceTimerRef.current = window.setTimeout(goNext, ADVANCE_MS);
-  };
-
   const finishLabel = returnLabel ?? text.deck.finish;
   const forwardLabel = isLast || single ? finishLabel : text.deck.next;
 
@@ -108,7 +100,6 @@ export default function QuestionDeck({
       selectedMemberId={selectedMemberId}
       inlineMemberPanel={!isDesktop}
       onSelectMember={onSelectMember}
-      onPicked={advanceSoon}
     />
   );
 
@@ -117,7 +108,7 @@ export default function QuestionDeck({
       <section
         key={question}
         aria-labelledby="deck-question"
-        className={`motion-safe:animate-message-in rounded-2xl bg-surface/50 p-6 shadow-sm ring-1 ring-border/50 backdrop-blur-xl sm:p-10 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-x-16 ${
+        className={`motion-safe:animate-message-in lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:gap-x-16 ${
           isCrew ? "lg:items-stretch" : "lg:items-start"
         }`}
       >
@@ -126,80 +117,83 @@ export default function QuestionDeck({
             id="deck-question"
             ref={headingRef}
             tabIndex={-1}
-            className="text-h1 font-bold tracking-tight text-balance text-text outline-none lg:text-4xl"
+            className="text-h2 text-balance text-text outline-none sm:text-h1"
           >
             {copy.title}
           </h1>
-          {copy.hint && <p className="mt-4 text-body leading-relaxed text-text-muted">{copy.hint}</p>}
-          {isCrew && (
-            <div className="mt-8 space-y-6">
-              {answer}
-              {crewFooter}
+          {copy.hint && <CaptainNote className="mt-4">{copy.hint}</CaptainNote>}
+          {/* The pass so far, one quiet link in the question's own heading group rather than a button of its own. */}
+          {onPreviewPass && (
+            <button type="button" onClick={onPreviewPass} className={`${TEXT_LINK} mt-2`}>
+              <Ticket className="size-4" aria-hidden="true" />
+              {text.deck.seePass}
+            </button>
+          )}
+          {question === "trip" && isDesktop && (
+            <div className="mt-8">
+              <RouteSketch origin={draft.origin} destinations={draft.destinations} locale={locale} label={text.deck.routeSketch} />
             </div>
+          )}
+          {isCrew && (
+            <>
+              <div className="mt-8">{answer}</div>
+              {crewFooter && <div className="mt-8">{crewFooter}</div>}
+            </>
           )}
         </div>
 
         <div className={`mt-8 min-w-0 lg:mt-0 ${isCrew && isDesktop ? "relative min-h-96" : ""}`}>
           {!isCrew && answer}
           {isCrew && isDesktop && selectedMember && (
+            // The frame and the scroller are two boxes: the frame clips the corners, and the scroller starts and
+            // ends a corner's radius in from the edges, so its scrollbar runs along the straight side only.
             <div
               key={selectedMember.id}
-              className="absolute inset-0 overflow-y-auto overscroll-contain rounded-lg border border-primary bg-surface p-6 [scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin] motion-safe:animate-message-in"
+              className="absolute inset-0 overflow-clip rounded-surface border border-primary bg-surface motion-safe:animate-message-in"
             >
-              <MemberEditor
-                member={selectedMember}
-                draft={draft}
-                dispatch={dispatch}
-                text={text}
-                onRemoved={() => onSelectMember(null)}
-              />
+              <div className="absolute inset-x-0 inset-y-[calc(var(--surface-pad)+0.5rem)] overflow-y-auto overscroll-contain px-surface [scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin]">
+                <MemberEditor
+                  member={selectedMember}
+                  draft={draft}
+                  dispatch={dispatch}
+                  text={text}
+                  onRemoved={() => onSelectMember(null)}
+                />
+              </div>
             </div>
           )}
           {isCrew && isDesktop && !selectedMember && (
-            <p className="absolute inset-0 flex items-center justify-center rounded-lg border border-dashed border-border-strong px-6 text-center text-body text-text-muted">
+            <p className="absolute inset-0 flex items-center justify-center rounded-surface border border-dashed border-border-strong p-surface text-center text-body text-pretty text-text-muted">
               {draft.members.length > 0 ? text.crew.selectHint : text.crew.empty}
             </p>
           )}
         </div>
       </section>
 
-      <div className="safe-bottom sticky bottom-0 -mx-4 border-t border-border bg-background px-4 pt-3 sm:mx-0 sm:px-0">
-        <div className="flex items-center justify-between gap-3">
-          {single ? (
-            <span />
-          ) : (
-            <button type="button" onClick={goBack} className={`${GHOST_BUTTON} -ml-4 sm:ml-0`}>
-              <ArrowLeft className="size-4" aria-hidden="true" />
-              {text.deck.back}
-            </button>
-          )}
-          <div className="flex min-w-0 items-center gap-4">
-            {blocked && (
-              <p id="deck-required" className="hidden text-body-sm text-text-muted sm:block">
-                {requiredHint}
-              </p>
-            )}
-            {canSkip ? (
-              <button type="button" onClick={goNext} className={GHOST_BUTTON}>
-                {isLast ? finishLabel : text.deck.skip}
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </button>
-            ) : (
-              <button
-                type="button"
-                disabled={blocked}
-                aria-describedby={blocked ? "deck-required" : undefined}
-                onClick={goNext}
-                className={PRIMARY_BUTTON}
-              >
-                {forwardLabel}
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </button>
-            )}
-          </div>
-        </div>
-        {blocked && <p className="pt-2 text-center text-body-sm text-text-muted sm:hidden">{requiredHint}</p>}
-      </div>
+      <DeckFooter
+        backLabel={text.deck.back}
+        onBack={single ? null : goBack}
+        note={blocked ? requiredHint : null}
+        noteId="deck-required"
+      >
+        {canSkip ? (
+          <button type="button" onClick={goNext} className={`group ${GHOST_BUTTON} -mr-4`}>
+            {isLast ? finishLabel : text.deck.skip}
+            <ArrowRight className={FORWARD_ARROW} aria-hidden="true" />
+          </button>
+        ) : (
+          <button
+            type="button"
+            disabled={blocked}
+            aria-describedby={blocked ? "deck-required" : undefined}
+            onClick={goNext}
+            className={`group ${PRIMARY_BUTTON}`}
+          >
+            {forwardLabel}
+            <ArrowRight className={FORWARD_ARROW} aria-hidden="true" />
+          </button>
+        )}
+      </DeckFooter>
     </div>
   );
 }

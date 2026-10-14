@@ -1,7 +1,7 @@
 import "server-only";
 import { Prisma, type Trip as TripRecord } from "@prisma/client";
 import type { Viewer } from "@/lib/account";
-import { type Itinerary, parseItinerary } from "@/lib/api/captain";
+import { type Itinerary, parseItinerary } from "@/lib/client/captain";
 import { type MemberContact, type PlanDraft, EMPTY_DRAFT, hasDateError, hasDates, parsePlanDraft } from "@/lib/plan-draft";
 import { prisma } from "@/lib/prisma";
 import {

@@ -22,7 +22,7 @@ export default function AuthSlideshow() {
       onPointerLeave={() => setPaused(false)}
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
-      className="relative mx-4 h-40 min-w-0 overflow-hidden rounded-3xl bg-primary-900 sm:mx-8 lg:sticky lg:top-0 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:mx-0 lg:h-dvh lg:rounded-none lg:bg-background"
+      className="relative mx-4 h-40 min-w-0 overflow-clip rounded-surface bg-primary-900 sm:mx-8 lg:sticky lg:top-0 lg:col-start-1 lg:row-span-2 lg:row-start-1 lg:mx-0 lg:h-dvh lg:rounded-none lg:bg-background"
     >
       <div className="absolute inset-0 lg:mask-[linear-gradient(to_right,black_72%,transparent)]">
         {SLIDES.map((source, index) => {
@@ -48,7 +48,7 @@ export default function AuthSlideshow() {
         />
       </div>
 
-      <div className="absolute inset-x-0 bottom-0 px-4 pb-1 lg:p-12">
+      <div className="absolute inset-x-0 bottom-0 px-surface pb-1 lg:p-12">
         <p className="hidden max-w-md font-heading text-display text-balance text-neutral-50 lg:block">
           {brand.tagline}
         </p>
@@ -62,7 +62,7 @@ export default function AuthSlideshow() {
               onClick={() => setCurrent(index)}
               aria-label={fillTemplate(text.slide, { current: index + 1, total: SLIDES.length })}
               aria-current={index === current ? "true" : undefined}
-              className="group flex h-11 max-w-16 flex-1 cursor-pointer items-center"
+              className="group flex h-11 max-w-16 flex-1 cursor-pointer items-center transition-[scale] duration-150 ease-out active:scale-[0.97]"
             >
               <span className="relative h-1 w-full overflow-hidden rounded-full bg-neutral-50/35 transition-colors duration-150 ease-out group-hover:bg-neutral-50/60">
                 {index === current && (

@@ -30,14 +30,20 @@ function asText(value: unknown, limit: number): string | null {
   return typeof value === "string" && value.trim().length <= limit ? value.trim() : null;
 }
 
+/** The number as sent: an empty string for none, null when it cannot be read as a phone number. */
+function readPhone(value: unknown): string | null {
+  const typed = asText(value ?? "", MAX_PHONE_CHARS);
+  if (typed === null || typed === "") return typed;
+  return normalizePhone(typed);
+}
+
 /** Reads profile details sent by the browser. Null when any of them is not something the form could produce. */
 export function parseProfileDetails(body: unknown): ProfileDetails | null {
   if (typeof body !== "object" || body === null) return null;
   const input = body as Record<string, unknown>;
   const name = asText(input.name, MAX_NAME_CHARS);
   const nationality = typeof input.nationality === "string" && (input.nationality === "" || isCountryCode(input.nationality)) ? input.nationality : null;
-  const typedPhone = asText(input.phone ?? "", MAX_PHONE_CHARS);
-  const phone = typedPhone === null ? null : typedPhone === "" ? "" : normalizePhone(typedPhone);
+  const phone = readPhone(input.phone);
   // A leading @ is how people write a username, not part of it.
   const username = typeof input.username === "string" ? input.username.trim().replace(/^@/, "") : null;
   const age = typeof input.age === "string" || typeof input.age === "number" ? String(input.age).trim() : null;

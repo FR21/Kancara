@@ -3,22 +3,22 @@
 import { Loader2, Plus, Users, WifiOff } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import ErrorAlert from "@/components/plan/ErrorAlert";
-import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
-import { trips } from "@/lib/api/trips";
+import ErrorAlert from "@/components/ui/ErrorAlert";
+import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/ui/styles";
+import { trips } from "@/lib/client/trips";
 import { fillTemplate } from "@/lib/plan-draft";
 import type { ActiveTrips, HistoryTrips, TripCard } from "@/lib/trips/trip";
-import { useLocale } from "@/lib/use-locale";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { useMessages } from "@/lib/use-messages";
 import { useOnline } from "@/lib/use-online";
-import DeleteDialog from "./DeleteDialog";
+import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import HistoryTools from "./HistoryTools";
 import TripDetail, { type TripActions } from "./TripDetail";
 import TripList, { type TripListSection, tripRowId } from "./TripList";
 import TripSheet from "./TripSheet";
 import TripsEmpty from "./TripsEmpty";
 import Notice, { type NoticeMessage } from "@/components/layout/Notice";
+import PageHeader from "@/components/layout/PageHeader";
 import TripsSkeleton from "./TripsSkeleton";
 import TripTabs, { type TripTab, TRIPS_PANEL_ID, tripTabId } from "./TripTabs";
 
@@ -31,6 +31,7 @@ type DeleteState = "idle" | "pending" | "failed";
 const PLAN_HREF = "/plan";
 const DESKTOP_QUERY = "(min-width: 1024px)";
 const SEARCH_DELAY_MS = 250;
+const TITLE_ID = "trips-title";
 const DETAIL_HEADING_ID = "trip-detail-title";
 const SHEET_HEADING_ID = "trip-sheet-title";
 
@@ -38,7 +39,6 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
   const text = useMessages("trips");
   const travel = useMessages("travel");
   const needLabels = useMessages("plan").needs;
-  const locale = useLocale();
   const online = useOnline();
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
   const [tab, setTab] = useState<TripTab>(initialTab);
@@ -55,7 +55,6 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
   const [deleteState, setDeleteState] = useState<DeleteState>("idle");
   const [notice, setNotice] = useState<NoticeMessage | null>(null);
   const [loadingMore, setLoadingMore] = useState(false);
-  const headingRef = useRef<HTMLHeadingElement>(null);
   const noticeIdRef = useRef(0);
   const arrivingIdRef = useRef<string | null>(null);
   const deletedRef = useRef(false);
@@ -99,7 +98,7 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
   useEffect(() => {
     if (deleteTarget || !deletedRef.current) return;
     deletedRef.current = false;
-    headingRef.current?.focus();
+    document.getElementById(TITLE_ID)?.focus();
   }, [deleteTarget]);
 
   const announce = (tone: NoticeMessage["tone"], message: string) => {
@@ -257,22 +256,23 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
   const nothingYet = tab === "active" ? activeTrips !== null && cards.length === 0 : historyTrips?.total === 0;
 
   return (
-    <div className="mx-auto w-full max-w-2xl px-4 sm:px-6 lg:max-w-5xl xl:px-0">
-      <header className="flex flex-wrap items-center justify-between gap-4 motion-safe:animate-message-in">
-        <h1 ref={headingRef} tabIndex={-1} className="text-h2 text-text outline-none sm:text-h1">
-          {text.title}
-        </h1>
-        <div className="flex flex-wrap items-center gap-3">
-          <Link href="/profile/saved-members" className={OUTLINE_BUTTON}>
-            <Users className="size-4 text-primary" aria-hidden="true" />
-            {locale === "id" ? "Profil Tersimpan" : "Saved Profiles"}
-          </Link>
-          <Link href={PLAN_HREF} className={`${PRIMARY_BUTTON} w-full sm:w-auto`}>
-            <Plus className="size-4" aria-hidden="true" />
-            {text.plan}
-          </Link>
-        </div>
-      </header>
+    <div>
+      <PageHeader
+        title={text.title}
+        titleId={TITLE_ID}
+        actions={
+          <>
+            <Link href="/profile/saved-members" className={`${OUTLINE_BUTTON} flex-1 sm:flex-none`}>
+              <Users className="size-4 text-primary" aria-hidden="true" />
+              {text.savedProfiles}
+            </Link>
+            <Link href={PLAN_HREF} className={`group ${PRIMARY_BUTTON} flex-1 sm:flex-none`}>
+              <Plus className="size-4 transition-[rotate] duration-300 ease-out group-hover:rotate-90" aria-hidden="true" />
+              {text.plan}
+            </Link>
+          </>
+        }
+      />
 
       <div className="mt-6 motion-safe:animate-message-in motion-safe:[animation-delay:40ms]">
         <TripTabs tab={tab} text={text.tabs} onChange={changeTab} />
@@ -281,14 +281,14 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
       {!online && (
         <p
           role="status"
-          className="mt-6 flex items-center gap-3 rounded-2xl bg-warning-subtle px-4 py-3 text-body-sm text-on-warning-subtle motion-safe:animate-message-in"
+          className="mt-6 flex items-center gap-3 rounded-surface bg-warning-subtle p-surface text-body-sm text-on-warning-subtle surface-compact motion-safe:animate-message-in"
         >
           <WifiOff className="size-5 shrink-0" aria-hidden="true" />
           {text.offline}
         </p>
       )}
 
-      <div id={TRIPS_PANEL_ID} role="tabpanel" aria-labelledby={tripTabId(tab)} aria-busy={loading} className="mt-6">
+      <div key={tab} id={TRIPS_PANEL_ID} role="tabpanel" aria-labelledby={tripTabId(tab)} aria-busy={loading} className="mt-6 motion-safe:animate-message-in">
         {failedTab === tab && <ErrorAlert message={text.error} retryLabel={text.retry} onRetry={retry} />}
         {loading && <TripsSkeleton label={text.loading} />}
 
@@ -341,9 +341,9 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
                   />
                 </div>
               ) : (
-                <p className="rounded-3xl border border-dashed border-border-strong px-6 py-16 text-center text-body text-text-muted">
-                  {text.detail.empty}
-                </p>
+                <div className="rounded-surface border border-dashed border-border-strong p-surface">
+                  <p className="py-12 text-center text-body text-pretty text-text-muted">{text.detail.empty}</p>
+                </div>
               )}
             </aside>
           </div>
@@ -367,11 +367,15 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
         )}
       </TripSheet>
 
-      <DeleteDialog
-        name={deleteTarget ? nameOf(deleteTarget) : null}
-        text={text.delete}
+      <ConfirmDialog
+        open={deleteTarget !== null}
+        title={text.delete.title}
+        body={fillTemplate(text.delete.body, { name: deleteTarget ? nameOf(deleteTarget) : "" })}
+        cancelLabel={text.delete.cancel}
+        confirmLabel={text.delete.confirm}
+        pendingLabel={text.delete.pending}
         pending={deleteState === "pending"}
-        failed={deleteState === "failed"}
+        error={deleteState === "failed" ? text.delete.failed : null}
         onCancel={cancelDelete}
         onConfirm={confirmDelete}
       />

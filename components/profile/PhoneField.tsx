@@ -1,6 +1,6 @@
 "use client";
 
-import { INPUT } from "@/components/plan/styles";
+import { INPUT } from "@/components/ui/styles";
 
 type PhoneFieldProps = {
   /** The id of the number field, which is the one a label points at. */
@@ -36,25 +36,26 @@ export default function PhoneField({
   onNationalChange,
   onBlur,
 }: PhoneFieldProps) {
-  const tone = `${INPUT} tabular-nums disabled:cursor-not-allowed ${invalid ? "border-error" : ""}`;
+  // Both halves are marked invalid together, since either one can be what is wrong with the number. Both are the
+  // same field, so the pair reads as one control: same height, same corners, same padding.
+  const tone = `${INPUT} tabular-nums disabled:cursor-not-allowed aria-invalid:border-error`;
   return (
     <div className="flex gap-2">
-      <div className="relative w-24 shrink-0">
-        <span aria-hidden="true" className="pointer-events-none absolute top-1/2 left-4 -translate-y-1/2 text-body text-text-muted">
-          +
-        </span>
+      {/* The plus is part of what the field shows, so it needs no padding of its own; only the digits are kept. */}
+      <div className="w-24 shrink-0">
         <input
           id={`${id}-dial`}
           type="tel"
           inputMode="numeric"
           autoComplete="tel-country-code"
           aria-label={dialLabel}
+          aria-invalid={invalid || undefined}
           disabled={disabled}
-          value={dial}
-          placeholder="62"
+          value={dial ? `+${dial}` : ""}
+          placeholder="+62"
           onChange={(event) => onDialChange(event.target.value.replace(/\D/g, "").slice(0, MAX_DIAL_DIGITS))}
           onBlur={onBlur}
-          className={`${tone} pr-2 pl-8`}
+          className={tone}
         />
       </div>
       <input

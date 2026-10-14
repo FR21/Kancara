@@ -1,0 +1,50 @@
+{
+  "open": "Paspor lapangan",
+  "title": "Paspor lapangan",
+  "close": "Tutup",
+  "lead": "Satu kartu untuk di {destination}: kalimat penting dalam bahasa {language}, kartu pantangan makanan, dan nomor darurat.",
+  "loading": "Membuka paspor lapangan",
+  "writing": "Menyusun paspor lapangan untuk {destination}. Biasanya tidak sampai setengah menit.",
+  "offlineMissing": "Paspor ini belum tersimpan di HP ini. Buka sekali saat ada internet, setelah itu paspor tetap bisa dibuka tanpa sinyal.",
+  "noDestination": "Tentukan dulu tujuan perjalanannya, lalu paspor lapangan bisa disusun.",
+  "failed": "Paspor lapangan belum bisa disusun. Periksa koneksimu, lalu coba lagi.",
+  "retry": "Coba lagi",
+  "kept": "Tersimpan di HP ini, bisa dibuka tanpa sinyal",
+  "keeping": "Menyimpan agar bisa dibuka tanpa sinyal",
+  "keepFailed": "Belum tersimpan untuk dibuka tanpa sinyal.",
+  "keepAgain": "Simpan lagi",
+  "rewrite": "Susun ulang",
+  "rewriting": "Menyusun ulang",
+  "rewriteHint": "Paspor ini dipakai bersama seluruh rombongan. Menyusun ulang akan menggantinya untuk semua.",
+  "rewriteOffline": "Menyusun ulang butuh koneksi internet.",
+  "tooSoon": "Paspor baru saja disusun. Coba susun ulang beberapa menit lagi.",
+  "rewriteFailed": "Paspor belum bisa disusun ulang. Coba lagi sebentar lagi.",
+  "shared": "Disusun {date}",
+  "speak": "Dengarkan",
+  "speaking": "Sedang dibacakan",
+  "copy": "Salin",
+  "copied": "Tersalin",
+  "noSpeech": "Browser ini tidak bisa membacakan teks. Tunjukkan saja tulisannya.",
+  "noVoice": "HP ini belum punya suara bahasa {language}. Tunjukkan saja tulisannya.",
+  "lodging": {
+    "title": "Alamat menginap",
+    "hint": "Tunjukkan ke sopir taksi"
+  },
+  "dietary": {
+    "title": "Kartu pantangan makanan",
+    "hint": "Tunjukkan ke pelayan",
+    "people": "{count} orang",
+    "speak": "Bacakan ke pelayan"
+  },
+  "phrases": {
+    "title": "Kalimat penting",
+    "hint": "Dibacakan HP, tanpa kuota"
+  },
+  "emergency": {
+    "title": "Nomor darurat",
+    "police": "Polisi",
+    "ambulance": "Ambulans",
+    "mission": "Perwakilan RI",
+    "checkNote": "Disusun dengan bantuan AI. Cocokkan nomor ini dengan sumber resmi sebelum berangkat."
+  }
+}

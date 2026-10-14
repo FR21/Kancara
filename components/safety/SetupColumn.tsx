@@ -1,58 +1,21 @@
 "use client";
 
-import { BellRing, Check, ChevronDown, Circle, Plus, X } from "lucide-react";
-import { type ComponentProps, type ReactNode, useEffect, useState, useSyncExternalStore } from "react";
-import { INPUT, OUTLINE_BUTTON } from "@/components/plan/styles";
+import { BellRing, Check, Circle, Plus, X } from "lucide-react";
+import { useEffect, useState, useSyncExternalStore } from "react";
+import IconButton from "@/components/ui/IconButton";
+import SelectField from "@/components/ui/SelectField";
+import { BADGE, FIELD_LABEL, INPUT, TEXT_LINK, buttonClass } from "@/components/ui/styles";
 import CountryPicker from "@/components/profile/CountryPicker";
-import { type PushState, enablePush, syncPush } from "@/lib/api/push";
+import { type PushState, enablePush, syncPush } from "@/lib/client/push";
 import { fillTemplate } from "@/lib/plan-draft";
 import { MAX_LABEL_CHARS } from "@/lib/safety/action";
 import { formatPhone, MAX_PHONE_CHARS } from "@/lib/safety/contact";
-import { type ContactLabel, CONTACT_LABELS } from "@/lib/safety/pack";
+import { type ContactLabel, CONTACT_LABELS } from "@/lib/safety/safety-pack";
 import { countryNames } from "@/lib/travel/countries";
 import { useLocale } from "@/lib/use-locale";
 import ContactList from "./ContactList";
-import { type HelpContext, nameIn } from "./help";
-
-export const BLOCK = "px-4 py-4 sm:px-5";
-const BLOCK_TITLE = "text-label text-text";
-export const FIELD_LABEL = "block text-caption font-bold text-text-muted";
-export const TEXT_ACTION =
-  "inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full px-3 text-label text-primary transition-[background-color,scale] duration-150 ease-out hover:bg-primary-subtle active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40";
-export const SMALL_BUTTON = `${OUTLINE_BUTTON} h-11 px-4 text-label`;
-
-function Block({ title, action, children }: { title: string; action?: ReactNode; children: ReactNode }) {
-  return (
-    <section className={BLOCK}>
-      <div className="flex min-h-11 items-center justify-between gap-3">
-        <h2 className={BLOCK_TITLE}>{title}</h2>
-        {action}
-      </div>
-      {children}
-    </section>
-  );
-}
-
-/** A select drawn like the other fields. Its own arrow sits against the edge, so one is drawn at the field's inset. */
-function Select({ className = "", children, ...props }: ComponentProps<"select">) {
-  return (
-    <div className={`relative ${className}`}>
-      <select {...props} className={`${INPUT} cursor-pointer appearance-none pr-12`}>
-        {children}
-      </select>
-      <ChevronDown aria-hidden="true" className="pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 text-text-muted" />
-    </div>
-  );
-}
-
-export function Problem({ context, show }: { context: HelpContext; show: boolean }) {
-  if (!show) return null;
-  return (
-    <p role="alert" className="mt-2 text-caption text-pretty text-error">
-      {context.online ? context.text.failed : context.text.offlineOnly}
-    </p>
-  );
-}
+import { CANCEL_BUTTON, HELP_FRAME, HelpBlock, Problem, SAVE_BUTTON } from "./HelpBlock";
+import { type HelpContext, nameIn } from "@/components/safety/help-context";
 
 function ContactsBlock({ context }: { context: HelpContext }) {
   const { pack, text } = context;
@@ -73,20 +36,21 @@ function ContactsBlock({ context }: { context: HelpContext }) {
   };
 
   return (
-    <Block
+    <HelpBlock
+      id="contacts-title"
       title={copy.title}
       action={
         !adding &&
         pack.canManage && (
-          <button type="button" aria-label={copy.add} title={copy.add} onClick={() => setAdding(true)} className={TEXT_ACTION}>
+          <button type="button" aria-label={copy.add} title={copy.add} onClick={() => setAdding(true)} className={TEXT_LINK}>
             <Plus className="size-4" aria-hidden="true" />
             {copy.addShort}
           </button>
         )
       }
     >
-      {pack.contacts.length === 0 && !adding && pack.canManage && <p className="mb-3 text-body-sm text-pretty text-text-muted">{copy.empty}</p>}
-      <div className="-mx-3">
+      {pack.contacts.length === 0 && !adding && pack.canManage && <p className="text-body-sm text-pretty text-text-muted">{copy.empty}</p>}
+      <div className="mt-4">
         <ContactList
           pack={pack}
           text={text}
@@ -94,75 +58,77 @@ function ContactsBlock({ context }: { context: HelpContext }) {
         />
       </div>
       {adding && (
-        <div className="mt-4 space-y-3 border-t border-border pt-4">
-          <div>
-            <label htmlFor="contact-place" className={FIELD_LABEL}>
-              {copy.place}
-            </label>
-            <input
-              id="contact-place"
-              type="text"
-              autoComplete="off"
-              maxLength={MAX_LABEL_CHARS}
-              value={placeName}
-              placeholder={copy.placePlaceholder}
-              onChange={(event) => setPlaceName(event.target.value)}
-              className={`${INPUT} mt-2`}
-            />
-          </div>
-          <div>
-            <label htmlFor="contact-kind" className={FIELD_LABEL}>
-              {copy.kind}
-            </label>
-            <Select
-              id="contact-kind"
-              value={labelKey}
-              onChange={(event) => setLabelKey(CONTACT_LABELS.find((label) => label === event.target.value) ?? "OTHER")}
-              className="mt-2"
-            >
-              {CONTACT_LABELS.map((label) => (
-                <option key={label} value={label}>
-                  {copy.labels[label]}
-                </option>
-              ))}
-            </Select>
-          </div>
-          <div>
-            <label htmlFor="contact-phone" className={FIELD_LABEL}>
-              {copy.phone}
-            </label>
-            <input
-              id="contact-phone"
-              type="tel"
-              inputMode="tel"
-              autoComplete="off"
-              maxLength={MAX_PHONE_CHARS}
-              value={phone}
-              aria-invalid={problem === "invalid"}
-              onChange={(event) => {
-                setPhone(event.target.value);
-                setProblem("none");
-              }}
-              className={`${INPUT} mt-2 tabular-nums`}
-            />
-            {problem === "invalid" && (
-              <p role="alert" className="mt-2 text-caption text-error">
-                {copy.phoneInvalid}
-              </p>
-            )}
+        <div className="mt-4 border-t border-border pt-4 motion-safe:animate-message-in">
+          <div className="space-y-4">
+            <div>
+              <label htmlFor="contact-place" className={`${FIELD_LABEL} block`}>
+                {copy.place}
+              </label>
+              <input
+                id="contact-place"
+                type="text"
+                autoComplete="off"
+                maxLength={MAX_LABEL_CHARS}
+                value={placeName}
+                placeholder={copy.placePlaceholder}
+                onChange={(event) => setPlaceName(event.target.value)}
+                className={`${INPUT} mt-2`}
+              />
+            </div>
+            <div>
+              <label htmlFor="contact-kind" className={`${FIELD_LABEL} block`}>
+                {copy.kind}
+              </label>
+              <SelectField
+                id="contact-kind"
+                value={labelKey}
+                onChange={(event) => setLabelKey(CONTACT_LABELS.find((label) => label === event.target.value) ?? "OTHER")}
+                className="mt-2"
+              >
+                {CONTACT_LABELS.map((label) => (
+                  <option key={label} value={label}>
+                    {copy.labels[label]}
+                  </option>
+                ))}
+              </SelectField>
+            </div>
+            <div>
+              <label htmlFor="contact-phone" className={`${FIELD_LABEL} block`}>
+                {copy.phone}
+              </label>
+              <input
+                id="contact-phone"
+                type="tel"
+                inputMode="tel"
+                autoComplete="off"
+                maxLength={MAX_PHONE_CHARS}
+                value={phone}
+                aria-invalid={problem === "invalid"}
+                onChange={(event) => {
+                  setPhone(event.target.value);
+                  setProblem("none");
+                }}
+                className={`${INPUT} mt-2 tabular-nums`}
+              />
+              {problem === "invalid" && (
+                <p role="alert" className="mt-2 text-caption text-error">
+                  {copy.phoneInvalid}
+                </p>
+              )}
+            </div>
           </div>
           <Problem context={context} show={problem === "failed"} />
-          <div className="flex flex-wrap gap-2">
-            <button type="button" disabled={placeName.trim() === "" || phone.trim() === ""} onClick={add} className={SMALL_BUTTON}>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <button type="button" disabled={placeName.trim() === "" || phone.trim() === ""} onClick={add} className={SAVE_BUTTON}>
               {text.save}
             </button>
-            <button type="button" onClick={() => setAdding(false)} className={TEXT_ACTION}>
+            <button type="button" onClick={() => setAdding(false)} className={CANCEL_BUTTON}>
               {text.cancel}
             </button>
           </div>
         </div>
       )}
-    </Block>
+    </HelpBlock>
   );
 }
 
@@ -180,8 +146,10 @@ function SecondNumberBlock({ context }: { context: HelpContext }) {
   };
 
   return (
-    <Block
+    <HelpBlock
+      id="second-title"
       title={copy.title}
+      hint={copy.hint}
       action={
         !editing && (
           <button
@@ -191,7 +159,7 @@ function SecondNumberBlock({ context }: { context: HelpContext }) {
               setProblem("none");
               setEditing(true);
             }}
-            className={TEXT_ACTION}
+            className={TEXT_LINK}
           >
             {text.meeting.change}
           </button>
@@ -199,13 +167,12 @@ function SecondNumberBlock({ context }: { context: HelpContext }) {
       }
     >
       {!editing && (
-        <p className={`text-label-lg tabular-nums ${pack.secondaryPhone ? "text-text" : "text-text-muted"}`}>
+        <p className={`mt-4 text-label-lg tabular-nums ${pack.secondaryPhone ? "text-text" : "text-text-muted"}`}>
           {pack.secondaryPhone ? formatPhone(pack.secondaryPhone) : copy.none}
         </p>
       )}
-      <p className="mt-1 text-caption text-pretty text-text-muted">{copy.hint}</p>
       {editing && (
-        <div className="mt-3">
+        <div className="mt-4 motion-safe:animate-message-in">
           <label htmlFor="second-phone" className="sr-only">
             {copy.title}
           </label>
@@ -230,17 +197,17 @@ function SecondNumberBlock({ context }: { context: HelpContext }) {
             </p>
           )}
           <Problem context={context} show={problem === "failed"} />
-          <div className="mt-3 flex flex-wrap gap-2">
-            <button type="button" onClick={save} className={SMALL_BUTTON}>
+          <div className="mt-6 flex flex-wrap gap-2">
+            <button type="button" onClick={save} className={SAVE_BUTTON}>
               {text.save}
             </button>
-            <button type="button" onClick={() => setEditing(false)} className={TEXT_ACTION}>
+            <button type="button" onClick={() => setEditing(false)} className={CANCEL_BUTTON}>
               {text.cancel}
             </button>
           </div>
         </div>
       )}
-    </Block>
+    </HelpBlock>
   );
 }
 
@@ -252,28 +219,24 @@ function CountriesBlock({ context }: { context: HelpContext }) {
   const change = (codes: string[]) => context.act({ type: "countries", codes });
 
   return (
-    <Block title={copy.title}>
-      <p className="text-caption text-pretty text-text-muted">{copy.hint}</p>
-      <ul className="mt-3 flex flex-wrap gap-2 empty:hidden">
+    <HelpBlock id="countries-title" title={copy.title} hint={copy.hint}>
+      <ul className="mt-4 flex flex-wrap gap-2 empty:hidden">
         {pack.countryCodes.map((code) => {
           const name = names.get(code) ?? code;
           return (
-            <li key={code} className="inline-flex items-center rounded-full bg-primary-subtle pl-4 text-label text-on-primary-subtle">
-              {name}
-              <button
-                type="button"
-                aria-label={fillTemplate(copy.remove, { name })}
-                title={fillTemplate(copy.remove, { name })}
-                onClick={() => change(pack.countryCodes.filter((entry) => entry !== code))}
-                className="ml-1 inline-flex size-11 cursor-pointer items-center justify-center rounded-full transition-[background-color,scale] duration-150 ease-out hover:bg-background active:scale-[0.97]"
-              >
+            <li
+              key={code}
+              className="inline-flex max-w-full items-center gap-1 rounded-full bg-primary-subtle pl-4 text-label text-on-primary-subtle motion-safe:animate-pop-in"
+            >
+              <span className="min-w-0 truncate">{name}</span>
+              <IconButton label={fillTemplate(copy.remove, { name })} onClick={() => change(pack.countryCodes.filter((entry) => entry !== code))}>
                 <X className="size-4" aria-hidden="true" />
-              </button>
+              </IconButton>
             </li>
           );
         })}
       </ul>
-      {pack.countryCodes.length === 0 && <p className="mt-3 text-body-sm text-text-muted">{copy.none}</p>}
+      {pack.countryCodes.length === 0 && <p className="mt-4 text-body-sm text-text-muted">{copy.none}</p>}
       <label htmlFor="country-add" className="sr-only">
         {copy.add}
       </label>
@@ -283,10 +246,10 @@ function CountriesBlock({ context }: { context: HelpContext }) {
         placeholder={copy.add}
         emptyLabel={copy.noMatch}
         exclude={pack.countryCodes}
-        className="mt-3"
+        className="mt-4"
         onChange={(code) => code && change([...pack.countryCodes, code])}
       />
-    </Block>
+    </HelpBlock>
   );
 }
 
@@ -329,15 +292,20 @@ function ReadyBlock({ context }: { context: HelpContext }) {
   const done = items.filter((item) => item.done).length;
 
   return (
-    <Block
+    <HelpBlock
+      id="ready-title"
       title={copy.title}
-      action={<p className="text-caption font-bold text-text-muted tabular-nums">{fillTemplate(copy.count, { done, total: items.length })}</p>}
+      action={
+        <p className={`${BADGE} shrink-0 tabular-nums ${done === items.length ? "bg-success-subtle text-on-success-subtle" : "bg-surface-muted text-text"}`}>
+          {fillTemplate(copy.count, { done, total: items.length })}
+        </p>
+      }
     >
-      <ul className="space-y-3">
+      <ul className="mt-4 space-y-3">
         {items.map((item) => (
           <li key={item.key} className="flex gap-3">
             {item.done ? (
-              <Check className="mt-1 size-4 shrink-0 text-success" strokeWidth={3} aria-hidden="true" />
+              <Check className="mt-1 size-4 shrink-0 text-success motion-safe:animate-pop-in" strokeWidth={3} aria-hidden="true" />
             ) : (
               <Circle className="mt-1 size-4 shrink-0 text-border-strong" aria-hidden="true" />
             )}
@@ -355,7 +323,7 @@ function ReadyBlock({ context }: { context: HelpContext }) {
       </ul>
       {/* Asking for permission has to come from a press, so it is a button here and never a prompt on arrival. */}
       {(push === "off" || push === "failed") && (
-        <button type="button" onClick={async () => setPush(await enablePush(locale))} className={`${SMALL_BUTTON} mt-4 w-full`}>
+        <button type="button" onClick={async () => setPush(await enablePush(locale))} className={`${buttonClass("outline", "small")} mt-6 w-full`}>
           <BellRing className="size-4 text-primary" aria-hidden="true" />
           {copy.pushEnable}
         </button>
@@ -366,16 +334,15 @@ function ReadyBlock({ context }: { context: HelpContext }) {
         {push === "unsupported" && copy.pushUnsupported}
         {push === "off" && copy.pushHint}
       </p>
-    </Block>
+    </HelpBlock>
   );
 }
 
-const CARD = "divide-y divide-border overflow-clip rounded-2xl border border-border bg-surface";
-
 /** The numbers that matter while someone is separated: the desks and guards at the places visited, and the national emergency numbers. */
 export function ImportantNumbers({ context }: { context: HelpContext }) {
+  // Clipped, since its rows reach its edges and its corners round them off.
   return (
-    <div className={CARD}>
+    <div className={`${HELP_FRAME} overflow-clip`}>
       <ContactsBlock context={context} />
     </div>
   );
@@ -383,9 +350,9 @@ export function ImportantNumbers({ context }: { context: HelpContext }) {
 
 /** What the group settles before leaving: what is still missing, the second number, the countries. */
 export function PrepareBlocks({ context }: { context: HelpContext }) {
-  // This card does not clip what it holds: the list of countries opens over its lower edge.
+  // This frame does not clip what it holds: the list of countries opens over its lower edge.
   return (
-    <div className="divide-y divide-border rounded-2xl border border-border bg-surface">
+    <div className={HELP_FRAME}>
       <ReadyBlock context={context} />
       <SecondNumberBlock context={context} />
       <CountriesBlock context={context} />

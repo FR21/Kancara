@@ -4,12 +4,14 @@ import { Menu, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { type MouseEvent, useEffect, useRef, useState } from "react";
+import { type CSSProperties, type MouseEvent, useEffect, useRef, useState } from "react";
 import { NAV_LINKS } from "@/lib/nav-links";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
 import { followSystemTheme } from "@/lib/theme";
 import ProfilePhoto from "@/components/profile/ProfilePhoto";
+import IconButton from "@/components/ui/IconButton";
+import { buttonClass } from "@/components/ui/styles";
 import LanguageToggle from "./LanguageToggle";
 import ThemeToggle from "./ThemeToggle";
 
@@ -32,6 +34,16 @@ function Smile({ className }: { className: string }) {
 const SCROLL_RANGE = 160;
 
 const DARK_HERO_ROUTES = new Set(["/"]);
+
+const MENU_BUTTON_ID = "mobile-menu-button";
+
+// A row of the phone menu: an 8px corner, since the rows sit one surface padding inside the menu's own corner.
+const MENU_ROW =
+  "flex min-h-12 items-center gap-3 rounded-lg px-4 py-2 text-label-lg transition-[color,background-color,scale] duration-150 ease-out active:scale-[0.99]";
+
+function menuRowTone(active: boolean) {
+  return active ? "bg-primary-subtle text-on-primary-subtle" : "text-text hover:bg-surface-muted";
+}
 
 // Matches duration-500 on the smile, so the stretch ends as the glide settles.
 const SMILE_MS = 500;
@@ -90,7 +102,6 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
   const text = useMessages("navbar");
 
   const headerRef = useRef<HTMLElement>(null);
-  const menuButtonRef = useRef<HTMLButtonElement>(null);
   const navListRef = useRef<HTMLUListElement>(null);
   const smileRef = useRef<HTMLSpanElement>(null);
   const [scrolled, setScrolled] = useState(false);
@@ -126,7 +137,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key !== "Escape") return;
       setMenuOpen(false);
-      menuButtonRef.current?.focus();
+      document.getElementById(MENU_BUTTON_ID)?.focus();
     };
     window.addEventListener("keydown", onKeyDown);
     return () => window.removeEventListener("keydown", onKeyDown);
@@ -138,7 +149,6 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
   const onProfile = pathname.startsWith("/profile");
   const solid = scrolled || menuOpen;
   const overHero = !solid && DARK_HERO_ROUTES.has(pathname);
-
 
   // Move the smile on click instead of waiting for the next page to load.
   const previewSmile = (event: MouseEvent, href: string) => {
@@ -168,7 +178,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
       ref={headerRef}
       className="pointer-events-none fixed inset-x-0 top-0 z-50 px-4 pt-4 [--nav-progress:0] sm:px-6 sm:pt-6"
     >
-      {/* Tap outside the open mobile menu to close it */}
+      {/* A tap anywhere outside the open menu closes it, the way a phone's own menus behave. */}
       {menuOpen && (
         <div
           aria-hidden="true"
@@ -179,7 +189,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
 
       <div
         data-over-hero={overHero || undefined}
-        className={`group/nav pointer-events-auto mx-auto flex w-full max-w-5xl items-center justify-between gap-4 rounded-lg border py-2 pr-2 pl-4 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ease-out motion-safe:max-w-[calc(64rem-8rem*var(--nav-progress))] motion-safe:translate-y-[calc(var(--nav-progress)*-0.5rem)] ${
+        className={`group/nav pointer-events-auto mx-auto flex w-full max-w-5xl items-center justify-between gap-4 rounded-full border py-2 pr-2 pl-4 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ease-out motion-safe:max-w-[calc(64rem-8rem*var(--nav-progress))] motion-safe:translate-y-[calc(var(--nav-progress)*-0.5rem)] ${
           solid
             ? "border-border bg-surface/95 shadow-lg shadow-neutral-950/10 backdrop-blur-md"
             : "border-transparent bg-transparent"
@@ -192,7 +202,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
             closeMenu();
             previewSmile(event, "/");
           }}
-          className="flex min-h-11 shrink-0 items-center rounded-sm lg:min-h-0"
+          className="flex min-h-11 shrink-0 items-center rounded-full lg:min-h-0"
         >
           <Image
             src="/images/logo/kancara_wordmark_logo.webp"
@@ -214,7 +224,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
                     href={link.href}
                     aria-current={active ? "page" : undefined}
                     onClick={(event) => previewSmile(event, link.href)}
-                    className={`inline-flex h-10 items-center rounded-md px-3 pb-1 text-label transition-[color,background-color,scale] duration-150 ease-out active:scale-[0.97] ${
+                    className={`inline-flex h-10 items-center rounded-full px-3 pb-1 text-label transition-[color,background-color,scale] duration-150 ease-out active:scale-[0.97] ${
                       active
                         ? "text-primary group-data-over-hero/nav:text-neutral-50"
                         : "text-text-muted hover:bg-surface-muted hover:text-text group-data-over-hero/nav:text-neutral-50/80 group-data-over-hero/nav:hover:bg-neutral-50/10 group-data-over-hero/nav:hover:text-neutral-50"
@@ -246,7 +256,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
                 aria-label={text.profile}
                 title={text.profile}
                 aria-current={onProfile ? "page" : undefined}
-                className="group/photo ml-1 inline-flex size-10 shrink-0 items-center justify-center rounded-full transition-[scale] duration-150 ease-out active:scale-[0.97]"
+                className="group/photo ml-2 inline-flex size-10 shrink-0 items-center justify-center rounded-full transition-[scale] duration-150 ease-out active:scale-[0.97]"
               >
                 <ProfilePhoto
                   src={picture}
@@ -256,23 +266,19 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
                 />
               </Link>
             ) : (
-              <Link
-                href="/login"
-                className="shrink-0 ml-2 inline-flex h-10 items-center justify-center rounded-full bg-primary px-5 text-label text-on-primary shadow-sm transition-[background-color,color,scale] hover:bg-primary-hover active:scale-95"
-              >
+              <Link href="/login" className={`ml-2 shrink-0 shadow-sm ${buttonClass("primary", "small")}`}>
                 {text.login}
               </Link>
             )}
           </div>
 
-          <button
-            ref={menuButtonRef}
-            type="button"
+          <IconButton
+            id={MENU_BUTTON_ID}
             onClick={() => setMenuOpen((open) => !open)}
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
-            aria-label={menuOpen ? text.closeMenu : text.openMenu}
-            className="relative inline-flex size-11 cursor-pointer items-center justify-center rounded-md text-text transition-[color,background-color,scale] duration-150 ease-out hover:bg-surface-muted active:scale-[0.97] group-data-over-hero/nav:text-neutral-50 group-data-over-hero/nav:hover:bg-neutral-50/10 lg:hidden"
+            label={menuOpen ? text.closeMenu : text.openMenu}
+            className="relative group-data-over-hero/nav:text-neutral-50 group-data-over-hero/nav:hover:bg-neutral-50/10 lg:hidden"
           >
             <Menu
               aria-hidden="true"
@@ -286,14 +292,14 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
                 menuOpen ? "" : "scale-75 opacity-0 blur-[2px]"
               }`}
             />
-          </button>
+          </IconButton>
         </div>
       </div>
 
       <div
         id="mobile-menu"
         inert={!menuOpen}
-        className={`mx-auto mt-2 max-w-5xl rounded-lg border border-border bg-surface p-2 origin-top-right shadow-lg shadow-neutral-950/10 transition-[opacity,scale,translate] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-opacity lg:hidden ${
+        className={`mx-auto mt-2 max-w-5xl origin-top-right rounded-surface border border-border bg-surface p-surface shadow-lg shadow-neutral-950/10 transition-[opacity,scale,translate] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-opacity lg:hidden ${
           menuOpen
             ? "pointer-events-auto duration-250 opacity-100"
             : "-translate-y-1 scale-[0.97] opacity-0 duration-150"
@@ -301,19 +307,19 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
       >
         <nav aria-label={text.navLabel}>
           <ul className="flex flex-col gap-1">
-            {NAV_LINKS.map((link) => {
+            {NAV_LINKS.map((link, index) => {
               const active = isActive(link.href);
               return (
-                <li key={link.href}>
+                <li
+                  key={link.href}
+                  style={{ "--item-index": index } as CSSProperties}
+                  className={menuOpen ? "motion-safe:animate-list-in" : ""}
+                >
                   <Link
                     href={link.href}
                     onClick={closeMenu}
                     aria-current={active ? "page" : undefined}
-                    className={`flex items-center justify-between rounded-md px-3 py-3 text-label-lg transition-[color,background-color,scale] duration-150 ease-out active:scale-[0.98] ${
-                      active
-                        ? "bg-primary-subtle text-on-primary-subtle"
-                        : "text-text hover:bg-surface-muted"
-                    }`}
+                    className={`${MENU_ROW} justify-between ${menuRowTone(active)}`}
                   >
                     {text.links[link.key]}
                     {active && <Smile className="h-2 w-5" />}
@@ -324,30 +330,24 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
           </ul>
         </nav>
 
-        <div className="mt-2 border-t border-border px-1 pt-2">
+        <div className="mt-4 border-t border-border pt-4">
           {isLoggedIn ? (
             <Link
               href="/profile"
               onClick={closeMenu}
               aria-current={onProfile ? "page" : undefined}
-              className={`flex items-center gap-3 rounded-md px-3 py-2 text-label-lg transition-[color,background-color,scale] duration-150 ease-out active:scale-[0.98] ${
-                onProfile ? "bg-primary-subtle text-on-primary-subtle" : "text-text hover:bg-surface-muted"
-              }`}
+              className={`${MENU_ROW} ${menuRowTone(onProfile)}`}
             >
-              <ProfilePhoto src={picture} className="size-9 ring-2 ring-border" />
+              <ProfilePhoto src={picture} className="size-8 ring-2 ring-border" />
               {text.profile}
             </Link>
           ) : (
-            <Link
-              href="/login"
-              onClick={closeMenu}
-              className="flex items-center justify-between rounded-md px-3 py-3 text-label-lg text-text hover:bg-surface-muted transition-[color,background-color,scale] duration-150 ease-out active:scale-[0.98]"
-            >
+            <Link href="/login" onClick={closeMenu} className={`w-full ${buttonClass("primary")}`}>
               {text.login}
             </Link>
           )}
         </div>
-        <div className="mt-2 flex items-center justify-between border-t border-border px-1 pt-3 pb-1">
+        <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
           <LanguageToggle label={text.languageToggle} />
           <ThemeToggle label={text.themeToggle} />
         </div>

@@ -1,12 +1,11 @@
 "use client";
 
-import { ArrowRight, ChevronRight, Languages, TriangleAlert, UtensilsCrossed } from "lucide-react";
-import Link from "next/link";
-import type { KeyboardEvent } from "react";
+import { ChevronRight, TriangleAlert } from "lucide-react";
+import type { CSSProperties, KeyboardEvent } from "react";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
 import { formatDays, formatDaysAhead, formatTripDates } from "@/lib/trips/format";
-import { type TripCard, DRAFT_SECTIONS, tripHref } from "@/lib/trips/trip";
+import { type TripCard, DRAFT_SECTIONS } from "@/lib/trips/trip";
 import { useLocale } from "@/lib/use-locale";
 import { StatusMark } from "./TripBadges";
 
@@ -21,6 +20,8 @@ type TripListProps = {
 
 type TripRowProps = {
   card: TripCard;
+  /** Its place in the list, so the rows arrive one after another. */
+  order: number;
   selected: boolean;
   text: Messages["trips"];
   onSelect: (card: TripCard) => void;
@@ -30,7 +31,7 @@ export function tripRowId(id: string): string {
   return `trip-${id}`;
 }
 
-function TripRow({ card, selected, text, onSelect }: TripRowProps) {
+function TripRow({ card, order, selected, text, onSelect }: TripRowProps) {
   const locale = useLocale();
   const route = [card.origin, card.destinations.join(", ")].filter(Boolean).join(" → ");
   const title = card.name || route || text.card.untitled;
@@ -47,8 +48,11 @@ function TripRow({ card, selected, text, onSelect }: TripRowProps) {
   };
 
   return (
-    <li className={`group/row relative transition-colors duration-150 ease-out hover:bg-surface-muted ${selected ? "lg:bg-primary-subtle lg:hover:bg-primary-subtle" : ""}`}>
-      <div className="flex items-center gap-3 px-4 py-3">
+    <li
+      style={{ "--item-index": order } as CSSProperties}
+      className={`group/row relative transition-colors duration-200 ease-out hover:bg-surface-muted active:bg-surface-muted motion-safe:animate-list-in ${selected ? "lg:bg-primary-subtle lg:hover:bg-primary-subtle" : ""}`}
+    >
+      <div className="flex items-center gap-3 px-surface py-3">
         <StatusMark status={card.status} label={text.status[card.status]} />
         <div className="min-w-0 flex-1">
           {/* The button's ::after covers the row, so the whole row selects the trip. */}
@@ -81,8 +85,8 @@ function TripRow({ card, selected, text, onSelect }: TripRowProps) {
         <div className="flex shrink-0 items-center">
           <span
             aria-hidden="true"
-            className={`flex size-6 items-center justify-center rounded-full transition-[background-color,color,translate] duration-200 ease-out group-hover/row:translate-x-1 ${
-              selected ? "text-text-muted lg:bg-primary lg:text-on-primary" : "text-text-muted"
+            className={`flex size-6 items-center justify-center rounded-full transition-[background-color,color,translate,scale] duration-200 ease-out group-hover/row:translate-x-1 ${
+              selected ? "text-text-muted lg:scale-110 lg:bg-primary lg:text-on-primary" : "text-text-muted"
             }`}
           >
             <ChevronRight className="size-4" />
@@ -90,37 +94,6 @@ function TripRow({ card, selected, text, onSelect }: TripRowProps) {
         </div>
       </div>
 
-      {card.status !== "draft" && card.status !== "completed" && (
-        <div className="relative flex flex-wrap gap-2 px-4 pb-3">
-          {card.status === "ongoing" && (
-            <Link
-              href={tripHref(card)}
-              className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full bg-primary px-4 text-label font-bold text-on-primary transition-[background-color,scale] duration-150 ease-out hover:bg-primary-hover active:scale-[0.97]"
-            >
-              {text.card.openToday}
-              <ArrowRight className="size-3.5" aria-hidden="true" />
-            </Link>
-          )}
-          {card.status === "upcoming" && (
-            <>
-              <Link
-                href={`/trips/${encodeURIComponent(card.id)}/dietary-scan`}
-                className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-primary/30 bg-primary-subtle px-3.5 text-caption font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-hover/20 active:scale-[0.97]"
-              >
-                <UtensilsCrossed className="size-3.5 text-primary" aria-hidden="true" />
-                {locale === "en" ? "Scan Menu" : "Pindai Menu"}
-              </Link>
-              <Link
-                href={`/trips/${encodeURIComponent(card.id)}/translator`}
-                className="inline-flex h-10 items-center justify-center gap-1.5 rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3.5 text-caption font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-emerald-500 hover:bg-emerald-500/20 active:scale-[0.97]"
-              >
-                <Languages className="size-3.5 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-                {locale === "en" ? "Translator" : "Penerjemah"}
-              </Link>
-            </>
-          )}
-        </div>
-      )}
     </li>
   );
 }
@@ -141,19 +114,19 @@ export default function TripList({ sections, selectedId, text, onSelect }: TripL
       role="group"
       aria-label={text.list.label}
       onKeyDown={handleKeyDown}
-      className="overflow-clip rounded-2xl border border-border bg-surface motion-safe:animate-message-in"
+      className="overflow-clip rounded-surface border border-border bg-surface"
     >
       {sections.map((section, index) => (
         <section key={section.key} className={index > 0 ? "border-t border-border" : ""}>
           {section.title && (
-            <h2 className="flex items-baseline justify-between gap-3 px-4 pt-4 pb-1 font-sans text-label text-text-muted">
+            <h2 className="flex items-baseline justify-between gap-3 px-surface pt-4 pb-1 font-sans text-label text-text-muted">
               {section.title}
               <span className="tabular-nums">{section.cards.length}</span>
             </h2>
           )}
           <ul className="divide-y divide-border">
-            {section.cards.map((card) => (
-              <TripRow key={card.id} card={card} selected={card.id === selectedId} text={text} onSelect={onSelect} />
+            {section.cards.map((card, row) => (
+              <TripRow key={card.id} card={card} order={row} selected={card.id === selectedId} text={text} onSelect={onSelect} />
             ))}
           </ul>
         </section>

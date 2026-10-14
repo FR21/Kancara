@@ -1,7 +1,9 @@
 "use client";
 
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useId, useRef } from "react";
+import { CTA_SHAPE } from "@/components/landing/styles";
 import { useMessages } from "@/lib/use-messages";
 import ScrollReveal from "./ScrollReveal";
 
@@ -10,6 +12,8 @@ const TRAIL_MS = 900;
 const STEP_PX = 6;
 const FOLLOW = 0.3;
 const MAX_POINTS = 320;
+// The two links are drawn twice, once per tone, so they share everything but their colours.
+const CTA_BUTTON = `${CTA_SHAPE} w-full sm:w-auto`;
 
 const TONES = {
   base: {
@@ -35,33 +39,30 @@ function CtaContent({ tone }: { tone: keyof typeof TONES }) {
   const classes = TONES[tone];
 
   return (
-    <ScrollReveal className="mx-auto max-w-4xl text-center space-y-6">
-      <h2 className={`text-display font-heading font-extrabold text-h1 text-balance sm:text-5xl leading-tight ${classes.heading}`}>
+    <ScrollReveal className="mx-auto max-w-4xl text-center">
+      <h2 className={`font-heading text-h1 leading-tight font-extrabold text-balance sm:text-5xl ${classes.heading}`}>
         {t.cta.heading}
       </h2>
 
-      <p className={`mx-auto max-w-2xl text-body text-pretty sm:text-h3 font-normal leading-relaxed ${classes.body}`}>
+      <p className={`mx-auto mt-4 max-w-2xl text-body leading-relaxed font-normal text-pretty sm:text-h3 ${classes.body}`}>
         {t.cta.description}
       </p>
 
-      <div className="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-        <a
-          href="/plan"
-          className={`group inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full font-bold px-8 py-4 text-label-lg transition-[background-color,scale] duration-150 ease-out active:scale-[0.98] ${classes.primary}`}
-        >
-          <span>{t.cta.ctaPrimary}</span>
-          <ArrowRight className="size-5 transition-transform duration-300 group-hover:translate-x-1" />
-        </a>
+      <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
+        <Link href="/plan" className={`${CTA_BUTTON} ${classes.primary}`}>
+          {t.cta.ctaPrimary}
+          <ArrowRight
+            className="size-5 transition-[translate] duration-300 group-hover:translate-x-1"
+            aria-hidden="true"
+          />
+        </Link>
 
-        <a
-          href="#pwa-info"
-          className={`inline-flex w-full sm:w-auto items-center justify-center gap-2 rounded-full font-semibold px-8 py-4 text-label-lg border transition-[background-color,scale] duration-150 ease-out active:scale-[0.98] ${classes.secondary}`}
-        >
-          <span>{t.cta.ctaSecondary}</span>
+        <a href="#pwa-info" className={`${CTA_BUTTON} border ${classes.secondary}`}>
+          {t.cta.ctaSecondary}
         </a>
       </div>
 
-      <p className={`text-caption font-medium pt-2 ${classes.note}`}>{t.cta.note}</p>
+      <p className={`mt-4 text-caption font-medium ${classes.note}`}>{t.cta.note}</p>
     </ScrollReveal>
   );
 }
@@ -77,7 +78,7 @@ export default function CtaSection() {
     if (!section || !clip) return;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    type Point = { x: number; y: number; t: number };
+    type Point = { x: number; y: number; bornAt: number };
     let points: Point[] = [];
     let target: { x: number; y: number } | null = null;
     let current: { x: number; y: number } | null = null;
@@ -96,7 +97,7 @@ export default function CtaSection() {
           circle.setAttribute("r", "0");
           continue;
         }
-        const life = Math.max(1 - (now - point.t) / TRAIL_MS, 0);
+        const life = Math.max(1 - (now - point.bornAt) / TRAIL_MS, 0);
         circle.setAttribute("cx", point.x.toFixed(1));
         circle.setAttribute("cy", point.y.toFixed(1));
         circle.setAttribute("r", (radius * Math.sqrt(life)).toFixed(1));
@@ -117,13 +118,13 @@ export default function CtaSection() {
             points.push({
               x: current.x + ((next.x - current.x) * i) / steps,
               y: current.y + ((next.y - current.y) * i) / steps,
-              t: now,
+              bornAt: now,
             });
           }
           current = next;
         }
       }
-      points = points.filter((point) => now - point.t < TRAIL_MS).slice(-MAX_POINTS);
+      points = points.filter((point) => now - point.bornAt < TRAIL_MS).slice(-MAX_POINTS);
       render(now);
       if (points.length > 0 || (target && current && Math.hypot(target.x - current.x, target.y - current.y) > 0.5)) {
         frame = requestAnimationFrame(tick);
@@ -170,7 +171,7 @@ export default function CtaSection() {
   return (
     <section
       ref={sectionRef}
-      className="relative isolate z-0 w-full touch-pan-y overflow-hidden bg-[linear-gradient(to_bottom,var(--cta)_calc(100%_-_8rem),var(--background))] px-4 py-16 motion-safe:sticky motion-safe:bottom-0 sm:px-6 sm:py-28 md:px-12 lg:px-20"
+      className="relative isolate z-0 w-full touch-pan-y overflow-hidden bg-[linear-gradient(to_bottom,var(--cta)_calc(100%_-_8rem),var(--background))] px-4 py-16 motion-safe:sticky motion-safe:bottom-0 sm:px-6 sm:py-24 md:px-12 lg:px-20"
     >
       <svg aria-hidden="true" className="absolute size-0">
         <defs>
@@ -178,7 +179,7 @@ export default function CtaSection() {
         </defs>
       </svg>
 
-      <div className="absolute inset-0 -z-10 overflow-hidden pointer-events-none">
+      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
         <div className="absolute top-1/2 -right-40 size-96 -translate-y-1/2 rounded-full bg-accent-300/10 blur-3xl" />
         <div className="absolute top-1/2 -left-40 size-96 -translate-y-1/2 rounded-full bg-secondary-400/10 blur-3xl" />
       </div>
@@ -188,7 +189,7 @@ export default function CtaSection() {
       <div
         aria-hidden="true"
         inert
-        className="pointer-events-none absolute inset-0 bg-[#052b3b] px-4 py-16 dark:bg-accent-300 select-none sm:px-6 sm:py-28 md:px-12 lg:px-20"
+        className="pointer-events-none absolute inset-0 bg-night px-4 py-16 select-none sm:px-6 sm:py-24 md:px-12 lg:px-20 dark:bg-accent-300"
         style={{ clipPath: `url(#${clipId})` }}
       >
         <CtaContent tone="reveal" />

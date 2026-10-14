@@ -1,10 +1,10 @@
 "use client";
 
 import { ExternalLink } from "lucide-react";
-import { OUTLINE_BUTTON } from "@/components/plan/styles";
+import { OUTLINE_BUTTON } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
-import type { MeetingPoint } from "@/lib/safety/pack";
-import Sheet from "./Sheet";
+import type { MeetingPoint } from "@/lib/safety/safety-pack";
+import Sheet from "@/components/ui/Sheet";
 
 type MapPeekProps = {
   /** The place shown, or null while the popup is closed. */
@@ -55,10 +55,10 @@ export default function MapPeek({ place, online, text, closeLabel, onClose }: Ma
               src={`https://www.google.com/maps?q=${query}&z=17&output=embed`}
               loading="lazy"
               referrerPolicy="no-referrer-when-downgrade"
-              className="h-[50dvh] min-h-64 w-full rounded-2xl border border-border bg-surface-muted"
+              className="h-[50dvh] min-h-64 w-full rounded-lg border border-border bg-surface-muted"
             />
           ) : (
-            <p className="rounded-2xl bg-surface-muted px-4 py-6 text-center text-body-sm text-pretty text-text-muted">{text.mapOffline}</p>
+            <p className="rounded-lg bg-surface-muted px-4 py-6 text-center text-body-sm text-pretty text-text-muted">{text.mapOffline}</p>
           )}
         </>
       )}

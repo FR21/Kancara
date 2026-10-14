@@ -1,6 +1,8 @@
 "use client";
 
-import { ArrowRight, Plane } from "lucide-react";
+import { ArrowRight } from "lucide-react";
+import Link from "next/link";
+import { TEXT_LINK } from "@/components/ui/styles";
 import { useInViewAttribute } from "@/lib/use-in-view";
 import { useMessages } from "@/lib/use-messages";
 import ScrollReveal from "./ScrollReveal";
@@ -13,13 +15,13 @@ export default function CoreFlowSection() {
   const timelineRef = useInViewAttribute<HTMLDivElement>();
 
   return (
-    <section id="story-steps" className="relative w-full px-4 py-16 sm:px-6 md:px-12 lg:px-20 overflow-x-clip">
+    <section id="story-steps" className="relative w-full overflow-x-clip px-4 py-16 sm:px-6 sm:py-24 md:px-12 lg:px-20">
       <div className="mx-auto max-w-6xl">
-        <ScrollReveal className="text-center mb-10 sm:mb-16">
-          <h2 className="text-h1 sm:text-display font-heading text-text">
+        <ScrollReveal className="mb-12 text-center">
+          <h2 className="font-heading text-h1 text-balance text-text sm:text-display">
             {t.steps.heading}
           </h2>
-          <p className="mt-2 text-body text-text-muted">
+          <p className="mt-4 text-body text-pretty text-text-muted">
             {t.steps.subtitle}
           </p>
         </ScrollReveal>
@@ -30,21 +32,25 @@ export default function CoreFlowSection() {
             <div className="timeline-fill absolute inset-0 bg-accent-400" />
           </div>
 
-          <div className="space-y-16 sm:space-y-24">
-            {t.steps.items.map((step, idx) => (
-              <div
-                key={idx}
-                className={`relative flex flex-col-reverse md:flex-row items-center gap-6 md:gap-12 ${
-                  idx % 2 === 1 ? "md:flex-row-reverse" : ""
+          <ol className="space-y-16 sm:space-y-24">
+            {t.steps.items.map((step, index) => (
+              <li
+                key={step.number}
+                className={`relative flex flex-col-reverse items-center gap-6 md:flex-row md:gap-12 ${
+                  index % 2 === 1 ? "md:flex-row-reverse" : ""
                 }`}
               >
-                <div className="timeline-activate absolute left-4 md:left-1/2 -translate-x-1/2 z-10 hidden sm:flex size-7 items-center justify-center rounded-full border-4 border-accent-300 bg-background shadow-sm">
-                  <div className="size-2 rounded-full bg-accent-600" />
-                </div>
+                {/* The station on the line carries the step's number; the list itself gives the order to a screen reader. */}
+                <span
+                  aria-hidden="true"
+                  className="timeline-activate absolute left-4 z-10 hidden size-9 -translate-x-1/2 items-center justify-center rounded-full border-4 border-accent-300 bg-background text-caption font-bold text-text tabular-nums shadow-sm sm:flex md:left-1/2"
+                >
+                  {step.number}
+                </span>
 
-                <ScrollReveal from={idx % 2 === 0 ? "left" : "right"} className="w-full md:w-1/2">
+                <ScrollReveal from={index % 2 === 0 ? "left" : "right"} className="w-full md:w-1/2">
                   <StepVisual
-                    kind={STEP_VISUALS[idx % STEP_VISUALS.length]}
+                    kind={STEP_VISUALS[index % STEP_VISUALS.length]}
                     title={step.chartTitle}
                     items={step.chartItems}
                     result={step.chartPill}
@@ -52,36 +58,30 @@ export default function CoreFlowSection() {
                   />
                 </ScrollReveal>
 
-                <ScrollReveal delayMs={120} className="w-full md:w-1/2 text-left space-y-4">
-                  <div className="ticket-notch inline-flex h-6 items-center rounded-sm bg-accent-300 px-3 text-caption font-bold text-neutral-950 [--ticket-notch-size:0.25rem]">
-                    <Plane className="size-3" aria-hidden="true" />
-                    <span aria-hidden="true" className="mx-2 h-3 border-l border-dashed border-neutral-950/50" />
-                    <span className="tabular-nums">{step.number}</span>
-                  </div>
-
-                  <h3 className="text-display font-heading font-extrabold text-text text-h1 sm:text-4xl">
+                <ScrollReveal delayMs={120} className="w-full text-left md:w-1/2">
+                  <h3 className="font-heading text-h1 font-extrabold text-balance text-text sm:text-4xl">
                     {step.title}
                   </h3>
 
-                  <p className="text-h3 font-semibold text-primary">
+                  <p className="mt-2 text-h3 font-semibold text-pretty text-primary">
                     {step.subheading}
                   </p>
 
-                  <p className="text-body text-text-muted leading-relaxed max-w-md">
+                  <p className="mt-4 max-w-md text-body leading-relaxed text-pretty text-text-muted">
                     {step.description}
                   </p>
 
-                  <a
-                    href="/plan"
-                    className="inline-flex min-h-11 items-center gap-2 text-label-lg font-bold text-primary hover:text-primary-hover transition-colors group"
-                  >
-                    <span>{step.cta}</span>
-                    <ArrowRight className="size-4 transition-transform group-hover:translate-x-1" />
-                  </a>
+                  <Link href="/plan" className={`mt-2 ${TEXT_LINK}`}>
+                    {step.cta}
+                    <ArrowRight
+                      className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1"
+                      aria-hidden="true"
+                    />
+                  </Link>
                 </ScrollReveal>
-              </div>
+              </li>
             ))}
-          </div>
+          </ol>
         </div>
       </div>
     </section>

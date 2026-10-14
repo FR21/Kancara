@@ -1,67 +1,101 @@
 {
-  "title": "Saved Member Profiles",
-  "subtitle": "Save every member's unique needs, dietary preferences, and travel wishes once. Future trips are planned instantly without repeating the interview.",
-  "addMember": "Add Member",
-  "planWithAll": "Plan With All",
-  "planWithAllTitle": "Take all saved members into a new draft in /plan",
-  "toastSaved": "Profile {name} saved successfully!",
-  "toastDeleted": "Profile {name} deleted.",
+  "metaTitle": "Saved profiles",
+  "metaDescription": "Keep the needs and wishes of the people you travel with, and use them again in your next plan.",
+  "title": "Saved profiles",
+  "subtitle": "The people who often travel with you, with everything they need. When you plan a new trip, just pick them instead of filling it all in again.",
+  "add": "Add person",
+  "planWithAll": "Plan with everyone",
+  "notice": {
+    "saved": "{name}'s profile is saved.",
+    "deleted": "{name}'s profile was deleted.",
+    "dismiss": "Dismiss"
+  },
   "stats": {
-    "total": "Saved Members",
-    "totalSub": "Ready for next trip",
-    "vulnerable": "Vulnerable Age",
-    "vulnerableSub": "Pacing preserved",
-    "mobility": "Mobility Needs",
-    "mobilitySub": "Wheelchair & stairs",
-    "diet": "Diet & Allergies",
-    "dietSub": "Dietary requirements"
+    "label": "Profile summary",
+    "total": "People saved",
+    "gentlePace": "Elderly, children, and toddlers",
+    "mobility": "Need easy access",
+    "diet": "Diet and allergies"
   },
-  "searchPlaceholder": "Search name, role, allergy, or need...",
-  "filterAll": "All",
-  "filterNeeds": "With Needs",
-  "emptyTitle": "No profiles match this filter",
-  "emptySubtitle": "Try clearing your search term or add a new member profile.",
-  "clearFilters": "Clear Filters",
+  "search": {
+    "label": "Search profiles",
+    "placeholder": "Search name, relationship, or need"
+  },
+  "filters": {
+    "label": "Filter profiles",
+    "all": "All",
+    "withNeeds": "With needs"
+  },
+  "empty": {
+    "title": "No saved profiles yet",
+    "body": "Save the people who often travel with you just once. Their needs and wishes fill in by themselves every time you plan a trip."
+  },
+  "noMatch": {
+    "title": "Nothing matches",
+    "body": "Try another word, or look at all profiles again.",
+    "clear": "Show all profiles"
+  },
   "card": {
-    "needsCount": "{count} needs",
-    "preservedNeeds": "Preserved Needs",
-    "allergies": "Allergies",
-    "wishes": "Travel Wishes",
-    "planTrip": "Plan Trip",
-    "editProfile": "Edit Profile",
-    "deleteProfile": "Delete Profile"
+    "age": "{age} years",
+    "needs": "Needs",
+    "noNeeds": "No special needs",
+    "allergies": "Allergies: {allergies}",
+    "wishes": "Wishes",
+    "notes": "Notes",
+    "plan": "Plan a trip",
+    "more": "More actions for {name}",
+    "edit": "Edit profile",
+    "delete": "Delete profile"
   },
-  "modal": {
-    "titleAdd": "Add New Member Profile",
-    "titleEdit": "Edit Member Profile",
-    "hint": "Saved needs will automatically populate future trip drafts.",
-    "nameLabel": "Full Name / Nickname *",
-    "namePlaceholder": "e.g. Grandma Rose",
-    "relLabel": "Role / Relationship",
-    "relPlaceholder": "e.g. Father, Mother, Child",
-    "ageLabel": "Age (Years)",
-    "agePlaceholder": "e.g. 45",
-    "selectNeeds": "Select all that apply",
-    "customNeeds": "Other Custom Needs",
-    "customNeedPlaceholder": "Add custom need... (e.g. Eye drops)",
-    "addBtn": "Add",
-    "allergiesPlaceholder": "e.g. Peanuts, Shrimp, Dust, Lactose",
-    "interestsHint": "Click 1x for 'Nice to have', 2x for 'Must visit', again to deselect.",
-    "mustLevel": "Must",
-    "niceLevel": "Nice",
-    "customWishes": "Other Custom Wishes",
-    "customWishPlaceholder": "Add custom wish... (e.g. Local coffee tour)",
-    "notesLabel": "Notes for Future Trips",
-    "notesPlaceholder": "e.g. Prone to motion sickness; needs personal remedy.",
+  "suggestions": {
+    "title": "From your trips",
+    "body": "They have been on a trip with you. Save their profile so they are easy to pick again.",
+    "from": "Joined {trip}",
+    "untitledTrip": "an untitled trip",
+    "save": "Save",
+    "saveLabel": "Save {name}'s profile"
+  },
+  "editor": {
+    "titleAdd": "Add profile",
+    "titleEdit": "Edit profile",
+    "close": "Close",
+    "name": "Name or nickname",
+    "namePlaceholder": "e.g. Grandma Sri",
+    "nameMissing": "Write their name or nickname first.",
+    "relationship": "Relationship (optional)",
+    "relationshipPlaceholder": "e.g. Mother, work friend",
+    "relationshipQuick": "Relationship choices",
+    "relationships": ["Father", "Mother", "Grandpa", "Grandma", "Child", "Partner", "Sibling", "Friend"],
+    "notes": "Notes (optional)",
+    "notesPlaceholder": "e.g. gets carsick on winding roads, brings their own medicine.",
+    "notesHint": "Notes are stored encrypted and only you can see them.",
     "cancel": "Cancel",
-    "save": "Save Profile",
-    "saveChanges": "Save Changes"
+    "save": "Save profile",
+    "saving": "Saving..."
+  },
+  "errors": {
+    "full": "You already have {count} saved profiles. Delete one to add a new one.",
+    "offline": "You are offline. Connect to the internet, then try again.",
+    "failed": "The profile was not saved. Try again in a moment.",
+    "deleteFailed": "The profile was not deleted. Check your connection, then try again.",
+    "loadFailed": "Saved profiles could not be loaded.",
+    "retry": "Try again"
   },
   "deleteDialog": {
-    "title": "Delete profile for {name}?",
-    "body": "This member's saved needs and preferences will be removed from your saved profiles.",
+    "title": "Delete {name}'s profile?",
+    "body": "Their needs, allergies, and notes are deleted too. Trip plans you already made stay as they are.",
     "cancel": "Cancel",
-    "confirm": "Delete Profile",
+    "confirm": "Delete profile",
     "pending": "Deleting..."
+  },
+  "picker": {
+    "title": "Pick from saved profiles",
+    "loading": "Loading profiles...",
+    "empty": "No saved profiles yet. Save the people who often travel with you on the saved profiles page.",
+    "saved": "Saved profiles",
+    "inPlan": "Already in the group",
+    "add": "Add to the group ({count})",
+    "addNone": "Pick someone first",
+    "manage": "Manage saved profiles"
   }
 }

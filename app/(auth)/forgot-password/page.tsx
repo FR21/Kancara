@@ -7,6 +7,7 @@ import { type FormEvent, useState } from "react";
 import AuthHeading from "@/components/auth/AuthHeading";
 import { FormAlert, SubmitButton } from "@/components/auth/AuthParts";
 import TextField from "@/components/auth/TextField";
+import { TEXT_LINK } from "@/components/ui/styles";
 import { authErrorCode, authErrorKey } from "@/lib/auth/client";
 import { emailIssue } from "@/lib/auth/validation";
 import { auth } from "@/lib/firebase/client";
@@ -59,13 +60,13 @@ export default function ForgotPasswordPage() {
       {sent ? (
         <div
           role="status"
-          className="mt-8 flex items-center gap-3 rounded-2xl bg-success-subtle px-4 py-4 motion-safe:animate-message-in"
+          className="mt-8 flex items-center gap-3 rounded-lg bg-success-subtle px-4 py-3 motion-safe:animate-message-in"
         >
           <CircleCheck className="size-6 shrink-0 text-success motion-safe:animate-stamp-in" aria-hidden="true" />
           <p className="text-body text-on-success-subtle">{t.forgot.success}</p>
         </div>
       ) : (
-        <form onSubmit={handleSubmit} noValidate className="mt-8 flex flex-col gap-6">
+        <form onSubmit={handleSubmit} noValidate className="mt-8 flex flex-col gap-4">
           <FormAlert message={error} />
           <TextField
             id="forgot-email"
@@ -79,15 +80,14 @@ export default function ForgotPasswordPage() {
             disabled={pending}
             onChange={setEmail}
           />
-          <SubmitButton pending={pending}>{t.forgot.submit}</SubmitButton>
+          <SubmitButton pending={pending} className="mt-2 w-full">
+            {t.forgot.submit}
+          </SubmitButton>
         </form>
       )}
 
       <p className="mt-8 text-center">
-        <Link
-          href="/login"
-          className="group inline-flex min-h-11 items-center gap-2 rounded-sm text-label text-primary underline-offset-4 hover:underline"
-        >
+        <Link href="/login" className={TEXT_LINK}>
           <ArrowLeft
             className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-x-1"
             aria-hidden="true"

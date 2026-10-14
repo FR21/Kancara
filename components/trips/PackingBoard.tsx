@@ -4,11 +4,11 @@ import { ArrowRight, CalendarCheck, Check, CloudOff, Info, Loader2, Plus, Rotate
 import Image from "next/image";
 import Link from "next/link";
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
-import MemberAvatar from "@/components/plan/MemberAvatar";
-import { INPUT, choiceClass } from "@/components/plan/styles";
-import Stamp from "@/components/ui/stamp";
-import { type Itinerary, captain } from "@/lib/api/captain";
-import { fetchWeather } from "@/lib/api/weather";
+import { INPUT, choiceClass, INPUT_BUTTON, buttonClass, TEXT_LINK, FIELD_LABEL } from "@/components/ui/styles";
+import SelectField from "@/components/ui/SelectField";
+import Stamp from "@/components/ui/Stamp";
+import { type Itinerary, captain } from "@/lib/client/captain";
+import { fetchWeather } from "@/lib/client/weather";
 import { laundryDayNumbers } from "@/lib/laundry";
 import type { Messages } from "@/lib/messages";
 import {
@@ -53,10 +53,8 @@ type Filter = "all" | "todo" | "essential" | "weather" | `member:${string}`;
 type FilterChip = { key: Filter; label: string; count: number; memberIndex?: number };
 type CaptainState = "idle" | "asking" | "failed";
 
-const QUIET_ACTION =
-  "inline-flex h-11 shrink-0 cursor-pointer items-center gap-2 rounded-full border border-border-strong px-4 text-label text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-subtle active:scale-[0.97]";
-const TEXT_ACTION =
-  "inline-flex min-h-11 cursor-pointer items-center gap-2 rounded-full px-3 text-label text-primary transition-[background-color,scale] duration-150 ease-out hover:bg-primary-subtle active:scale-[0.97]";
+const QUIET_ACTION = buttonClass("outline", "small");
+const TEXT_ACTION = TEXT_LINK;
 // Destination names joined with a character no name holds, so the list can be a single effect dependency.
 const PLACE_JOINER = "\u0000";
 
@@ -304,40 +302,66 @@ export default function PackingBoard({
       </div>
 
       <div className="order-3 min-w-0">
-        <div
-          role="group"
-          aria-label={text.filters.label}
-          className="scrollbar-none -mx-4 flex gap-2 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 lg:mx-0 lg:flex-wrap lg:overflow-visible lg:px-0 lg:pb-0"
-        >
-          {filters.map((entry) => {
-            const selected = entry.key === active;
-            return (
-              <button
-                key={entry.key}
-                type="button"
-                aria-pressed={selected}
-                onClick={() => setFilter(entry.key)}
-                className={`${choiceClass(selected)} shrink-0 whitespace-nowrap`}
-              >
-                {selected && <Check className="size-4 shrink-0" strokeWidth={3} aria-hidden="true" />}
-                {!selected && entry.memberIndex !== undefined && (
-                  <MemberAvatar
-                    ageGroup={draft.members[entry.memberIndex].ageGroup}
-                    variant={entry.memberIndex}
-                    className="-ml-2 size-6"
-                  />
-                )}
-                {entry.label}
-                <span className={`tabular-nums ${selected ? "text-on-primary" : "text-text-muted"}`}>{entry.count}</span>
-              </button>
-            );
-          })}
+        <div className="sm:max-w-xs">
+          <label htmlFor="packing-filter" className={FIELD_LABEL}>
+            {text.filters.label}
+          </label>
+          <SelectField
+            id="packing-filter"
+            className="mt-2"
+            value={active}
+            onChange={(event) => {
+              const picked = filters.find((entry) => entry.key === event.target.value);
+              if (picked) setFilter(picked.key);
+            }}
+          >
+            {filters.map((entry) => (
+              <option key={entry.key} value={entry.key}>
+                {fillTemplate(text.filters.option, { name: entry.label, count: entry.count })}
+              </option>
+            ))}
+          </SelectField>
         </div>
 
-        <div className="mt-4 overflow-clip rounded-2xl border border-border bg-surface">
+        <div className="mt-4 overflow-clip rounded-surface border border-border bg-surface">
+          <div className="border-b border-border px-surface py-4">
+            {ownFull ? (
+              <p className="text-body-sm text-text-muted">
+                {fillTemplate(text.add.full, { count: draft.packing.own.length })}
+              </p>
+            ) : (
+              <>
+                <label htmlFor="packing-add" className="block text-caption font-bold text-text-muted">
+                  {addLabel}
+                </label>
+                <div className="mt-2 flex gap-2">
+                  <input
+                    id="packing-add"
+                    type="text"
+                    autoComplete="off"
+                    maxLength={MAX_CUSTOM_CHARS}
+                    value={pending}
+                    placeholder={text.add.placeholder}
+                    onChange={(event) => setPending(event.target.value)}
+                    onKeyDown={handleAddKey}
+                    className={`${INPUT} min-w-0`}
+                  />
+                  <button
+                    type="button"
+                    disabled={pending.trim() === ""}
+                    onClick={addOwn}
+                    className={INPUT_BUTTON}
+                  >
+                    <Plus className="size-4" aria-hidden="true" />
+                    {text.add.button}
+                  </button>
+                </div>
+              </>
+            )}
+          </div>
           {/* A trip longer than a week cannot pack clothes for every day; the group says how it will manage. */}
           {askLaundry && (
-            <div role="group" aria-labelledby="laundry-title" className="border-b border-border px-4 py-4 sm:px-5">
+            <div role="group" aria-labelledby="laundry-title" className="border-b border-border px-surface py-4">
               <p id="laundry-title" className="flex items-center gap-2 text-label text-text">
                 <Shirt className="size-4 shrink-0 text-primary" aria-hidden="true" />
                 {fillTemplate(text.laundry.title, { days: tripDayCount(draft) })}
@@ -397,7 +421,7 @@ export default function PackingBoard({
           {captainState === "asking" && (
             <p
               role="status"
-              className="flex items-center gap-3 border-b border-border px-4 py-3 text-body-sm text-text-muted motion-safe:animate-message-in sm:px-5"
+              className="flex items-center gap-3 border-b border-border px-surface py-3 text-body-sm text-text-muted motion-safe:animate-message-in"
             >
               <Image
                 src="/images/logo/kancara_mascot_captain_logo.webp"
@@ -427,7 +451,7 @@ export default function PackingBoard({
             </div>
           )}
           {shown.length === 0 && (
-            <p className="px-5 py-8 text-center text-body-sm text-text-muted">
+            <p className="px-surface py-8 text-center text-body-sm text-text-muted">
               {active === "todo" ? text.empty.todo : text.empty.other}
             </p>
           )}
@@ -459,41 +483,6 @@ export default function PackingBoard({
             })}
           </ul>
 
-          <div className="border-t border-border px-4 py-4 sm:px-5">
-            {ownFull ? (
-              <p className="text-body-sm text-text-muted">
-                {fillTemplate(text.add.full, { count: draft.packing.own.length })}
-              </p>
-            ) : (
-              <>
-                <label htmlFor="packing-add" className="block text-caption font-bold text-text-muted">
-                  {addLabel}
-                </label>
-                <div className="mt-2 flex gap-2">
-                  <input
-                    id="packing-add"
-                    type="text"
-                    autoComplete="off"
-                    maxLength={MAX_CUSTOM_CHARS}
-                    value={pending}
-                    placeholder={text.add.placeholder}
-                    onChange={(event) => setPending(event.target.value)}
-                    onKeyDown={handleAddKey}
-                    className={`${INPUT} min-w-0`}
-                  />
-                  <button
-                    type="button"
-                    disabled={pending.trim() === ""}
-                    onClick={addOwn}
-                    className="inline-flex h-12 shrink-0 cursor-pointer items-center gap-1 rounded-lg border border-border-strong px-4 text-label text-text transition-[background-color,scale] duration-150 ease-out hover:bg-surface-muted active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40"
-                  >
-                    <Plus className="size-4" aria-hidden="true" />
-                    {text.add.button}
-                  </button>
-                </div>
-              </>
-            )}
-          </div>
         </div>
       </div>
     </div>

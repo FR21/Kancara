@@ -37,6 +37,14 @@ import idPacking from "@/messages/id/packing.json";
 import idSafety from "@/messages/id/safety.json";
 import enSavedProfiles from "@/messages/en/savedProfiles.json";
 import idSavedProfiles from "@/messages/id/savedProfiles.json";
+import enFieldPass from "@/messages/en/fieldPass.json";
+import idFieldPass from "@/messages/id/fieldPass.json";
+import enDietaryScan from "@/messages/en/dietaryScan.json";
+import idDietaryScan from "@/messages/id/dietaryScan.json";
+import enTranslator from "@/messages/en/translator.json";
+import idTranslator from "@/messages/id/translator.json";
+import enTripSummary from "@/messages/en/tripSummary.json";
+import idTripSummary from "@/messages/id/tripSummary.json";
 import type { Locale } from "./locale";
 
 // Indonesian is the default locale, so its files define the expected keys.
@@ -57,6 +65,10 @@ const id = {
   packing: idPacking,
   safety: idSafety,
   savedProfiles: idSavedProfiles,
+  fieldPass: idFieldPass,
+  dietaryScan: idDietaryScan,
+  translator: idTranslator,
+  tripSummary: idTripSummary,
 };
 
 export type Messages = typeof id;
@@ -80,6 +92,10 @@ const en = {
   packing: enPacking,
   safety: enSafety,
   savedProfiles: enSavedProfiles,
+  fieldPass: enFieldPass,
+  dietaryScan: enDietaryScan,
+  translator: enTranslator,
+  tripSummary: enTripSummary,
 } satisfies Messages;
 
 export const MESSAGES: Record<Locale, Messages> = { id, en };

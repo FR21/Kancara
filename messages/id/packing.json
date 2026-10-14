@@ -1,7 +1,6 @@
 {
   "title": "Daftar bawaan",
   "open": "Daftar bawaan",
-  "openHint": "Disusun dari cuaca dan kebutuhan tiap anggota.",
   "back": "Itinerary",
   "loading": "Memuat daftar bawaan",
   "error": "Daftar bawaan belum bisa dimuat. Periksa koneksimu, lalu coba lagi.",
@@ -20,7 +19,8 @@
     "all": "Semua",
     "todo": "Belum siap",
     "essential": "Penting",
-    "weather": "Karena cuaca"
+    "weather": "Karena cuaca",
+    "option": "{name} ({count})"
   },
   "empty": {
     "todo": "Semua sudah masuk tas.",

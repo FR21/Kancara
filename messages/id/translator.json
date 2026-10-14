@@ -1,0 +1,93 @@
+{
+  "crumb": "Penerjemah",
+  "title": "Penerjemah percakapan",
+  "lead": "Ngobrol dua arah di {destination}: bicara atau ketik, terjemahannya tampil besar dan bisa dibacakan untuk lawan bicaramu.",
+  "travelerName": "Kamu, bahasa {language}",
+  "localName": "Lawan bicara, bahasa {language}",
+  "languages": {
+    "english": "Inggris",
+    "japanese": "Jepang",
+    "korean": "Korea",
+    "thai": "Thai",
+    "chinese": "Mandarin",
+    "cantonese": "Kanton",
+    "vietnamese": "Vietnam",
+    "malay": "Melayu",
+    "arabic": "Arab",
+    "turkish": "Turki",
+    "french": "Prancis",
+    "german": "Jerman",
+    "italian": "Italia",
+    "spanish": "Spanyol",
+    "dutch": "Belanda",
+    "indonesian": "Indonesia"
+  },
+  "settings": {
+    "language": "Bahasa lawan bicara",
+    "autoSpeak": "Bacakan otomatis",
+    "faceToFace": "Mode berhadapan"
+  },
+  "noMicrophone": "Browser ini belum bisa mendengar suara. Ketik saja kalimatnya, terjemahannya tetap muncul.",
+  "recordingMode": "Di browser ini suara direkam dulu: tekan mikrofon untuk mulai, tekan lagi untuk mengirim.",
+  "faceToFaceWaiting": "Terjemahan kalimatmu akan tampil di sini, menghadap lawan bicara.",
+  "composer": {
+    "placeholder": "Ketik dalam bahasa {language}",
+    "speak": "Bicara",
+    "stop": "Berhenti dan kirim",
+    "send": "Terjemahkan",
+    "listening": "Mendengarkan, {seconds} dtk",
+    "recording": "Merekam {seconds} dtk, tekan kotak untuk mengirim"
+  },
+  "empty": {
+    "title": "Mulai percakapan",
+    "hint": "Pakai kolom “{traveler}” untuk bicara, dan kolom “{local}” untuk lawan bicaramu.",
+    "quickTitle": "Kalimat siap pakai"
+  },
+  "quickPhrases": [
+    {
+      "label": "Minta tagihan",
+      "text": "Boleh minta tagihannya?",
+      "context": "restaurant"
+    },
+    {
+      "label": "Berapa harganya?",
+      "text": "Berapa harga barang ini?",
+      "context": "shopping"
+    },
+    {
+      "label": "Di mana toilet?",
+      "text": "Permisi, di mana toilet terdekat?",
+      "context": "general"
+    },
+    {
+      "label": "Menu andalan",
+      "text": "Menu apa yang paling direkomendasikan di sini?",
+      "context": "restaurant"
+    },
+    {
+      "label": "Panggilkan taksi",
+      "text": "Bisa tolong panggilkan taksi untuk saya?",
+      "context": "transit"
+    },
+    {
+      "label": "Saya tersesat",
+      "text": "Permisi, saya tersesat. Bisakah Anda membantu saya?",
+      "context": "emergency"
+    }
+  ],
+  "logLabel": "Percakapan",
+  "pronunciation": "Cara baca: {romanized}",
+  "play": "Putar suara",
+  "playing": "Sedang dibacakan",
+  "translating": "Menerjemahkan",
+  "noSpeech": "Browser ini tidak bisa membacakan teks. Tunjukkan saja tulisannya.",
+  "noVoice": "HP ini belum punya suara bahasa {language}. Tunjukkan saja tulisannya.",
+  "errors": {
+    "offline": "Menerjemahkan butuh koneksi internet. Sambungkan dulu, lalu coba lagi.",
+    "failed": "Kalimat ini belum bisa diterjemahkan. Coba lagi.",
+    "micBlocked": "Akses mikrofon diblokir. Izinkan mikrofon di pengaturan browser, atau ketik saja kalimatnya.",
+    "noSpeech": "Belum ada suara yang terdengar. Coba bicara lebih dekat ke HP.",
+    "micFailed": "Mikrofon belum bisa dipakai. Ketik saja kalimatnya."
+  },
+  "dismiss": "Tutup"
+}

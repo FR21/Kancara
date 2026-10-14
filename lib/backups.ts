@@ -1,4 +1,4 @@
-import type { Itinerary, ItineraryBackup, ItineraryDay, ItineraryItem } from "@/lib/api/captain";
+import type { BackupKind, Itinerary, ItineraryBackup, ItineraryDay, ItineraryItem } from "@/lib/client/captain";
 
 // Backup plans: every stop carries one or two places that can take its slot when it cannot happen. They are
 // prepared and checked against the group's needs when the plan is made, so on the day nothing has to be looked up.
@@ -32,6 +32,8 @@ function swapBackup(item: ItineraryItem, index: number): ItineraryItem {
     rating: item.rating,
     priceLevel: item.priceLevel,
     openingHours: item.openingHours,
+    placeId: item.placeId,
+    category: item.category,
     covers: item.covers,
     violations: item.violations,
   };
@@ -58,45 +60,30 @@ export function switchToBackup(itinerary: Itinerary, date: string, itemIndex: nu
   };
 }
 
-/** Finds the best backup index for a given situation (rain, closed, rest, or restore main). */
-export function findBackupIndexForKind(item: ItineraryItem, kind: string): number {
+/**
+ * The backup to offer when something changes on the day: the one made for that situation, otherwise any other
+ * prepared place. -1 when the stop has none.
+ */
+export function findBackupIndexForKind(item: ItineraryItem, kind: BackupKind | "main"): number {
   const backups = listBackups(item);
-  if (backups.length === 0) return -1;
-
-  if (kind === "main") {
-    return backups.findIndex((b) => b.kind === "main");
-  }
-
-  // Exact kind match (e.g. rain backup when it rains, closed when a place is closed, rest when tired)
-  const exact = backups.findIndex((b) => b.kind === kind);
-  if (exact !== -1) return exact;
-
-  // Fallback to any alternative non-main backup
-  return backups.findIndex((b) => b.kind !== "main");
+  const madeForIt = backups.findIndex((backup) => backup.kind === kind);
+  if (madeForIt !== -1 || kind === "main") return madeForIt;
+  return backups.findIndex((backup) => backup.kind !== "main");
 }
 
-/** Swaps multiple stops in a day to their chosen backups simultaneously. */
-export function rebuildDayStops(
-  itinerary: Itinerary,
-  date: string,
-  switches: { itemIndex: number; backupIndex: number }[],
-): Itinerary {
-  const switchMap = new Map<number, number>();
-  for (const s of switches) {
-    if (s.backupIndex >= 0) switchMap.set(s.itemIndex, s.backupIndex);
-  }
-
+/** The itinerary with several stops of one day switched at once, each to the backup chosen for it. */
+export function rebuildDayStops(itinerary: Itinerary, date: string, switches: { itemIndex: number; backupIndex: number }[]): Itinerary {
+  const chosen = new Map(switches.filter((change) => change.backupIndex >= 0).map((change) => [change.itemIndex, change.backupIndex]));
   return {
-    days: itinerary.days.map((day) =>
-      day.date === date
-        ? {
-            ...day,
-            items: day.items.map((item, index) => {
-              const backupIdx = switchMap.get(index);
-              return backupIdx !== undefined ? swapBackup(item, backupIdx) : item;
-            }),
-          }
-        : day,
-    ),
+    days: itinerary.days.map((day) => {
+      if (day.date !== date) return day;
+      return {
+        ...day,
+        items: day.items.map((item, index) => {
+          const backupIndex = chosen.get(index);
+          return backupIndex === undefined ? item : swapBackup(item, backupIndex);
+        }),
+      };
+    }),
   };
 }

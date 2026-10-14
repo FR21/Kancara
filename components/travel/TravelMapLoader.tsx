@@ -6,10 +6,12 @@ import { useMessages } from "@/lib/use-messages";
 function MapPlaceholder() {
   const text = useMessages("travel");
   return (
-    <div role="status" className="mx-auto w-full max-w-2xl px-4 lg:max-w-5xl xl:px-0">
+    <div role="status">
       <span className="sr-only">{text.stage.loading}</span>
+      {/* Shaped like the page that is on its way: the trail, the title, the lead, then the globe. */}
       <div aria-hidden="true" className="motion-safe:animate-pulse">
-        <div className="h-9 w-56 rounded-full bg-surface-muted" />
+        <div className="h-5 w-40 rounded-full bg-surface-muted" />
+        <div className="mt-6 h-9 w-56 rounded-lg bg-surface-muted" />
         <div className="mt-4 h-5 w-full max-w-md rounded-full bg-surface-muted" />
         <div className="mx-auto mt-10 aspect-square w-full max-w-md rounded-full bg-surface-muted" />
       </div>

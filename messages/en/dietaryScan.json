@@ -1,0 +1,63 @@
+{
+  "crumb": "Menu scanner",
+  "title": "Scan a menu for food restrictions",
+  "lead": "Take a photo of a menu or food label in {destination}. The ingredients are read, checked against each member's restrictions, and a question for the waiter is written in the local language.",
+  "group": {
+    "title": "The group's restrictions",
+    "allergy": "{allergy} allergy",
+    "none": "This trip's plan lists no food restrictions yet. The scan still names ingredients worth asking about."
+  },
+  "picker": {
+    "title": "A photo of a menu or food label",
+    "hint": "Point the camera at the dish name, the ingredient list, or the package label until the text is easy to read.",
+    "camera": "Take a photo",
+    "gallery": "Choose from gallery",
+    "choose": "Choose a photo",
+    "preparing": "Preparing the photo",
+    "previewAlt": "The menu photo to be read",
+    "ready": "Photo ready to read",
+    "readyHint": "Hidden ingredients such as mirin, lard, fish stock, alcohol, or nuts are checked for every member.",
+    "scan": "Check ingredients and restrictions",
+    "scanning": "Reading the menu",
+    "change": "Change photo"
+  },
+  "errors": {
+    "notImage": "This file is not a photo. Choose a JPG, PNG, or HEIC photo.",
+    "tooLarge": "The photo is too large. Take it again or choose another one.",
+    "unreadable": "This browser cannot open this photo. Try taking one straight from the camera.",
+    "offline": "Reading a menu needs an internet connection. Connect first, then try again.",
+    "failed": "The menu could not be read. Try again shortly."
+  },
+  "retry": "Try again",
+  "result": {
+    "language": "Written in {language}",
+    "status": {
+      "safe": "Safe to eat",
+      "warning": "Ask first",
+      "danger": "Has restrictions"
+    },
+    "ingredients": "Ingredients read",
+    "doubtful": "Ask the waiter about",
+    "members": "For each member",
+    "memberStatus": {
+      "safe": "Safe",
+      "warning": "Ask the waiter",
+      "danger": "Avoid"
+    },
+    "unknownMember": "Group member",
+    "others": "{count} other members have no food restrictions."
+  },
+  "waiter": {
+    "title": "Ask the waiter",
+    "hint": "Show this screen to the waiter or play it aloud.",
+    "meaning": "Meaning: {translation}",
+    "speak": "Play aloud",
+    "speakMeaning": "Hear the meaning",
+    "speaking": "Reading aloud",
+    "copy": "Copy",
+    "copied": "Copied"
+  },
+  "noSpeech": "This browser cannot read text aloud. Show the text instead.",
+  "noVoice": "This phone has no {language} voice yet. Show the text instead.",
+  "dismiss": "Dismiss"
+}

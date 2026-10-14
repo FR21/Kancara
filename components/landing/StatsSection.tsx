@@ -2,6 +2,7 @@
 
 import { ArrowUpRight, Check, HeartHandshake, Hourglass, Star, Users, WifiOff } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
+import { BADGE, EASE } from "@/components/ui/styles";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
 import ScrollReveal from "./ScrollReveal";
@@ -9,11 +10,10 @@ import TrustedBy from "./TrustedBy";
 
 const MONTHLY_TRAVELLERS = [1010, 1240, 1180, 1620, 1980, 2500, 2950];
 
-const EASE = "ease-[cubic-bezier(0.23,1,0.32,1)]";
-const CARD = `group/card h-full rounded-3xl border border-border bg-white p-6 sm:p-8 dark:bg-neutral-900 transition-[translate,box-shadow,border-color] duration-300 ${EASE} hover:-translate-y-1 hover:border-primary/25 hover:shadow-xl hover:shadow-primary/5`;
+const CARD = `group/card h-full rounded-surface border border-border bg-white p-surface dark:bg-neutral-900 transition-[translate,box-shadow,border-color] duration-300 ${EASE} hover:-translate-y-1 hover:border-primary/25 hover:shadow-xl hover:shadow-primary/5`;
 const GROW = `transition-[scale] duration-700 ${EASE}`;
 const GLINT =
-  "pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-linear-to-r from-transparent via-neutral-50/60 to-transparent opacity-0 group-hover/card:animate-glint";
+  "pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-linear-to-r from-transparent via-neutral-50/60 to-transparent opacity-0 motion-safe:group-hover/card:animate-glint";
 
 type Figure = {
   prefix: string;
@@ -135,22 +135,22 @@ function TravellersCard() {
     <div className={`${CARD} flex flex-col`}>
       <div className="flex items-start justify-between gap-3">
         <CardLabel icon={Users}>{t.card1Label}</CardLabel>
-        <span className="flex shrink-0 items-center gap-1 rounded-full bg-success-subtle px-3 py-1 text-caption font-bold text-on-success-subtle">
+        <span className={`${BADGE} shrink-0 bg-success-subtle text-on-success-subtle`}>
           <ArrowUpRight
             aria-hidden="true"
             strokeWidth={2.5}
             className={`size-4 transition-[translate] duration-300 ${EASE} group-hover/card:translate-x-1 group-hover/card:-translate-y-1`}
           />
-          {t.card1Growth.replace(/^[↑\s]+/, "")}
+          {t.card1Growth}
         </span>
       </div>
 
       <CountUp
         value={t.card1Value}
-        className="mt-4 font-heading text-display font-extrabold tracking-tight text-text"
+        className="mt-2 font-heading text-display font-extrabold tracking-tight text-text"
       />
 
-      <figure className="mt-auto pt-10">
+      <figure className="mt-auto pt-6">
         <div aria-hidden="true" className="flex h-44 items-end gap-2 border-b border-border">
           {MONTHLY_TRAVELLERS.map((value, index) => {
             const current = index === last;
@@ -159,7 +159,7 @@ function TravellersCard() {
               <div key={months[index]} className="group/bar relative flex h-full flex-1 items-end justify-center">
                 <div
                   style={{ height: `${height}%`, transitionDelay: `${200 + index * 70}ms` }}
-                  className={`w-full max-w-8 origin-bottom rounded-t-[4px] transition-[scale,background-color] duration-700 ${EASE} motion-safe:scale-y-0 motion-safe:group-data-visible/reveal:scale-y-100 ${
+                  className={`w-full max-w-8 origin-bottom rounded-t-lg transition-[scale,background-color] duration-700 ${EASE} motion-safe:scale-y-0 motion-safe:group-data-visible/reveal:scale-y-100 ${
                     current
                       ? "bg-primary group-hover/bar:bg-primary-hover"
                       : "bg-neutral-300 group-hover/bar:bg-neutral-400 dark:bg-neutral-700 dark:group-hover/bar:bg-neutral-600"
@@ -167,7 +167,7 @@ function TravellersCard() {
                 />
                 <span
                   style={{ bottom: `calc(${height}% + 0.5rem)` }}
-                  className={`pointer-events-none absolute left-1/2 -translate-x-1/2 rounded-md px-2 py-1 text-caption font-bold whitespace-nowrap transition-[opacity,translate] duration-200 ${EASE} ${
+                  className={`pointer-events-none absolute left-1/2 -translate-x-1/2 rounded-lg px-2 py-1 text-caption font-bold whitespace-nowrap transition-[opacity,translate] duration-200 ${EASE} ${
                     current
                       ? "text-text motion-safe:opacity-0 motion-safe:group-data-visible/reveal:opacity-100 motion-safe:[transition-delay:900ms]"
                       : "translate-y-1 bg-text text-background opacity-0 shadow-md group-hover/bar:translate-y-0 group-hover/bar:opacity-100"
@@ -213,7 +213,7 @@ function NeedsCard() {
   return (
     <div className={`${CARD} flex flex-col`}>
       <CardLabel icon={HeartHandshake}>{t.card2Label}</CardLabel>
-      <CountUp value={t.card2Value} className="mt-4 font-heading text-h1 font-extrabold tracking-tight text-text" />
+      <CountUp value={t.card2Value} className="mt-2 font-heading text-h1 font-extrabold tracking-tight text-text" />
 
       <div
         role="meter"
@@ -239,11 +239,11 @@ function NeedsCard() {
               <span
                 key={index}
                 style={{ transitionDelay: `${index * 50}ms` }}
-                className={`relative size-4 transition-[scale] duration-300 ease-spring group-hover/card:scale-125`}
+                className="relative size-4 transition-[scale] duration-300 ease-spring group-hover/card:scale-125"
               >
-                <Star className="absolute inset-0 size-4 text-border" fill="currentColor" strokeWidth={0} />
+                <Star className="absolute inset-0 size-4 text-border" fill="currentColor" strokeWidth={0} aria-hidden="true" />
                 <span className="absolute inset-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
-                  <Star className="size-4 text-accent-400" fill="currentColor" strokeWidth={0} />
+                  <Star className="size-4 text-accent-400" fill="currentColor" strokeWidth={0} aria-hidden="true" />
                 </span>
               </span>
             );
@@ -270,7 +270,7 @@ function TimeCard() {
       <CardLabel icon={Hourglass} iconMotion="group-hover/card:rotate-180">
         {t.card3Label}
       </CardLabel>
-      <CountUp value={t.card3Value} className="mt-4 font-heading text-h1 font-extrabold tracking-tight text-text" />
+      <CountUp value={t.card3Value} className="mt-2 font-heading text-h1 font-extrabold tracking-tight text-text" />
 
       <dl className="mt-auto space-y-3 pt-6">
         {rows.map((row, index) => (
@@ -299,7 +299,7 @@ function OfflineCard() {
 
   return (
     <div
-      className={`group/card relative flex h-full items-center justify-between gap-6 overflow-hidden rounded-3xl bg-[#052b3b] p-6 sm:p-8 transition-[translate,box-shadow] duration-300 ${EASE} hover:-translate-y-1 hover:shadow-xl hover:shadow-neutral-950/20`}
+      className={`group/card relative flex h-full items-center justify-between gap-6 overflow-clip rounded-surface bg-night p-surface transition-[translate,box-shadow] duration-300 ${EASE} hover:-translate-y-1 hover:shadow-xl hover:shadow-neutral-950/20`}
     >
       <div
         aria-hidden="true"
@@ -313,7 +313,7 @@ function OfflineCard() {
           />
           {t.card4Value}
         </p>
-        <p className="mt-3 font-heading text-h1 font-extrabold tracking-tight text-neutral-50">{t.card4Label}</p>
+        <p className="mt-2 font-heading text-h1 font-extrabold tracking-tight text-neutral-50">{t.card4Label}</p>
       </div>
 
       <div aria-hidden="true" className="relative flex shrink-0 flex-col items-center gap-3">
@@ -322,17 +322,17 @@ function OfflineCard() {
             <span
               key={height}
               style={{ height: `${height}%`, transitionDelay: `${400 + index * 80}ms` }}
-              className={`relative w-3 origin-bottom overflow-hidden rounded-[3px] border-2 border-neutral-50/25 ${GROW} motion-safe:scale-y-0 motion-safe:group-data-visible/reveal:scale-y-100`}
+              className={`relative w-3 origin-bottom overflow-clip rounded-full border-2 border-neutral-50/25 ${GROW} motion-safe:scale-y-0 motion-safe:group-data-visible/reveal:scale-y-100`}
             >
               <span
                 style={{ animationDelay: `${index * 140}ms` }}
-                className="absolute inset-0 bg-neutral-50/70 opacity-0 group-hover/card:animate-signal"
+                className="absolute inset-0 bg-neutral-50/70 opacity-0 motion-safe:group-hover/card:animate-signal"
               />
             </span>
           ))}
         </div>
         <span className="flex size-9 items-center justify-center rounded-full bg-success-400 text-neutral-950 transition-[scale] duration-500 ease-spring group-hover/card:scale-115">
-          <Check className="size-5" strokeWidth={3} />
+          <Check className="size-5" strokeWidth={3} aria-hidden="true" />
         </span>
       </div>
     </div>
@@ -343,23 +343,23 @@ export default function StatsSection() {
   const t = useMessages("landing");
 
   return (
-    <section className="relative w-full px-4 py-16 sm:px-6 md:px-12 lg:px-20 bg-[linear-gradient(to_bottom,var(--section-muted)_calc(100%_-_12rem),var(--background))]">
+    <section className="relative w-full bg-[linear-gradient(to_bottom,var(--section-muted)_calc(100%_-_12rem),var(--background))] px-4 py-16 sm:px-6 sm:py-24 md:px-12 lg:px-20">
       <div className="mx-auto max-w-6xl">
-        <ScrollReveal className="text-center mb-10">
-          <h2 className="text-h1 sm:text-display font-heading text-text">
+        <ScrollReveal className="mb-12 text-center">
+          <h2 className="font-heading text-h1 text-balance text-text sm:text-display">
             {t.stats.heading}
           </h2>
-          <p className="mt-2 text-body text-text-muted">
+          <p className="mt-4 text-body text-pretty text-text-muted">
             {t.stats.subtitle}
           </p>
         </ScrollReveal>
 
-        <div className="grid grid-cols-1 gap-5 md:grid-cols-12">
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-12">
           <ScrollReveal className="md:col-span-5">
             <TravellersCard />
           </ScrollReveal>
-          <div className="flex flex-col gap-5 md:col-span-7">
-            <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
+          <div className="flex flex-col gap-6 md:col-span-7">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <ScrollReveal delayMs={100}>
                 <NeedsCard />
               </ScrollReveal>
@@ -374,10 +374,6 @@ export default function StatsSection() {
         </div>
 
         <ScrollReveal delayMs={150}>
-          <div className="mt-6 text-center text-caption font-semibold text-text-muted flex items-center justify-center gap-2">
-            <span>{t.stats.footerNote}</span>
-          </div>
-
           <TrustedBy label={t.stats.trustedBy} />
         </ScrollReveal>
       </div>

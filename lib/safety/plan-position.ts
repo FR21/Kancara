@@ -1,5 +1,5 @@
 import { splitTime, toMinutes } from "@/lib/stop-time";
-import type { MeetingPoint, SafetyDay, SafetyMember, SafetyPack, SafetyStop } from "./pack";
+import type { MeetingPoint, SafetyDay, SafetyMember, SafetyPack, SafetyStop } from "@/lib/safety/safety-pack";
 
 // Where a member should be according to the plan. It is read from the itinerary and the clock, never from a
 // phone's position, so it is there for a member without a phone and for a phone without a connection.

@@ -2,12 +2,12 @@
 
 import { Check, Copy, MessageCircle, Phone } from "lucide-react";
 import { type ReactNode, useEffect, useState } from "react";
-import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
+import { TEXT_LINK, buttonClass } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
 import { askToCall, closeCallPrompt, dialsItself, useCallTarget } from "@/lib/safety/call-prompt";
 import { callLink, formatPhone, textLink, whatsAppLink } from "@/lib/safety/contact";
-import Sheet from "./Sheet";
+import Sheet from "@/components/ui/Sheet";
 
 type CallLinkProps = {
   phone: string;
@@ -84,9 +84,9 @@ export default function CallPrompt({ text, closeLabel }: { text: Messages["safet
             <p className="text-h1 text-balance text-text tabular-nums">{formatPhone(target.phone)}</p>
             <p className="mt-2 text-body-sm text-pretty text-text-muted">{isText ? text.textHint : text.hint}</p>
           </div>
-          {isText && <p className="rounded-2xl bg-surface-muted px-4 py-3 text-body-sm text-pretty text-text">{target.message}</p>}
-          <div className="flex flex-col gap-2">
-            <button type="button" onClick={copy} className={`${PRIMARY_BUTTON} h-14 w-full`}>
+          {isText && <p className="rounded-lg bg-surface-muted px-4 py-3 text-body-sm text-pretty text-text">{target.message}</p>}
+          <div className="flex flex-col gap-3">
+            <button type="button" onClick={copy} className={`${buttonClass("primary", "large")} w-full`}>
               {copied ? <Check className="size-5 motion-safe:animate-stamp-in" strokeWidth={3} aria-hidden="true" /> : <Copy className="size-5" aria-hidden="true" />}
               <span role="status">{copied ? text.copied : isText ? text.copyMessage : text.copy}</span>
             </button>
@@ -95,7 +95,7 @@ export default function CallPrompt({ text, closeLabel }: { text: Messages["safet
                 href={whatsAppLink(target.phone, target.message ?? "")}
                 target="_blank"
                 rel="noopener noreferrer"
-                className={`${OUTLINE_BUTTON} h-14 w-full`}
+                className={`${buttonClass("outline", "large")} w-full`}
               >
                 <MessageCircle className="size-5 text-primary" aria-hidden="true" />
                 {text.whatsapp}
@@ -103,7 +103,7 @@ export default function CallPrompt({ text, closeLabel }: { text: Messages["safet
             )}
             <a
               href={isText ? textLink(target.phone, target.message ?? "") : callLink(target.phone)}
-              className="inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-3 text-label text-primary transition-[background-color,scale] duration-150 ease-out hover:bg-primary-subtle active:scale-[0.97]"
+              className={`${TEXT_LINK} self-center`}
             >
               <Phone className="size-4" aria-hidden="true" />
               {text.openApp}

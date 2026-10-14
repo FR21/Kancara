@@ -1,4 +1,5 @@
 import { ArrowRight, RotateCcw, X } from "lucide-react";
+import IconButton from "@/components/ui/IconButton";
 import type { Messages } from "@/lib/messages";
 import { type PlanDraft, fillTemplate, missingFields, PASS_FIELDS } from "@/lib/plan-draft";
 
@@ -9,7 +10,8 @@ type ResumeBannerProps = {
   onClear?: () => void;
 };
 
-// A quiet second way in under the start button: pick up the draft saved on this device.
+// A quiet second way in under the start button: pick up the draft saved on this device. One pill holding two
+// controls, so its own buttons are pills too, 4px in.
 export default function ResumeBanner({ savedDraft, text, onResume, onClear }: ResumeBannerProps) {
   const title =
     savedDraft.destinations.length > 0
@@ -17,11 +19,11 @@ export default function ResumeBanner({ savedDraft, text, onResume, onClear }: Re
       : text.resume;
 
   return (
-    <div className="inline-flex max-w-full items-center gap-1 rounded-full border border-border-strong bg-surface p-1 shadow-sm transition-[border-color] hover:border-primary">
+    <div className="inline-flex max-w-full items-center gap-1 rounded-full border border-border-strong bg-surface p-1 transition-[border-color] duration-150 ease-out hover:border-primary">
       <button
         type="button"
         onClick={onResume}
-        className="group inline-flex min-h-9 max-w-full cursor-pointer items-center gap-2 rounded-full px-3 py-1 text-left text-label text-text transition-colors duration-150 ease-out hover:bg-primary-subtle active:scale-[0.98]"
+        className="group inline-flex min-h-11 max-w-full min-w-0 cursor-pointer items-center gap-2 rounded-full px-4 py-2 text-left text-label text-text transition-[background-color,scale] duration-150 ease-out hover:bg-primary-subtle active:scale-[0.97]"
       >
         <RotateCcw
           className="size-4 shrink-0 text-primary transition-[rotate] duration-500 ease-out group-hover:-rotate-180"
@@ -42,20 +44,10 @@ export default function ResumeBanner({ savedDraft, text, onResume, onClear }: Re
       </button>
 
       {onClear && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.stopPropagation();
-            onClear();
-          }}
-          title="Hapus draf"
-          aria-label="Hapus draf"
-          className="flex size-7 cursor-pointer items-center justify-center rounded-full text-text-muted transition hover:bg-surface-muted hover:text-text active:scale-90"
-        >
-          <X className="size-3.5" aria-hidden="true" />
-        </button>
+        <IconButton label={text.clearDraft} onClick={onClear}>
+          <X className="size-4" aria-hidden="true" />
+        </IconButton>
       )}
     </div>
   );
 }
-

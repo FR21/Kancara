@@ -2,7 +2,7 @@
 
 import { Eye, EyeOff } from "lucide-react";
 import { type InputHTMLAttributes, type ReactNode, useState } from "react";
-import { INPUT } from "@/components/plan/styles";
+import { FIELD_LABEL, INPUT } from "@/components/ui/styles";
 
 type TextFieldProps = {
   id: string;
@@ -19,8 +19,8 @@ type TextFieldProps = {
   "type" | "placeholder" | "autoComplete" | "inputMode" | "disabled" | "onBlur" | "min" | "max"
 >;
 
-export const FIELD_LABEL =
-  "text-label text-text transition-colors duration-150 ease-out group-focus-within:text-primary";
+/** A field's label, which takes the primary colour while the field inside its `group` has the focus. */
+export const FOCUS_FIELD_LABEL = `${FIELD_LABEL} transition-colors duration-150 ease-out group-focus-within:text-primary`;
 
 export function OptionalMark({ label }: { label: string }) {
   return <span className="ml-1 font-normal text-text-muted">({label})</span>;
@@ -47,7 +47,7 @@ export default function TextField({
   return (
     <div className="group">
       <div className="mb-2 flex items-baseline justify-between gap-3">
-        <label htmlFor={id} className={FIELD_LABEL}>
+        <label htmlFor={id} className={FOCUS_FIELD_LABEL}>
           {label}
           {optionalLabel && <OptionalMark label={optionalLabel} />}
         </label>
@@ -62,7 +62,7 @@ export default function TextField({
           onChange={(event) => onChange(event.target.value)}
           aria-invalid={error ? true : undefined}
           aria-describedby={descriptions || undefined}
-          className={`${INPUT} disabled:cursor-not-allowed ${reveal ? "pr-12" : ""} ${error ? "border-error" : ""}`}
+          className={`${INPUT} disabled:cursor-not-allowed aria-invalid:border-error ${reveal ? "pr-12" : ""}`}
         />
         {reveal && (
           <button
@@ -70,7 +70,7 @@ export default function TextField({
             onClick={() => setRevealed((shown) => !shown)}
             aria-label={revealed ? reveal.hide : reveal.show}
             aria-pressed={revealed}
-            className="absolute top-1 right-1 inline-flex size-11 cursor-pointer items-center justify-center rounded-lg text-text-muted transition-[color,scale] duration-150 ease-out hover:text-text active:scale-[0.97]"
+            className="absolute top-0 right-0 inline-flex size-12 cursor-pointer items-center justify-center rounded-lg text-text-muted transition-[color,scale] duration-150 ease-out hover:text-text active:scale-[0.97]"
           >
             <RevealIcon className="size-5" aria-hidden="true" />
           </button>

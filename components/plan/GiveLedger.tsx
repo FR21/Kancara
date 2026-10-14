@@ -2,7 +2,7 @@ import { Scale } from "lucide-react";
 import { type Conflict, isOverburdened, tallyGives } from "@/lib/mediation";
 import type { Messages } from "@/lib/messages";
 import { type PlanDraft, fillTemplate, getMemberName } from "@/lib/plan-draft";
-import MemberAvatar from "./MemberAvatar";
+import MemberAvatar from "@/components/ui/MemberAvatar";
 
 type GiveLedgerProps = {
   conflicts: Conflict[];
@@ -26,7 +26,7 @@ export default function GiveLedger({ conflicts, draft, text }: GiveLedgerProps) 
 
   return (
     <section aria-labelledby="give-ledger">
-      <h2 id="give-ledger" className="flex items-center gap-2 text-label-lg text-text">
+      <h2 id="give-ledger" className="flex items-center gap-2 text-h3 text-text">
         <Scale className="size-5 shrink-0 text-primary" aria-hidden="true" />
         {copy.title}
       </h2>
@@ -72,7 +72,7 @@ export default function GiveLedger({ conflicts, draft, text }: GiveLedgerProps) 
           return (
             <p
               key={member.id}
-              className="flex items-start gap-3 rounded-2xl bg-warning-subtle px-4 py-3 text-body-sm text-on-warning-subtle motion-safe:animate-message-in"
+              className="flex items-start gap-3 rounded-lg bg-warning-subtle px-4 py-3 text-body-sm text-on-warning-subtle motion-safe:animate-pop-in"
             >
               <Scale className="size-5 shrink-0" aria-hidden="true" />
               <span className="min-w-0">

@@ -1,12 +1,12 @@
 import type { Metadata } from "next";
-import TripSummaryClient from "@/components/trips/TripSummaryClient";
+import TripSummary from "@/components/trip-summary/TripSummary";
 import { requestMetadata } from "@/lib/seo";
 
 export function generateMetadata(): Promise<Metadata> {
   return requestMetadata("trip");
 }
 
-export default async function TripSummaryPage({ params }: PageProps<"/trips/[id]">) {
+export default async function TripSummaryPage({ params }: PageProps<"/trips/[id]/summary">) {
   const { id } = await params;
-  return <TripSummaryClient tripId={id} />;
+  return <TripSummary tripId={id} />;
 }

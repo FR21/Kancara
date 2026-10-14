@@ -46,7 +46,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           dangerouslySetInnerHTML={{ __html: `${themeInitScript};${localeInitScript}` }}
         />
       </head>
-      <body className="min-h-screen flex flex-col font-sans overflow-x-clip">
+      <body className="min-h-dvh flex flex-col font-sans overflow-x-clip">
         <OfflineReady />
         <SafetyDock />
         <LocaleProvider locale={locale}>

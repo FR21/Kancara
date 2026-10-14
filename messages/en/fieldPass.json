@@ -1,0 +1,50 @@
+{
+  "open": "Field pass",
+  "title": "Field pass",
+  "close": "Close",
+  "lead": "One card for {destination}: key sentences in {language}, a food restrictions card, and emergency numbers.",
+  "loading": "Opening the field pass",
+  "writing": "Writing the field pass for {destination}. It usually takes less than half a minute.",
+  "offlineMissing": "This pass is not saved on this phone yet. Open it once while online, and after that it opens without signal.",
+  "noDestination": "Set the trip's destination first, then the field pass can be written.",
+  "failed": "The field pass could not be written. Check your connection, then try again.",
+  "retry": "Try again",
+  "kept": "Saved on this phone, opens without signal",
+  "keeping": "Saving so it opens without signal",
+  "keepFailed": "Not saved for use without signal yet.",
+  "keepAgain": "Save again",
+  "rewrite": "Write again",
+  "rewriting": "Writing again",
+  "rewriteHint": "The whole group shares this pass. Writing it again replaces it for everyone.",
+  "rewriteOffline": "Writing it again needs an internet connection.",
+  "tooSoon": "The pass was written moments ago. Try again in a few minutes.",
+  "rewriteFailed": "The pass could not be written again. Try again shortly.",
+  "shared": "Written {date}",
+  "speak": "Listen",
+  "speaking": "Reading aloud",
+  "copy": "Copy",
+  "copied": "Copied",
+  "noSpeech": "This browser cannot read text aloud. Show the text instead.",
+  "noVoice": "This phone has no {language} voice yet. Show the text instead.",
+  "lodging": {
+    "title": "Where we stay",
+    "hint": "Show to the taxi driver"
+  },
+  "dietary": {
+    "title": "Food restrictions card",
+    "hint": "Show to the waiter",
+    "people": "{count} people",
+    "speak": "Read to the waiter"
+  },
+  "phrases": {
+    "title": "Key sentences",
+    "hint": "Read by the phone, no data needed"
+  },
+  "emergency": {
+    "title": "Emergency numbers",
+    "police": "Police",
+    "ambulance": "Ambulance",
+    "mission": "Indonesian mission",
+    "checkNote": "Written with AI help. Check these numbers against an official source before you leave."
+  }
+}

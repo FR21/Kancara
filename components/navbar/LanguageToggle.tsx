@@ -1,10 +1,13 @@
 "use client";
 
 import type { CSSProperties } from "react";
+import { EASE } from "@/components/ui/styles";
 import { LOCALES, LOCALE_NAMES } from "@/lib/locale";
 import { setLocale, useLocale } from "@/lib/use-locale";
 
-// The same pill with a sliding teal thumb that the rest of the app uses for a choice between two.
+// Drawn like components/ui/SegmentedToggle (the same pill, thumb and timing), but it shrinks to the desktop navbar's
+// height and turns white over the landing hero, which SegmentedToggle cannot do, and each option is named in full
+// for a screen reader while it shows only the language code.
 export default function LanguageToggle({ label }: { label: string }) {
   const locale = useLocale();
   const index = LOCALES.indexOf(locale);
@@ -18,7 +21,7 @@ export default function LanguageToggle({ label }: { label: string }) {
     >
       <span
         aria-hidden="true"
-        className="absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] translate-x-[calc(var(--thumb-index)*100%)] rounded-full bg-primary transition-[translate,background-color] duration-250 ease-[cubic-bezier(0.77,0,0.175,1)] group-data-over-hero/nav:bg-neutral-50 motion-reduce:transition-none"
+        className={`absolute inset-y-1 left-1 w-[calc(50%-0.25rem)] translate-x-[calc(var(--thumb-index)*100%)] rounded-full bg-primary transition-[translate,background-color] duration-200 ${EASE} group-data-over-hero/nav:bg-neutral-50 motion-reduce:transition-none`}
       />
       {LOCALES.map((option) => {
         const selected = option === locale;
