@@ -2,7 +2,7 @@
 
 import { ArrowRight, Check, Globe, Search, Users } from "lucide-react";
 import Link from "next/link";
-import { choiceClass, INPUT } from "@/components/plan/styles";
+import { choiceClass, INPUT } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
 import { plural } from "@/lib/trips/format";
 import { useLocale } from "@/lib/use-locale";
@@ -90,7 +90,7 @@ export default function HistoryTools({
           <div
             role="group"
             aria-label={text.yearLabel}
-            className="-mx-4 flex gap-2 overflow-x-auto px-4 py-1 [scrollbar-width:none] sm:mx-0 sm:px-0"
+            className="-mx-surface flex gap-2 overflow-x-auto px-surface py-1 [scrollbar-width:none] sm:mx-0 sm:px-0"
           >
             {yearOptions.map((option) => {
               const selected = option === year;

@@ -1,118 +1,104 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { currentViewer } from "@/lib/account";
+import { MAX_MEMORY_PHOTO_BYTES } from "@/lib/client/trip-memories";
 import { rateLimit } from "@/lib/rate-limit";
-import { addTripMemory, deleteTripMemory, getTripSummaryData } from "@/lib/trips/memories";
+import {
+  type MemoryInput,
+  type MemoryPhoto,
+  addTripMemory,
+  listTripMemories,
+  MAX_AUTHOR_NAME,
+  MAX_DAY_NUMBER,
+  MAX_NOTE,
+  MAX_PLACE_TITLE,
+} from "@/lib/trips/memories";
 
-const MAX_PHOTO_BYTES = 10 * 1024 * 1024; // 10MB
+// A multipart request carries a little more than the file itself.
+const MAX_REQUEST_BYTES = MAX_MEMORY_PHOTO_BYTES + 64 * 1024;
 
+// The kind of image is read from the file's first bytes, never from the name or the type the browser claims.
 const KINDS = [
-  { extension: "png", type: "image/png", matches: (b: Uint8Array) => b[0] === 0x89 && b[1] === 0x50 && b[2] === 0x4e && b[3] === 0x47 },
-  { extension: "jpg", type: "image/jpeg", matches: (b: Uint8Array) => b[0] === 0xff && b[1] === 0xd8 && b[2] === 0xff },
+  { extension: "png", type: "image/png", matches: (bytes: Uint8Array) => startsWith(bytes, [0x89, 0x50, 0x4e, 0x47]) },
+  { extension: "jpg", type: "image/jpeg", matches: (bytes: Uint8Array) => startsWith(bytes, [0xff, 0xd8, 0xff]) },
   {
     extension: "webp",
     type: "image/webp",
-    matches: (b: Uint8Array) =>
-      b[0] === 0x52 && b[1] === 0x49 && b[2] === 0x46 && b[3] === 0x46 &&
-      b[8] === 0x57 && b[9] === 0x45 && b[10] === 0x42 && b[11] === 0x50,
+    matches: (bytes: Uint8Array) =>
+      startsWith(bytes, [0x52, 0x49, 0x46, 0x46]) && startsWith(bytes.subarray(8), [0x57, 0x45, 0x42, 0x50]),
   },
 ];
 
-export async function GET(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const limited = rateLimit(request, "trips-memories-read");
-  if (limited) return limited;
-
-  const viewer = await currentViewer();
-  if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { id } = await params;
-  const data = await getTripSummaryData(viewer, id);
-  if (!data) return NextResponse.json({ error: "Trip not found" }, { status: 404 });
-
-  return NextResponse.json(data);
+function startsWith(bytes: Uint8Array, signature: number[]): boolean {
+  return signature.every((byte, index) => bytes[index] === byte);
 }
 
-export async function POST(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const limited = rateLimit(request, "trips-memories-save");
-  if (limited) return limited;
-
-  const viewer = await currentViewer();
-  if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-
-  const { id } = await params;
-
-  try {
-    const form = await request.formData();
-    const placeTitle = form.get("placeTitle")?.toString() || "";
-    const dayNumber = Number(form.get("dayNumber")) || 1;
-    const note = form.get("note")?.toString() || "";
-    const rating = Number(form.get("rating")) || 5;
-    const authorName = form.get("authorName")?.toString() || undefined;
-
-    if (!placeTitle.trim()) {
-      return NextResponse.json({ error: "Nama tempat/destinasi wajib diisi" }, { status: 400 });
-    }
-
-    const photoFile = form.get("photo");
-    let photoPayload: { buffer: ArrayBuffer; extension: string; mimeType: string } | undefined = undefined;
-
-    if (photoFile instanceof File && photoFile.size > 0) {
-      if (photoFile.size > MAX_PHOTO_BYTES) {
-        return NextResponse.json({ error: "Ukuran foto maksimal 10MB" }, { status: 413 });
-      }
-      const buffer = await photoFile.arrayBuffer();
-      const bytes = new Uint8Array(buffer);
-      const matched = KINDS.find((k) => k.matches(bytes));
-      if (!matched) {
-        return NextResponse.json({ error: "Format foto harus JPG, PNG, atau WebP" }, { status: 415 });
-      }
-      photoPayload = {
-        buffer,
-        extension: matched.extension,
-        mimeType: matched.type,
-      };
-    }
-
-    const memory = await addTripMemory(
-      viewer,
-      id,
-      { placeTitle, dayNumber, note, rating, authorName },
-      photoPayload,
-    );
-
-    if (!memory) return NextResponse.json({ error: "Trip not found" }, { status: 404 });
-    return NextResponse.json(memory, { status: 201 });
-  } catch (err) {
-    console.error("Error creating trip memory:", err);
-    return NextResponse.json({ error: "Gagal menyimpan momen" }, { status: 500 });
-  }
+function readText(form: FormData, name: string, limit: number): string {
+  const value = form.get(name);
+  return typeof value === "string" ? value.trim().slice(0, limit) : "";
 }
 
-export async function DELETE(
-  request: NextRequest,
-  { params }: { params: Promise<{ id: string }> },
-) {
-  const limited = rateLimit(request, "trips-memories-delete");
+function readInput(form: FormData): MemoryInput | null {
+  const placeTitle = readText(form, "placeTitle", MAX_PLACE_TITLE);
+  const dayNumber = Number(form.get("dayNumber"));
+  const rawRating = form.get("rating");
+  const rating = rawRating === null ? null : Number(rawRating);
+  if (!placeTitle) return null;
+  if (!Number.isInteger(dayNumber) || dayNumber < 1 || dayNumber > MAX_DAY_NUMBER) return null;
+  if (rating !== null && (!Number.isInteger(rating) || rating < 1 || rating > 5)) return null;
+  return {
+    placeTitle,
+    dayNumber,
+    note: readText(form, "note", MAX_NOTE),
+    rating,
+    authorName: readText(form, "authorName", MAX_AUTHOR_NAME),
+  };
+}
+
+/** One page of a trip's album: `?offset=` from the page before, `?author=` for one person's memories only. */
+export async function GET(request: NextRequest, context: RouteContext<"/api/trips/[id]/memories">) {
+  const limited = rateLimit(request, "trip-memories-read");
   if (limited) return limited;
 
   const viewer = await currentViewer();
   if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { id } = await params;
-  const memoryId = request.nextUrl.searchParams.get("memoryId");
-  if (!memoryId) {
-    return NextResponse.json({ error: "memoryId wajib disertakan" }, { status: 400 });
+  const { id } = await context.params;
+  const params = request.nextUrl.searchParams;
+  const offset = Number(params.get("offset") ?? 0);
+  if (!Number.isInteger(offset) || offset < 0) return NextResponse.json({ error: "Invalid offset" }, { status: 400 });
+
+  const page = await listTripMemories(viewer, id, offset, params.get("author"));
+  if (!page) return NextResponse.json({ error: "Trip not found" }, { status: 404 });
+  return NextResponse.json(page);
+}
+
+/** Adds a memory, sent as a form: place, day, note, an optional rating and author, and an optional photo. */
+export async function POST(request: NextRequest, context: RouteContext<"/api/trips/[id]/memories">) {
+  const limited = rateLimit(request, "trip-memories-save");
+  if (limited) return limited;
+
+  const viewer = await currentViewer();
+  if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  if (Number(request.headers.get("content-length")) > MAX_REQUEST_BYTES) {
+    return NextResponse.json({ error: "The photo is too large" }, { status: 413 });
+  }
+  const form = await request.formData().catch(() => null);
+  const input = form ? readInput(form) : null;
+  if (!form || !input) return NextResponse.json({ error: "The memory is missing required details" }, { status: 400 });
+
+  let photo: MemoryPhoto | null = null;
+  const file = form.get("photo");
+  if (file instanceof File && file.size > 0) {
+    if (file.size > MAX_MEMORY_PHOTO_BYTES) return NextResponse.json({ error: "The photo is too large" }, { status: 413 });
+    const content = await file.arrayBuffer();
+    const kind = KINDS.find((candidate) => candidate.matches(new Uint8Array(content)));
+    if (!kind) return NextResponse.json({ error: "The photo must be a PNG, JPEG, or WebP image" }, { status: 415 });
+    photo = { content, extension: kind.extension, contentType: kind.type };
   }
 
-  const deleted = await deleteTripMemory(viewer, id, memoryId);
-  if (!deleted) {
-    return NextResponse.json({ error: "Momen tidak ditemukan" }, { status: 404 });
-  }
-
-  return NextResponse.json({ success: true });
+  const { id } = await context.params;
+  const memory = await addTripMemory(viewer, id, input, photo);
+  if (!memory) return NextResponse.json({ error: "Trip not found" }, { status: 404 });
+  return NextResponse.json(memory, { status: 201 });
 }

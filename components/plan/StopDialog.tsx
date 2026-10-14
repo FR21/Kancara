@@ -10,13 +10,12 @@ import {
   LifeBuoy,
   MapPin,
   Repeat2,
-  Sparkles,
   Star,
   Wallet,
   X,
 } from "lucide-react";
 import { type KeyboardEvent, type MouseEvent, useEffect, useRef } from "react";
-import type { ItineraryItem } from "@/lib/api/captain";
+import type { ItineraryItem } from "@/lib/client/captain";
 import { isLegCurrent, listBackups } from "@/lib/backups";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
@@ -30,9 +29,10 @@ import {
   PhaseBadge,
   StopCovers,
   StopViolations,
-} from "./ItineraryStop";
+} from "./StopBadges";
 import StopBackups, { BACKUPS_ID } from "./StopBackups";
-import { OUTLINE_BUTTON } from "./styles";
+import IconButton from "@/components/ui/IconButton";
+import { OUTLINE_BUTTON, TEXT_LINK } from "@/components/ui/styles";
 
 type StopDialogProps = {
   items: ItineraryItem[];
@@ -47,16 +47,11 @@ type StopDialogProps = {
   describeCover: (cover: ItineraryItem["covers"][number]) => string;
   /** Switches the open stop to one of its backups. Absent where the plan is only read. */
   onUseBackup?: (backupIndex: number) => void;
-  /** Opens the adapt modal for this specific stop */
-  onRebuildThisStop?: (index: number) => void;
   onNavigate: (index: number) => void;
   onClose: () => void;
 };
 
-const ICON_BUTTON =
-  "inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-text transition-[background-color,scale] duration-150 ease-out hover:bg-surface-muted active:scale-[0.97]";
-const STEP_BUTTON =
-  "inline-flex h-12 min-w-0 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border border-border-strong px-4 text-label-lg text-text transition-[background-color,scale,opacity] duration-150 ease-out hover:bg-surface-muted active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40";
+const STEP_BUTTON = `group ${OUTLINE_BUTTON} min-w-0 flex-1`;
 const FACT_LABEL = "text-caption font-bold text-text-muted";
 const SECTION_TITLE = "font-sans text-label text-text";
 
@@ -69,8 +64,9 @@ function mapsUrl(item: ItineraryItem, destination: string): string {
   return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
 }
 
-// A stop's details: a sheet rising from the bottom edge on a phone, a centred
-// dialog from 640px. It steps through the day's stops without closing.
+// A stop's details, drawn exactly as components/ui/Sheet is: a sheet rising from the bottom edge on a phone, a
+// centred dialog from 640px. It is its own dialog because its photo runs edge to edge under the bar and it steps
+// through the day's stops without closing, which Sheet's padded body and fixed title do not allow.
 export default function StopDialog({
   items,
   index,
@@ -81,7 +77,6 @@ export default function StopDialog({
   validated,
   describeCover,
   onUseBackup,
-  onRebuildThisStop,
   onNavigate,
   onClose,
 }: StopDialogProps) {
@@ -137,18 +132,18 @@ export default function StopDialog({
       onClose={onClose}
       onClick={closeOnBackdrop}
       onKeyDown={handleKeyDown}
-      className="mx-auto mt-auto mb-0 max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-3xl bg-background p-0 text-text backdrop:bg-neutral-950/70 open:flex open:motion-safe:animate-sheet-up sm:m-auto sm:max-h-[86dvh] sm:max-w-xl sm:rounded-3xl sm:open:motion-safe:animate-message-in"
+      className="mx-auto mt-auto mb-0 max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-surface bg-background p-0 text-text backdrop:bg-neutral-950/70 open:flex open:motion-safe:animate-sheet-up sm:m-auto sm:max-h-[86dvh] sm:max-w-xl sm:rounded-surface sm:open:motion-safe:animate-message-in"
     >
       {item && index !== null && (
         <>
           <span aria-hidden="true" className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-border-strong sm:hidden" />
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border py-1 pr-2 pl-5 sm:py-2">
+          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border py-1 pr-2 pl-surface sm:py-2">
             <p className="min-w-0 truncate text-label text-text-muted tabular-nums">
               {dayLabel} · {fillTemplate(text.position, { current: index + 1, total: items.length })}
             </p>
-            <button type="button" aria-label={text.close} title={text.close} onClick={onClose} className={ICON_BUTTON}>
+            <IconButton label={text.close} onClick={onClose}>
               <X className="size-5" aria-hidden="true" />
-            </button>
+            </IconButton>
           </div>
 
           <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain [scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin] motion-safe:scroll-smooth">
@@ -157,7 +152,7 @@ export default function StopDialog({
               <img src={item.imageUrl} alt="" className="aspect-2/1 w-full bg-surface-muted object-cover sm:aspect-5/2" />
             )}
 
-            <div key={index} className="space-y-6 px-5 py-5 motion-safe:animate-message-in">
+            <div key={index} className="space-y-6 p-surface motion-safe:animate-message-in">
               <div>
                 <p className="text-label text-primary tabular-nums">
                   {time.start}
@@ -168,42 +163,32 @@ export default function StopDialog({
                   {item.title}
                 </h2>
                 {(phase || item.errand) && (
-                  <p className="mt-3 flex flex-wrap gap-2">
+                  <p className="mt-2 flex flex-wrap gap-2">
                     {phase && <PhaseBadge phase={phase} text={text} />}
                     {item.errand && <ErrandBadge kind={item.errand} text={text} />}
                   </p>
                 )}
-                {item.detail && <p className="mt-3 text-body text-pretty text-text-muted">{item.detail}</p>}
-                <div className="mt-4 flex flex-wrap gap-2">
-                  {!item.standIn && standingBy > 0 && onRebuildThisStop && (
-                    <button
-                      type="button"
-                      onClick={() => onRebuildThisStop(index)}
-                      className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-primary/40 bg-primary-subtle px-4 text-label font-bold text-primary transition hover:border-primary hover:bg-primary-hover/20 active:scale-[0.97]"
-                    >
-                      <Sparkles className="size-4 shrink-0 text-primary" aria-hidden="true" />
-                      {locale === "en" ? "Adapt / Replace Place (P2)" : "Ganti Tempat Ini (Hujan / Tutup / Lelah)"}
-                    </button>
-                  )}
-                  {!item.standIn && standingBy > 0 && (
-                    <button
-                      type="button"
-                      onClick={() => document.getElementById(BACKUPS_ID)?.scrollIntoView({ block: "start" })}
-                      className="group/jump inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-border-strong px-4 text-label text-text tabular-nums transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-subtle active:scale-[0.97]"
-                    >
-                      <LifeBuoy className="size-4 shrink-0 text-primary" aria-hidden="true" />
-                      {plural(text.backups.ready, standingBy, locale)}
-                      <ArrowDown
-                        className="size-4 shrink-0 text-text-muted transition-[translate] duration-200 ease-out group-hover/jump:translate-y-1"
-                        aria-hidden="true"
-                      />
-                    </button>
-                  )}
-                </div>
+                {item.detail && <p className="mt-2 text-body text-pretty text-text-muted">{item.detail}</p>}
+                {/* The backups are further down this sheet, where each can be put in place; this only says they
+                    are there and takes the reader to them. */}
+                {!item.standIn && standingBy > 0 && (
+                  <button
+                    type="button"
+                    onClick={() => document.getElementById(BACKUPS_ID)?.scrollIntoView({ block: "start" })}
+                    className={`${TEXT_LINK} mt-2 tabular-nums`}
+                  >
+                    <LifeBuoy className="size-4 shrink-0" aria-hidden="true" />
+                    {plural(text.backups.ready, standingBy, locale)}
+                    <ArrowDown
+                      className="size-4 shrink-0 transition-[translate] duration-200 ease-out group-hover:translate-y-1"
+                      aria-hidden="true"
+                    />
+                  </button>
+                )}
                 {item.standIn && (
                   <p
                     role="status"
-                    className="mt-4 flex items-start gap-3 rounded-2xl bg-primary-subtle px-4 py-3 text-body-sm text-pretty text-on-primary-subtle"
+                    className="mt-4 flex items-start gap-3 rounded-lg bg-primary-subtle px-4 py-3 text-body-sm text-pretty text-on-primary-subtle"
                   >
                     <Repeat2 className="size-5 shrink-0" aria-hidden="true" />
                     <span className="min-w-0">
@@ -305,9 +290,9 @@ export default function StopDialog({
             </div>
           </div>
 
-          <div className="safe-bottom flex shrink-0 gap-3 border-t border-border px-5 pt-3">
+          <div className="safe-bottom flex shrink-0 gap-3 border-t border-border px-surface pt-3">
             <button type="button" disabled={index === 0} onClick={() => step(-1)} className={STEP_BUTTON}>
-              <ArrowLeft className="size-4 shrink-0" aria-hidden="true" />
+              <ArrowLeft className="size-4 shrink-0 transition-[translate] duration-200 ease-out group-hover:-translate-x-1" aria-hidden="true" />
               {text.previous}
             </button>
             <button
@@ -317,7 +302,7 @@ export default function StopDialog({
               className={STEP_BUTTON}
             >
               {text.following}
-              <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
+              <ArrowRight className="size-4 shrink-0 transition-[translate] duration-200 ease-out group-hover:translate-x-1" aria-hidden="true" />
             </button>
           </div>
         </>

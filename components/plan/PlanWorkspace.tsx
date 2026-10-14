@@ -1,14 +1,14 @@
 "use client";
 
-import { Ticket } from "lucide-react";
 import { useEffect, useReducer, useRef, useState } from "react";
-import { type Itinerary, captain, captainIsSample } from "@/lib/api/captain";
-import { settleLaundry } from "@/lib/api/laundry";
-import { fetchPack, sendAction } from "@/lib/api/safety";
-import { trips } from "@/lib/api/trips";
+import { type Itinerary, captain, captainIsSample } from "@/lib/client/captain";
+import { settleLaundry } from "@/lib/client/laundry";
+import { fetchPack, sendAction } from "@/lib/client/safety";
+import { trips } from "@/lib/client/trips";
 import { chosenOption, countSettled, findConflicts } from "@/lib/mediation";
 import { countViolations } from "@/lib/trips/trip";
 import PageBackdrop from "@/components/layout/PageBackdrop";
+import PageShell from "@/components/layout/PageShell";
 import Notice from "@/components/layout/Notice";
 import {
   type PlanDraft,
@@ -18,7 +18,7 @@ import {
   isDraftEmpty,
   planDraftReducer,
 } from "@/lib/plan-draft";
-import { clearDraft, forgetDraftTrip, keepDraftTrip, readDraftTrip, saveDraft, useSavedDraft } from "@/lib/plan-draft-store";
+import { clearDraft, forgetDraftTrip, keepDraftTrip, readDraftTrip, saveDraft, useSavedDraft } from "@/lib/use-plan-draft";
 import {
   type QuestionKey,
   isAnswered,
@@ -30,14 +30,14 @@ import {
 import { useLocale } from "@/lib/use-locale";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { useMessages } from "@/lib/use-messages";
-import type { Stage } from "./flow";
+import type { Stage } from "@/components/plan/plan-stages";
 import InviteCard, { type InviteState } from "./InviteCard";
 import MediationDeck from "./MediationDeck";
 import PassDialog from "./PassDialog";
 import PlanResult, { type SaveState } from "./PlanResult";
 import QuestionDeck from "./QuestionDeck";
 import ResumeBanner from "./ResumeBanner";
-import StageRail, { type RailStep } from "./StageRail";
+import Stepper, { type StepperStep } from "@/components/ui/Stepper";
 import StartScreen from "./StartScreen";
 import TicketReview from "./TicketReview";
 
@@ -289,7 +289,7 @@ export default function PlanWorkspace() {
   const canOpen = (target: QuestionKey) =>
     QUESTIONS.slice(0, QUESTIONS.indexOf(target)).every((earlier) => isOptional(earlier) || isAnswered(earlier, draft));
 
-  const steps: RailStep[] = [
+  const steps: StepperStep[] = [
     ...QUESTIONS.map((key) => ({
       key,
       label: text.stages.questions[key],
@@ -331,9 +331,9 @@ export default function PlanWorkspace() {
   ];
 
   return (
-    <main className="relative isolate mx-auto flex min-h-dvh w-full max-w-2xl flex-col gap-8 px-4 pt-24 pb-12 sm:px-6 sm:pt-28 lg:max-w-5xl xl:px-0">
+    <PageShell width="workspace" className="min-h-dvh gap-8">
       <PageBackdrop />
-      {started && <StageRail steps={steps} text={text.stages} />}
+      {started && <Stepper steps={steps} text={text.stages} />}
 
       {stage === "story" && (
         <div className="flex flex-1 flex-col justify-center pb-12">
@@ -343,61 +343,41 @@ export default function PlanWorkspace() {
               forgetDraftTrip();
               startManual(draft);
             }}
+            resume={
+              showResume && (
+                <ResumeBanner savedDraft={savedDraft} text={text.chat} onResume={resumeDraft} onClear={clearDraft} />
+              )
+            }
           />
-          {showResume && (
-            <div className="mt-6 flex justify-center px-4 motion-safe:animate-message-in motion-safe:[animation-delay:150ms]">
-              <ResumeBanner
-                savedDraft={savedDraft}
-                text={text.chat}
-                onResume={resumeDraft}
-                onClear={clearDraft}
-              />
-            </div>
-          )}
         </div>
       )}
 
       {stage === "details" && (
-        <div className="space-y-8">
-          {!fromPass && (
-            <div className="flex items-center justify-end gap-3">
-              <button
-                type="button"
-                aria-label={text.deck.seePass}
-                title={text.deck.seePass}
-                onClick={() => setPreviewing(true)}
-                className="inline-flex size-12 shrink-0 cursor-pointer items-center justify-center rounded-full border border-border-strong bg-surface text-primary transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-subtle active:scale-[0.97]"
-              >
-                <Ticket className="size-6" aria-hidden="true" />
-              </button>
-            </div>
-          )}
-
-          <QuestionDeck
-            draft={draft}
-            dispatch={dispatch}
-            text={text}
-            questions={deckQuestions}
-            index={deckQuestions.indexOf(question)}
-            returnLabel={fromPass ? text.deck.backToPass : null}
-            isDesktop={isDesktop}
-            selectedMemberId={selectedMemberId}
-            crewFooter={
-              <InviteCard
-                link={inviteToken ? `${window.location.origin}/join/${inviteToken}` : null}
-                state={inviteState}
-                tripName={tripName}
-                text={text.invite}
-                onMake={makeInvite}
-                onRenew={renewInvite}
-              />
-            }
-            onIndexChange={changeQuestion}
-            onBackToStory={() => setStage("story")}
-            onFinish={finishDetails}
-            onSelectMember={setSelectedMemberId}
-          />
-        </div>
+        <QuestionDeck
+          draft={draft}
+          dispatch={dispatch}
+          text={text}
+          questions={deckQuestions}
+          index={deckQuestions.indexOf(question)}
+          returnLabel={fromPass ? text.deck.backToPass : null}
+          isDesktop={isDesktop}
+          selectedMemberId={selectedMemberId}
+          crewFooter={
+            <InviteCard
+              link={inviteToken ? `${window.location.origin}/join/${inviteToken}` : null}
+              state={inviteState}
+              tripName={tripName}
+              text={text.invite}
+              onMake={makeInvite}
+              onRenew={renewInvite}
+            />
+          }
+          onIndexChange={changeQuestion}
+          onBackToStory={() => setStage("story")}
+          onFinish={finishDetails}
+          onSelectMember={setSelectedMemberId}
+          onPreviewPass={fromPass ? null : () => setPreviewing(true)}
+        />
       )}
 
       <PassDialog open={previewing} draft={draft} text={text} onClose={() => setPreviewing(false)} />
@@ -454,6 +434,6 @@ export default function PlanWorkspace() {
         dismissLabel={text.result.dismiss}
         onDismiss={() => setNoticeOpen(false)}
       />
-    </main>
+    </PageShell>
   );
 }

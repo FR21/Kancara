@@ -1,23 +1,24 @@
 "use client";
 
-import { Check, CloudOff, IdCard, LifeBuoy, LocateFixed, MapPin, MessageSquareText, Navigation2, Phone } from "lucide-react";
+import { Check, CloudOff, IdCard, LocateFixed, MapPin, MessageSquareText, Navigation2, Phone } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import { INPUT, OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
-import { describePoint } from "@/lib/api/safety";
+import { type ButtonVariant, FIELD_LABEL, INPUT, TEXT_LINK, buttonClass } from "@/components/ui/styles";
+import { describePoint } from "@/lib/client/safety";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
 import { MAX_LABEL_CHARS, MAX_NOTE_CHARS } from "@/lib/safety/action";
 import { type Coordinates, bearingBetween, compassPoint, distanceBetween } from "@/lib/safety/contact";
 import { mapsAvailable } from "@/lib/safety/google-map";
-import { type SafetyMember, openReportFor } from "@/lib/safety/pack";
+import { type SafetyMember, openReportFor } from "@/lib/safety/safety-pack";
 import { meetingPlace } from "@/lib/safety/plan-position";
 import { useLocale } from "@/lib/use-locale";
 import { CallLink } from "./CallLink";
-import { type HelpContext, nameIn } from "./help";
+import { type HelpContext, nameIn } from "@/components/safety/help-context";
+import { CANCEL_BUTTON, HELP_FRAME, HelpBlock, Problem, SAVE_BUTTON } from "./HelpBlock";
 import MapPeek from "./MapPeek";
 import MeetingMap from "./MeetingMap";
 import { SearchSteps } from "./MemberSheet";
-import { BLOCK, FIELD_LABEL, Problem, SMALL_BUTTON, TEXT_ACTION } from "./SetupColumn";
+import SeparatedButton from "./SeparatedButton";
 
 type GuidePanelProps = {
   context: HelpContext;
@@ -30,9 +31,6 @@ type GuidePanelProps = {
 
 type Fix = Coordinates | "locating" | "off";
 type ShareState = "idle" | "sharing" | "shared" | "failed";
-
-const ANSWER =
-  "flex min-h-14 flex-1 cursor-pointer items-center justify-center rounded-2xl border border-border-strong px-4 py-2 text-center text-label-lg text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-subtle active:scale-[0.97]";
 
 function formatDistance(meters: number, locale: string, text: Messages["safety"]["sos"]): string {
   if (meters < 1000) return fillTemplate(text.meters, { value: Math.max(10, Math.round(meters / 10) * 10) });
@@ -93,74 +91,83 @@ function MeetingForm({ context, onDone }: { context: HelpContext; onDone: () => 
     if (outcome === "done") onDone();
   };
 
+  // With the map on screen its own hint says how to place the point, so the line under it only reports.
+  const statusLine = () => {
+    if (point === "failed") return copy.hereFailed;
+    if (placed) return copy.placed;
+    return mapShown ? "" : copy.hereHint;
+  };
+
   return (
-    <div className="mt-1 space-y-3">
-      <div>
-        <label htmlFor="meeting-name" className={FIELD_LABEL}>
-          {copy.name}
-        </label>
-        <input
-          id="meeting-name"
-          type="text"
-          autoComplete="off"
-          maxLength={MAX_LABEL_CHARS}
-          value={label}
-          placeholder={copy.namePlaceholder}
-          onChange={(event) => setLabel(event.target.value)}
-          className={`${INPUT} mt-2`}
-        />
-      </div>
-      <div>
-        <label htmlFor="meeting-note" className={FIELD_LABEL}>
-          {copy.note}
-        </label>
-        <input
-          id="meeting-note"
-          type="text"
-          autoComplete="off"
-          maxLength={MAX_NOTE_CHARS}
-          value={note}
-          placeholder={copy.notePlaceholder}
-          onChange={(event) => setNote(event.target.value)}
-          className={`${INPUT} mt-2`}
-        />
-      </div>
-      <div>
-        <p className={FIELD_LABEL}>{copy.where}</p>
-        <div className="mt-2 space-y-3">
-          {/* Two ways to say where: the phone's own position, read with one press, or the map slid under the pin.
-              The first also brings the map there, so the second can fine-tune it. */}
-          <button type="button" onClick={readHere} className={`${SMALL_BUTTON} w-full`}>
-            <LocateFixed className="size-4 text-primary" aria-hidden="true" />
-            {copy.here}
-          </button>
-          {mapShown && (
-            <MeetingMap
-              start={kept && kept.latitude !== null && kept.longitude !== null ? { latitude: kept.latitude, longitude: kept.longitude } : null}
-              near={pack.destinations[0] ?? ""}
-              moveTo={mine}
-              text={copy}
-              onMove={place}
-              onUnavailable={() => setMapShown(false)}
-            />
-          )}
+    <div className="mt-4 motion-safe:animate-message-in">
+      <div className="space-y-4">
+        <div>
+          <label htmlFor="meeting-name" className={`${FIELD_LABEL} block`}>
+            {copy.name}
+          </label>
+          <input
+            id="meeting-name"
+            type="text"
+            autoComplete="off"
+            maxLength={MAX_LABEL_CHARS}
+            value={label}
+            placeholder={copy.namePlaceholder}
+            onChange={(event) => setLabel(event.target.value)}
+            className={`${INPUT} mt-2`}
+          />
         </div>
-        <p role="status" className={`mt-2 flex items-start gap-2 text-caption text-pretty ${placed ? "text-success" : "text-text-muted"}`}>
-          {placed && <Check className="mt-px size-4 shrink-0" strokeWidth={3} aria-hidden="true" />}
-          {point === "failed" ? copy.hereFailed : placed ? copy.placed : copy.hereHint}
-        </p>
-        {looked && <p className="mt-1 text-caption text-pretty text-text-muted">{copy.addressSource}</p>}
+        <div>
+          <label htmlFor="meeting-note" className={`${FIELD_LABEL} block`}>
+            {copy.note}
+          </label>
+          <input
+            id="meeting-note"
+            type="text"
+            autoComplete="off"
+            maxLength={MAX_NOTE_CHARS}
+            value={note}
+            placeholder={copy.notePlaceholder}
+            onChange={(event) => setNote(event.target.value)}
+            className={`${INPUT} mt-2`}
+          />
+        </div>
+        <div>
+          <p className={FIELD_LABEL}>{copy.where}</p>
+          <div className="mt-2 space-y-3">
+            {/* Two ways to say where: the phone's own position, read with one press, or the map slid under the pin.
+                The first also brings the map there, so the second can fine-tune it. */}
+            <button type="button" onClick={readHere} className={`${buttonClass("outline", "small")} w-full`}>
+              <LocateFixed className="size-4 text-primary" aria-hidden="true" />
+              {copy.here}
+            </button>
+            {mapShown && (
+              <MeetingMap
+                start={kept && kept.latitude !== null && kept.longitude !== null ? { latitude: kept.latitude, longitude: kept.longitude } : null}
+                near={pack.destinations[0] ?? ""}
+                moveTo={mine}
+                text={copy}
+                onMove={place}
+                onUnavailable={() => setMapShown(false)}
+              />
+            )}
+          </div>
+          <p role="status" className={`mt-2 flex items-start gap-2 text-caption text-pretty empty:hidden ${placed ? "text-success" : "text-text-muted"}`}>
+            {placed && <Check className="mt-px size-4 shrink-0 motion-safe:animate-pop-in" strokeWidth={3} aria-hidden="true" />}
+            {statusLine()}
+          </p>
+          {looked && <p className="mt-1 text-caption text-pretty text-text-muted">{copy.addressSource}</p>}
+        </div>
       </div>
       <Problem context={context} show={failed} />
-      <div className="flex flex-wrap gap-2">
-        <button type="button" disabled={label.trim() === ""} onClick={() => save()} className={SMALL_BUTTON}>
+      <div className="mt-6 flex flex-wrap gap-2">
+        <button type="button" disabled={label.trim() === ""} onClick={() => save()} className={SAVE_BUTTON}>
           {text.save}
         </button>
-        <button type="button" onClick={onDone} className={TEXT_ACTION}>
+        <button type="button" onClick={onDone} className={CANCEL_BUTTON}>
           {text.cancel}
         </button>
         {kept && (
-          <button type="button" onClick={() => save(true)} className={TEXT_ACTION}>
+          <button type="button" onClick={() => save(true)} className={CANCEL_BUTTON}>
             {copy.clear}
           </button>
         )}
@@ -172,6 +179,19 @@ function MeetingForm({ context, onDone }: { context: HelpContext; onDone: () => 
 // The way back to the group, on the page itself: where the group gathers and which way that is, one button that
 // calls the leader, and the one action that tells the group. Nothing here is sent by looking at it; the group is
 // told only when "I am separated" is pressed, and the answers a separated member can give appear after that.
+type CompassPermission = { requestPermission?: () => Promise<"granted" | "denied"> };
+
+/** True on browsers (iOS Safari) that keep the compass shut until the page asks from a tap. */
+function compassNeedsAsking(): boolean {
+  return typeof DeviceOrientationEvent !== "undefined" && typeof (DeviceOrientationEvent as unknown as CompassPermission).requestPermission === "function";
+}
+
+/** Asks for the compass where the browser wants that. A refusal leaves the written direction, which still works. */
+function askForCompass() {
+  if (!compassNeedsAsking()) return;
+  (DeviceOrientationEvent as unknown as CompassPermission).requestPermission?.().catch(() => undefined);
+}
+
 // It reads the pack kept on the phone, so all of it is there without a connection.
 export default function GuidePanel({ context, actionLabel, onAction, onOpenCard }: GuidePanelProps) {
   const locale = useLocale();
@@ -248,45 +268,62 @@ export default function GuidePanel({ context, actionLabel, onAction, onOpenCard 
   };
 
   const waiting = report?.id.startsWith("waiting:") ?? false;
+  // Before the group is told, "I am separated" is the page's filled button; once it was pressed, the call is.
+  const callTone: ButtonVariant = report ? "primary" : "outline";
+  const callIcon = report ? "" : "text-primary";
+  const shareLine = () => {
+    if (share === "shared") return copy.shared;
+    if (share === "failed") return copy.shareFailed;
+    return copy.shareHint;
+  };
 
   return (
-    <section
-      id="meeting-point"
-      aria-label={copy.title}
-      className="scroll-mt-28 divide-y divide-border overflow-clip rounded-2xl border border-border bg-surface"
-    >
+    <section id="meeting-point" aria-label={copy.title} className={`${HELP_FRAME} scroll-mt-28 overflow-clip`}>
       {report && (
-        <div role="status" className="bg-primary-subtle px-4 py-4 text-on-primary-subtle sm:px-5">
+        <div role="status" className="bg-primary-subtle p-surface text-on-primary-subtle motion-safe:animate-message-in">
           <p className="flex items-start gap-3 text-label-lg text-pretty">
             {waiting ? (
-              <CloudOff className="mt-1 size-5 shrink-0" aria-hidden="true" />
+              <CloudOff className="size-5 shrink-0" aria-hidden="true" />
             ) : (
-              <span aria-hidden="true" className="mt-2 size-3 shrink-0 rounded-full bg-accent motion-safe:animate-signal" />
+              <span aria-hidden="true" className="mt-1 size-3 shrink-0 rounded-full bg-accent motion-safe:animate-signal" />
             )}
             {waiting ? copy.queued : report.source === "SOS" ? copy.told : copy.asked}
           </p>
-          <div className="mt-3 border-t border-primary/15 pt-3">
+          <div className="mt-4 border-t border-primary/15 pt-4">
             <SearchSteps report={report} context={context} />
           </div>
         </div>
       )}
 
-      <div className={BLOCK}>
-        <div className="flex min-h-11 items-center justify-between gap-3">
-          <h2 className="text-label text-text">{text.meeting.title}</h2>
-          {!editing && pack.canManage && (
-            <button type="button" onClick={() => setEditing(true)} className={TEXT_ACTION}>
+      <HelpBlock
+        id="meeting-title"
+        title={text.meeting.title}
+        action={
+          !editing &&
+          pack.canManage && (
+            <button type="button" onClick={() => setEditing(true)} className={TEXT_LINK}>
               {pack.meetingPoint ? text.meeting.change : text.meeting.set}
             </button>
-          )}
-        </div>
+          )
+        }
+      >
         {editing && <MeetingForm context={context} onDone={() => setEditing(false)} />}
-        {!editing && !place && <p className="text-body text-pretty text-text">{copy.meetNone}</p>}
+        {!editing && !place && <p className="mt-2 text-body text-pretty text-text">{copy.meetNone}</p>}
         {!editing && place && (
           <>
-            <div className="flex items-center gap-4">
+            <div className="mt-2 flex items-center gap-4">
+              {target && here && heading === null && compassNeedsAsking() && (
+                <button
+                  type="button"
+                  onClick={askForCompass}
+                  className="flex size-20 shrink-0 cursor-pointer flex-col items-center justify-center gap-1 rounded-full border border-primary bg-primary-subtle px-2 text-center text-caption font-bold text-on-primary-subtle transition-[background-color,scale] duration-150 ease-out hover:bg-primary/20 active:scale-[0.97]"
+                >
+                  <Navigation2 className="size-5 fill-primary text-primary" aria-hidden="true" />
+                  {copy.compass}
+                </button>
+              )}
               {target && here && heading !== null && (
-                <span className="flex size-20 shrink-0 items-center justify-center rounded-full border border-border bg-background">
+                <span className="flex size-20 shrink-0 items-center justify-center rounded-full border border-border bg-background motion-safe:animate-pop-in">
                   <Navigation2
                     className="size-9 fill-primary text-primary transition-[rotate] duration-300 ease-out"
                     style={{ rotate: `${bearingBetween(here, target) - heading}deg` }}
@@ -295,7 +332,7 @@ export default function GuidePanel({ context, actionLabel, onAction, onOpenCard 
                 </span>
               )}
               <div className="min-w-0 flex-1">
-                <p className="text-h3 text-pretty text-text">{place.label}</p>
+                <p className="text-h2 text-pretty text-text">{place.label}</p>
                 {place.note && <p className="mt-1 text-body-sm text-pretty text-text-muted">{place.note}</p>}
                 {!pack.meetingPoint && <p className="mt-1 text-caption text-text-muted">{text.meeting.fromPlan}</p>}
                 {guiding && target && (
@@ -311,13 +348,20 @@ export default function GuidePanel({ context, actionLabel, onAction, onOpenCard 
                 {guiding && fix === "off" && <p className="mt-2 text-caption text-pretty text-text-muted">{copy.locationOff}</p>}
               </div>
             </div>
-            <div className="mt-4 flex flex-wrap gap-2">
-              <button type="button" onClick={() => setPeeking(true)} className={`${OUTLINE_BUTTON} min-w-0 flex-1`}>
+            <div className="mt-6 grid gap-3 sm:grid-cols-2">
+              <button type="button" onClick={() => setPeeking(true)} className={`${buttonClass("outline")} w-full`}>
                 <MapPin className="size-4 text-primary" aria-hidden="true" />
                 {copy.openMap}
               </button>
               {target && !guiding && (
-                <button type="button" onClick={() => setAsked(true)} className={`${OUTLINE_BUTTON} min-w-0 flex-1`}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    askForCompass();
+                    setAsked(true);
+                  }}
+                  className={`${buttonClass("outline")} w-full`}
+                >
                   <Navigation2 className="size-4 text-primary" aria-hidden="true" />
                   {copy.showWay}
                 </button>
@@ -325,79 +369,85 @@ export default function GuidePanel({ context, actionLabel, onAction, onOpenCard 
             </div>
           </>
         )}
-      </div>
+      </HelpBlock>
 
-      <div className={`${BLOCK} space-y-3`}>
-        {/* A call is the plainest way back at any age and needs no data connection, so it is always one tap away. */}
-        {first ? (
-          <CallLink phone={first.phone} name={nameIn(context, first)} className={`${PRIMARY_BUTTON} h-14 w-full`}>
-            <Phone className="size-5" aria-hidden="true" />
-            {fillTemplate(copy.callLead, { name: nameIn(context, first) })}
-          </CallLink>
-        ) : (
-          !pack.secondaryPhone && <p className="text-body-sm text-pretty text-text-muted">{copy.noNumbers}</p>
-        )}
-        {/* The trip's second number answers when the leader's does not, and stands in for it until there is one. */}
-        {pack.secondaryPhone && (
-          <CallLink phone={pack.secondaryPhone} name={text.second.title} className={`${first ? OUTLINE_BUTTON : PRIMARY_BUTTON} h-14 w-full`}>
-            <Phone className={`size-5 ${first ? "text-primary" : ""}`} aria-hidden="true" />
-            {copy.callSecond}
-          </CallLink>
-        )}
-        {/* The request is still on this phone. A text message needs no data connection either. */}
-        {waiting && first && viewer && (
-          <CallLink
-            phone={first.phone}
-            name={nameIn(context, first)}
-            message={fillTemplate(copy.smsBody, { name: nameIn(context, viewer) })}
-            className={`${OUTLINE_BUTTON} h-14 w-full`}
-          >
-            <MessageSquareText className="size-5 text-primary" aria-hidden="true" />
-            {fillTemplate(copy.sms, { name: nameIn(context, first) })}
-          </CallLink>
-        )}
+      {/* Three groups, set apart by the same gap: the calls, the answers once the group was told, and the one action.
+          Only one button is filled at a time: "I am separated" until it was pressed, then the call that leads. */}
+      <div className="flex flex-col gap-6 p-surface">
+        <div className="space-y-3">
+          {/* A call is the plainest way back at any age and needs no data connection, so it is always one tap away. */}
+          {first ? (
+            <CallLink phone={first.phone} name={nameIn(context, first)} className={`${buttonClass(callTone, "large")} w-full`}>
+              <Phone className={`size-5 ${callIcon}`} aria-hidden="true" />
+              {fillTemplate(copy.callLead, { name: nameIn(context, first) })}
+            </CallLink>
+          ) : (
+            !pack.secondaryPhone && <p className="text-body-sm text-pretty text-text-muted">{copy.noNumbers}</p>
+          )}
+          {/* The trip's second number answers when the leader's does not, and stands in for it until there is one. */}
+          {pack.secondaryPhone && (
+            <CallLink
+              phone={pack.secondaryPhone}
+              name={text.second.title}
+              className={`${buttonClass(first ? "outline" : callTone, "large")} w-full`}
+            >
+              <Phone className={`size-5 ${first ? "text-primary" : callIcon}`} aria-hidden="true" />
+              {copy.callSecond}
+            </CallLink>
+          )}
+          {/* The request is still on this phone. A text message needs no data connection either. */}
+          {waiting && first && viewer && (
+            <CallLink
+              phone={first.phone}
+              name={nameIn(context, first)}
+              message={fillTemplate(copy.smsBody, { name: nameIn(context, viewer) })}
+              className={`${buttonClass("outline", "large")} w-full`}
+            >
+              <MessageSquareText className="size-5 text-primary" aria-hidden="true" />
+              {fillTemplate(copy.sms, { name: nameIn(context, first) })}
+            </CallLink>
+          )}
+        </div>
 
         {report && viewer && (
-          <>
-            <div className="flex gap-3">
+          <div className="space-y-3 motion-safe:animate-message-in">
+            {/* Two answers side by side once there is room; on a phone each gets the full width, so neither is cut. */}
+            <div className="grid gap-3 empty:hidden sm:grid-cols-2">
               {report.status === "SEARCHING" && (
-                <button type="button" onClick={() => context.act({ type: "status", memberId: viewer.id, status: "ON_THE_WAY" })} className={ANSWER}>
+                <button
+                  type="button"
+                  onClick={() => context.act({ type: "status", memberId: viewer.id, status: "ON_THE_WAY" })}
+                  className={`${buttonClass("outline", "large")} w-full`}
+                >
                   {copy.onWay}
                 </button>
               )}
               {!report.confirmedLost && (
-                <button type="button" onClick={() => context.act({ type: "lost", memberId: viewer.id })} className={ANSWER}>
+                <button type="button" onClick={() => context.act({ type: "lost", memberId: viewer.id })} className={`${buttonClass("outline", "large")} w-full`}>
                   {copy.lost}
                 </button>
               )}
             </div>
             <div>
-              <button type="button" disabled={share === "sharing"} onClick={shareLocation} className={`${OUTLINE_BUTTON} w-full`}>
+              <button type="button" disabled={share === "sharing"} onClick={shareLocation} className={`${buttonClass("outline")} w-full`}>
                 <LocateFixed className="size-4 text-primary" aria-hidden="true" />
                 {copy.share}
               </button>
               <p role="status" className="mt-2 text-center text-caption text-pretty text-text-muted">
-                {share === "shared" ? copy.shared : share === "failed" ? copy.shareFailed : copy.shareHint}
+                {shareLine()}
               </p>
             </div>
-          </>
+          </div>
         )}
 
         {/* On a phone the same action is the bar fixed to the bottom edge; here it sits with the rest from 1024px. */}
-        <button
-          type="button"
-          onClick={onAction}
-          className={`hidden h-14 w-full cursor-pointer items-center justify-center gap-3 rounded-full px-6 text-label-lg transition-[background-color,scale] duration-150 ease-out active:scale-[0.98] lg:inline-flex ${
-            report ? "border border-border-strong text-text hover:bg-surface-muted" : "border border-primary text-primary hover:bg-primary-subtle"
-          }`}
-        >
-          {report ? <Check className="size-5" strokeWidth={3} aria-hidden="true" /> : <LifeBuoy className="size-5" aria-hidden="true" />}
-          {actionLabel}
-        </button>
-        {!report && <p className="hidden text-center text-caption text-pretty text-text-muted lg:block">{copy.buttonHint}</p>}
+        <div className="hidden lg:block">
+          <SeparatedButton asked={report !== null} label={actionLabel} onPress={onAction} />
+          {!report && <p className="mt-2 text-center text-caption text-pretty text-text-muted">{copy.buttonHint}</p>}
+        </div>
 
         {viewer && (
-          <button type="button" onClick={() => onOpenCard(viewer.id)} className={`${TEXT_ACTION} -ml-3`}>
+          <button type="button" onClick={() => onOpenCard(viewer.id)} className={`${TEXT_LINK} self-start`}>
             <IdCard className="size-4" aria-hidden="true" />
             {copy.card}
           </button>

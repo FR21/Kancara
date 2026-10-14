@@ -1,17 +1,34 @@
 {
   "title": "Rencanakan trip",
   "start": {
-    "title": "Pergi ke mana kita hari ini?",
-    "form": "Isi manual, satu per satu",
-    "lead": "Ceritakan saja seperti ke teman. Captain menanyakan sisanya, lalu menyiapkan boarding pass dan rencana per hari.",
-    "greet": "Sapa Captain",
-    "greetings": [
-      "Halo, aku Captain!",
-      "Siapa saja yang ikut kali ini?",
-      "Ada yang pakai kursi roda? Catat saja.",
-      "Halal, vegetarian, alergi: semua kuhitung.",
-      "Tidak ada yang tertinggal."
-    ]
+    "title": "Rencanakan perjalanan rombongan",
+    "lead": "Empat pertanyaan singkat, satu per satu. Setelah itu boarding pass dan rencana per hari untuk semua orang siap.",
+    "form": "Mulai merencanakan",
+    "captain": "Halo, aku Captain. Aku temani sampai boarding pass-mu jadi.",
+    "savedProfiles": "Pakai profil tersimpan",
+    "routeLabel": "Langkah-langkah rencana",
+    "route": {
+      "trip": {
+        "name": "Perjalanan",
+        "asks": "Dari mana, ke mana, kapan, dan seberapa santai."
+      },
+      "crew": {
+        "name": "Rombongan",
+        "asks": "Siapa saja yang ikut dan apa kebutuhan masing-masing."
+      },
+      "budget": {
+        "name": "Anggaran",
+        "asks": "Kira-kira total untuk semua orang."
+      },
+      "extras": {
+        "name": "Tambahan",
+        "asks": "Penginapan, acara khusus, atau tempat yang ingin dihindari. Boleh dilewati."
+      },
+      "pass": {
+        "name": "Boarding pass",
+        "asks": "Periksa semuanya, lalu rencana per hari dibuat."
+      }
+    }
   },
   "stages": {
     "label": "Tahap rencana",
@@ -57,7 +74,8 @@
     "required": "Belum diisi: {items}.",
     "previewNote": "Ini pratinjau. Selesaikan pertanyaannya dulu untuk lanjut.",
     "previewClose": "Tutup",
-    "previewTitle": "Pratinjau boarding pass"
+    "previewTitle": "Pratinjau boarding pass",
+    "routeSketch": "Rute perjalanan: {route}"
   },
   "crew": {
     "addLegend": "Tambah orang",
@@ -66,7 +84,8 @@
     "needsCount": "Kebutuhan: {count}",
     "selectHint": "Ketuk karakter untuk mengisi nama dan kebutuhannya.",
     "removeConfirm": "Hapus?",
-    "removeConfirmLabel": "Ketuk lagi untuk menghapus {name}"
+    "removeConfirmLabel": "Ketuk lagi untuk menghapus {name}",
+    "savedTitle": "Pilih dari profil tersimpan"
   },
   "paceHints": {
     "relaxed": "2 sampai 3 kegiatan sehari, banyak jeda.",
@@ -86,9 +105,10 @@
       "IDR": "Contoh: 30000000",
       "USD": "Contoh: 2000"
     },
-    "auto": "Terisi otomatis",
     "rate": "Kurs {one} = {rate}, per {date}.",
-    "rateEstimate": "Kurs perkiraan: {one} = {rate}."
+    "rateEstimate": "Kurs perkiraan: {one} = {rate}.",
+    "quick": "Isi cepat",
+    "auto": "Terisi otomatis"
   },
   "ticket": {
     "readyTitle": "Boarding pass kamu siap.",
@@ -350,7 +370,8 @@
     "error": "Captain tidak bisa dihubungi. Periksa koneksimu, lalu coba lagi.",
     "retry": "Coba lagi",
     "itineraryPending": "Captain sedang menyusun itinerary",
-    "itineraryIntro": "Ini itinerary yang memperhitungkan kebutuhan tiap anggota. Pilih hari untuk melihat detailnya."
+    "itineraryIntro": "Ini itinerary yang memperhitungkan kebutuhan tiap anggota. Pilih hari untuk melihat detailnya.",
+    "clearDraft": "Hapus draf"
   },
   "itinerary": {
     "title": "Itinerary {destination}",
@@ -363,17 +384,12 @@
       "one": "{count} kegiatan",
       "other": "{count} kegiatan"
     },
-    "honoured": {
-      "one": "{count} kebutuhan terpenuhi",
-      "other": "{count} kebutuhan terpenuhi"
-    },
     "toCheck": {
       "one": "{count} perlu dicek",
       "other": "{count} perlu dicek"
     },
     "check": "Perlu dicek",
     "emptyDay": "Belum ada kegiatan di hari ini.",
-    "leg": "{duration} · {distance} ke tempat berikutnya",
     "rating": "{rating} dari 5",
     "close": "Tutup",
     "now": "Sedang berlangsung",
@@ -400,7 +416,6 @@
     },
     "weather": {
       "chance": "Peluang hujan {chance}%",
-      "mm": "Hujan {mm} mm",
       "typical": "Berdasarkan data historis tahun lalu",
       "rainAlert": "Potensi hujan {chance}%. Siapkan payung atau pertimbangkan cadangan indoor."
     },
@@ -428,6 +443,77 @@
         "other": "{count} cadangan siap"
       },
       "map": "Buka {name} di Google Maps"
+    },
+    "adjust": {
+      "open": "Sesuaikan jadwal hari ini",
+      "forRain": "Pindah ke tempat beratap",
+      "title": "Sesuaikan hari {number}",
+      "what": "Apa yang berubah?",
+      "kinds": {
+        "rain": "Hujan",
+        "rest": "Rombongan lelah",
+        "meal": "Tempat makan penuh",
+        "closed": "Tempat tutup"
+      },
+      "which": "Tempat yang diganti",
+      "whichHint": "Hanya tempat yang dicentang yang berubah. Jadwal lainnya tetap seperti rencana.",
+      "all": "Centang semua",
+      "noBackup": "Belum ada cadangan untuk tempat ini.",
+      "others": "Pilihan cadangan lain",
+      "fits": "Semua cadangan yang dipilih sudah dicek cocok untuk rombonganmu.",
+      "apply": {
+        "one": "Ganti {count} tempat",
+        "other": "Ganti {count} tempat"
+      },
+      "cancel": "Batal"
+    },
+    "timeline": {
+      "today": "hari ini",
+      "dayHeading": "{day} · {date}",
+      "byCar": "{distance} naik mobil",
+      "issues": {
+        "one": "{count} masalah",
+        "other": "{count} masalah"
+      },
+      "travelCar": "Mobil {duration} · {distance}",
+      "rest": "Istirahat {duration} · {names}",
+      "restMore": "+{count}",
+      "needMet": "terpenuhi",
+      "needPartly": "{need} sebagian",
+      "backupsFor": "Cadangan untuk {name}",
+      "map": "Peta",
+      "mapTitle": "Peta hari {number}",
+      "mapLoading": "Memuat peta…",
+      "mapUnavailable": "Peta belum bisa dimuat di sini. Buka tiap tempat di Google Maps:",
+      "openInMaps": "buka di Google Maps",
+      "categories": {
+        "meal": "Makan",
+        "cafe": "Kafe",
+        "attraction": "Atraksi",
+        "museum": "Museum",
+        "nature": "Alam",
+        "shopping": "Belanja",
+        "worship": "Tempat ibadah",
+        "lodging": "Penginapan",
+        "transport": "Transportasi",
+        "other": "Tempat"
+      }
+    },
+    "pdf": {
+      "download": "Unduh PDF",
+      "making": "Menyiapkan PDF…",
+      "failed": "PDF belum bisa dibuat. Coba lagi sebentar lagi.",
+      "dates": "{from} – {to}",
+      "footer": "Dibuat dengan Kancara · Halaman {page} dari {total}",
+      "columns": {
+        "number": "No",
+        "time": "Waktu",
+        "place": "Tempat",
+        "kind": "Jenis · harga",
+        "needs": "Kebutuhan rombongan",
+        "rating": "Rating",
+        "next": "Ke tempat berikutnya"
+      }
     }
   },
   "invite": {

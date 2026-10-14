@@ -2,8 +2,8 @@ import type { ReactNode } from "react";
 import type { Conflict, Strained } from "@/lib/mediation";
 import type { Messages } from "@/lib/messages";
 import { type Member, type PlanDraft, getMemberName } from "@/lib/plan-draft";
-import MemberAvatar from "./MemberAvatar";
-import { NeedChip } from "./NeedChips";
+import MemberAvatar from "@/components/ui/MemberAvatar";
+import { NeedChip } from "@/components/ui/NeedChips";
 
 type ClashSidesProps = {
   conflict: Conflict;
@@ -34,7 +34,7 @@ export default function ClashSides({ conflict, draft, text }: ClashSidesProps) {
       if (!member) return [];
       return person(
         member,
-        <div className="mt-1 flex flex-wrap gap-1">
+        <div className="mt-2 flex flex-wrap gap-2">
           {entry.needs.map((need) => (
             <NeedChip key={need} need={need} text={text} />
           ))}
@@ -46,7 +46,7 @@ export default function ClashSides({ conflict, draft, text }: ClashSidesProps) {
     return (
       <div>
         <h2 className={SIDE_LABEL}>{sides.wishes}</h2>
-        <ul className="mt-3 space-y-3">
+        <ul className="mt-2 space-y-3">
           {conflict.wishes.map((wish) => {
             const holders = wish.memberIds.flatMap((memberId) => find(memberId) ?? []);
             return (
@@ -57,7 +57,7 @@ export default function ClashSides({ conflict, draft, text }: ClashSidesProps) {
                       key={member.id}
                       ageGroup={member.ageGroup}
                       variant={draft.members.indexOf(member)}
-                      className="size-8 ring-2 ring-surface"
+                      className="size-8 ring-2 ring-background"
                     />
                   ))}
                 </span>
@@ -81,7 +81,7 @@ export default function ClashSides({ conflict, draft, text }: ClashSidesProps) {
     return (
       <div>
         <h2 className={SIDE_LABEL}>{sides.resting}</h2>
-        <ul className="mt-3 space-y-3">{withNeeds(conflict.resting)}</ul>
+        <ul className="mt-2 space-y-3">{withNeeds(conflict.resting)}</ul>
       </div>
     );
   }
@@ -90,7 +90,7 @@ export default function ClashSides({ conflict, draft, text }: ClashSidesProps) {
     <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-1">
       <div>
         <h2 className={SIDE_LABEL}>{sides.wants}</h2>
-        <ul className="mt-3 space-y-3">
+        <ul className="mt-2 space-y-3">
           {conflict.wishers.flatMap((wisher) => {
             const member = find(wisher.memberId);
             if (!member) return [];
@@ -100,7 +100,7 @@ export default function ClashSides({ conflict, draft, text }: ClashSidesProps) {
       </div>
       <div>
         <h2 className={SIDE_LABEL}>{sides.affected}</h2>
-        <ul className="mt-3 space-y-3">{withNeeds(conflict.strained)}</ul>
+        <ul className="mt-2 space-y-3">{withNeeds(conflict.strained)}</ul>
       </div>
     </div>
   );

@@ -10,7 +10,9 @@ import {
   Tent,
   WifiOff,
 } from "lucide-react";
+import Link from "next/link";
 import { useEffect, useRef } from "react";
+import { BADGE, buttonClass } from "@/components/ui/styles";
 import { useMessages } from "@/lib/use-messages";
 import ScrollReveal from "./ScrollReveal";
 
@@ -29,7 +31,7 @@ const CONTOURS = [
 const TRAIL = "M6 96C18 86 30 84 40 78S58 62 66 52S82 30 90 18";
 
 const FLOAT_CARD =
-  "absolute z-20 flex items-center gap-3 rounded-2xl border p-3 pr-4 shadow-xl shadow-neutral-950/15 transition-[opacity,translate] duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] motion-safe:translate-y-3 motion-safe:opacity-0 motion-safe:group-data-in-view/phone:translate-y-0 motion-safe:group-data-in-view/phone:opacity-100";
+  "absolute z-20 flex items-center gap-3 surface-compact rounded-surface border p-surface shadow-xl shadow-neutral-950/15 transition-[opacity,translate] duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] motion-safe:translate-y-3 motion-safe:opacity-0 motion-safe:group-data-in-view/phone:translate-y-0 motion-safe:group-data-in-view/phone:opacity-100";
 
 function Phone() {
   const t = useMessages("landing").offline;
@@ -47,9 +49,9 @@ function Phone() {
   }, []);
 
   return (
-    <div ref={ref} className="group/phone relative w-[300px] max-w-full">
+    <div ref={ref} className="group/phone relative w-75 max-w-full">
       <div className={`${FLOAT_CARD} -top-16 left-0 border-border bg-surface/95 backdrop-blur-sm delay-200 sm:top-28 sm:-left-36`}>
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-primary-subtle text-primary">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-subtle text-primary">
           <WifiOff className="size-5" aria-hidden="true" />
         </span>
         <span className="leading-tight">
@@ -59,7 +61,7 @@ function Phone() {
       </div>
 
       <div className={`${FLOAT_CARD} -right-4 -bottom-6 border-accent-400 bg-accent text-on-accent delay-400 sm:-right-16`}>
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-neutral-950/10">
+        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-neutral-950/10">
           <ShieldCheck className="size-5" aria-hidden="true" />
         </span>
         <span className="leading-tight">
@@ -68,19 +70,20 @@ function Phone() {
         </span>
       </div>
 
-      <span aria-hidden="true" className="absolute top-28 -left-[3px] h-7 w-[3px] rounded-l-sm bg-neutral-700" />
-      <span aria-hidden="true" className="absolute top-40 -left-[3px] h-12 w-[3px] rounded-l-sm bg-neutral-700" />
-      <span aria-hidden="true" className="absolute top-56 -left-[3px] h-12 w-[3px] rounded-l-sm bg-neutral-700" />
-      <span aria-hidden="true" className="absolute top-40 -right-[3px] h-20 w-[3px] rounded-r-sm bg-neutral-700" />
+      <span aria-hidden="true" className="absolute top-28 -left-1 h-8 w-2 rounded-full bg-neutral-700" />
+      <span aria-hidden="true" className="absolute top-40 -left-1 h-12 w-2 rounded-full bg-neutral-700" />
+      <span aria-hidden="true" className="absolute top-56 -left-1 h-12 w-2 rounded-full bg-neutral-700" />
+      <span aria-hidden="true" className="absolute top-40 -right-1 h-20 w-2 rounded-full bg-neutral-700" />
 
+      {/* The case is a compact surface, so the screen inside its 12px bezel takes the 8px inner corner. */}
       <div
         role="img"
         aria-label={t.phone.label}
-        className="relative rounded-[3rem] bg-neutral-900 p-3 shadow-2xl ring-1 shadow-neutral-950/40 ring-neutral-700"
+        className="relative surface-compact rounded-surface bg-neutral-900 p-surface shadow-2xl ring-1 shadow-neutral-950/40 ring-neutral-700"
       >
         <div
           aria-hidden="true"
-          className="relative flex aspect-[9/19] flex-col overflow-hidden rounded-[2.4rem] bg-background"
+          className="relative flex aspect-[9/19] flex-col overflow-clip rounded-lg bg-background"
         >
           <span className="absolute top-3 left-1/2 h-6 w-24 -translate-x-1/2 rounded-full bg-neutral-950" />
 
@@ -110,13 +113,14 @@ function Phone() {
                   {t.phone.destination}
                 </p>
               </div>
-              <span className="flex shrink-0 items-center gap-1 rounded-full bg-success-subtle px-2 py-1 text-caption font-bold text-on-success-subtle">
+              <span className={`${BADGE} shrink-0 bg-success-subtle text-on-success-subtle`}>
                 <Check className="size-3" strokeWidth={3} />
                 {t.phone.saved}
               </span>
             </div>
 
-            <div className="relative min-h-0 flex-1 overflow-hidden rounded-2xl border border-border bg-surface">
+            {/* Inside the screen's small corner the map runs edge to edge, square, the way a map app draws it. */}
+            <div className="relative -mx-4 min-h-0 flex-1 overflow-clip border-y border-border bg-surface">
               <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="absolute inset-0 size-full">
                 {CONTOURS.map((d) => (
                   <path
@@ -150,7 +154,7 @@ function Phone() {
                       strokeLinecap="round"
                       strokeDasharray="0.5 9"
                       vectorEffect="non-scaling-stroke"
-                      className="footer-flow stroke-success"
+                      className="stroke-success"
                     />
                   );
                 })}
@@ -168,8 +172,8 @@ function Phone() {
                 >
                   {member.you && (
                     <>
-                      <span className="absolute inset-0 animate-ping rounded-full bg-secondary-500/40 [animation-duration:2.4s] [animation-play-state:paused] group-data-in-view/phone:[animation-play-state:running]" />
-                      <span className="absolute inset-0 animate-ping rounded-full bg-secondary-500/30 [animation-delay:1.2s] [animation-duration:2.4s] [animation-play-state:paused] group-data-in-view/phone:[animation-play-state:running]" />
+                      <span className="absolute inset-0 animate-ping rounded-full bg-secondary-500/40 [animation-duration:2.4s] [animation-play-state:paused] group-data-in-view/phone:[animation-play-state:running] motion-reduce:hidden" />
+                      <span className="absolute inset-0 animate-ping rounded-full bg-secondary-500/30 [animation-delay:1.2s] [animation-duration:2.4s] [animation-play-state:paused] group-data-in-view/phone:[animation-play-state:running] motion-reduce:hidden" />
                     </>
                   )}
                   <span
@@ -182,15 +186,15 @@ function Phone() {
 
               <span className="absolute bottom-3 left-3 flex items-center gap-2 rounded-full border border-border bg-background/90 px-3 py-1 text-caption font-semibold text-success backdrop-blur-sm">
                 <span className="relative flex size-2">
-                  <span className="absolute inset-0 animate-ping rounded-full bg-success [animation-play-state:paused] group-data-in-view/phone:[animation-play-state:running]" />
+                  <span className="absolute inset-0 animate-ping rounded-full bg-success [animation-play-state:paused] group-data-in-view/phone:[animation-play-state:running] motion-reduce:hidden" />
                   <span className="relative size-2 rounded-full bg-success" />
                 </span>
                 {t.phone.network}
               </span>
             </div>
 
-            <div className="flex items-center gap-3 rounded-2xl border border-border bg-surface p-3">
-              <span className="flex size-9 shrink-0 items-center justify-center rounded-xl bg-success-subtle text-success">
+            <div className="flex items-center gap-3 rounded-full border border-border bg-surface p-1 pr-4">
+              <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-success-subtle text-success">
                 <CheckCircle2 className="size-5" />
               </span>
               <span className="min-w-0 flex-1 leading-tight">
@@ -199,7 +203,7 @@ function Phone() {
               </span>
             </div>
 
-            <span className="flex h-11 shrink-0 items-center justify-center rounded-xl bg-primary text-label text-on-primary shadow-md shadow-primary/20">
+            <span className="flex h-11 shrink-0 items-center justify-center rounded-full bg-primary text-label text-on-primary shadow-md shadow-primary/20">
               {t.phone.checkIn}
             </span>
           </div>
@@ -215,42 +219,45 @@ export default function OfflineSection() {
   const t = useMessages("landing");
 
   return (
-    <section id="pwa-info" className="relative z-10 w-full px-4 py-16 sm:px-6 md:px-12 lg:px-20 overflow-hidden bg-[linear-gradient(to_bottom,var(--background),var(--section-muted)_10rem)] shadow-2xl shadow-neutral-950/15">
+    <section
+      id="pwa-info"
+      className="relative z-10 w-full overflow-hidden bg-[linear-gradient(to_bottom,var(--background),var(--section-muted)_10rem)] px-4 py-16 shadow-2xl shadow-neutral-950/15 sm:px-6 sm:py-24 md:px-12 lg:px-20"
+    >
       <ScrollReveal className="mx-auto max-w-6xl">
-        <div className="flex flex-col lg:flex-row items-center gap-12 lg:gap-16">
-          <div className="flex-1 text-left space-y-6">
-            <h2 className="text-display font-heading font-extrabold text-text text-4xl sm:text-5xl leading-tight">
+        <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
+          <div className="flex-1 text-left">
+            <h2 className="font-heading text-4xl leading-tight font-extrabold text-balance text-text sm:text-5xl">
               {t.offline.titlePart1} <br />
-              <span className="text-emerald-600 dark:text-emerald-400">
+              <span className="text-success">
                 {t.offline.titlePart2}
               </span>
             </h2>
 
-            <p className="text-body-lg text-text-muted leading-relaxed max-w-lg">
+            <p className="mt-4 max-w-lg text-body leading-relaxed text-pretty text-text-muted sm:text-h3">
               {t.offline.description}
             </p>
 
-            <ul className="space-y-3 pt-2">
-              {t.offline.points.map((point, idx) => (
-                <li key={idx} className="flex items-center gap-3 text-body-sm font-bold text-text">
-                  <CheckCircle2 className="size-5 text-emerald-600 shrink-0" />
-                  <span>{point}</span>
+            <ul className="mt-8 space-y-3">
+              {t.offline.points.map((point) => (
+                <li key={point} className="flex items-center gap-3 text-body-sm font-bold text-text">
+                  <CheckCircle2 className="size-5 shrink-0 text-success" aria-hidden="true" />
+                  {point}
                 </li>
               ))}
             </ul>
 
-            <div className="pt-4">
-              <a
-                href="/plan"
-                className="inline-flex items-center justify-center gap-2 rounded-full bg-primary hover:bg-primary-hover text-on-primary font-bold px-7 py-4 text-label-lg transition-all shadow-md active:scale-[0.98]"
-              >
-                <span>{t.offline.cta}</span>
-                <ArrowRight className="size-4" />
-              </a>
+            <div className="mt-8">
+              <Link href="/plan" className={`group ${buttonClass("primary", "large")} shadow-md`}>
+                {t.offline.cta}
+                <ArrowRight
+                  className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1"
+                  aria-hidden="true"
+                />
+              </Link>
             </div>
           </div>
 
-          <div className="flex-1 w-full flex justify-center pt-20 pb-8 sm:py-6">
+          <div className="flex w-full flex-1 justify-center pt-20 pb-8 sm:py-6">
             <Phone />
           </div>
         </div>

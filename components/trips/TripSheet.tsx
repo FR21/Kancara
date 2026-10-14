@@ -30,7 +30,7 @@ export default function TripSheet({ open, labelledBy, onClose, children }: TripS
       aria-labelledby={labelledBy}
       onClose={onClose}
       onClick={closeOnBackdrop}
-      className="safe-bottom mx-auto mt-auto mb-0 max-h-[90dvh] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-t-3xl bg-surface p-0 text-text backdrop:bg-neutral-950/70 open:motion-safe:animate-message-in"
+      className="safe-bottom mx-auto mt-auto mb-0 max-h-[90dvh] w-full max-w-2xl overflow-y-auto overscroll-contain rounded-t-surface bg-surface p-0 text-text [--surface-pad:1.5rem] backdrop:bg-neutral-950/70 open:motion-safe:animate-sheet-up"
     >
       {open && children}
     </dialog>

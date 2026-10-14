@@ -1,0 +1,63 @@
+{
+  "crumb": "Pemindai menu",
+  "title": "Pindai menu dan pantangan makanan",
+  "lead": "Foto menu atau label makanan di {destination}. Bahannya dibaca, dicocokkan dengan pantangan tiap anggota, lalu disiapkan pertanyaan untuk pelayan dalam bahasa setempat.",
+  "group": {
+    "title": "Pantangan rombongan",
+    "allergy": "alergi {allergy}",
+    "none": "Belum ada pantangan makanan di rencana perjalanan ini. Hasil pindaian tetap menyebut bahan yang perlu ditanyakan."
+  },
+  "picker": {
+    "title": "Foto menu atau label makanan",
+    "hint": "Arahkan kamera ke nama hidangan, daftar bahan, atau label kemasan sampai tulisannya terbaca jelas.",
+    "camera": "Ambil foto",
+    "gallery": "Pilih dari galeri",
+    "choose": "Pilih foto",
+    "preparing": "Menyiapkan foto",
+    "previewAlt": "Foto menu yang akan dibaca",
+    "ready": "Foto siap dibaca",
+    "readyHint": "Bahan tersembunyi seperti mirin, lemak babi, kaldu ikan, alkohol, atau kacang ikut diperiksa untuk tiap anggota.",
+    "scan": "Periksa bahan dan pantangan",
+    "scanning": "Membaca menu",
+    "change": "Ganti foto"
+  },
+  "errors": {
+    "notImage": "File ini bukan foto. Pilih foto JPG, PNG, atau HEIC.",
+    "tooLarge": "Fotonya terlalu besar. Ambil foto ulang atau pilih foto lain.",
+    "unreadable": "Foto ini belum bisa dibuka di browser ini. Coba ambil foto langsung dari kamera.",
+    "offline": "Membaca menu butuh koneksi internet. Sambungkan dulu, lalu coba lagi.",
+    "failed": "Menu belum bisa dibaca. Coba lagi sebentar lagi."
+  },
+  "retry": "Coba lagi",
+  "result": {
+    "language": "Tertulis dalam bahasa {language}",
+    "status": {
+      "safe": "Aman dimakan",
+      "warning": "Perlu ditanyakan",
+      "danger": "Ada pantangan"
+    },
+    "ingredients": "Bahan yang terbaca",
+    "doubtful": "Perlu ditanyakan ke pelayan",
+    "members": "Untuk tiap anggota",
+    "memberStatus": {
+      "safe": "Aman",
+      "warning": "Tanya pelayan",
+      "danger": "Hindari"
+    },
+    "unknownMember": "Anggota rombongan",
+    "others": "{count} anggota lain tidak punya pantangan makanan."
+  },
+  "waiter": {
+    "title": "Tanyakan ke pelayan",
+    "hint": "Tunjukkan layar ini ke pelayan atau putar suaranya.",
+    "meaning": "Artinya: {translation}",
+    "speak": "Putar suara",
+    "speakMeaning": "Dengarkan artinya",
+    "speaking": "Sedang dibacakan",
+    "copy": "Salin",
+    "copied": "Tersalin"
+  },
+  "noSpeech": "Browser ini tidak bisa membacakan teks. Tunjukkan saja tulisannya.",
+  "noVoice": "HP ini belum punya suara bahasa {language}. Tunjukkan saja tulisannya.",
+  "dismiss": "Tutup"
+}

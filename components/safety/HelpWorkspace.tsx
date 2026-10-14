@@ -1,16 +1,16 @@
 "use client";
 
-import { Check, ChevronRight, CloudOff, IdCard, LifeBuoy, Link2, MessageCircle, Phone, PhoneOff, TriangleAlert } from "lucide-react";
-import Image from "next/image";
+import { ChevronRight, CloudOff, IdCard, Link2, MessageCircle, Phone, PhoneOff, TriangleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { type CSSProperties, type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
-import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import Notice, { type NoticeMessage } from "@/components/layout/Notice";
 import PageBackdrop from "@/components/layout/PageBackdrop";
-import ErrorAlert from "@/components/plan/ErrorAlert";
-import MemberAvatar from "@/components/plan/MemberAvatar";
-import { choiceClass } from "@/components/plan/styles";
+import PageHeader from "@/components/layout/PageHeader";
+import PageShell from "@/components/layout/PageShell";
+import ErrorAlert from "@/components/ui/ErrorAlert";
+import MemberAvatar from "@/components/ui/MemberAvatar";
+import { BADGE, TEXT_LINK, choiceClass, iconButtonClass } from "@/components/ui/styles";
 import {
   type Door,
   applyLocally,
@@ -25,20 +25,23 @@ import {
   readSeenReports,
   SafetyError,
   sendAction,
-} from "@/lib/api/safety";
+} from "@/lib/client/safety";
 import { fillTemplate } from "@/lib/plan-draft";
 import type { SafetyAction } from "@/lib/safety/action";
 import { formatPhone, whatsAppLink } from "@/lib/safety/contact";
-import { type SafetyMember, type SafetyPack, type SafetyReport, openReportFor } from "@/lib/safety/pack";
+import { type SafetyMember, type SafetyPack, type SafetyReport, openReportFor } from "@/lib/safety/safety-pack";
 import { useLocalNow } from "@/lib/safety/use-local-now";
 import { useMessages } from "@/lib/use-messages";
 import { useOnline } from "@/lib/use-online";
 import CallPrompt, { CallLink } from "./CallLink";
 import CardSheet from "./CardSheet";
 import GuidePanel from "./GuidePanel";
-import { type ActOutcome, type HelpContext, nameIn, searchMessage } from "./help";
+import { type ActOutcome, type HelpContext, nameIn, searchMessage } from "@/components/safety/help-context";
+import { BlockHeading, HELP_FRAME } from "./HelpBlock";
 import MemberSheet, { SearchSteps } from "./MemberSheet";
+import SeparatedButton from "./SeparatedButton";
 import { ImportantNumbers, PrepareBlocks } from "./SetupColumn";
+import StandaloneShell from "./StandaloneShell";
 
 type HelpWorkspaceProps = {
   /** How this phone reaches the trip: an account on it, or one member's own link. */
@@ -56,8 +59,11 @@ const REFRESH_MS = 8000;
 const FOUND_NOTICE_MS = 15 * 60 * 1000;
 // How long the line saying someone was found stays up before it leaves by itself.
 const FOUND_SHOWN_MS = 6000;
-const ICON_LINK =
-  "inline-flex size-11 shrink-0 items-center justify-center rounded-full text-primary transition-[background-color,scale] duration-150 ease-out hover:bg-primary-subtle active:scale-[0.97]";
+// The chat and call links on a member's row. They sit on a row that is itself pressable, so they take the
+// primary tint on hover, where the row takes the grey one, and read as targets of their own.
+const ROW_LINK = `relative z-10 ${iconButtonClass("primaryQuiet")}`;
+/** A line that tells the visitor something: a tinted box at the inner corner, on the page or inside a surface. */
+const PAGE_NOTE = "flex items-start gap-3 rounded-lg px-4 py-3 text-body-sm text-pretty";
 const subscribeToNothing = () => () => {};
 
 /** A pack with the actions still waiting on this phone applied, so the screen shows what the visitor did. */
@@ -85,24 +91,25 @@ function RollRow({ context, member, index, onOpen }: { context: HelpContext; mem
   const { Icon, label, warn } = reach();
 
   return (
-    <li className="relative flex items-center gap-1 pr-3 transition-[background-color] duration-150 ease-out hover:bg-surface-muted">
+    <li
+      style={{ "--item-index": index } as CSSProperties}
+      className="relative flex items-center gap-1 pr-surface transition-[background-color] duration-150 ease-out hover:bg-surface-muted motion-safe:animate-list-in"
+    >
       {/* The button's ::after covers the row, so the whole row opens the member; the two links sit above it. */}
       <button
         type="button"
         aria-label={fillTemplate(copy.open, { name })}
         onClick={onOpen}
-        className="flex min-h-16 min-w-0 flex-1 cursor-pointer items-center gap-3 py-3 pr-2 pl-4 text-left after:absolute after:inset-0 sm:pl-5"
+        className="flex min-h-16 min-w-0 flex-1 cursor-pointer items-center gap-3 py-3 pr-2 pl-surface text-left -outline-offset-2 after:absolute after:inset-0"
       >
         <MemberAvatar ageGroup={member.ageGroup} variant={index} className="size-10 shrink-0" />
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
-            <span className="text-label-lg text-pretty text-text">{name}</span>
-            {isViewer && (
-              <span className="rounded-full border border-primary px-2 py-1 text-caption font-bold text-primary">{copy.you}</span>
-            )}
+            <span className="min-w-0 text-label-lg text-pretty wrap-anywhere text-text">{name}</span>
+            {isViewer && <span className={`${BADGE} border border-primary text-primary`}>{copy.you}</span>}
             {searching && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-primary-subtle px-2 py-1 text-caption font-bold text-on-primary-subtle">
-                <span aria-hidden="true" className="size-2 rounded-full bg-accent motion-safe:animate-signal" />
+              <span className={`${BADGE} bg-primary-subtle text-on-primary-subtle`}>
+                <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-accent motion-safe:animate-signal" />
                 {isViewer ? copy.asked : copy.searching}
               </span>
             )}
@@ -121,7 +128,7 @@ function RollRow({ context, member, index, onOpen }: { context: HelpContext; mem
             rel="noopener noreferrer"
             aria-label={fillTemplate(copy.chat, { name })}
             title={fillTemplate(copy.chat, { name })}
-            className={`${ICON_LINK} relative z-10`}
+            className={ROW_LINK}
           >
             <MessageCircle className="size-5" aria-hidden="true" />
           </a>
@@ -130,7 +137,7 @@ function RollRow({ context, member, index, onOpen }: { context: HelpContext; mem
             name={name}
             aria-label={fillTemplate(copy.call, { name })}
             title={fillTemplate(copy.call, { name })}
-            className={`${ICON_LINK} relative z-10`}
+            className={ROW_LINK}
           >
             <Phone className="size-5" aria-hidden="true" />
           </CallLink>
@@ -138,6 +145,37 @@ function RollRow({ context, member, index, onOpen }: { context: HelpContext; mem
       )}
       <ChevronRight className="size-4 shrink-0 text-text-muted" aria-hidden="true" />
     </li>
+  );
+}
+
+/** The page while the pack is on its way: the guide and the group, as blocks the shape of what arrives. */
+function HelpSkeleton({ label }: { label: string }) {
+  return (
+    <div role="status" className="mt-8 space-y-8 lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-8 lg:space-y-0">
+      <span className="sr-only">{label}</span>
+      <div aria-hidden="true" className="space-y-8">
+        <div className="rounded-surface border border-border bg-surface p-surface motion-safe:animate-pulse">
+          <div className="h-6 w-32 rounded-lg bg-surface-muted" />
+          <div className="mt-4 h-8 w-3/4 rounded-lg bg-surface-muted" />
+          <div className="mt-6 h-12 rounded-full bg-surface-muted" />
+          <div className="mt-3 h-14 rounded-full bg-surface-muted" />
+        </div>
+        <div className="rounded-surface border border-border bg-surface p-surface motion-safe:animate-pulse">
+          <div className="h-6 w-28 rounded-lg bg-surface-muted" />
+          {[0, 1, 2].map((row) => (
+            <div key={row} className="mt-4 flex items-center gap-3">
+              <div className="size-10 shrink-0 rounded-full bg-surface-muted" />
+              <div className="h-5 flex-1 rounded-lg bg-surface-muted" />
+            </div>
+          ))}
+        </div>
+      </div>
+      <div aria-hidden="true" className="h-64 rounded-surface border border-border bg-surface p-surface motion-safe:animate-pulse">
+        <div className="h-6 w-36 rounded-lg bg-surface-muted" />
+        <div className="mt-4 h-5 rounded-lg bg-surface-muted" />
+        <div className="mt-3 h-5 w-2/3 rounded-lg bg-surface-muted" />
+      </div>
+    </div>
   );
 }
 
@@ -285,46 +323,36 @@ export default function HelpWorkspace({ door, startWithMember }: HelpWorkspacePr
   const others = pack?.reports.filter((report) => report.status !== "FOUND" && report.missingMemberId !== pack.viewerMemberId) ?? [];
 
   const bandText = (report: SafetyReport, name: string) => {
-    const template = report.source === "FINDER" ? text.search.bandFinder : report.source === "SOS" ? text.search.bandSos : text.search.band;
-    return fillTemplate(template, { name });
+    if (report.source === "FINDER") return fillTemplate(text.search.bandFinder, { name });
+    if (report.source === "SOS") return fillTemplate(text.search.bandSos, { name });
+    return fillTemplate(text.search.band, { name });
   };
 
-  return (
-    <main
-      className={`relative isolate mx-auto w-full max-w-2xl flex-1 px-4 pb-12 sm:px-6 lg:max-w-5xl xl:px-0 ${
-        linked ? "pt-6 sm:pt-10" : "pt-24 sm:pt-28"
-      }`}
-    >
-      <PageBackdrop />
-      <div className="flex items-center justify-between gap-4">
-        {door.kind === "trip" ? (
-          <Breadcrumbs
-            label={navText.breadcrumb}
-            items={[
-              { label: navText.links.trips, href: "/trips" },
-              { label: pack?.tripName || text.back, href: `/trips/${encodeURIComponent(door.tripId)}` },
-              { label: text.title },
-            ]}
-          />
-        ) : (
-          <Image src="/images/logo/kancara_wordmark_logo.webp" alt="Kancara" width={866} height={288} loading="eager" className="h-8 w-auto" />
-        )}
-      </div>
-      {/* On a row of its own and in full: it is what tells a member that their request will still be sent. */}
-      {!online && (
-        <p role="status" className="mt-3 flex items-start gap-2 text-body-sm text-pretty text-text-muted">
-          <CloudOff className="mt-1 size-4 shrink-0" aria-hidden="true" />
-          {text.offline}
-        </p>
-      )}
+  const greeting = linked && context && viewer ? fillTemplate(text.link.hello, { name: nameIn(context, viewer) }) : text.title;
+  const lead = () => {
+    if (linked) return text.link.lead;
+    return pack ? `${pack.tripName} · ${text.lead}` : text.lead;
+  };
 
-      <h1 className={`text-h2 text-balance text-text sm:text-h1 ${linked ? "mt-6" : "mt-2"}`}>
-        {linked && context && viewer ? fillTemplate(text.link.hello, { name: nameIn(context, viewer) }) : text.title}
-      </h1>
-      <p className="mt-2 text-body text-pretty text-text-muted">
-        {linked ? text.link.lead : pack ? `${pack.tripName} · ${text.lead}` : text.lead}
-      </p>
-      {linked && pack && <p className="mt-1 text-body-sm text-pretty text-text-muted">{fillTemplate(text.link.keep, { trip: pack.tripName })}</p>}
+  const body = (
+    <>
+      <PageHeader
+        crumbs={
+          door.kind === "trip"
+            ? {
+                label: navText.breadcrumb,
+                items: [
+                  { label: navText.links.trips, href: "/trips" },
+                  { label: pack?.tripName || text.back, href: `/trips/${encodeURIComponent(door.tripId)}` },
+                  { label: text.title },
+                ],
+              }
+            : undefined
+        }
+        title={greeting}
+        lead={lead()}
+      />
+      {linked && pack && <p className="mt-2 text-body-sm text-pretty text-text-muted">{fillTemplate(text.link.keep, { trip: pack.tripName })}</p>}
       {/* A name picked by mistake would send every request for help under the wrong person, so it can be undone. */}
       {linked && groupToken && context && viewer && (
         <button
@@ -333,36 +361,35 @@ export default function HelpWorkspace({ door, startWithMember }: HelpWorkspacePr
             forgetKeptLink(groupToken);
             router.push(`/join/${groupToken}`);
           }}
-          className="mt-1 -ml-3 inline-flex min-h-11 cursor-pointer items-center rounded-full px-3 text-label text-primary transition-[background-color,scale] duration-150 ease-out hover:bg-primary-subtle active:scale-[0.97]"
+          className={`${TEXT_LINK} mt-1 self-start`}
         >
           {fillTemplate(text.link.notYou, { name: nameIn(context, viewer) })}
         </button>
       )}
-
-      {!pack && state === "loading" && (
-        <div role="status" className="mt-8 space-y-6 motion-safe:animate-pulse">
-          <span className="sr-only">{text.loading}</span>
-          <div className="h-16 rounded-2xl bg-surface-muted" />
-          <div className="h-80 rounded-2xl border border-border bg-surface" />
-        </div>
+      {/* On a row of its own and in full: it is what tells a member that their request will still be sent. */}
+      {!online && (
+        <p role="status" className={`${PAGE_NOTE} mt-8 bg-surface-muted text-text motion-safe:animate-message-in`}>
+          <CloudOff className="size-5 shrink-0 text-text-muted" aria-hidden="true" />
+          {text.offline}
+        </p>
       )}
+
+      {!pack && state === "loading" && <HelpSkeleton label={text.loading} />}
       {!pack && state === "failed" && (
-        <div className="mt-6">
+        <div className="mt-8">
           <ErrorAlert message={text.error} retryLabel={text.retry} onRetry={retry} />
         </div>
       )}
-      {!pack && state === "notFound" && (
-        <p className="mt-6 text-body text-pretty text-text-muted">{linked ? text.link.notFound : text.notFound}</p>
-      )}
+      {!pack && state === "notFound" && <p className="mt-8 text-body text-pretty text-text-muted">{linked ? text.link.notFound : text.notFound}</p>}
 
       {pack && context && (
-        <div className="mt-8 space-y-6 motion-safe:animate-message-in lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-x-10 lg:gap-y-6 lg:space-y-0">
-          <div className="min-w-0 space-y-4 lg:col-start-1">
+        <div className="mt-8 space-y-8 motion-safe:animate-message-in lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-8 lg:space-y-0">
+          <div className="min-w-0 space-y-8 lg:col-start-1">
             {others.map((report) => {
               const missing = member(report.missingMemberId);
               if (!missing) return null;
               return (
-                <div key={report.id} className="rounded-2xl bg-primary-subtle px-4 py-3 text-on-primary-subtle">
+                <div key={report.id} className="rounded-surface bg-primary-subtle p-surface text-on-primary-subtle motion-safe:animate-pop-in">
                   <button
                     type="button"
                     onClick={() => setSheet({ kind: "member", memberId: missing.id })}
@@ -373,7 +400,7 @@ export default function HelpWorkspace({ door, startWithMember }: HelpWorkspacePr
                     <span className="shrink-0 text-label underline underline-offset-4">{text.search.see}</span>
                     <ChevronRight className="size-4 shrink-0 transition-[translate] duration-200 ease-out group-hover/band:translate-x-1" aria-hidden="true" />
                   </button>
-                  <div className="mt-2 border-t border-primary/15 pt-3">
+                  <div className="mt-4 border-t border-primary/15 pt-4">
                     <SearchSteps report={report} context={context} />
                   </div>
                 </div>
@@ -381,9 +408,8 @@ export default function HelpWorkspace({ door, startWithMember }: HelpWorkspacePr
             })}
 
             {!pack.viewerMemberId && (
-              <div ref={whoRef} className="scroll-mt-28 rounded-2xl border border-primary bg-surface p-4 sm:p-5">
-                <h2 className="text-label-lg text-text">{text.who.title}</h2>
-                <p className="mt-1 text-body-sm text-pretty text-text-muted">{text.who.hint}</p>
+              <div ref={whoRef} className="scroll-mt-28 rounded-surface border border-primary bg-surface p-surface">
+                <BlockHeading title={text.who.title} hint={text.who.hint} />
                 <div className="mt-4 flex flex-wrap gap-2">
                   {pack.members.map((entry, index) => (
                     <button
@@ -391,19 +417,22 @@ export default function HelpWorkspace({ door, startWithMember }: HelpWorkspacePr
                       type="button"
                       disabled={entry.joined}
                       onClick={async () => setNotice((await act({ type: "claim", memberId: entry.id })) === "taken" ? text.who.taken : "")}
-                      className={`${choiceClass(false)} disabled:cursor-not-allowed disabled:opacity-40`}
+                      style={{ "--item-index": index } as CSSProperties}
+                      className={`${choiceClass(false)} disabled:cursor-not-allowed disabled:opacity-40 motion-safe:animate-list-in`}
                     >
                       <MemberAvatar ageGroup={entry.ageGroup} variant={index} className="-ml-2 size-6" />
                       {nameIn(context, entry)}
                     </button>
                   ))}
                 </div>
+                {/* Both things the notice can say are about picking a name, so it stands with the names. */}
+                {notice && (
+                  <p role="alert" className={`${PAGE_NOTE} mt-4 bg-warning-subtle text-on-warning-subtle motion-safe:animate-message-in`}>
+                    <TriangleAlert className="size-5 shrink-0" aria-hidden="true" />
+                    {notice}
+                  </p>
+                )}
               </div>
-            )}
-            {notice && (
-              <p role="alert" className="rounded-2xl bg-warning-subtle px-4 py-3 text-body-sm text-pretty text-on-warning-subtle">
-                {notice}
-              </p>
             )}
 
             <div ref={guideRef} className="scroll-mt-28">
@@ -415,12 +444,9 @@ export default function HelpWorkspace({ door, startWithMember }: HelpWorkspacePr
               />
             </div>
 
-            <section aria-labelledby="roll-title" className="overflow-clip rounded-2xl border border-border bg-surface">
-              <div className="border-b border-border px-4 py-4 sm:px-5">
-                <h2 id="roll-title" className="text-label text-text">
-                  {text.roll.title}
-                </h2>
-                <p className="mt-1 text-body-sm text-pretty text-text-muted">{text.roll.tap}</p>
+            <section aria-labelledby="roll-title" className={`${HELP_FRAME} overflow-clip`}>
+              <div className="p-surface">
+                <BlockHeading id="roll-title" title={text.roll.title} hint={text.roll.tap} />
               </div>
               <ul className="divide-y divide-border">
                 {pack.members.map((entry, index) => (
@@ -430,7 +456,7 @@ export default function HelpWorkspace({ door, startWithMember }: HelpWorkspacePr
             </section>
           </div>
 
-          <div className="space-y-4 lg:sticky lg:top-28 lg:col-start-2 lg:row-span-2 lg:row-start-1">
+          <div className="lg:sticky lg:top-28 lg:col-start-2 lg:row-span-2 lg:row-start-1">
             <ImportantNumbers context={context} />
           </div>
 
@@ -452,19 +478,8 @@ export default function HelpWorkspace({ door, startWithMember }: HelpWorkspacePr
               {/* The bar covers the bottom of the screen, so the page is made that much longer: under the footer,
                   or under the page itself where a member's own link shows none. */}
               <div aria-hidden="true" className={`h-20 shrink-0 lg:hidden ${linked ? "" : "bg-footer"}`} />
-              <div className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background px-4 pt-3 lg:hidden">
-                <button
-                  type="button"
-                  onClick={() => pressAction(pack)}
-                  className={`inline-flex h-14 w-full cursor-pointer items-center justify-center gap-3 rounded-full px-6 text-label-lg transition-[background-color,scale] duration-150 ease-out active:scale-[0.98] ${
-                    asked
-                      ? "border border-border-strong text-text hover:bg-surface-muted"
-                      : "bg-primary text-on-primary shadow-md shadow-primary/20 hover:bg-primary-hover"
-                  }`}
-                >
-                  {asked ? <Check className="size-5" strokeWidth={3} aria-hidden="true" /> : <LifeBuoy className="size-5" aria-hidden="true" />}
-                  {actionLabel}
-                </button>
+              <div className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background px-4 pt-3 sm:px-6 lg:hidden">
+                <SeparatedButton asked={asked} label={actionLabel} onPress={() => pressAction(pack)} />
               </div>
               <Notice notice={foundNotice} dismissLabel={text.close} duration={FOUND_SHOWN_MS} onDismiss={() => setFoundNotice(null)} />
             </>,
@@ -481,6 +496,19 @@ export default function HelpWorkspace({ door, startWithMember }: HelpWorkspacePr
           <CallPrompt text={text.call} closeLabel={text.close} />
         </>
       )}
-    </main>
+    </>
+  );
+
+  return <HelpFrame linked={linked}>{body}</HelpFrame>;
+}
+
+/** The page's frame: the site's own for a trip opened from the app, the bare one for a member's own link. */
+function HelpFrame({ linked, children }: { linked: boolean; children: ReactNode }) {
+  if (linked) return <StandaloneShell width="workspace">{children}</StandaloneShell>;
+  return (
+    <PageShell width="workspace">
+      <PageBackdrop />
+      {children}
+    </PageShell>
   );
 }

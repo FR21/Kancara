@@ -1,10 +1,10 @@
 {
   "500": {
-    "title": "Terjadi Kesalahan Server",
+    "title": "Terjadi kesalahan server",
     "description": "Maaf, kami mengalami masalah dalam memproses permintaan Anda. Silakan coba beberapa saat lagi."
   },
   "404": {
-    "title": "Halaman Tidak Ditemukan",
+    "title": "Halaman tidak ditemukan",
     "description": "Maaf, kami tidak dapat menemukan halaman yang Anda cari. Mungkin URL-nya salah atau halaman sudah dihapus."
   },
   "offline": {
@@ -12,6 +12,6 @@
     "description": "Halaman ini belum pernah dibuka di perangkat ini. Perjalanan yang sudah pernah dibuka tetap bisa dilihat.",
     "trips": "Perjalanan Saya"
   },
-  "retry": "Coba Lagi",
+  "retry": "Coba lagi",
   "home": "Ke Beranda"
 }

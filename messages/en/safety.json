@@ -111,7 +111,8 @@
     "smsBody": "This is {name}. I'm separated from the group. Please call me.",
     "showWay": "Show the way",
     "noNumbers": "No number to call yet. Add members' numbers in the group list.",
-    "buttonHint": "Pressing this tells the whole group."
+    "buttonHint": "Pressing this tells the whole group.",
+    "compass": "Arrow"
   },
   "contacts": {
     "title": "Important numbers",

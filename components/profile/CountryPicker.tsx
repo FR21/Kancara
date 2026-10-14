@@ -2,7 +2,7 @@
 
 import { Check, ChevronDown } from "lucide-react";
 import { type KeyboardEvent, useId, useRef, useState } from "react";
-import { INPUT } from "@/components/plan/styles";
+import { INPUT } from "@/components/ui/styles";
 import { countryNames } from "@/lib/travel/countries";
 import { searchCountries } from "@/lib/travel/country-search";
 import { useLocale } from "@/lib/use-locale";
@@ -119,20 +119,23 @@ export default function CountryPicker({
           close();
           onBlur?.();
         }}
-        className={`${INPUT} pr-12 disabled:cursor-not-allowed ${invalid ? "border-error" : ""}`}
+        className={`${INPUT} pr-12 disabled:cursor-not-allowed aria-invalid:border-error`}
       />
       <ChevronDown
         aria-hidden="true"
         className={`pointer-events-none absolute top-1/2 right-4 size-5 -translate-y-1/2 text-text-muted transition-[rotate] duration-200 ease-out ${open ? "rotate-180" : ""}`}
       />
       {open && (
+        <div
+          // Pressing in the list must not take the focus from the field, or the list would close before the press lands.
+          onMouseDown={(event) => event.preventDefault()}
+          className="absolute inset-x-0 top-full z-30 mt-2 origin-top overflow-clip surface-compact rounded-surface border border-border bg-background py-2 shadow-lg shadow-neutral-950/10 motion-safe:animate-pop-in"
+        >
         <ul
           ref={listRef}
           id={listId}
           role="listbox"
-          // Pressing in the list must not take the focus from the field, or the list would close before the press lands.
-          onMouseDown={(event) => event.preventDefault()}
-          className="absolute inset-x-0 top-full z-30 mt-2 max-h-64 origin-top overflow-y-auto overscroll-contain rounded-2xl border border-border bg-background p-1 shadow-lg shadow-neutral-950/10 [scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin] motion-safe:animate-pop-in"
+          className="max-h-64 overflow-y-auto overscroll-contain px-surface [scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin]"
         >
           {choices.length === 0 && <li className="px-3 py-3 text-body-sm text-text-muted">{emptyLabel}</li>}
           {choices.map((choice, index) => (
@@ -143,7 +146,7 @@ export default function CountryPicker({
               aria-selected={choice.code === value}
               onMouseEnter={() => setActive(index)}
               onClick={() => pick(choice.code)}
-              className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-xl px-3 py-2 text-body-sm text-text transition-[background-color] duration-150 ease-out ${
+              className={`flex min-h-11 cursor-pointer items-center gap-3 rounded-lg px-3 py-2 text-body-sm text-text transition-[background-color,scale] duration-150 ease-out active:scale-[0.99] ${
                 index === current ? "bg-primary-subtle" : ""
               }`}
             >
@@ -152,6 +155,7 @@ export default function CountryPicker({
             </li>
           ))}
         </ul>
+        </div>
       )}
     </div>
   );

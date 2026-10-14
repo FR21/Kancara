@@ -2,17 +2,17 @@
 
 import { Check, CloudOff, IdCard, Link2, MapPin, MessageCircle, MessageSquareText, Phone, UserRoundSearch } from "lucide-react";
 import { useEffect, useState } from "react";
-import Checkbox from "@/components/plan/Checkbox";
-import { INPUT, OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
+import Checkbox from "@/components/ui/Checkbox";
+import Sheet from "@/components/ui/Sheet";
+import { FIELD_LABEL, INPUT, OUTLINE_BUTTON, TEXT_LINK, buttonClass } from "@/components/ui/styles";
 import { fillTemplate } from "@/lib/plan-draft";
 import { mapLink, MAX_PHONE_CHARS, whatsAppLink } from "@/lib/safety/contact";
-import { type SafetyMember, type SafetyReport, openReportFor, REPORT_STATUSES } from "@/lib/safety/pack";
+import { type SafetyMember, type SafetyReport, openReportFor, REPORT_STATUSES } from "@/lib/safety/safety-pack";
 import { companionsOf, planPosition } from "@/lib/safety/plan-position";
 import { useLocale } from "@/lib/use-locale";
 import { CallLink } from "./CallLink";
-import ContactList from "./ContactList";
-import { type HelpContext, helpLink, nameIn, searchMessage } from "./help";
-import Sheet from "./Sheet";
+import ContactList, { CALL_ROW } from "./ContactList";
+import { type HelpContext, helpLink, nameIn, searchMessage } from "@/components/safety/help-context";
 
 type MemberSheetProps = {
   context: HelpContext;
@@ -23,29 +23,25 @@ type MemberSheetProps = {
 };
 
 const SECTION_TITLE = "text-label text-text";
-const REACH_BUTTON =
-  "flex min-h-14 cursor-pointer flex-col items-center justify-center gap-1 rounded-2xl border px-2 py-2 text-label transition-[background-color,border-color,scale] duration-150 ease-out active:scale-[0.97]";
+/** A note inside the sheet: a tinted box at the inner corner, never a card of its own. */
+const NOTE = "rounded-lg px-4 py-3 text-body-sm text-pretty";
 
+// The call leads at full width; the two written ways share the row under it, each wide enough for its word.
 function ReachButtons({ context, member }: { context: HelpContext; member: SafetyMember & { phone: string } }) {
   const copy = context.text.search;
   const message = searchMessage(context, member);
   return (
-    <div className="grid grid-cols-3 gap-2">
-      <CallLink phone={member.phone} name={nameIn(context, member)} className={`${REACH_BUTTON} border-primary bg-primary text-on-primary hover:bg-primary-hover`}>
+    <div className="grid grid-cols-2 gap-3">
+      <CallLink phone={member.phone} name={nameIn(context, member)} className={`${buttonClass("primary", "large")} col-span-2`}>
         <Phone className="size-5" aria-hidden="true" />
         {copy.call}
       </CallLink>
-      <a
-        href={whatsAppLink(member.phone, message)}
-        target="_blank"
-        rel="noopener noreferrer"
-        className={`${REACH_BUTTON} border-border-strong text-text hover:bg-surface-muted`}
-      >
-        <MessageCircle className="size-5 text-primary" aria-hidden="true" />
+      <a href={whatsAppLink(member.phone, message)} target="_blank" rel="noopener noreferrer" className={`${OUTLINE_BUTTON} min-w-0`}>
+        <MessageCircle className="size-5 shrink-0 text-primary" aria-hidden="true" />
         {copy.whatsapp}
       </a>
-      <CallLink phone={member.phone} name={nameIn(context, member)} message={message} className={`${REACH_BUTTON} border-border-strong text-text hover:bg-surface-muted`}>
-        <MessageSquareText className="size-5 text-primary" aria-hidden="true" />
+      <CallLink phone={member.phone} name={nameIn(context, member)} message={message} className={`${OUTLINE_BUTTON} min-w-0`}>
+        <MessageSquareText className="size-5 shrink-0 text-primary" aria-hidden="true" />
         {copy.sms}
       </CallLink>
     </div>
@@ -54,7 +50,25 @@ function ReachButtons({ context, member }: { context: HelpContext; member: Safet
 
 const hasNumber = (member: SafetyMember): member is SafetyMember & { phone: string } => member.hasPhone && member.phone !== null;
 
-/** The three steps of a search on the schedule's axis, the one it is at ringed. */
+/** A step's dot in the Stepper's own vocabulary: filled with a tick once passed, ringed where the search is, hollow ahead. */
+function StepDot({ index, current }: { index: number; current: number }) {
+  if (index < current) {
+    return (
+      <span aria-hidden="true" className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary motion-safe:animate-pop-in">
+        <Check className="size-3" strokeWidth={4} />
+      </span>
+    );
+  }
+  if (index === current) {
+    return <span aria-hidden="true" className="size-4 shrink-0 rounded-full border-4 border-primary bg-background ring-4 ring-primary/20" />;
+  }
+  return <span aria-hidden="true" className="size-4 shrink-0 rounded-full border-2 border-border-strong bg-background" />;
+}
+
+/**
+ * Where a search stands: searching, on the way, found. It is a status read off, not a flow to move through, so it
+ * is a list and not the Stepper's navigation; it is drawn like the Stepper's line so the two read as one family.
+ */
 export function SearchSteps({ report, context }: { report: SafetyReport; context: HelpContext }) {
   const current = REPORT_STATUSES.indexOf(report.status);
   return (
@@ -63,18 +77,18 @@ export function SearchSteps({ report, context }: { report: SafetyReport; context
         <li
           key={status}
           aria-current={index === current ? "step" : undefined}
-          className={`flex items-center gap-2 ${index < REPORT_STATUSES.length - 1 ? "flex-1" : ""}`}
+          className={`flex min-w-0 items-center gap-2 ${index < REPORT_STATUSES.length - 1 ? "flex-1" : ""}`}
         >
-          <span
-            aria-hidden="true"
-            className={`size-3 shrink-0 rounded-full transition-[background-color,scale] duration-300 ease-out ${
-              index === current ? "bg-primary ring-4 ring-primary/25" : index < current ? "bg-primary" : "scale-75 bg-border-strong"
-            }`}
-          />
-          <span className={`text-caption font-bold whitespace-nowrap ${index <= current ? "text-text" : "text-text-muted"}`}>
+          <StepDot index={index} current={current} />
+          <span className={`min-w-0 text-caption font-bold ${index <= current ? "text-text" : "text-text-muted"}`}>
             {context.text.search.steps[status]}
           </span>
-          {index < REPORT_STATUSES.length - 1 && <span aria-hidden="true" className="min-w-3 flex-1 border-t border-border-strong" />}
+          {index < REPORT_STATUSES.length - 1 && (
+            <span
+              aria-hidden="true"
+              className={`h-1 min-w-3 flex-1 rounded-full transition-[background-color] duration-500 ease-out ${index < current ? "bg-primary" : "bg-primary/15"}`}
+            />
+          )}
         </li>
       ))}
     </ol>
@@ -125,7 +139,11 @@ function HelpLink({ context, member }: { context: HelpContext; member: SafetyMem
         </a>
       ) : (
         <button type="button" onClick={share} className={`${OUTLINE_BUTTON} w-full`}>
-          {copied ? <Check className="size-5 text-success" strokeWidth={3} aria-hidden="true" /> : <Link2 className="size-5 text-primary" aria-hidden="true" />}
+          {copied ? (
+            <Check className="size-5 text-success motion-safe:animate-pop-in" strokeWidth={3} aria-hidden="true" />
+          ) : (
+            <Link2 className="size-5 text-primary" aria-hidden="true" />
+          )}
           <span role="status">{copied ? copy.linkCopied : copy.shareLink}</span>
         </button>
       )}
@@ -148,15 +166,15 @@ function ContactForm({ context, member }: { context: HelpContext; member: Safety
   };
 
   return (
-    <section>
+    <section className="border-t border-border pt-6">
       <h3 className={SECTION_TITLE}>{copy.edit}</h3>
-      <label className="mt-3 flex cursor-pointer items-center gap-3 text-body-sm text-text">
+      <label className="mt-2 flex min-h-11 cursor-pointer items-center gap-3 text-body-sm text-text">
         <Checkbox checked={hasPhone} onChange={setHasPhone} />
         {copy.hasPhone}
       </label>
       {hasPhone && (
-        <>
-          <label htmlFor="member-phone" className="mt-4 block text-caption font-bold text-text-muted">
+        <div className="motion-safe:animate-message-in">
+          <label htmlFor="member-phone" className={`${FIELD_LABEL} mt-4 block`}>
             {copy.phone}
           </label>
           <input
@@ -178,7 +196,7 @@ function ContactForm({ context, member }: { context: HelpContext; member: Safety
           <p id="member-phone-hint" className={`mt-2 text-caption text-pretty ${state === "invalid" ? "text-error" : "text-text-muted"}`}>
             {state === "invalid" ? copy.phoneInvalid : copy.phoneHint}
           </p>
-        </>
+        </div>
       )}
       {state === "failed" && (
         <p role="alert" className="mt-2 text-caption text-error">
@@ -186,7 +204,7 @@ function ContactForm({ context, member }: { context: HelpContext; member: Safety
         </p>
       )}
       {changed && (
-        <button type="button" disabled={state === "saving"} onClick={save} className={`${OUTLINE_BUTTON} mt-4 h-11`}>
+        <button type="button" disabled={state === "saving"} onClick={save} className={`${buttonClass("primary", "small")} mt-6 motion-safe:animate-pop-in`}>
           {context.text.save}
         </button>
       )}
@@ -230,7 +248,7 @@ export default function MemberSheet({ context, member, onClose, onOpenCard }: Me
               <button
                 type="button"
                 onClick={() => context.act({ type: "status", memberId: member.id, status: "ON_THE_WAY" })}
-                className={`${OUTLINE_BUTTON} min-w-0 flex-1 px-3 text-label whitespace-nowrap`}
+                className={`${buttonClass("outline")} min-w-0 flex-1 whitespace-nowrap`}
               >
                 {copy.markOnWay}
               </button>
@@ -241,7 +259,7 @@ export default function MemberSheet({ context, member, onClose, onOpenCard }: Me
                 await context.act({ type: "status", memberId: member.id, status: "FOUND" });
                 onClose();
               }}
-              className={`${PRIMARY_BUTTON} min-w-0 flex-1 px-3 text-label whitespace-nowrap`}
+              className={`${buttonClass(hasNumber(member) ? "outline" : "primary")} min-w-0 flex-1 whitespace-nowrap`}
             >
               {copy.markFound}
             </button>
@@ -260,28 +278,18 @@ export default function MemberSheet({ context, member, onClose, onOpenCard }: Me
                 {copy.queued}
               </p>
             )}
-            {report.source === "FINDER" && (
-              <p className="rounded-2xl bg-success-subtle px-4 py-3 text-body-sm text-pretty text-on-success-subtle">
-                {fillTemplate(copy.finderWith, { name })}
-              </p>
-            )}
-            {report.confirmedLost && (
-              <p className="rounded-2xl bg-warning-subtle px-4 py-3 text-body-sm text-pretty text-on-warning-subtle">
-                {fillTemplate(copy.confirmedLost, { name })}
-              </p>
-            )}
+            {report.source === "FINDER" && <p className={`${NOTE} bg-success-subtle text-on-success-subtle`}>{fillTemplate(copy.finderWith, { name })}</p>}
+            {report.confirmedLost && <p className={`${NOTE} bg-warning-subtle text-on-warning-subtle`}>{fillTemplate(copy.confirmedLost, { name })}</p>}
             {report.shared && (
               <a
                 href={mapLink(report.shared)}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="flex min-h-12 items-center gap-3 rounded-2xl bg-primary-subtle px-4 py-3 text-body-sm text-on-primary-subtle transition-[scale] duration-150 ease-out active:scale-[0.99]"
+                className={`${NOTE} group/map flex min-h-12 items-center gap-3 bg-primary-subtle text-on-primary-subtle transition-[background-color,scale] duration-150 ease-out hover:bg-primary/20 active:scale-[0.99]`}
               >
                 <MapPin className="size-5 shrink-0" aria-hidden="true" />
-                <span className="min-w-0 flex-1 tabular-nums">
-                  {fillTemplate(copy.shared, { time: time.format(new Date(report.shared.at)) })}
-                </span>
-                <span className="shrink-0 text-label underline underline-offset-4">{copy.openMap}</span>
+                <span className="min-w-0 flex-1 tabular-nums">{fillTemplate(copy.shared, { time: time.format(new Date(report.shared.at)) })}</span>
+                <span className="shrink-0 text-label underline-offset-4 group-hover/map:underline">{copy.openMap}</span>
               </a>
             )}
           </div>
@@ -294,11 +302,9 @@ export default function MemberSheet({ context, member, onClose, onOpenCard }: Me
 
           <section>
             <h3 className={SECTION_TITLE}>{fillTemplate(member.hasPhone ? copy.reachTitle : copy.noPhoneTitle, { name })}</h3>
-            <div className="mt-3 space-y-3">
+            <div className="mt-2 space-y-3">
               {hasNumber(member) && <ReachButtons context={context} member={member} />}
-              {member.joined && member.hasPhone && (
-                <p className="text-body-sm text-pretty text-text-muted">{fillTemplate(copy.toldInApp, { name })}</p>
-              )}
+              {member.joined && member.hasPhone && <p className="text-body-sm text-pretty text-text-muted">{fillTemplate(copy.toldInApp, { name })}</p>}
               {!member.hasPhone && <p className="text-body-sm text-pretty text-text">{copy.noPhoneBody}</p>}
               {member.hasPhone && member.phone === null && (
                 <p className="text-body-sm text-pretty text-text-muted">{fillTemplate(copy.noNumber, { name })}</p>
@@ -309,16 +315,12 @@ export default function MemberSheet({ context, member, onClose, onOpenCard }: Me
           {!hasNumber(member) && reachable.length > 0 && (
             <section>
               <h3 className={SECTION_TITLE}>{copy.callable}</h3>
-              <ul className="mt-2 space-y-2">
+              <ul className="-mx-surface mt-2">
                 {reachable.map((entry) => (
                   <li key={entry.id}>
-                    <CallLink
-                      phone={entry.phone}
-                      name={nameIn(context, entry)}
-                      className="flex min-h-14 items-center gap-3 rounded-2xl border border-border-strong px-4 py-2 text-label text-text transition-[background-color,scale] duration-150 ease-out hover:bg-surface-muted active:scale-[0.99]"
-                    >
+                    <CallLink phone={entry.phone} name={nameIn(context, entry)} className={CALL_ROW}>
                       <Phone className="size-5 shrink-0 text-primary" aria-hidden="true" />
-                      <span className="min-w-0 flex-1">{fillTemplate(text.roll.call, { name: nameIn(context, entry) })}</span>
+                      <span className="min-w-0 flex-1 text-label text-text">{fillTemplate(text.roll.call, { name: nameIn(context, entry) })}</span>
                     </CallLink>
                   </li>
                 ))}
@@ -328,35 +330,37 @@ export default function MemberSheet({ context, member, onClose, onOpenCard }: Me
 
           <section>
             <h3 className={SECTION_TITLE}>{text.contacts.title}</h3>
-            <div className="-mx-3 mt-2">
+            <div className="mt-2">
               <ContactList pack={pack} text={text} />
             </div>
           </section>
         </>
       )}
 
+      {/* Reaching someone comes before reporting them: the call is the sheet's filled button, and the report takes
+          that place only for a member with no number to call. */}
       {member && !report && (
         <>
+          {!isViewer && hasNumber(member) && <ReachButtons context={context} member={member} />}
+
           {!isViewer && (
             <div>
               <button
                 type="button"
                 onClick={() => context.act({ type: "report", memberId: member.id })}
-                className={`${PRIMARY_BUTTON} h-14 w-full`}
+                className={`${buttonClass(hasNumber(member) ? "outline" : "primary", "large")} w-full`}
               >
-                <UserRoundSearch className="size-5" aria-hidden="true" />
+                <UserRoundSearch className={`size-5 ${hasNumber(member) ? "text-primary" : ""}`} aria-hidden="true" />
                 {fillTemplate(copy.report, { name })}
               </button>
               <p className="mt-2 text-center text-caption text-pretty text-text-muted">{copy.reportHint}</p>
             </div>
           )}
 
-          {!isViewer && hasNumber(member) && <ReachButtons context={context} member={member} />}
-
           {!isViewer && member.hasPhone && !member.joined && helpLink(context, member) !== "" && <HelpLink context={context} member={member} />}
 
-          <button type="button" onClick={() => onOpenCard(member.id)} className={`${OUTLINE_BUTTON} w-full`}>
-            <IdCard className="size-5 text-primary" aria-hidden="true" />
+          <button type="button" onClick={() => onOpenCard(member.id)} className={TEXT_LINK}>
+            <IdCard className="size-4" aria-hidden="true" />
             {text.card.open}
           </button>
 

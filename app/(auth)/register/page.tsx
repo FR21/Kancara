@@ -6,18 +6,18 @@ import Link from "next/link";
 import { type FormEvent, useEffect, useRef, useState } from "react";
 import AuthHeading from "@/components/auth/AuthHeading";
 import { FormAlert, GoogleButton, OrDivider, PasswordRules, SubmitButton } from "@/components/auth/AuthParts";
-import LegalModal from "@/components/auth/LegalModal";
-import TextField, { FIELD_LABEL, OptionalMark } from "@/components/auth/TextField";
-import { GHOST_BUTTON } from "@/components/plan/styles";
+import LegalSheet, { type LegalKind } from "@/components/auth/LegalSheet";
+import TextField, { FOCUS_FIELD_LABEL, OptionalMark } from "@/components/auth/TextField";
+import Stepper, { type StepperStep } from "@/components/ui/Stepper";
+import { GHOST_BUTTON, TEXT_LINK } from "@/components/ui/styles";
 import CountryPicker from "@/components/profile/CountryPicker";
 import GenderSelect from "@/components/profile/GenderSelect";
 import PhoneField from "@/components/profile/PhoneField";
-import { saveProfileDetails } from "@/lib/api/profile";
+import { saveProfileDetails } from "@/lib/client/profile";
 import { signInWithGoogle, startSession } from "@/lib/auth/client";
 import { useAuthFlow } from "@/lib/auth/use-auth-flow";
 import { emailIssue, isPasswordStrong } from "@/lib/auth/validation";
 import { auth } from "@/lib/firebase/client";
-import { fillTemplate } from "@/lib/plan-draft";
 import { isAgeValid, isNameValid, isUsernameValid, MAX_AGE } from "@/lib/profile-fields";
 import { normalizePhone } from "@/lib/safety/contact";
 import { callingCode, joinPhone } from "@/lib/travel/calling-codes";
@@ -25,8 +25,9 @@ import { useMessages } from "@/lib/use-messages";
 
 const HOME = "/trips";
 const PROFILE = "/profile";
-const TEXT_LINK =
-  "inline-flex min-h-11 items-center rounded-sm text-label text-primary underline-offset-4 hover:underline";
+// A link inside a sentence keeps the sentence's line height, so it is underlined to read as a link.
+const INLINE_LINK =
+  "cursor-pointer rounded-sm text-primary underline underline-offset-4 transition-colors duration-150 ease-out hover:text-primary-hover";
 
 const STEPS = ["account", "about"] as const;
 type Step = (typeof STEPS)[number];
@@ -46,7 +47,7 @@ export default function RegisterPage() {
   const { pending, error, run } = useAuthFlow();
 
   const [step, setStep] = useState<Step>("account");
-  const [legalModal, setLegalModal] = useState<"privacy" | "terms" | null>(null);
+  const [legalShown, setLegalShown] = useState<LegalKind | null>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
@@ -152,7 +153,16 @@ export default function RegisterPage() {
   const handleGoogle = () => run(async () => ((await signInWithGoogle()) ? HOME : null));
 
   const reveal = { show: t.common.showPassword, hide: t.common.hidePassword };
-  const stepNumber = STEPS.indexOf(step) + 1;
+  const currentIndex = STEPS.indexOf(step);
+  // A step already passed can be opened again; the one ahead opens only through the form's own button, which
+  // checks the fields first.
+  const stations: StepperStep[] = STEPS.map((item, index) => ({
+    key: item,
+    label: t.register.steps[item],
+    done: index < currentIndex,
+    current: index === currentIndex,
+    onSelect: index < currentIndex && !pending ? () => setStep(item) : null,
+  }));
 
   return (
     <div className="motion-safe:animate-message-in">
@@ -161,28 +171,15 @@ export default function RegisterPage() {
         subtitle={step === "account" ? t.register.subtitle : t.register.aboutSubtitle}
       />
 
-      <div className="mt-6">
-        <p className="text-label text-text-muted">
-          {fillTemplate(t.register.stepLabel, { step: stepNumber, total: STEPS.length })}
-          <span className="text-text"> · {t.register.steps[step]}</span>
-        </p>
-        <div aria-hidden="true" className="mt-2 flex gap-2">
-          {STEPS.map((item, index) => (
-            <span
-              key={item}
-              className={`h-1 flex-1 rounded-full transition-colors duration-300 ease-out ${
-                index < stepNumber ? "bg-primary" : "bg-surface-muted"
-              }`}
-            />
-          ))}
-        </div>
+      <div className="mt-8">
+        <Stepper steps={stations} text={t.register.stepper} />
       </div>
 
-      <form onSubmit={handleSubmit} noValidate className="mt-6 flex flex-col gap-6">
+      <form onSubmit={handleSubmit} noValidate className="mt-6 flex flex-col gap-4">
         <FormAlert message={error} />
 
         {step === "account" ? (
-          <div key="account" className="flex flex-col gap-6 motion-safe:animate-message-in">
+          <div key="account" className="flex flex-col gap-4 motion-safe:animate-message-in">
             <TextField
               id="register-email"
               type="email"
@@ -231,13 +228,13 @@ export default function RegisterPage() {
               onChange={setConfirm}
               onBlur={() => touch("confirm")}
             />
-            <SubmitButton pending={pending}>
+            <SubmitButton pending={pending} className="mt-2 w-full">
               {t.register.next}
               <ArrowRight className="size-4" aria-hidden="true" />
             </SubmitButton>
           </div>
         ) : (
-          <div key="about" className="flex flex-col gap-6 motion-safe:animate-message-in">
+          <div key="about" className="flex flex-col gap-4 motion-safe:animate-message-in">
             <TextField
               id="register-name"
               label={profile.nameLabel}
@@ -262,7 +259,7 @@ export default function RegisterPage() {
               onBlur={() => touch("username")}
             />
             <div className="group">
-              <label htmlFor="register-nationality" className={`mb-2 block ${FIELD_LABEL}`}>
+              <label htmlFor="register-nationality" className={`mb-2 block ${FOCUS_FIELD_LABEL}`}>
                 {profile.nationalityLabel}
                 <OptionalMark label={t.common.optional} />
               </label>
@@ -276,7 +273,7 @@ export default function RegisterPage() {
               />
             </div>
             <div className="group">
-              <label htmlFor="register-phone" className={`mb-2 block ${FIELD_LABEL}`}>
+              <label htmlFor="register-phone" className={`mb-2 block ${FOCUS_FIELD_LABEL}`}>
                 {profile.phoneLabel}
                 <OptionalMark label={t.common.optional} />
               </label>
@@ -300,7 +297,7 @@ export default function RegisterPage() {
                 {shown("phone") || profile.phoneHint}
               </p>
             </div>
-            <div className="grid gap-6 sm:grid-cols-2 sm:gap-4">
+            <div className="grid gap-4 sm:grid-cols-2">
               <TextField
                 id="register-age"
                 type="number"
@@ -317,7 +314,7 @@ export default function RegisterPage() {
                 onBlur={() => touch("age")}
               />
               <div className="group">
-                <label htmlFor="register-gender" className={`mb-2 block ${FIELD_LABEL}`}>
+                <label htmlFor="register-gender" className={`mb-2 block ${FOCUS_FIELD_LABEL}`}>
                   {profile.genderLabel}
                   <OptionalMark label={t.common.optional} />
                 </label>
@@ -330,13 +327,17 @@ export default function RegisterPage() {
                 />
               </div>
             </div>
-            <div className="mt-2 text-label text-text-muted text-balance text-center sm:text-left">
+            <p className="mt-2 text-body-sm text-pretty text-text-muted">
               {t.register.agreement1}
-              <button type="button" onClick={() => setLegalModal("terms")} className="text-primary hover:underline underline-offset-4 focus-visible:outline-accent rounded-sm">{t.register.termsLink}</button>
+              <button type="button" onClick={() => setLegalShown("terms")} className={INLINE_LINK}>
+                {t.register.termsLink}
+              </button>
               {t.register.agreement2}
-              <button type="button" onClick={() => setLegalModal("privacy")} className="text-primary hover:underline underline-offset-4 focus-visible:outline-accent rounded-sm">{t.register.privacyLink}</button>
+              <button type="button" onClick={() => setLegalShown("privacy")} className={INLINE_LINK}>
+                {t.register.privacyLink}
+              </button>
               {t.register.agreement3}
-            </div>
+            </p>
             <div className="flex gap-3">
               <button type="button" onClick={() => setStep("account")} disabled={pending} className={GHOST_BUTTON}>
                 <ArrowLeft className="size-4" aria-hidden="true" />
@@ -351,7 +352,7 @@ export default function RegisterPage() {
       </form>
 
       {step === "account" && (
-        <div className="mt-6 flex flex-col gap-6">
+        <div className="mt-4 flex flex-col gap-4">
           <OrDivider label={t.common.or} />
           <GoogleButton label={t.register.google} disabled={pending} onClick={handleGoogle} />
         </div>
@@ -364,12 +365,7 @@ export default function RegisterPage() {
         </Link>
       </p>
 
-      <LegalModal
-        open={!!legalModal}
-        type={legalModal}
-        text={legal}
-        onClose={() => setLegalModal(null)}
-      />
+      <LegalSheet kind={legalShown} legal={legal} onClose={() => setLegalShown(null)} />
     </div>
   );
 }

@@ -2,15 +2,15 @@
 
 import { FileDown, ImageDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
-import Checkbox from "@/components/plan/Checkbox";
-import { INPUT, OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
+import Checkbox from "@/components/ui/Checkbox";
+import { FIELD_LABEL, INPUT, PRIMARY_BUTTON, buttonClass } from "@/components/ui/styles";
 import { fillTemplate } from "@/lib/plan-draft";
 import { CARD_HEIGHT, CARD_WIDTH, drawCard, saveCardImage, saveCardPdf } from "@/lib/safety/card";
 import { MAX_PHONE_CHARS } from "@/lib/safety/contact";
 import { helpLanguages } from "@/lib/safety/help-phrases";
-import type { SafetyMember } from "@/lib/safety/pack";
-import { type HelpContext, nameIn } from "./help";
-import Sheet from "./Sheet";
+import type { SafetyMember } from "@/lib/safety/safety-pack";
+import { type HelpContext, nameIn } from "@/components/safety/help-context";
+import Sheet from "@/components/ui/Sheet";
 
 type CardSheetProps = {
   context: HelpContext;
@@ -43,7 +43,7 @@ function CardNumber({ context }: { context: HelpContext }) {
   return (
     <div>
       <p className="text-body text-pretty text-text">{copy.needNumber}</p>
-      <label htmlFor="card-number" className="mt-4 block text-caption font-bold text-text-muted">
+      <label htmlFor="card-number" className={`${FIELD_LABEL} mt-4 block`}>
         {copy.numberLabel}
       </label>
       <input
@@ -65,7 +65,7 @@ function CardNumber({ context }: { context: HelpContext }) {
       <p id="card-number-hint" role="status" className={`mt-2 text-caption text-pretty ${state === "idle" || state === "saving" ? "text-text-muted" : "text-error"}`}>
         {state === "invalid" ? text.member.phoneInvalid : state === "failed" ? (context.online ? text.failed : text.offlineOnly) : text.member.phoneHint}
       </p>
-      <button type="button" disabled={phone.trim() === "" || state === "saving"} onClick={save} className={`${PRIMARY_BUTTON} mt-4 w-full`}>
+      <button type="button" disabled={phone.trim() === "" || state === "saving"} onClick={save} className={`${PRIMARY_BUTTON} mt-6 w-full`}>
         {text.save}
       </button>
     </div>
@@ -130,7 +130,7 @@ export default function CardSheet({ context, member, onClose }: CardSheetProps) 
               onClick={async () => {
                 if (canvasRef.current && (await saveCardImage(canvasRef.current, fileName))) markSaved();
               }}
-              className={`${PRIMARY_BUTTON} min-w-0 flex-1 px-3 text-label whitespace-nowrap`}
+              className={`${buttonClass("primary")} min-w-0 flex-1 whitespace-nowrap`}
             >
               <ImageDown className="size-4" aria-hidden="true" />
               {copy.savePng}
@@ -141,7 +141,7 @@ export default function CardSheet({ context, member, onClose }: CardSheetProps) 
               onClick={async () => {
                 if (canvasRef.current && (await saveCardPdf(canvasRef.current, fileName))) markSaved();
               }}
-              className={`${OUTLINE_BUTTON} min-w-0 flex-1 px-3 text-label whitespace-nowrap`}
+              className={`${buttonClass("outline")} min-w-0 flex-1 whitespace-nowrap`}
             >
               <FileDown className="size-4" aria-hidden="true" />
               {copy.savePdf}
@@ -165,19 +165,20 @@ export default function CardSheet({ context, member, onClose }: CardSheetProps) 
               height={CARD_HEIGHT}
               role="img"
               aria-label={fillTemplate(copy.alt, { name })}
-              className={`h-auto w-full rounded-2xl border border-border shadow-lg shadow-neutral-950/10 ${
-                ready ? "" : "bg-surface-muted motion-safe:animate-pulse"
-              }`}
+              className={`h-auto w-full rounded-lg border border-border ${ready ? "motion-safe:animate-pop-in" : "bg-surface-muted motion-safe:animate-pulse"}`}
             />
           </div>
-          <p className="text-center text-body-sm text-pretty text-text-muted">{copy.tip}</p>
-          <label className="flex cursor-pointer items-center gap-3 text-body-sm text-text">
-            <Checkbox
-              checked={member.cardSavedAt !== null}
-              onChange={(saved) => context.act({ type: "cardSaved", memberId: member.id, saved })}
-            />
-            {copy.saved}
-          </label>
+          {/* Where to keep the card, and the box that says it was kept there: one group, under the card. */}
+          <div className="text-center">
+            <p className="text-body-sm text-pretty text-text-muted">{copy.tip}</p>
+            <label className="mt-2 inline-flex min-h-11 cursor-pointer items-center gap-3 text-body-sm text-text">
+              <Checkbox
+                checked={member.cardSavedAt !== null}
+                onChange={(saved) => context.act({ type: "cardSaved", memberId: member.id, saved })}
+              />
+              {copy.saved}
+            </label>
+          </div>
         </>
       )}
     </Sheet>

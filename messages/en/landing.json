@@ -1,119 +1,118 @@
 {
   "hero": {
-    "headlinePart1": "Different Needs.",
+    "headlinePart1": "Different needs.",
     "headlinePart2": "One",
-    "headlineUnderlined": "Journey",
+    "headlineUnderlined": "journey",
     "headlineEnd": ".",
     "description": "Plan group trips that work for everyone, and stay connected even without signal.",
-    "ctaPrimary": "Start Planning",
-    "ctaSecondary": "See the Story",
+    "ctaPrimary": "Start planning",
+    "ctaSecondary": "See the story",
     "note": "Start in 60 seconds · No commitment"
   },
   "stats": {
-    "heading": "Real Impact of Inclusive Travel",
+    "heading": "The real impact of inclusive travel",
     "subtitle": "Based on post trip feedback from 3,200+ group trip leaders",
     "card1Value": "12,480+",
-    "card1Label": "Travellers Connected",
+    "card1Label": "Travellers connected",
     "card2Value": "98%",
-    "card2Label": "Member Voices & Needs Represented",
+    "card2Label": "Member voices and needs represented",
     "card2Rating": "4.9/5",
-    "card3Value": "8.5 Hours",
-    "card3Label": "Saved Per Group Plan",
-    "card3Before": "Before (11 Hours)",
-    "card3WithUs": "Kancara (2.5 Hours)",
-    "card4Value": "0 Bars",
-    "card4Label": "Needed To Keep Everyone Connected",
-    "card1Growth": "↑ 18% this month",
-    "footerNote": "✓ Based on post trip data from 3,200+ group organisers",
+    "card3Value": "8.5 hours",
+    "card3Label": "Saved per group plan",
+    "card3Before": "Before (11 hours)",
+    "card3WithUs": "Kancara (2.5 hours)",
+    "card4Value": "0 bars",
+    "card4Label": "Needed to keep everyone connected",
+    "card1Growth": "18% this month",
     "trustedBy": "Trusted by"
   },
   "steps": {
-    "heading": "The Kancara Experience Flow",
+    "heading": "The Kancara experience",
     "subtitle": "From initial interview to unforgettable trip memories.",
     "liveLabel": "Live",
     "items": [
       {
         "number": "01",
-        "title": "Imagine It, Together",
-        "subheading": "Needs Interview via AI Chat & Voice",
+        "title": "Imagine it, together",
+        "subheading": "A needs interview by AI chat and voice",
         "description": "Share budgets, Halal food needs, allergen requirements, elders, and toddlers. Kancara AI finds the perfect common ground for everyone.",
         "cta": "Explore this step",
-        "chartTitle": "Group Common Ground Results",
+        "chartTitle": "Group common ground",
         "chartItems": [
           {
-            "label": "Halal & Allergen-Free Dining",
-            "val": "94%"
+            "label": "Halal and allergen-free dining",
+            "value": "94%"
           },
           {
-            "label": "Nature & Senior Pace",
-            "val": "88%"
+            "label": "Nature at a senior pace",
+            "value": "88%"
           },
           {
-            "label": "Toddler Rest Schedule",
-            "val": "78%"
+            "label": "Toddler rest schedule",
+            "value": "78%"
           }
         ],
         "chartPill": "AI found 3 ideal matches"
       },
       {
         "number": "02",
-        "title": "Plan Without Friction",
-        "subheading": "Zero Violation Validation by Rule Guardian",
+        "title": "Plan without friction",
+        "subheading": "Zero-violation checks by Rule Guardian",
         "description": "Rule Guardian verifies every route and venue automatically. Guarantees zero violations of mandatory member requirements.",
         "cta": "Explore this step",
-        "chartTitle": "Mandatory Requirement Validation",
+        "chartTitle": "Must-have requirement checks",
         "chartItems": [
           {
-            "label": "Halal & Dietary Validation",
-            "val": "100%"
+            "label": "Halal and dietary checks",
+            "value": "100%"
           },
           {
-            "label": "Wheelchair & Senior Access",
-            "val": "100%"
+            "label": "Wheelchair and senior access",
+            "value": "100%"
           },
           {
-            "label": "Rest Time Comfort",
-            "val": "96%"
+            "label": "Comfortable rest times",
+            "value": "96%"
           }
         ],
-        "chartPill": "0 Must-Have Violations"
+        "chartPill": "0 must-have violations"
       },
       {
         "number": "03",
-        "title": "Adapt Real Time On The Go",
-        "subheading": "Live Re-planning & Preference Balancing",
+        "title": "Adapt in real time on the go",
+        "subheading": "Live re-planning and preference balancing",
         "description": "Sudden bad weather or member fatigue? Companion instantly reroutes plans adaptively without sacrificing anyone.",
         "cta": "Explore this step",
-        "chartTitle": "Automated Schedule Adaptation",
+        "chartTitle": "Automatic schedule adaptation",
         "chartItems": [
           {
-            "label": "Weather Change Response",
-            "val": "Instant"
+            "label": "Weather change response",
+            "value": "Instant"
           },
           {
-            "label": "Alternative Venue Options",
-            "val": "Ready"
+            "label": "Alternative venue options",
+            "value": "Ready"
           },
           {
-            "label": "Emergency Meeting Point",
-            "val": "Active"
+            "label": "Emergency meeting point",
+            "value": "Active"
           }
         ],
-        "chartPill": "Real Time Adjustment Active"
+        "chartPill": "Real-time adjustment active"
       }
     ]
   },
   "offline": {
-    "titlePart1": "The Signal Can Leave.",
-    "titlePart2": "Your Group Won't.",
+    "titlePart1": "The signal can leave.",
+    "titlePart2": "Your group won't.",
     "description": "Your complete itinerary, route maps, emergency contacts, and OCR menu reader automatically save to your phone before departure. 100% functional without internet.",
     "points": [
       "Offline route maps & adaptive itinerary",
       "Peer to peer offline group check ins",
       "Travel documents & emergency contacts ready 100%"
     ],
-    "cta": "Explore Offline Mode",
-    "statusPill": "Everyone Checked In",
+    "cta": "Explore offline mode",
+    "statusPill": "Everyone checked in",
     "subStatus": "Synced locally · No internet needed",
     "offlineCard": {
       "title": "Offline",
@@ -129,14 +128,14 @@
       "saved": "Saved",
       "destination": "Pine Ridge Camp",
       "network": "Peer-to-peer active",
-      "checkIn": "I'm With the Group"
+      "checkIn": "I'm with the group"
     }
   },
   "cta": {
-    "heading": "Ready to Plan a Seamless Group Trip?",
-    "description": "Start building your first inclusive group plan in 60 seconds without complex signups.",
-    "ctaPrimary": "Start Planning Now",
-    "ctaSecondary": "Explore Offline Mode",
-    "note": "100% Free . PWA Ready to Install on Mobile"
+    "heading": "Ready to plan a seamless group trip?",
+    "description": "Start your first inclusive group plan in 60 seconds, with no complicated sign-up.",
+    "ctaPrimary": "Start planning now",
+    "ctaSecondary": "Explore offline mode",
+    "note": "100% free · Ready to install on your phone"
   }
 }

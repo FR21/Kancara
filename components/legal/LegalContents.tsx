@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 
-export type LegalEntry = { id: string; number: string; title: string };
+type LegalEntry = { id: string; number: string; title: string };
 
 type LegalContentsProps = {
   /** Names the list of sections, for the eye and for assistive technology. */
@@ -51,7 +51,7 @@ export default function LegalContents({ label, entries }: LegalContentsProps) {
   return (
     <nav aria-label={label}>
       <p className="text-label text-text-muted">{label}</p>
-      <ol className="mt-3 ml-2">
+      <ol className="mt-2 ml-2">
         {entries.map((entry, index) => {
           const active = entry.id === reading;
           const isFirst = index === 0;

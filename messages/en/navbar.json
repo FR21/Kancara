@@ -1,7 +1,7 @@
 {
   "links": {
     "home": "Home",
-    "plan": "Plan a Trip",
+    "plan": "Plan a trip",
     "trips": "My Trips",
     "splitBill": "Split Bill",
     "about": "About"
@@ -12,8 +12,8 @@
   "closeMenu": "Close menu",
   "themeToggle": "Toggle light/dark theme",
   "languageToggle": "Language",
-  "login": "Login",
-  "logout": "Logout",
+  "login": "Log in",
+  "logout": "Log out",
   "profile": "Profile",
   "breadcrumb": "Breadcrumb"
 }

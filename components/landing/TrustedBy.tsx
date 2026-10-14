@@ -1,5 +1,3 @@
-"use client";
-
 import {
   BedDouble,
   Bus,
@@ -10,7 +8,6 @@ import {
   Ship,
   type LucideIcon,
 } from "lucide-react";
-import { useInViewAttribute } from "@/lib/use-in-view";
 
 const PLACEHOLDER_LOGOS: { name: string; icon: LucideIcon }[] = [
   { name: "Airline", icon: Plane },
@@ -22,38 +19,21 @@ const PLACEHOLDER_LOGOS: { name: string; icon: LucideIcon }[] = [
   { name: "Campus", icon: GraduationCap },
 ];
 
+// The names stand still in a wrapping row: a looping marquee would be motion for decoration only.
 export default function TrustedBy({ label }: { label: string }) {
-  const ref = useInViewAttribute<HTMLDivElement>();
-  const logos = [...PLACEHOLDER_LOGOS, ...PLACEHOLDER_LOGOS];
-
   return (
-    <div ref={ref} className="mt-14">
+    <div className="mt-16">
       <p className="text-center text-caption font-bold tracking-widest text-text-muted uppercase">
         {label}
       </p>
-      <div className="relative mt-6 overflow-hidden [mask-image:linear-gradient(to_right,transparent,black_12%,black_88%,transparent)] motion-reduce:[mask-image:none]">
-        <ul className="marquee flex w-max items-center motion-reduce:w-full motion-reduce:flex-wrap motion-reduce:justify-center motion-reduce:gap-y-4">
-          {logos.map(({ name, icon: Icon }, index) => {
-            const duplicate = index >= PLACEHOLDER_LOGOS.length;
-            return (
-              <li
-                key={`${name}-${index}`}
-                aria-hidden={duplicate || undefined}
-                className={`group flex shrink-0 items-center gap-3 px-7 text-text-muted/70 transition-colors duration-300 hover:text-primary sm:px-9 ${
-                  duplicate ? "motion-reduce:hidden" : ""
-                }`}
-              >
-                <Icon
-                  aria-hidden="true"
-                  className="size-6 transition-[scale] duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] group-hover:scale-110"
-                  strokeWidth={2.25}
-                />
-                <span className="font-heading text-h3 font-extrabold tracking-tight">{name}</span>
-              </li>
-            );
-          })}
-        </ul>
-      </div>
+      <ul className="mt-4 flex flex-wrap items-center justify-center gap-x-12 gap-y-4">
+        {PLACEHOLDER_LOGOS.map(({ name, icon: Icon }) => (
+          <li key={name} className="flex shrink-0 items-center gap-3 text-text-muted/70">
+            <Icon aria-hidden="true" className="size-6" strokeWidth={2.25} />
+            <span className="font-heading text-h3 font-extrabold tracking-tight">{name}</span>
+          </li>
+        ))}
+      </ul>
     </div>
   );
 }

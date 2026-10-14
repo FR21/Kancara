@@ -2,7 +2,7 @@
 
 import { History, Plane } from "lucide-react";
 import type { KeyboardEvent } from "react";
-import { EASE } from "@/components/plan/styles";
+import { EASE } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
 
 export const TRIP_TABS = ["active", "history"] as const;

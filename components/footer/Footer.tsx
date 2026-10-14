@@ -4,7 +4,6 @@ import { ArrowUp } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef } from "react";
 import { LEGAL_LINKS, NAV_LINKS } from "@/lib/nav-links";
 import { useCursorGlow } from "@/lib/use-cursor-glow";
 import { useMessages } from "@/lib/use-messages";
@@ -33,7 +32,7 @@ function LinkColumn({
   return (
     <div>
       <h2 className="font-sans text-label text-on-footer">{heading}</h2>
-      <ul className="mt-2 flex flex-col items-start md:mt-4 md:gap-1">
+      <ul className="mt-2 flex flex-col items-start md:gap-1">
         {links.map((link) => {
           const active = isActive(link.href);
           return (
@@ -61,18 +60,7 @@ export default function Footer() {
   const text = useMessages("footer");
   const navLabels = useMessages("navbar").links;
   const year = new Date().getFullYear();
-  const bandRef = useRef<HTMLDivElement>(null);
   const glowRef = useCursorGlow<HTMLDivElement>();
-
-  useEffect(() => {
-    const band = bandRef.current;
-    if (!band) return;
-    const observer = new IntersectionObserver(([entry]) => {
-      band.toggleAttribute("data-in-view", entry.isIntersecting);
-    });
-    observer.observe(band);
-    return () => observer.disconnect();
-  }, []);
 
   const scrollToTop = () => {
     const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -82,7 +70,6 @@ export default function Footer() {
   return (
     <footer className="relative mt-24 text-on-footer">
       <div
-        ref={bandRef}
         aria-hidden="true"
         className="footer-timeline relative h-40 overflow-hidden sm:h-56"
       >
@@ -114,7 +101,7 @@ export default function Footer() {
               strokeLinecap="round"
               strokeDasharray="0.5 9"
               vectorEffect="non-scaling-stroke"
-              className="footer-flow stroke-accent"
+              className="stroke-accent"
             />
           </svg>
           <span className="absolute top-[73.3%] left-[6.25%] size-3 -translate-1/2 rounded-full border-2 border-accent bg-background" />
@@ -141,9 +128,9 @@ export default function Footer() {
       </div>
 
       <div ref={glowRef} className="-mt-px bg-footer">
-        <div className="mx-auto grid max-w-5xl gap-x-8 gap-y-10 px-6 pt-8 pb-14 md:grid-cols-[minmax(0,1.6fr)_minmax(0,2fr)] md:gap-y-12">
+        <div className="mx-auto grid max-w-5xl gap-8 px-6 pt-8 pb-12 md:grid-cols-[minmax(0,1.6fr)_minmax(0,2fr)]">
           <div>
-            <Link href="/" className="inline-block rounded-sm focus-visible:outline-accent">
+            <Link href="/" className="inline-block rounded-lg focus-visible:outline-accent">
               <Image
                 src="/images/logo/kancara_wordmark_logo.webp"
                 alt="Kancara"
@@ -153,7 +140,7 @@ export default function Footer() {
               />
             </Link>
             <p className="mt-6 max-w-sm font-heading text-h2 text-balance">{text.tagline}</p>
-            <p data-cursor-glow className="footer-glow mt-3 max-w-sm text-body-sm text-pretty text-on-footer-muted">
+            <p data-cursor-glow className="footer-glow mt-2 max-w-sm text-body-sm text-pretty text-on-footer-muted">
               {text.description}
             </p>
           </div>
@@ -176,7 +163,7 @@ export default function Footer() {
             <button
               type="button"
               onClick={scrollToTop}
-              className="group -mx-3 inline-flex h-11 cursor-pointer items-center gap-2 rounded-md px-3 transition-[color,background-color,scale] duration-150 ease-out hover:bg-footer-border/60 hover:text-on-footer focus-visible:outline-accent active:scale-[0.97]"
+              className="group -mx-4 inline-flex h-11 cursor-pointer items-center gap-2 rounded-full px-4 transition-[color,background-color,scale] duration-150 ease-out hover:bg-footer-border/60 hover:text-on-footer focus-visible:outline-accent active:scale-[0.97]"
             >
               {text.backToTop}
               <ArrowUp

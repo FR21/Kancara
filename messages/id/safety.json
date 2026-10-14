@@ -111,7 +111,8 @@
     "smsBody": "Saya {name}, terpisah dari rombongan. Tolong telepon saya.",
     "showWay": "Tunjukkan arah",
     "noNumbers": "Belum ada nomor yang bisa ditelepon. Isi nomor anggota di daftar rombongan.",
-    "buttonHint": "Menekan tombol ini memberi tahu seluruh rombongan."
+    "buttonHint": "Menekan tombol ini memberi tahu seluruh rombongan.",
+    "compass": "Panah arah"
   },
   "contacts": {
     "title": "Nomor penting",

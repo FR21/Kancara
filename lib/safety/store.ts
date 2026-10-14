@@ -2,7 +2,7 @@ import "server-only";
 import type { EmergencyContact, MissingReport, Prisma, Trip, TripMember, TripSafetySetting } from "@prisma/client";
 import { after } from "next/server";
 import type { Viewer } from "@/lib/account";
-import { parseItinerary } from "@/lib/api/captain";
+import { parseItinerary } from "@/lib/client/captain";
 import {
   type AgeGroup,
   type Member,
@@ -33,7 +33,7 @@ import {
   CONTACT_LABELS,
   REPORT_SOURCES,
   REPORT_STATUSES,
-} from "./pack";
+} from "@/lib/safety/safety-pack";
 import { planPosition } from "./plan-position";
 
 // The server side of finding a separated member: who can be reached and how, the searches under way, the links

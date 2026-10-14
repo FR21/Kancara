@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { fetchExchangeRate } from "@/lib/api/exchange-rate";
+import { fetchExchangeRate } from "@/lib/client/exchange-rate";
 import { type ExchangeRate, ESTIMATED_RATE } from "@/lib/currency";
 
 let liveRate: ExchangeRate | null = null;

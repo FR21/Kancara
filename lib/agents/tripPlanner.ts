@@ -1,13 +1,14 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { GoogleGenAI } from '@google/genai';
-import { BACKUP_KINDS } from '@/lib/api/captain';
+import { BACKUP_KINDS } from '@/lib/client/captain';
 import { mediationBrief } from './mediationBrief';
+import { categoryFromTypes, isPlacePhotoName, placePhotoUrl } from '@/lib/place-category';
 import { 
   searchBookingHotels, 
   getCachedAmusementAndAttractions, 
   type HotelDeal, 
   type AttractionDeal 
-} from '@/lib/api/rapidapi';
+} from '@/lib/hotel-search';
 
 const client = new GoogleGenAI({});
 
@@ -22,7 +23,7 @@ export async function executeSearchPlaces(query: string, locale: string = "id") 
       headers: {
         "Content-Type": "application/json",
         "X-Goog-Api-Key": GOOGLE_MAPS_API_KEY,
-        "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.rating,places.priceLevel,places.regularOpeningHours,places.photos,places.accessibilityOptions,places.types"
+        "X-Goog-FieldMask": "places.id,places.displayName,places.formattedAddress,places.rating,places.priceLevel,places.regularOpeningHours,places.photos,places.accessibilityOptions,places.types"
       },
       body: JSON.stringify({ textQuery: query, languageCode: locale })
     });
@@ -32,7 +33,8 @@ export async function executeSearchPlaces(query: string, locale: string = "id") 
     return data.places.slice(0, 3).map((r: any) => {
       let imageUrl = undefined;
       if (r.photos && r.photos.length > 0) {
-        imageUrl = `https://places.googleapis.com/v1/${r.photos[0].name}/media?maxHeightPx=400&maxWidthPx=400&key=${GOOGLE_MAPS_API_KEY}`;
+        // The photo is served through this app, so the key that fetches it stays on the server.
+        if (isPlacePhotoName(r.photos[0].name)) imageUrl = placePhotoUrl(r.photos[0].name);
       }
       
       let priceLevel = undefined;
@@ -51,6 +53,8 @@ export async function executeSearchPlaces(query: string, locale: string = "id") 
       
       return {
         name: r.displayName?.text,
+        placeId: typeof r.id === "string" ? r.id : undefined,
+        category: categoryFromTypes(r.types),
         accessibilityOptions: r.accessibilityOptions,
         types: r.types,
         rating: r.rating,
@@ -302,6 +306,8 @@ function cleanPlaceQuery(title: string, destination?: string): string {
             if (places && Array.isArray(places) && places.length > 0) {
               const place = places[0];
               item.imageUrl = place.imageUrl || item.imageUrl;
+              item.placeId = place.placeId || item.placeId;
+              item.category = place.category;
               item.address = place.address || item.address;
               item.rating = place.rating || item.rating;
               item.priceLevel = place.priceLevel || item.priceLevel;

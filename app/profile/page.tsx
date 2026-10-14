@@ -3,7 +3,8 @@ import { redirect } from "next/navigation";
 import { currentViewer } from "@/lib/account";
 import { getProfile } from "@/lib/profile";
 import { requestMetadata } from "@/lib/seo";
-import ProfileContent from "./ProfileContent";
+import PageShell from "@/components/layout/PageShell";
+import ProfileWorkspace from "@/components/profile/ProfileWorkspace";
 import { sessionEndedPath } from "@/lib/auth/routes";
 
 export function generateMetadata(): Promise<Metadata> {
@@ -15,8 +16,8 @@ export default async function ProfilePage() {
   if (!viewer) redirect(sessionEndedPath("/profile"));
 
   return (
-    <main className="flex-1 pt-28 pb-16 lg:pt-32">
-      <ProfileContent email={viewer.email} profile={await getProfile(viewer)} />
-    </main>
+    <PageShell width="workspace">
+      <ProfileWorkspace email={viewer.email} profile={await getProfile(viewer)} />
+    </PageShell>
   );
 }

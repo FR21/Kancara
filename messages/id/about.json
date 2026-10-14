@@ -6,7 +6,6 @@
     "lead": "Kancara adalah perencana perjalanan rombongan yang memperhitungkan kebutuhan setiap anggota, dari menyusun rencana sampai pulang lagi."
   },
   "pass": {
-    "brand": "Tentang Kancara",
     "from": "Dari",
     "to": "Ke",
     "origin": "Satu suara",
@@ -15,7 +14,7 @@
     "destinationNote": "Rencana yang pas untuk tiap orang.",
     "fields": [
       {
-        "label": "Kapten",
+        "label": "Pemandu",
         "value": "Captain"
       },
       {
@@ -136,7 +135,6 @@
         "answer": "Bahasa Indonesia dan bahasa Inggris. Bahasa bisa diganti kapan saja lewat tombol ID dan EN."
       }
     ],
-    "desk": "Meja informasi Kancara",
     "position": "Pertanyaan {current} dari {total}",
     "previous": "Pertanyaan sebelumnya",
     "next": "Pertanyaan berikutnya"

@@ -42,7 +42,7 @@ function closeness(typed: string, name: string): number | null {
   return nearest <= allowed ? 2 + nearest : null;
 }
 
-export type CountryChoice = { code: string; name: string };
+type CountryChoice = { code: string; name: string };
 
 /**
  * The countries that answer what was typed, best first, each under its name in the given language. Names are

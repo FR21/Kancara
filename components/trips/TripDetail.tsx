@@ -1,18 +1,21 @@
 "use client";
 
-import { ArrowRight, Check, CircleDashed, Compass, CopyPlus, Languages, Luggage, Share2, Trash2, UtensilsCrossed, Wallet, X } from "lucide-react";
+import { ArrowRight, Check, CircleDashed, CopyPlus, Share2, Trash2, Wallet, X } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
+import FieldPassSheet from "@/components/field-pass/FieldPassSheet";
+import ActionMenu, { type ActionMenuItem } from "@/components/ui/ActionMenu";
+import IconButton from "@/components/ui/IconButton";
+import { NEED_CHIP } from "@/components/ui/NeedChips";
+import { PRIMARY_BUTTON } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate, PASS_FIELDS } from "@/lib/plan-draft";
 import { formatDays, formatDaysAhead, formatMoney, formatTripDates, plural } from "@/lib/trips/format";
 import { type TripCard, DRAFT_SECTIONS, tripHref } from "@/lib/trips/trip";
 import { useLocale } from "@/lib/use-locale";
-import { useMessages } from "@/lib/use-messages";
-import FieldPassModal from "./FieldPassModal";
 import MemberStack from "./MemberStack";
 import { OfflineBadge, StatusPill, ViolationsBadge } from "./TripBadges";
-import TripRoute from "./TripRoute";
+import TripTools from "./TripTools";
 
 export type TripActions = {
   onDuplicate: (card: TripCard) => void;
@@ -33,21 +36,21 @@ type TripDetailProps = {
 const FIELD_LABEL = "text-caption font-bold text-text-muted";
 const FIELD_VALUE = "mt-1 text-label-lg text-text tabular-nums";
 const BLOCK_TITLE = "text-label text-text";
-const ACTION =
-  "inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-border-strong px-4 text-label transition-[background-color,border-color,scale] duration-150 ease-out active:scale-[0.97]";
 const TRACK = "h-2 overflow-hidden rounded-full bg-surface-muted";
-const NEED =
-  "max-w-full rounded-2xl border border-border-strong px-2 py-1 text-caption font-bold wrap-anywhere text-text";
+const NEED = `${NEED_CHIP} wrap-anywhere`;
 
-// Everything about one trip, and the way into it. On a laptop it sits beside
-// the list; on a phone the same panel rises as a sheet.
+// One trip, read top to bottom in three groups: what it is (status, name, route), the facts and the people, and
+// what to do now (one main action, then the trip's tools). Secondary actions live in the "⋯" menu. On a laptop
+// the card sits beside the list; on a phone the same card rises as a sheet.
 export default function TripDetail({ card, text, needLabels, actions, headingId, onClose }: TripDetailProps) {
   const locale = useLocale();
   const [showFieldPass, setShowFieldPass] = useState(false);
-  const packingText = useMessages("packing");
   const title = card.name || text.card.untitled;
   const detail = text.detail;
+  const route = [card.origin, card.destinations.join(", ")].filter(Boolean).join(" → ");
+  const onTheWay = card.status === "ongoing" || card.status === "upcoming";
   const hasBadges = card.violations !== undefined || card.offline !== undefined;
+  const hasNeeds = card.needs.length + card.customNeeds.length > 0;
 
   const openLabels = {
     ongoing: text.card.openToday,
@@ -55,6 +58,14 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
     draft: text.card.continue,
     completed: detail.openSummary,
   };
+
+  const menuItems: ActionMenuItem[] = [
+    ...(card.status === "completed"
+      ? []
+      : [{ key: "duplicate", label: text.menu.duplicate, icon: CopyPlus, onSelect: () => actions.onDuplicate(card) }]),
+    { key: "share", label: text.menu.share, icon: Share2, onSelect: () => actions.onShare(card) },
+    { key: "delete", label: text.menu.delete, icon: Trash2, onSelect: () => actions.onDelete(card), danger: true },
+  ];
 
   const costLabel = () => {
     if (!card.cost) return "";
@@ -66,278 +77,165 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
   return (
     <article
       aria-labelledby={headingId}
-      className={`overflow-clip bg-surface ${onClose ? "rounded-t-3xl" : "rounded-3xl border border-border"}`}
+      className={`bg-surface p-surface [--surface-pad:1.5rem] ${onClose ? "rounded-t-surface" : "rounded-surface border border-border"}`}
     >
-      <header className="bg-primary px-5 pt-5 pb-6 text-on-primary sm:px-6">
-        <div className="flex items-center justify-between gap-3">
+      <header className="flex items-start gap-2">
+        <div className="min-w-0 flex-1">
           <StatusPill status={card.status} label={text.status[card.status]} />
-          {onClose && (
-            <button
-              type="button"
-              aria-label={detail.close}
-              title={detail.close}
-              onClick={onClose}
-              className="-mr-2 inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full transition-[background-color,scale] duration-150 ease-out hover:bg-on-primary/15 focus-visible:outline-on-primary active:scale-[0.97]"
-            >
-              <X className="size-5" aria-hidden="true" />
-            </button>
-          )}
+          <h2 id={headingId} className="mt-3 text-h3 text-pretty text-text">
+            {title}
+          </h2>
+          <p className="mt-1 text-body-sm text-pretty text-text-muted">{route || text.card.noRoute}</p>
         </div>
-        <h2 id={headingId} className="mt-4 font-sans text-label-lg text-pretty">
-          {title}
-        </h2>
-        <div className="mt-1">
-          <TripRoute
-            origin={card.origin}
-            destinations={card.destinations}
-            toLabel={text.card.routeTo}
-            emptyLabel={text.card.noRoute}
-          />
+        <div className="-mt-2 -mr-2 flex shrink-0 items-center">
+          <ActionMenu label={fillTemplate(detail.more, { name: title })} items={menuItems} />
+          {onClose && (
+            <IconButton label={detail.close} onClick={onClose}>
+              <X className="size-5" aria-hidden="true" />
+            </IconButton>
+          )}
         </div>
       </header>
 
-      <div className="space-y-6 px-5 py-6 sm:px-6">
-        <dl className="grid grid-cols-2 gap-x-4 gap-y-5">
-          <div>
-            <dt className={FIELD_LABEL}>{detail.fields.dates}</dt>
-            <dd className={FIELD_VALUE}>
-              {card.startDate ? formatTripDates(card.startDate, card.endDate, locale) : detail.notSet}
-            </dd>
-          </div>
-          <div>
-            <dt className={FIELD_LABEL}>{detail.fields.duration}</dt>
-            <dd className={FIELD_VALUE}>{card.days > 0 ? formatDays(card.days, locale) : detail.notSet}</dd>
-          </div>
-          <div>
-            <dt className={FIELD_LABEL}>{detail.fields.budget}</dt>
-            <dd className={FIELD_VALUE}>{card.budget === null ? detail.notSet : formatMoney(card.budget, locale)}</dd>
-          </div>
-          <div>
-            <dt className={FIELD_LABEL}>{detail.fields.role}</dt>
-            <dd className={FIELD_VALUE}>{detail.roles[card.role]}</dd>
-          </div>
-        </dl>
-
+      <dl className="mt-6 grid grid-cols-2 gap-x-4 gap-y-4">
         <div>
-          <h3 className={`font-sans ${BLOCK_TITLE}`}>{detail.group}</h3>
-          <div className="mt-2">
-            <MemberStack
-              members={card.members}
-              count={card.memberCount}
-              label={
-                card.memberCount > 0 ? plural(text.card.members, card.memberCount, locale) : text.card.noMembers
-              }
-              moreLabel={text.card.moreMembers}
+          <dt className={FIELD_LABEL}>{detail.fields.dates}</dt>
+          <dd className={FIELD_VALUE}>
+            {card.startDate ? formatTripDates(card.startDate, card.endDate, locale) : detail.notSet}
+          </dd>
+        </div>
+        <div>
+          <dt className={FIELD_LABEL}>{detail.fields.duration}</dt>
+          <dd className={FIELD_VALUE}>{card.days > 0 ? formatDays(card.days, locale) : detail.notSet}</dd>
+        </div>
+        <div>
+          <dt className={FIELD_LABEL}>{detail.fields.budget}</dt>
+          <dd className={FIELD_VALUE}>{card.budget === null ? detail.notSet : formatMoney(card.budget, locale)}</dd>
+        </div>
+        <div>
+          <dt className={FIELD_LABEL}>{detail.fields.role}</dt>
+          <dd className={FIELD_VALUE}>{detail.roles[card.role]}</dd>
+        </div>
+      </dl>
+
+      <section aria-labelledby={`${headingId}-group`} className="mt-6">
+        <h3 id={`${headingId}-group`} className={BLOCK_TITLE}>
+          {detail.group}
+        </h3>
+        <div className="mt-2">
+          <MemberStack
+            members={card.members}
+            count={card.memberCount}
+            label={card.memberCount > 0 ? plural(text.card.members, card.memberCount, locale) : text.card.noMembers}
+            moreLabel={text.card.moreMembers}
+          />
+        </div>
+        {hasNeeds && (
+          <ul aria-label={detail.needs} className="mt-3 flex flex-wrap gap-2">
+            {card.needs.map((need) => (
+              <li key={need} className={NEED}>
+                {needLabels[need]}
+              </li>
+            ))}
+            {card.customNeeds.map((need) => (
+              <li key={need} className={NEED}>
+                {need}
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
+      {card.status === "ongoing" && (
+        <section className="mt-6">
+          <p className={`${BLOCK_TITLE} tabular-nums`}>{fillTemplate(text.card.dayOf, { day: card.day ?? 1, total: card.days })}</p>
+          <div aria-hidden="true" className={`mt-2 ${TRACK}`}>
+            <div
+              style={{ scale: `${(card.day ?? 1) / card.days} 1` }}
+              className="h-full origin-left rounded-full bg-primary motion-safe:animate-grow-x"
             />
           </div>
-          {card.needs.length + card.customNeeds.length > 0 && (
-            <ul aria-label={detail.needs} className="mt-3 flex flex-wrap gap-2">
-              {card.needs.map((need) => (
-                <li key={need} className={NEED}>
-                  {needLabels[need]}
-                </li>
-              ))}
-              {card.customNeeds.map((need) => (
-                <li key={need} className={NEED}>
-                  {need}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-
-        {card.status === "ongoing" && (
-          <div>
-            <p className={`${BLOCK_TITLE} tabular-nums`}>
-              {fillTemplate(text.card.dayOf, { day: card.day ?? 1, total: card.days })}
+          {card.nextActivity && (
+            <p className="mt-3 text-body-sm text-pretty text-text-muted">
+              <span className="text-label text-text">{text.card.next}</span>{" "}
+              <span className="tabular-nums">{card.nextActivity.time}</span> · {card.nextActivity.title}
             </p>
-            <div aria-hidden="true" className={`mt-2 ${TRACK}`}>
-              <div
-                style={{ width: `${((card.day ?? 1) / card.days) * 100}%` }}
-                className="h-full origin-left rounded-full bg-primary motion-safe:animate-grow-x"
-              />
-            </div>
-            {card.nextActivity && (
-              <div className="mt-4 rounded-2xl bg-surface-muted px-4 py-3">
-                <p className={FIELD_LABEL}>{text.card.next}</p>
-                <p className="mt-1 text-label-lg text-pretty text-text">
-                  <span className="tabular-nums">{card.nextActivity.time}</span> · {card.nextActivity.title}
-                </p>
-              </div>
-            )}
+          )}
+        </section>
+      )}
+
+      {card.status === "upcoming" && card.startsIn !== undefined && (
+        <p className="mt-6 text-label-lg text-text">{fillTemplate(text.card.departs, { when: formatDaysAhead(card.startsIn, locale) })}</p>
+      )}
+
+      {card.status === "draft" && (
+        <section className="mt-6">
+          <div className="flex items-baseline justify-between gap-3">
+            <h3 className={BLOCK_TITLE}>{detail.sectionsTitle}</h3>
+            <p className="text-body-sm text-text-muted tabular-nums">
+              {fillTemplate(text.card.progress, { done: card.filled ?? 0, total: DRAFT_SECTIONS })}
+            </p>
           </div>
-        )}
-
-        {card.status === "upcoming" && card.startsIn !== undefined && (
-          <p className="font-heading text-h3 text-text">
-            {fillTemplate(text.card.departs, { when: formatDaysAhead(card.startsIn, locale) })}
-          </p>
-        )}
-
-        {card.status === "draft" && (
-          <div>
-            <div className="flex items-baseline justify-between gap-3">
-              <h3 className={`font-sans ${BLOCK_TITLE}`}>{detail.sectionsTitle}</h3>
-              <p className="text-body-sm text-text-muted tabular-nums">
-                {fillTemplate(text.card.progress, { done: card.filled ?? 0, total: DRAFT_SECTIONS })}
-              </p>
-            </div>
-            <div aria-hidden="true" className={`mt-2 ${TRACK}`}>
-              <div
-                style={{ width: `${((card.filled ?? 0) / DRAFT_SECTIONS) * 100}%` }}
-                className="h-full origin-left rounded-full bg-primary motion-safe:animate-grow-x"
-              />
-            </div>
-            <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
-              {PASS_FIELDS.map((field) => {
-                const missing = card.missing?.includes(field) ?? false;
-                return (
-                  <li
-                    key={field}
-                    className={`inline-flex items-center gap-2 text-body-sm ${missing ? "text-text-muted" : "text-text"}`}
-                  >
-                    {missing ? (
-                      <CircleDashed className="size-4" aria-hidden="true" />
-                    ) : (
-                      <Check className="size-4 text-success" strokeWidth={3} aria-hidden="true" />
-                    )}
-                    {detail.sections[field]}
-                    <span className="sr-only">{missing ? detail.sectionMissing : detail.sectionDone}</span>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
-        )}
-
-        {card.cost && (
-          <p className="flex items-center gap-2 text-body text-text tabular-nums">
-            <Wallet className="size-5 shrink-0 text-text-muted" aria-hidden="true" />
-            {costLabel()}
-          </p>
-        )}
-
-        {hasBadges && (
-          <div className="flex flex-wrap gap-2">
-            {card.violations !== undefined && (
-              <ViolationsBadge
-                count={card.violations}
-                label={plural(text.card.violations, card.violations, locale)}
-              />
-            )}
-            {card.offline !== undefined && (
-              <OfflineBadge state={card.offline} label={text.card.offline[card.offline]} />
-            )}
-          </div>
-        )}
-
-        <div className="flex flex-col gap-4 border-t border-border pt-6">
-          <Link
-            href={tripHref(card)}
-            className="group inline-flex h-12 items-center justify-center gap-2 rounded-full bg-primary px-6 text-label-lg whitespace-nowrap text-on-primary shadow-md shadow-primary/20 transition-[background-color,scale] duration-150 ease-out hover:bg-primary-hover active:scale-[0.97]"
-          >
-            {openLabels[card.status]}
-            <ArrowRight
-              className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1"
-              aria-hidden="true"
+          <div aria-hidden="true" className={`mt-2 ${TRACK}`}>
+            <div
+              style={{ scale: `${(card.filled ?? 0) / DRAFT_SECTIONS} 1` }}
+              className="h-full origin-left rounded-full bg-primary motion-safe:animate-grow-x"
             />
-          </Link>
-
-          <div role="group" aria-label={detail.actions} className="flex flex-wrap gap-2">
-            {card.status !== "completed" && card.status !== "draft" && (
-              <>
-                <Link
-                  href={`/trips/${encodeURIComponent(card.id)}/packing`}
-                  className={`group/action ${ACTION} text-text hover:bg-surface-muted`}
-                >
-                  <Luggage
-                    className="size-4 transition-[rotate] duration-300 ease-spring group-hover/action:-rotate-12"
-                    aria-hidden="true"
-                  />
-                  {packingText.open}
-                </Link>
-                <Link
-                  href={`/trips/${encodeURIComponent(card.id)}/dietary-scan`}
-                  className={`group/action ${ACTION} border-primary/30 text-primary hover:bg-primary-subtle`}
-                >
-                  <UtensilsCrossed
-                    className="size-4 transition-[scale] duration-300 ease-spring group-hover/action:scale-110"
-                    aria-hidden="true"
-                  />
-                  {locale === "en" ? "Dietary Lens" : "Pindai Menu"}
-                </Link>
-                <Link
-                  href={`/trips/${encodeURIComponent(card.id)}/translator`}
-                  className={`group/action ${ACTION} border-emerald-500/30 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10`}
-                >
-                  <Languages
-                    className="size-4 transition-[scale] duration-300 ease-spring group-hover/action:scale-110"
-                    aria-hidden="true"
-                  />
-                  {locale === "en" ? "Live Translator" : "Penerjemah Obrolan"}
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => setShowFieldPass(true)}
-                  className={`group/action ${ACTION} border-emerald-500/40 bg-emerald-500/10 text-emerald-800 dark:text-emerald-300 font-bold hover:bg-emerald-500/20`}
-                >
-                  <Compass
-                    className="size-4 text-emerald-600 dark:text-emerald-400 transition-[scale] duration-300 ease-spring group-hover/action:scale-110"
-                    aria-hidden="true"
-                  />
-                  {locale === "en" ? "Field Pass (Offline)" : "Paspor Lapangan 🟢"}
-                </button>
-              </>
-            )}
-            {card.status !== "completed" && (
-              <button
-                type="button"
-                onClick={() => actions.onDuplicate(card)}
-                className={`group/action ${ACTION} text-text hover:bg-surface-muted`}
-              >
-                <CopyPlus
-                  className="size-4 transition-[scale] duration-300 ease-spring group-hover/action:scale-125"
-                  aria-hidden="true"
-                />
-                {text.menu.duplicate}
-              </button>
-            )}
-            <button
-              type="button"
-              onClick={() => actions.onShare(card)}
-              className={`group/action ${ACTION} text-text hover:bg-surface-muted`}
-            >
-              <Share2
-                className="size-4 transition-[rotate] duration-300 ease-spring group-hover/action:-rotate-12"
-                aria-hidden="true"
-              />
-              {text.menu.share}
-            </button>
-            <button
-              type="button"
-              onClick={() => actions.onDelete(card)}
-              className={`group/action ${ACTION} text-error hover:border-error hover:bg-error-subtle`}
-            >
-              <Trash2
-                className="size-4 transition-[rotate] duration-300 ease-spring group-hover/action:rotate-12"
-                aria-hidden="true"
-              />
-              {text.menu.delete}
-            </button>
           </div>
+          <ul className="mt-3 flex flex-wrap gap-x-4 gap-y-2">
+            {PASS_FIELDS.map((field) => {
+              const missing = card.missing?.includes(field) ?? false;
+              return (
+                <li key={field} className={`inline-flex items-center gap-2 text-body-sm ${missing ? "text-text-muted" : "text-text"}`}>
+                  {missing ? (
+                    <CircleDashed className="size-4" aria-hidden="true" />
+                  ) : (
+                    <Check className="size-4 text-success" strokeWidth={3} aria-hidden="true" />
+                  )}
+                  {detail.sections[field]}
+                  <span className="sr-only">{missing ? detail.sectionMissing : detail.sectionDone}</span>
+                </li>
+              );
+            })}
+          </ul>
+        </section>
+      )}
+
+      {(card.cost || hasBadges) && (
+        <div className="mt-6 flex flex-wrap items-center gap-x-4 gap-y-2">
+          {card.cost && (
+            <p className="flex items-center gap-2 text-body-sm text-text tabular-nums">
+              <Wallet className="size-4 shrink-0 text-text-muted" aria-hidden="true" />
+              {costLabel()}
+            </p>
+          )}
+          {card.violations !== undefined && (
+            <ViolationsBadge count={card.violations} label={plural(text.card.violations, card.violations, locale)} />
+          )}
+          {card.offline !== undefined && <OfflineBadge state={card.offline} label={text.card.offline[card.offline]} />}
         </div>
+      )}
+
+      <div className="mt-6 border-t border-border pt-4">
+        <Link href={tripHref(card)} className={`group ${PRIMARY_BUTTON} w-full`}>
+          {openLabels[card.status]}
+          <ArrowRight className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1" aria-hidden="true" />
+        </Link>
+        {onTheWay && (
+          <div className="mt-4">
+            <TripTools tripId={card.id} text={text.tools} onOpenFieldPass={() => setShowFieldPass(true)} />
+          </div>
+        )}
       </div>
 
-      <FieldPassModal
-        isOpen={showFieldPass}
-        onClose={() => setShowFieldPass(false)}
-        tripId={card.id}
-        tripName={card.name}
-        destination={card.destinations[0] ?? ""}
-        memberCount={card.memberCount}
-        needs={card.needs}
-        customNeeds={card.customNeeds}
-      />
+      {onTheWay && (
+        <FieldPassSheet
+          isOpen={showFieldPass}
+          onClose={() => setShowFieldPass(false)}
+          tripId={card.id}
+          destination={card.destinations[0] ?? ""}
+        />
+      )}
     </article>
   );
 }

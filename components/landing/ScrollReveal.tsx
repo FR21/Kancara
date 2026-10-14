@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useRef, useState, ReactNode } from "react";
+import { type ReactNode, useEffect, useRef, useState } from "react";
+import { EASE } from "@/components/ui/styles";
 
 interface ScrollRevealProps {
   children: ReactNode;
@@ -53,7 +54,7 @@ export default function ScrollReveal({
       style={{
         transitionDelay: `${delayMs}ms`,
       }}
-      className={`group/reveal transition-[opacity,translate] duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-opacity ${
+      className={`group/reveal transition-[opacity,translate] duration-700 ${EASE} motion-reduce:transition-opacity ${
         isVisible ? "opacity-100 translate-0" : `opacity-0 ${HIDDEN[from]} motion-reduce:translate-0`
       } ${className}`}
     >

@@ -3,7 +3,7 @@ import { currentViewer } from "@/lib/account";
 import { avatarKey, setAvatar } from "@/lib/profile";
 import { MAX_PHOTO_BYTES } from "@/lib/profile-fields";
 import { rateLimit } from "@/lib/rate-limit";
-import { deleteObject, getObject, putObject } from "@/lib/storage";
+import { deleteObject, getObject, putObject } from "@/lib/object-storage";
 
 // A multipart request carries a little more than the file itself.
 const MAX_REQUEST_BYTES = MAX_PHOTO_BYTES + 64 * 1024;

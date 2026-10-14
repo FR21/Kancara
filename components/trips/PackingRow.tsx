@@ -19,8 +19,8 @@ import {
   X,
 } from "lucide-react";
 import Image from "next/image";
-import Checkbox from "@/components/plan/Checkbox";
-import MemberAvatar from "@/components/plan/MemberAvatar";
+import Checkbox from "@/components/ui/Checkbox";
+import MemberAvatar from "@/components/ui/MemberAvatar";
 import type { Messages } from "@/lib/messages";
 import type { PackingItem, PackingReason } from "@/lib/packing";
 import { type Member, type NeedCategory, fillTemplate, NEED_CATEGORIES, NEED_CATEGORY_KEYS } from "@/lib/plan-draft";
@@ -90,7 +90,7 @@ export default function PackingRow({
   const removeLabel = fillTemplate(text.remove, { name: label });
 
   return (
-    <li className="flex items-start gap-1 py-1 pr-1 pl-4 motion-safe:animate-message-in sm:pl-5">
+    <li className="flex items-start gap-1 py-1 pr-1 pl-surface motion-safe:animate-message-in">
       <label className="flex min-h-14 min-w-0 flex-1 cursor-pointer items-start gap-3 py-3">
         <Checkbox checked={checked} onChange={onToggle} />
         <span className="min-w-0 flex-1">

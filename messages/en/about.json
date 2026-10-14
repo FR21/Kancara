@@ -6,7 +6,6 @@
     "lead": "Kancara is a group travel planner that takes every member's needs into account, from planning to the trip home."
   },
   "pass": {
-    "brand": "About Kancara",
     "from": "From",
     "to": "To",
     "origin": "One voice",
@@ -15,7 +14,7 @@
     "destinationNote": "A plan that fits each person.",
     "fields": [
       {
-        "label": "Captain",
+        "label": "Guide",
         "value": "Captain"
       },
       {
@@ -136,7 +135,6 @@
         "answer": "Indonesian and English. You can switch at any time with the ID and EN buttons."
       }
     ],
-    "desk": "Kancara information desk",
     "position": "Question {current} of {total}",
     "previous": "Previous question",
     "next": "Next question"

@@ -8,9 +8,8 @@ import {
   ShieldCheck,
   TriangleAlert,
 } from "lucide-react";
+import { BADGE } from "@/components/ui/styles";
 import type { OfflineState, TripStatus } from "@/lib/trips/trip";
-
-const CHIP = "inline-flex items-center gap-1 rounded-full px-2 py-1 text-caption font-bold";
 
 const STATUS_ICONS = { ongoing: Plane, upcoming: CalendarClock, draft: PencilLine, completed: Check };
 
@@ -34,11 +33,18 @@ export function StatusMark({ status, label }: { status: TripStatus; label: strin
   );
 }
 
-/** The status as a labelled pill, for the detail panel's band. */
+const STATUS_TONES: Record<TripStatus, string> = {
+  ongoing: "bg-primary-subtle text-on-primary-subtle",
+  upcoming: "bg-info-subtle text-on-info-subtle",
+  draft: "bg-surface-muted text-text-muted",
+  completed: "bg-success-subtle text-on-success-subtle",
+};
+
+/** The status as a labelled tag at the top of a trip's card. */
 export function StatusPill({ status, label }: { status: TripStatus; label: string }) {
   const Icon = STATUS_ICONS[status];
   return (
-    <p className="inline-flex h-8 items-center gap-2 rounded-full bg-on-primary/15 px-3 text-label text-on-primary">
+    <p className={`${BADGE} ${STATUS_TONES[status]}`}>
       <Icon className="size-4" strokeWidth={status === "completed" ? 3 : 2} aria-hidden="true" />
       {label}
     </p>
@@ -48,14 +54,14 @@ export function StatusPill({ status, label }: { status: TripStatus; label: strin
 export function ViolationsBadge({ count, label }: { count: number; label: string }) {
   if (count === 0) {
     return (
-      <p className={`${CHIP} bg-success-subtle text-on-success-subtle`}>
+      <p className={`${BADGE} bg-success-subtle text-on-success-subtle`}>
         <ShieldCheck className="size-3" aria-hidden="true" />
         {label}
       </p>
     );
   }
   return (
-    <p className={`${CHIP} bg-warning-subtle text-on-warning-subtle`}>
+    <p className={`${BADGE} bg-warning-subtle text-on-warning-subtle`}>
       <TriangleAlert className="size-3" aria-hidden="true" />
       {label}
     </p>
@@ -65,14 +71,14 @@ export function ViolationsBadge({ count, label }: { count: number; label: string
 export function OfflineBadge({ state, label }: { state: OfflineState; label: string }) {
   if (state === "downloaded") {
     return (
-      <p className={`${CHIP} border border-border-strong text-text`}>
+      <p className={`${BADGE} border border-border-strong text-text`}>
         <CloudDownload className="size-3 text-primary" aria-hidden="true" />
         {label}
       </p>
     );
   }
   return (
-    <p className={`${CHIP} border border-dashed border-border-strong text-text-muted`}>
+    <p className={`${BADGE} border border-dashed border-border-strong text-text-muted`}>
       <CloudOff className="size-3" aria-hidden="true" />
       {label}
     </p>

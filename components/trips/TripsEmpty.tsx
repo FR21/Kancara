@@ -1,7 +1,8 @@
-import { Plus, X } from "lucide-react";
+import { History, Plus, SearchX, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
+import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/ui/styles";
+import EmptyState from "@/components/ui/EmptyState";
 import type { Messages } from "@/lib/messages";
 
 type TripsEmptyProps = {
@@ -14,21 +15,24 @@ type TripsEmptyProps = {
 export default function TripsEmpty({ kind, text, planHref, onClear }: TripsEmptyProps) {
   if (kind === "search") {
     return (
-      <div className="flex flex-col items-center gap-4 py-12 text-center motion-safe:animate-message-in">
-        <p className="text-body text-text-muted">{text.empty.search}</p>
-        <button type="button" onClick={onClear} className={OUTLINE_BUTTON}>
-          <X className="size-4" aria-hidden="true" />
-          {text.history.clear}
-        </button>
-      </div>
+      <EmptyState
+        icon={SearchX}
+        headingLevel={2}
+        title={text.empty.searchTitle}
+        body={text.empty.search}
+        action={
+          <button type="button" onClick={onClear} className={OUTLINE_BUTTON}>
+            <X className="size-4" aria-hidden="true" />
+            {text.history.clear}
+          </button>
+        }
+      />
     );
   }
 
   if (kind === "history") {
     return (
-      <p className="py-16 text-center text-body text-pretty text-text-muted motion-safe:animate-message-in">
-        {text.empty.history}
-      </p>
+      <EmptyState icon={History} headingLevel={2} title={text.empty.historyTitle} body={text.empty.history} />
     );
   }
 

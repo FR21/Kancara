@@ -1,8 +1,10 @@
 "use client";
 
-import Image from "next/image";
-import { useEffect, useState } from "react";
 import { ArrowDown, ArrowRight } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useEffect, useState } from "react";
+import { ACCENT_CTA, QUIET_CTA } from "@/components/landing/styles";
 import type { Messages } from "@/lib/messages";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { useMessages } from "@/lib/use-messages";
@@ -64,30 +66,30 @@ function HeroCopy({ text }: HeroCopyProps) {
         </p>
 
         <div className="pointer-events-auto mt-8 flex flex-col items-center justify-center gap-2 motion-safe:animate-rise-in motion-safe:[animation-delay:200ms] sm:mt-10 sm:flex-row sm:gap-6">
-          <a
+          <Link
             href="/plan"
-            className="group inline-flex h-14 items-center justify-center gap-2 rounded-full bg-accent-300 px-8 text-label-lg font-bold text-neutral-950 shadow-xl transition-[background-color,scale] duration-150 ease-out hover:bg-accent-200 active:scale-[0.97]"
+            className={ACCENT_CTA}
           >
-            <span>{text.ctaPrimary}</span>
+            {text.ctaPrimary}
             <ArrowRight
               aria-hidden="true"
-              className="size-5 transition-transform duration-300 group-hover:translate-x-1"
+              className="size-5 transition-[translate] duration-300 group-hover:translate-x-1"
             />
-          </a>
+          </Link>
 
           <a
             href="#story-steps"
-            className="group inline-flex h-12 items-center justify-center gap-2 rounded-full px-4 text-label-lg font-bold text-white underline-offset-8 drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] hover:underline"
+            className={`${QUIET_CTA} text-white drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)]`}
           >
-            <span>{text.ctaSecondary}</span>
+            {text.ctaSecondary}
             <ArrowDown
               aria-hidden="true"
-              className="size-4 transition-transform duration-300 group-hover:translate-y-1"
+              className="size-4 transition-[translate] duration-300 group-hover:translate-y-1"
             />
           </a>
         </div>
 
-        <p className="mt-6 text-caption font-medium text-white/80 drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] motion-safe:animate-rise-in motion-safe:[animation-delay:300ms]">
+        <p className="mt-4 text-caption font-medium text-white/80 drop-shadow-[0_2px_12px_rgba(0,0,0,0.8)] motion-safe:animate-rise-in motion-safe:[animation-delay:300ms]">
           {text.note}
         </p>
       </div>
@@ -101,7 +103,9 @@ export default function HeroSection() {
   const [scroll, setScroll] = useState({ y: 0, pinned: 0, leaving: 0 });
 
   useEffect(() => {
-    const handleScroll = () => {
+    let frame = 0;
+    const update = () => {
+      frame = 0;
       // `pinned` runs from 0 to 1 while the hero is pinned, then stays at 1. `leaving` picks up where it ends and
       // runs from 0 to 1 over the next screen of scrolling, while the hero's lower edge crosses the screen.
       const half = window.innerHeight / 2;
@@ -111,8 +115,15 @@ export default function HeroSection() {
         leaving: Math.min(Math.max((window.scrollY - half) / window.innerHeight, 0), 1),
       });
     };
+    // One update per painted frame, however many scroll events a fast flick fires.
+    const handleScroll = () => {
+      if (frame === 0) frame = requestAnimationFrame(update);
+    };
     window.addEventListener("scroll", handleScroll, { passive: true });
-    return () => window.removeEventListener("scroll", handleScroll);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   // With reduced motion nothing travels: the trees stay low, the waves stay at rest, and the copy only fades.
@@ -125,9 +136,8 @@ export default function HeroSection() {
   return (
     // Nothing of the hero is drawn past its own edges, so the copy cannot show through over the section below.
     // The bottom is let out by a pixel for the waves, which overlap the next section by that much to hide the seam.
-    <section className="relative w-full h-[150svh] [clip-path:inset(0_0_-1px_0)]">
-
-      <div className="sticky top-0 w-full h-svh overflow-hidden pointer-events-none z-0">
+    <section className="relative h-[150svh] w-full [clip-path:inset(0_0_-1px_0)]">
+      <div className="pointer-events-none sticky top-0 z-0 h-svh w-full overflow-hidden">
         <Image
           src="/images/hero/Sky.webp"
           alt=""
@@ -136,11 +146,11 @@ export default function HeroSection() {
           sizes="100vw"
           className="object-cover object-top opacity-90"
         />
-        <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-black/30" />
+        <div className="absolute inset-0 bg-linear-to-b from-black/50 via-black/10 to-black/30" />
       </div>
 
       {/* The trees ignore the pointer, so a button they have risen over can still be pressed. */}
-      <div className="absolute inset-0 w-full h-full z-10 overflow-hidden pointer-events-none">
+      <div className="pointer-events-none absolute inset-0 z-10 size-full overflow-hidden">
         <div
           className="absolute inset-0"
           style={{ translate: `0 ${TREE_DROP_SVH * (1 - travelled) + treeLag}svh` }}
@@ -152,10 +162,7 @@ export default function HeroSection() {
             priority
             // The picture fills a box one and a half screens tall, so on a phone it is drawn far wider than the screen.
             sizes="max(100vw, 200vh)"
-            className="object-cover scale-[1.05] translate-x-[-2%] brightness-70"
-            style={{
-              objectPosition: "60% 95%"
-            }}
+            className="translate-x-[-2%] scale-[1.05] object-cover object-[60%_95%] brightness-70"
           />
         </div>
       </div>
@@ -192,7 +199,6 @@ export default function HeroSection() {
       >
         <HeroCopy text={t.hero} />
       </div>
-
     </section>
   );
 }

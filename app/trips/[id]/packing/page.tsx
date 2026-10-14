@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import PackingList from "@/components/trips/PackingList";
+import PackingWorkspace from "@/components/trips/PackingWorkspace";
 import { requestMetadata } from "@/lib/seo";
 
 export function generateMetadata(): Promise<Metadata> {
@@ -8,5 +8,5 @@ export function generateMetadata(): Promise<Metadata> {
 
 export default async function TripPackingPage({ params }: PageProps<"/trips/[id]/packing">) {
   const { id } = await params;
-  return <PackingList tripId={id} />;
+  return <PackingWorkspace tripId={id} />;
 }

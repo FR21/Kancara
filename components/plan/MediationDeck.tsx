@@ -1,15 +1,17 @@
 "use client";
 
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { useEffect, useRef } from "react";
 import { type Conflict, chosenOption, countSettled, suggestAgreements } from "@/lib/mediation";
 import type { Messages } from "@/lib/messages";
 import { type OptionKey, type PlanDraft, fillTemplate } from "@/lib/plan-draft";
+import CaptainNote from "./CaptainNote";
 import ClashSides from "./ClashSides";
 import GiveLedger from "./GiveLedger";
 import MediationChoices from "./MediationChoices";
+import DeckFooter, { FORWARD_ARROW } from "./DeckFooter";
 import { clashTitle } from "./mediation-text";
-import { GHOST_BUTTON, PRIMARY_BUTTON } from "./styles";
+import { PRIMARY_BUTTON } from "@/components/ui/styles";
 
 type MediationDeckProps = {
   draft: PlanDraft;
@@ -82,18 +84,18 @@ export default function MediationDeck({
       <section
         key={conflict.id}
         aria-labelledby="clash-title"
-        className="motion-safe:animate-message-in rounded-2xl bg-surface/50 p-6 shadow-sm ring-1 ring-border/50 backdrop-blur-xl sm:p-10 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:grid-rows-[auto_1fr] lg:gap-x-16"
+        className="motion-safe:animate-message-in lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,6fr)] lg:grid-rows-[auto_1fr] lg:gap-x-16"
       >
         <div className="min-w-0 lg:col-start-1 lg:row-start-1">
           <h1
             id="clash-title"
             ref={headingRef}
             tabIndex={-1}
-            className="text-h1 font-bold tracking-tight text-balance text-text outline-none lg:text-4xl"
+            className="text-h2 text-balance text-text outline-none sm:text-h1"
           >
             {clashTitle(conflict, text)}
           </h1>
-          <p className="mt-4 text-body leading-relaxed text-text-muted">{hint}</p>
+          <CaptainNote className="mt-4">{hint}</CaptainNote>
           <div className="mt-8">
             <ClashSides conflict={conflict} draft={draft} text={text} />
           </div>
@@ -110,35 +112,23 @@ export default function MediationDeck({
           />
         </div>
 
-        <div className="mt-8 min-w-0 border-t border-border pt-8 lg:col-start-1 lg:row-start-2">
+        <div className="mt-8 min-w-0 lg:col-start-1 lg:row-start-2">
           <GiveLedger conflicts={conflicts} draft={draft} text={text} />
         </div>
       </section>
 
-      <div className="safe-bottom sticky bottom-0 -mx-4 border-t border-border bg-background px-4 pt-3 sm:mx-0 sm:px-0">
-        <div className="flex items-center justify-between gap-3">
-          <button type="button" onClick={goBack} className={`${GHOST_BUTTON} -ml-4 sm:ml-0`}>
-            <ArrowLeft className="size-4" aria-hidden="true" />
-            {text.deck.back}
-          </button>
-          <div className="flex min-w-0 items-center gap-4">
-            <p className="hidden text-body-sm text-text-muted tabular-nums sm:block">{note}</p>
-            <button
-              type="button"
-              disabled={blocked || (isLast && busy)}
-              aria-describedby={picked === null ? "clash-required" : undefined}
-              onClick={goNext}
-              className={PRIMARY_BUTTON}
-            >
-              {isLast ? finishLabel : text.deck.next}
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </button>
-          </div>
-        </div>
-        <p id="clash-required" className="pt-2 text-center text-body-sm text-text-muted tabular-nums sm:hidden">
-          {note}
-        </p>
-      </div>
+      <DeckFooter backLabel={text.deck.back} onBack={goBack} note={note} noteId="clash-note">
+        <button
+          type="button"
+          disabled={blocked || (isLast && busy)}
+          aria-describedby={picked === null ? "clash-note" : undefined}
+          onClick={goNext}
+          className={`group ${PRIMARY_BUTTON}`}
+        >
+          {isLast ? finishLabel : text.deck.next}
+          <ArrowRight className={FORWARD_ARROW} aria-hidden="true" />
+        </button>
+      </DeckFooter>
     </div>
   );
 }

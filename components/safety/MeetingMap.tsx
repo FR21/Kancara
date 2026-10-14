@@ -97,7 +97,7 @@ export default function MeetingMap({ start, near, moveTo, text, onMove, onUnavai
 
   return (
     <div>
-      <div className="relative h-64 overflow-clip rounded-2xl border border-border-strong bg-surface-muted">
+      <div className="relative h-64 overflow-clip rounded-lg border border-border-strong bg-surface-muted">
         <div ref={holderRef} role="application" aria-label={text.mapLabel} className="size-full" />
         {!ready && (
           <p role="status" className="absolute inset-0 flex items-center justify-center text-body-sm text-text-muted motion-safe:animate-pulse">

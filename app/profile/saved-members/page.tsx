@@ -1,27 +1,28 @@
 import type { Metadata } from "next";
-import SavedMembersWorkspace from "@/components/saved-members/SavedMembersWorkspace";
+import { redirect } from "next/navigation";
+import PageShell from "@/components/layout/PageShell";
+import SavedProfilesWorkspace from "@/components/saved-profiles/SavedProfilesWorkspace";
+import { currentViewer } from "@/lib/account";
+import { sessionEndedPath } from "@/lib/auth/routes";
 import { requestLocale } from "@/lib/locale-server";
+import { MESSAGES } from "@/lib/messages";
+import { listSavedProfiles } from "@/lib/saved-profiles/store";
 
+const PATH = "/profile/saved-members";
+
+// A page behind the sign-in: it is kept out of search results.
 export async function generateMetadata(): Promise<Metadata> {
-  const locale = await requestLocale();
-  const title =
-    locale === "id"
-      ? "Profil Anggota Tersimpan - Kancara"
-      : "Saved Member Profiles - Kancara";
-  const description =
-    locale === "id"
-      ? "Simpan kebutuhan dan preferensi anggota rombongan untuk perjalanan berikutnya tanpa wawancara ulang."
-      : "Save members' needs and preferences for future journeys without repeating the interview.";
-  return {
-    title,
-    description,
-  };
+  const text = MESSAGES[await requestLocale()].savedProfiles;
+  return { title: text.metaTitle, description: text.metaDescription, robots: { index: false, follow: false } };
 }
 
-export default function ProfileSavedMembersPage() {
+export default async function SavedMembersPage() {
+  const viewer = await currentViewer();
+  if (!viewer) redirect(sessionEndedPath(PATH));
+
   return (
-    <main className="relative isolate flex-1 pt-28 pb-16 lg:pt-32">
-      <SavedMembersWorkspace />
-    </main>
+    <PageShell width="workspace">
+      <SavedProfilesWorkspace initial={await listSavedProfiles(viewer)} />
+    </PageShell>
   );
 }

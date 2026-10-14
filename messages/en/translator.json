@@ -1,0 +1,93 @@
+{
+  "crumb": "Translator",
+  "title": "Conversation translator",
+  "lead": "Talk both ways in {destination}: speak or type, and the translation shows large and can be read aloud for the person you are talking to.",
+  "travelerName": "You, in {language}",
+  "localName": "The other person, in {language}",
+  "languages": {
+    "english": "English",
+    "japanese": "Japanese",
+    "korean": "Korean",
+    "thai": "Thai",
+    "chinese": "Mandarin Chinese",
+    "cantonese": "Cantonese",
+    "vietnamese": "Vietnamese",
+    "malay": "Malay",
+    "arabic": "Arabic",
+    "turkish": "Turkish",
+    "french": "French",
+    "german": "German",
+    "italian": "Italian",
+    "spanish": "Spanish",
+    "dutch": "Dutch",
+    "indonesian": "Indonesian"
+  },
+  "settings": {
+    "language": "The other person's language",
+    "autoSpeak": "Read aloud automatically",
+    "faceToFace": "Face-to-face mode"
+  },
+  "noMicrophone": "This browser cannot listen yet. Type the sentence instead and the translation still appears.",
+  "recordingMode": "In this browser your voice is recorded first: press the microphone to start and again to send.",
+  "faceToFaceWaiting": "The translation of what you say shows here, facing the other person.",
+  "composer": {
+    "placeholder": "Type in {language}",
+    "speak": "Speak",
+    "stop": "Stop and send",
+    "send": "Translate",
+    "listening": "Listening, {seconds}s",
+    "recording": "Recording {seconds}s, press the square to send"
+  },
+  "empty": {
+    "title": "Start a conversation",
+    "hint": "Use “{traveler}” to speak, and “{local}” for the person you are talking to.",
+    "quickTitle": "Ready-made sentences"
+  },
+  "quickPhrases": [
+    {
+      "label": "Ask for the bill",
+      "text": "Could I have the bill, please?",
+      "context": "restaurant"
+    },
+    {
+      "label": "How much is this?",
+      "text": "How much does this cost?",
+      "context": "shopping"
+    },
+    {
+      "label": "Where is the toilet?",
+      "text": "Excuse me, where is the nearest toilet?",
+      "context": "general"
+    },
+    {
+      "label": "House favourite",
+      "text": "What do you recommend here?",
+      "context": "restaurant"
+    },
+    {
+      "label": "Call a taxi",
+      "text": "Could you please call a taxi for me?",
+      "context": "transit"
+    },
+    {
+      "label": "I am lost",
+      "text": "Excuse me, I am lost. Could you help me?",
+      "context": "emergency"
+    }
+  ],
+  "logLabel": "Conversation",
+  "pronunciation": "Say it: {romanized}",
+  "play": "Play aloud",
+  "playing": "Reading aloud",
+  "translating": "Translating",
+  "noSpeech": "This browser cannot read text aloud. Show the text instead.",
+  "noVoice": "This phone has no {language} voice yet. Show the text instead.",
+  "errors": {
+    "offline": "Translating needs an internet connection. Connect first, then try again.",
+    "failed": "This sentence could not be translated. Try again.",
+    "micBlocked": "Microphone access is blocked. Allow the microphone in your browser settings, or type the sentence.",
+    "noSpeech": "No voice was heard. Try speaking closer to the phone.",
+    "micFailed": "The microphone cannot be used right now. Type the sentence instead."
+  },
+  "dismiss": "Dismiss"
+}

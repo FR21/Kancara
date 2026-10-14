@@ -1,9 +1,9 @@
 import "server-only";
+import { findPlace } from "@/lib/place-finder";
 import type { PlaceWeather, WeatherDay, WeatherSource } from "@/lib/weather";
 
 // Open-Meteo needs no key. It forecasts sixteen days ahead; for a trip further off, the same dates a year
 // earlier stand in, and every day says which of the two it is.
-const GEOCODE_URL = "https://geocoding-api.open-meteo.com/v1/search";
 const FORECAST_URL = "https://api.open-meteo.com/v1/forecast";
 const ARCHIVE_URL = "https://archive-api.open-meteo.com/v1/archive";
 const FORECAST_DAYS_AHEAD = 15;
@@ -13,22 +13,15 @@ const TIMEOUT_MS = 6000;
 const DAY_MS = 86_400_000;
 const MAX_CACHED = 200;
 
-type Place = { name: string; latitude: number; longitude: number };
 type Daily = Record<string, unknown[] | undefined>;
 
 const cache = new Map<string, { weather: PlaceWeather; fetchedAt: number }>();
 
+type Place = { name: string; latitude: number; longitude: number };
+
 async function readJson(url: string): Promise<unknown> {
   const response = await fetch(url, { signal: AbortSignal.timeout(TIMEOUT_MS) });
   return response.ok ? response.json() : null;
-}
-
-async function findPlace(name: string, language: string): Promise<Place | null> {
-  const query = new URLSearchParams({ name, count: "1", language, format: "json" });
-  const found = (await readJson(`${GEOCODE_URL}?${query}`)) as { results?: Record<string, unknown>[] } | null;
-  const first = found?.results?.[0];
-  if (!first || typeof first.latitude !== "number" || typeof first.longitude !== "number") return null;
-  return { name: typeof first.name === "string" ? first.name : name, latitude: first.latitude, longitude: first.longitude };
 }
 
 function shiftDate(date: string, days: number): string {

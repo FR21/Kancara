@@ -1,4 +1,4 @@
-import type { ErrandKind, Itinerary, ItineraryDay, ItineraryItem } from "@/lib/api/captain";
+import type { ErrandKind, Itinerary, ItineraryDay, ItineraryItem } from "@/lib/client/captain";
 import { MAX_OUTFIT_DAYS, MAX_TRIP_DAYS, needsLaundryChoice } from "./packing";
 import { type PlanDraft, listTripDates } from "./plan-draft";
 import { splitTime, toMinutes } from "./stop-time";

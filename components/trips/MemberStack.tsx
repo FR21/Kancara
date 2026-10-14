@@ -1,4 +1,4 @@
-import MemberAvatar from "@/components/plan/MemberAvatar";
+import MemberAvatar from "@/components/ui/MemberAvatar";
 import { fillTemplate } from "@/lib/plan-draft";
 import type { TripCardMember } from "@/lib/trips/trip";
 

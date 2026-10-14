@@ -10,6 +10,7 @@ import {
   Snowflake,
   Sun,
 } from "lucide-react";
+import { buttonClass } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate, parseLocalDate } from "@/lib/plan-draft";
 import { type Sky, type Weather, type WeatherDay, shownSky } from "@/lib/weather";
@@ -36,8 +37,9 @@ const SKY_ICONS: Record<Sky, LucideIcon> = {
 };
 
 // A cell in a scrolling row on a phone; a line in a short table in the side column from 1024px.
+// On a phone each day is a compact surface; from 1024px the days become the rows of one framed list.
 const CELL =
-  "flex w-24 shrink-0 flex-col items-center rounded-2xl border bg-background px-2 py-3 text-center lg:w-auto lg:flex-row lg:gap-3 lg:rounded-none lg:border-x-0 lg:border-t-0 lg:border-solid lg:border-border lg:bg-transparent lg:px-0 lg:text-left lg:last:border-b-0";
+  "surface-compact flex w-24 shrink-0 flex-col items-center rounded-surface border bg-background p-surface text-center lg:w-auto lg:flex-row lg:gap-3 lg:rounded-none lg:border-x-0 lg:border-t-0 lg:border-solid lg:border-border lg:bg-transparent lg:px-0 lg:text-left lg:last:border-b-0";
 
 function rainLine(day: WeatherDay, text: WeatherStripProps["text"]): string {
   if (day.rainChance !== null) return fillTemplate(text.rainChance, { chance: Math.round(day.rainChance) });
@@ -56,7 +58,7 @@ export default function WeatherStrip({ state, locale, text, retryLabel, onRetry 
       <div role="status" className="flex gap-2 overflow-hidden motion-safe:animate-pulse lg:flex-col">
         <span className="sr-only">{text.loading}</span>
         {[0, 1, 2].map((cell) => (
-          <span key={cell} className="h-32 w-24 shrink-0 rounded-2xl bg-surface-muted lg:h-12 lg:w-full" />
+          <span key={cell} className="surface-compact h-32 w-24 shrink-0 rounded-surface bg-surface-muted lg:h-12 lg:w-full lg:rounded-lg" />
         ))}
       </div>
     );
@@ -64,12 +66,12 @@ export default function WeatherStrip({ state, locale, text, retryLabel, onRetry 
 
   if (state.status === "failed") {
     return (
-      <div className="flex flex-wrap items-center gap-3 rounded-2xl border border-dashed border-border-strong px-4 py-3">
+      <div className="surface-compact flex flex-wrap items-center gap-3 rounded-surface border border-dashed border-border-strong p-surface">
         <p className="min-w-0 flex-1 basis-48 text-body-sm text-pretty text-text-muted">{text.unavailable}</p>
         <button
           type="button"
           onClick={onRetry}
-          className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-border-strong px-4 text-label text-text transition-[background-color,scale] duration-150 ease-out hover:bg-surface-muted active:scale-[0.97]"
+          className={buttonClass("outline", "small")}
         >
           <RotateCcw className="size-4" aria-hidden="true" />
           {retryLabel}
@@ -88,7 +90,7 @@ export default function WeatherStrip({ state, locale, text, retryLabel, onRetry 
           <h2 id={`weather-title-${index}`} className="text-label-lg text-text">
             {fillTemplate(text.title, { place: entry.place })}
           </h2>
-          <ul className="scrollbar-none -mx-4 mt-3 flex gap-2 overflow-x-auto px-4 pb-1 sm:-mx-6 sm:px-6 lg:mx-0 lg:block lg:overflow-visible lg:rounded-2xl lg:border lg:border-border lg:bg-background lg:px-4 lg:pb-0">
+          <ul className="scrollbar-none -mx-surface mt-3 flex gap-2 overflow-x-auto px-surface lg:mx-0 lg:block lg:overflow-visible lg:rounded-surface lg:border lg:border-border lg:bg-background">
             {entry.days.map((day) => {
               const sky = shownSky(day);
               const Icon = SKY_ICONS[sky];

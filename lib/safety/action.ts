@@ -1,5 +1,5 @@
 import { isCountryCode } from "@/lib/travel/countries";
-import { type ContactLabel, type ReportStatus, CONTACT_LABELS, REPORT_STATUSES } from "./pack";
+import { type ContactLabel, type ReportStatus, CONTACT_LABELS, REPORT_STATUSES } from "@/lib/safety/safety-pack";
 
 // Everything a member can change on the help page is one of these. Each names the member it is about instead of
 // a search's id, so an action taken without a connection can wait in a queue and still make sense when it is sent.

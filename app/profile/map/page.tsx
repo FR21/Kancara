@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import PageShell from "@/components/layout/PageShell";
 import TravelMapLoader from "@/components/travel/TravelMapLoader";
 import { currentViewer } from "@/lib/account";
 import { requestMetadata } from "@/lib/seo";
@@ -15,8 +16,8 @@ export default async function TravelMapPage() {
   if (!viewer) redirect(sessionEndedPath("/profile/map"));
 
   return (
-    <main className="flex-1 pt-28 pb-16 lg:pt-32">
+    <PageShell width="workspace">
       <TravelMapLoader initialVisited={await listVisited(viewer)} />
-    </main>
+    </PageShell>
   );
 }

@@ -1,6 +1,6 @@
 import "server-only";
 import { GoogleGenAI } from "@google/genai";
-import { parseItinerary } from "@/lib/api/captain";
+import { parseItinerary } from "@/lib/client/captain";
 import { MESSAGES } from "@/lib/messages";
 import {
   type CaptainPackingItem,

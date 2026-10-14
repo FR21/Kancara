@@ -58,7 +58,7 @@ export default function Notice({ notice, dismissLabel, duration = DEFAULT_MS, on
       {shown && (
         <div
           key={shown.id}
-          className={`pointer-events-auto relative flex max-w-md items-center gap-3 overflow-clip rounded-2xl border border-border bg-background py-2 pr-2 pl-4 shadow-lg shadow-neutral-950/10 ${
+          className={`pointer-events-auto relative flex max-w-md items-center gap-3 overflow-clip rounded-full border border-border bg-background py-2 pr-2 pl-4 shadow-lg shadow-neutral-950/10 ${
             leaving ? "motion-safe:animate-notice-out" : "motion-safe:animate-notice-in"
           }`}
         >

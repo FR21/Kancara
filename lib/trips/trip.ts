@@ -1,4 +1,4 @@
-import type { Itinerary } from "@/lib/api/captain";
+import type { Itinerary } from "@/lib/client/captain";
 import {
   type AgeGroup,
   type NeedKey,

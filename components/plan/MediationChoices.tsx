@@ -1,11 +1,12 @@
 import { Check, Scale, Split, Users } from "lucide-react";
 import Image from "next/image";
+import type { CSSProperties } from "react";
 import type { Conflict, MediationOption, Share } from "@/lib/mediation";
 import type { Messages } from "@/lib/messages";
 import { type OptionKey, type PlanDraft, fillTemplate } from "@/lib/plan-draft";
 import { useLocale } from "@/lib/use-locale";
 import { listNames, optionCopy } from "./mediation-text";
-import { FIELD_LABEL } from "./styles";
+import { BADGE, FIELD_LABEL, choiceCardClass } from "@/components/ui/styles";
 
 type MediationChoicesProps = {
   conflict: Conflict;
@@ -16,9 +17,10 @@ type MediationChoicesProps = {
   onPick: (option: OptionKey) => void;
 };
 
-const CHOICE =
-  "flex w-full cursor-pointer items-start gap-3 rounded-2xl border px-5 py-4 text-left transition-[background-color,border-color,color,scale] duration-150 ease-out has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary active:scale-[0.98]";
-const FACT = "inline-flex max-w-full items-center gap-2 rounded-2xl px-2 py-1 text-caption font-bold";
+// The radio inside is hidden, so the card carries its focus ring.
+const FOCUS_RING = "has-focus-visible:outline-2 has-focus-visible:outline-offset-2 has-focus-visible:outline-primary";
+// A fact about the trade can run to two lines of names, so it is a small box inside the card, not a pill.
+const FACT = "inline-flex max-w-full items-center gap-2 rounded-lg px-2 py-1 text-caption font-bold";
 
 function givers(option: MediationOption, share: Share): string[] {
   return Object.keys(option.gives).filter((memberId) => option.gives[memberId] === share);
@@ -33,8 +35,8 @@ export default function MediationChoices({ conflict, draft, text, picked, sugges
   return (
     <fieldset className="min-w-0">
       <legend className={FIELD_LABEL}>{copy.optionsLegend}</legend>
-      <div className="mt-2 grid gap-2">
-        {conflict.options.map((option) => {
+      <div className="mt-2 grid gap-3">
+        {conflict.options.map((option, index) => {
           const selected = option.key === picked;
           const words = optionCopy(conflict, option.key, text);
           const part = givers(option, "part");
@@ -43,11 +45,8 @@ export default function MediationChoices({ conflict, draft, text, picked, sugges
           return (
             <label
               key={option.key}
-              className={`${CHOICE} ${
-                selected
-                  ? "border-primary bg-primary text-on-primary"
-                  : "border-border-strong bg-surface text-text hover:border-primary hover:bg-primary-subtle"
-              }`}
+              style={{ "--item-index": index } as CSSProperties}
+              className={`${choiceCardClass(selected)} ${FOCUS_RING} motion-safe:animate-list-in`}
             >
               <input
                 type="radio"
@@ -59,7 +58,7 @@ export default function MediationChoices({ conflict, draft, text, picked, sugges
               />
               <span className="min-w-0 flex-1">
                 {option.key === suggested && (
-                  <span className="mb-2 inline-flex items-center gap-1 rounded-full bg-accent py-1 pr-2 pl-1 text-caption font-bold text-on-accent">
+                  <span className={`${BADGE} mb-2 bg-accent text-on-accent`}>
                     <Image
                       src="/images/logo/kancara_mascot_captain_logo.webp"
                       alt=""
@@ -81,7 +80,7 @@ export default function MediationChoices({ conflict, draft, text, picked, sugges
                 >
                   {words.cost}
                 </span>
-                <span className="mt-3 flex flex-wrap gap-1">
+                <span className="mt-3 flex flex-wrap gap-2">
                   {part.length === 0 && all.length === 0 && (
                     <span className={fact}>
                       <Scale className="size-4 shrink-0" aria-hidden="true" />

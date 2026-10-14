@@ -31,7 +31,7 @@ export type WorldPalette = {
   ink: string;
 };
 
-export type WorldCallbacks = {
+type WorldCallbacks = {
   onToggle: (code: string) => void;
   onHover: (code: string | null, x: number, y: number) => void;
   onZoom: (zoom: number) => void;

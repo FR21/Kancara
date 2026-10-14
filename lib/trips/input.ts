@@ -1,5 +1,5 @@
 import "server-only";
-import { parseItinerary } from "@/lib/api/captain";
+import { parseItinerary } from "@/lib/client/captain";
 import { contactsOf, MAX_MEMBERS, missingFields, parsePlanDraft, withoutContacts } from "@/lib/plan-draft";
 import type { TripInput } from "./store";
 

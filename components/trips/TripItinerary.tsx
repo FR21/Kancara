@@ -1,17 +1,19 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Compass, Languages, Luggage, Route, Trophy, UtensilsCrossed } from "lucide-react";
+import { ArrowRight, LifeBuoy, Route, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
-import FieldPassModal from "./FieldPassModal";
+import FieldPassSheet from "@/components/field-pass/FieldPassSheet";
+import TripTools from "./TripTools";
 import PageBackdrop from "@/components/layout/PageBackdrop";
-import ErrorAlert from "@/components/plan/ErrorAlert";
-import ItineraryCard from "@/components/plan/ItineraryCard";
-import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/plan/styles";
+import PageShell from "@/components/layout/PageShell";
+import ErrorAlert from "@/components/ui/ErrorAlert";
+import ItinerarySchedule from "@/components/plan/ItinerarySchedule";
+import { OUTLINE_BUTTON, PRIMARY_BUTTON, buttonClass } from "@/components/ui/styles";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
-import { type Itinerary, captain, captainIsSample } from "@/lib/api/captain";
-import { settleLaundry } from "@/lib/api/laundry";
-import { trips, TripsError } from "@/lib/api/trips";
+import { type Itinerary, captain, captainIsSample } from "@/lib/client/captain";
+import { settleLaundry } from "@/lib/client/laundry";
+import { trips, TripsError } from "@/lib/client/trips";
 import { formatDays, formatTripDates, plural } from "@/lib/trips/format";
 import { type TripPlanView, countViolations, tripHref } from "@/lib/trips/trip";
 import { useLocale } from "@/lib/use-locale";
@@ -33,7 +35,6 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
   const text = useMessages("trips");
   const planText = useMessages("plan");
   const packingText = useMessages("packing");
-  const safetyText = useMessages("safety");
   const navText = useMessages("navbar");
   const locale = useLocale();
   const [plan, setPlan] = useState<TripPlanView | null>(null);
@@ -128,7 +129,7 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
   };
 
   return (
-    <main className="relative isolate mx-auto w-full max-w-2xl flex-1 px-4 pt-24 pb-16 sm:px-6 sm:pt-28 lg:max-w-5xl xl:px-0">
+    <PageShell width="workspace">
       <PageBackdrop />
       <Breadcrumbs
         label={navText.breadcrumb}
@@ -140,7 +141,7 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
           <span className="sr-only">{text.itinerary.loading}</span>
           <div className="h-8 w-64 max-w-full rounded-full bg-surface-muted" />
           <div className="h-5 w-80 max-w-full rounded-full bg-surface-muted" />
-          <div className="h-96 rounded-2xl border border-border bg-surface" />
+          <div className="h-96 rounded-surface border border-border bg-surface" />
         </div>
       )}
 
@@ -156,91 +157,36 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
 
       {plan && card && (
         <div className="motion-safe:animate-message-in">
-          <h1 className="mt-2 text-h2 text-balance text-text sm:text-h1">{card.name || text.card.untitled}</h1>
-          {facts.length > 0 && (
-            <p className="mt-2 text-body text-pretty text-text-muted tabular-nums">{facts.join(" · ")}</p>
-          )}
-
-          {card.status !== "draft" && (
-            <div className="mt-4 flex flex-wrap gap-2">
-              {card.status === "completed" ? (
-                <Link
-                  href={`/trips/${encodeURIComponent(card.id)}/summary`}
-                  className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-amber-500 hover:bg-amber-500/20 active:scale-[0.97]"
-                >
-                  <Trophy className="size-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
-                  {locale === "en" ? "Trip Recap & Memories" : "Ringkasan & Memori Perjalanan"}
+          <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+            <div className="min-w-0">
+              <h1 className="text-h2 text-balance text-text sm:text-h1">{card.name || text.card.untitled}</h1>
+              {facts.length > 0 && <p className="mt-2 text-body text-pretty text-text-muted tabular-nums">{facts.join(" · ")}</p>}
+            </div>
+            {card.status !== "draft" && (
+              <div className="flex shrink-0 flex-wrap gap-2">
+                {card.status === "completed" && (
+                  <Link href={`/trips/${encodeURIComponent(card.id)}/summary`} className={buttonClass("outline", "small")}>
+                    <Trophy className="size-4 text-primary" aria-hidden="true" />
+                    {text.tools.recap}
+                  </Link>
+                )}
+                <Link href={`/trips/${encodeURIComponent(card.id)}/help`} className={buttonClass("primary", "small")}>
+                  <LifeBuoy className="size-4" aria-hidden="true" />
+                  {text.tools.help}
                 </Link>
-              ) : (
-                <>
-                  <Link href={`/trips/${encodeURIComponent(card.id)}/packing`} className={`${OUTLINE_BUTTON} h-11`}>
-                    <Luggage className="size-4" aria-hidden="true" />
-                    {packingText.open}
-                    <ArrowRight className="size-4 text-text-muted" aria-hidden="true" />
-                  </Link>
-                  <Link
-                    href={`/trips/${encodeURIComponent(card.id)}/dietary-scan`}
-                    className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-primary/40 bg-primary-subtle px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-hover/20 active:scale-[0.97]"
-                  >
-                    <UtensilsCrossed className="size-4 text-primary" aria-hidden="true" />
-                    {locale === "en" ? "Scan Menu & Diet" : "Pindai Menu & Pantangan"}
-                  </Link>
-                  <Link
-                    href={`/trips/${encodeURIComponent(card.id)}/translator`}
-                    className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-emerald-500 hover:bg-emerald-500/20 active:scale-[0.97]"
-                  >
-                    <Languages className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-                    {locale === "en" ? "Live Translator" : "Penerjemah Obrolan"}
-                  </Link>
-                  <button
-                    type="button"
-                    onClick={() => setShowFieldPass(true)}
-                    className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-emerald-500 hover:bg-emerald-500/20 active:scale-[0.97]"
-                  >
-                    <Compass className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-                    {locale === "en" ? "Field Pass (Offline)" : "Paspor Lapangan 🟢"}
-                  </button>
-                  {card.status === "ongoing" && (
-                    <Link
-                      href={`/trips/${encodeURIComponent(card.id)}/summary`}
-                      className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-amber-500/40 bg-amber-500/10 px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-amber-500 hover:bg-amber-500/20 active:scale-[0.97]"
-                    >
-                      <Trophy className="size-4 text-amber-600 dark:text-amber-400" aria-hidden="true" />
-                      {locale === "en" ? "Trip Recap" : "Ringkasan & Memori"}
-                    </Link>
-                  )}
-                </>
-              )}
-              <Link href={`/trips/${encodeURIComponent(card.id)}/packing`} className={`${OUTLINE_BUTTON} h-11`}>
-                <Luggage className="size-4" aria-hidden="true" />
-                {packingText.open}
-                <ArrowRight className="size-4 text-text-muted" aria-hidden="true" />
-              </Link>
-              <Link href={`/trips/${encodeURIComponent(card.id)}/help`} className={`${OUTLINE_BUTTON} h-11`}>
-                <LifeBuoy className="size-4" aria-hidden="true" />
-                {safetyText.open}
-                <ArrowRight className="size-4 text-text-muted" aria-hidden="true" />
-              </Link>
-              <Link
-                href={`/trips/${encodeURIComponent(card.id)}/dietary-scan`}
-                className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-primary/40 bg-primary-subtle px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-hover/20 active:scale-[0.97]"
-              >
-                <UtensilsCrossed className="size-4 text-primary" aria-hidden="true" />
-                {locale === "en" ? "Scan Menu & Diet" : "Pindai Menu & Pantangan"}
-              </Link>
-              <Link
-                href={`/trips/${encodeURIComponent(card.id)}/translator`}
-                className="inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border border-emerald-500/40 bg-emerald-500/10 px-4 text-label font-bold text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-emerald-500 hover:bg-emerald-500/20 active:scale-[0.97]"
-              >
-                <Languages className="size-4 text-emerald-600 dark:text-emerald-400" aria-hidden="true" />
-                {locale === "en" ? "Live Translator" : "Penerjemah Obrolan"}
-              </Link>
+              </div>
+            )}
+          </div>
+
+          {(card.status === "ongoing" || card.status === "upcoming") && (
+            <div className="mt-6 max-w-md">
+              <TripTools tripId={card.id} text={text.tools} onOpenFieldPass={() => setShowFieldPass(true)} />
             </div>
           )}
 
           <div className="mt-8">
             {plan.itinerary && (
-              <ItineraryCard
+              <ItinerarySchedule
                 itinerary={plan.itinerary}
                 destination={card.destinations.join(", ")}
                 members={plan.draft.members}
@@ -263,7 +209,7 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
             )}
 
             {!plan.itinerary && build === "building" && (
-              <div role="status" className="space-y-4 rounded-2xl border border-border bg-surface p-5 sm:p-6">
+              <div role="status" className="space-y-4 rounded-surface border border-border bg-surface p-surface">
                 <p className="text-body-sm text-text-muted">{text.itinerary.generating}</p>
                 <div className="space-y-3 motion-safe:animate-pulse">
                   <div className="h-4 w-40 rounded-full bg-surface-muted" />
@@ -275,7 +221,7 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
             )}
 
             {!plan.itinerary && build !== "building" && (
-              <div className="rounded-2xl border border-dashed border-border-strong px-6 py-12 text-center">
+              <div className="flex min-h-48 flex-col items-center justify-center rounded-surface border border-dashed border-border-strong p-surface text-center">
                 <p className="text-label-lg text-text">{text.itinerary.missing}</p>
                 <p className="mx-auto mt-2 max-w-md text-body-sm text-pretty text-text-muted">{missingHint()}</p>
                 {card.status === "draft" && (
@@ -300,19 +246,14 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
             )}
           </div>
 
-          <FieldPassModal
+          <FieldPassSheet
             isOpen={showFieldPass}
             onClose={() => setShowFieldPass(false)}
             tripId={card.id}
-            tripName={card.name}
             destination={card.destinations[0] ?? ""}
-            memberCount={card.memberCount}
-            needs={card.needs}
-            customNeeds={card.customNeeds}
-            lodgingText={plan.draft.extras?.lodging}
           />
         </div>
       )}
-    </main>
+    </PageShell>
   );
 }

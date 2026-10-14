@@ -4,7 +4,8 @@ import { ChevronRight, LifeBuoy } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
-import { type Alerts, type AlertSearch, fetchAlerts } from "@/lib/api/safety";
+import { buttonClass } from "@/components/ui/styles";
+import { type Alerts, type AlertSearch, fetchAlerts } from "@/lib/client/safety";
 import { fillTemplate } from "@/lib/plan-draft";
 import { useMessages } from "@/lib/use-messages";
 
@@ -81,11 +82,11 @@ export default function SafetyDock() {
             <li key={`${tripId}-${search.memberId}`} className="motion-safe:animate-message-in">
               <Link
                 href={`/trips/${encodeURIComponent(tripId)}/help?member=${encodeURIComponent(search.memberId)}`}
-                className="group/alert pointer-events-auto flex min-h-12 items-center gap-3 rounded-full bg-primary px-4 py-2 text-on-primary shadow-lg shadow-neutral-950/10 transition-[background-color,scale] duration-150 ease-out hover:bg-primary-hover active:scale-[0.98]"
+                className={`${buttonClass("primary")} group/alert pointer-events-auto w-full shadow-lg shadow-neutral-950/10`}
               >
                 <span aria-hidden="true" className="size-3 shrink-0 rounded-full bg-accent motion-safe:animate-signal" />
-                <span className="min-w-0 flex-1 truncate text-label">{lineOf(search)}</span>
-                <span className="shrink-0 text-label underline underline-offset-4">{text.dock.open}</span>
+                <span className="min-w-0 flex-1 truncate text-left">{lineOf(search)}</span>
+                <span className="shrink-0 underline underline-offset-4">{text.dock.open}</span>
                 <ChevronRight className="size-4 shrink-0 transition-[translate] duration-200 ease-out group-hover/alert:translate-x-1" aria-hidden="true" />
               </Link>
             </li>

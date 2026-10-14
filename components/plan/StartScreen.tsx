@@ -1,54 +1,75 @@
 "use client";
 
-import { ListChecks, Users } from "lucide-react";
+import { ArrowRight, Ticket, Users } from "lucide-react";
 import Link from "next/link";
+import type { CSSProperties, ReactNode } from "react";
 import type { Messages } from "@/lib/messages";
-import { useLocale } from "@/lib/use-locale";
-import CaptainGreeter from "./CaptainGreeter";
+import { TEXT_LINK, buttonClass } from "@/components/ui/styles";
+import CaptainNote from "./CaptainNote";
+import { FORWARD_ARROW } from "./DeckFooter";
 
 type StartScreenProps = {
   text: Messages["plan"];
   onStartManual: () => void;
+  /** A quiet second way in under the start button: the plan saved on this device, when there is one. */
+  resume?: ReactNode;
 };
 
-export default function StartScreen({ text, onStartManual }: StartScreenProps) {
-  const locale = useLocale();
+const STOPS = ["trip", "crew", "budget", "extras", "pass"] as const;
 
+// The opening of a plan: the whole ride shown before it starts, so nobody wonders how long this takes or what
+// comes next. The line runs down the page with each station named and what it asks, and the boarding pass waits
+// at its end.
+export default function StartScreen({ text, onStartManual, resume }: StartScreenProps) {
+  const copy = text.start;
   return (
-    <div className="relative mx-auto w-full max-w-3xl text-center motion-safe:animate-message-in">
-      <div aria-hidden="true" className="parallax-top pointer-events-none absolute left-1/2 top-1/2 -z-10 -translate-x-1/2 -translate-y-1/2 opacity-30 blur-[100px] [--parallax-to:10rem]">
-        <div className="aspect-square w-[600px] rounded-full bg-gradient-to-tr from-primary/40 to-transparent"></div>
-      </div>
-
-      <div className="relative z-10 flex flex-col items-center">
-        <CaptainGreeter lines={text.start.greetings} label={text.start.greet} />
-
-        <h1 tabIndex={-1} className="mt-4 text-4xl font-extrabold tracking-tight text-balance text-text outline-none sm:text-5xl lg:text-6xl">
-          {text.start.title}
+    <div className="grid w-full gap-8 motion-safe:animate-message-in lg:grid-cols-[minmax(0,1fr)_minmax(0,24rem)] lg:items-center lg:gap-16">
+      <div>
+        <h1 tabIndex={-1} className="text-h2 text-balance text-text outline-none sm:text-h1">
+          {copy.title}
         </h1>
-        <p className="mx-auto mt-6 max-w-xl text-body leading-relaxed text-pretty text-text-muted sm:text-h3">
-          {text.start.lead}
-        </p>
-
-        <div className="mt-12 flex flex-wrap items-center justify-center gap-4">
-          <button
-            type="button"
-            onClick={onStartManual}
-            className="group relative inline-flex h-14 items-center justify-center gap-3 whitespace-nowrap rounded-full bg-gradient-to-r from-primary to-primary-hover px-8 text-body font-medium text-on-primary shadow-lg shadow-primary/30 outline-none transition-all duration-300 ease-out hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/40 active:translate-y-0 active:scale-95"
-          >
-            <span className="absolute inset-0 rounded-full bg-on-primary/20 opacity-0 transition-opacity duration-300 group-hover:opacity-100"></span>
-            <ListChecks className="relative z-10 size-6 transition-transform duration-300 group-hover:scale-110" aria-hidden="true" />
-            <span className="relative z-10">{text.start.form}</span>
+        <p className="mt-2 max-w-xl text-body text-pretty text-text-muted">{copy.lead}</p>
+        <CaptainNote className="mt-4 max-w-xl">{copy.captain}</CaptainNote>
+        <div className="mt-8 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center sm:gap-4">
+          <button type="button" onClick={onStartManual} className={`group ${buttonClass("primary", "large")}`}>
+            {copy.form}
+            <ArrowRight className={FORWARD_ARROW} aria-hidden="true" />
           </button>
-          <Link
-            href="/profile/saved-members"
-            className="group inline-flex h-14 items-center justify-center gap-3 whitespace-nowrap rounded-full border border-border-strong bg-surface px-7 text-body font-medium text-text shadow-md transition-all duration-300 ease-out hover:-translate-y-1 hover:border-primary hover:bg-surface-muted hover:shadow-lg active:translate-y-0 active:scale-95"
-          >
-            <Users className="size-5 text-primary transition-transform duration-300 group-hover:scale-110" aria-hidden="true" />
-            <span>{locale === "id" ? "Profil Tersimpan" : "Saved Profiles"}</span>
+          <Link href="/profile/saved-members" className={`${TEXT_LINK} justify-center`}>
+            <Users className="size-4" aria-hidden="true" />
+            {copy.savedProfiles}
           </Link>
         </div>
+        {resume && <div className="mt-4 motion-safe:animate-message-in motion-safe:[animation-delay:150ms]">{resume}</div>}
       </div>
+
+      <ol aria-label={copy.routeLabel}>
+        {STOPS.map((stop, index) => {
+          const last = index === STOPS.length - 1;
+          return (
+            <li
+              key={stop}
+              style={{ "--item-index": index } as CSSProperties}
+              className="relative flex items-start gap-4 py-2 motion-safe:animate-list-in"
+            >
+              {/* The stretch of line from this station's centre to the next one's. */}
+              {!last && <span aria-hidden="true" className="absolute top-7 -bottom-7 left-5 w-1 -translate-x-1/2 bg-primary/20" />}
+              <span
+                aria-hidden="true"
+                className={`relative z-10 flex size-10 shrink-0 items-center justify-center rounded-full border-4 border-primary text-label tabular-nums ${
+                  last ? "bg-primary text-on-primary" : "bg-background text-primary"
+                }`}
+              >
+                {last ? <Ticket className="size-4" aria-hidden="true" /> : index + 1}
+              </span>
+              <span className="min-w-0 flex-1 pt-1">
+                <span className="block text-label-lg text-text">{copy.route[stop].name}</span>
+                <span className="mt-1 block text-body-sm text-pretty text-text-muted">{copy.route[stop].asks}</span>
+              </span>
+            </li>
+          );
+        })}
+      </ol>
     </div>
   );
 }
