@@ -1,10 +1,27 @@
 <div align="center">
 
-<img src="public/images/logo/kancara_full_logo.png" alt="Kancara logo with its captain mascot" width="220" />
+<img src="public/images/logo/kancara_full_logo.png" alt="Kancara logo with its captain mascot" width="200" />
 
 # Kancara
 
-**Plan a group trip where nobody gets left behind.**
+### Plan a group trip where nobody gets left behind.
+
+<p>
+  <img src="https://img.shields.io/badge/Group_travel-Inclusive_by_design-035d60?style=flat-square" alt="Inclusive group travel planner" />
+  <img src="https://img.shields.io/badge/AI-Multi--agent_system-035d60?style=flat-square" alt="Built as a multi-agent AI system" />
+  <img src="https://img.shields.io/badge/Languages-Bahasa_Indonesia_%C2%B7_English-035d60?style=flat-square" alt="Bahasa Indonesia and English" />
+  <img src="https://img.shields.io/badge/Offline-First-035d60?style=flat-square" alt="Offline-first" />
+  <img src="https://img.shields.io/badge/Install-As_an_app-035d60?style=flat-square" alt="Installable as an app" />
+</p>
+
+<p>
+  <a href="#why-kancara">Why Kancara</a> ·
+  <a href="#what-you-can-do">What you can do</a> ·
+  <a href="#how-it-works">How it works</a> ·
+  <a href="#made-for-everyone">Made for everyone</a> ·
+  <a href="#your-data">Your data</a> ·
+  <a href="#for-developers">For developers</a>
+</p>
 
 </div>
 
@@ -17,85 +34,306 @@ uses a wheelchair, the parent with a toddler, the grandparent who needs to rest
 often, the one who eats halal or vegetarian, or the one on a tight budget ends up
 quietly compromising, or staying home.
 
-Kancara starts from the opposite end. You tell it who is coming and what each
-person needs, and it plans a trip that works for all of them, then stays with the
-group until everyone is home.
+> **Kancara starts from the opposite end.** You tell it who is coming and what each
+> person needs. It plans a trip that works for all of them, then stays with the
+> group until everyone is home.
 
-## What you can do with it
+## What you can do
 
-### Before the trip
+### <img src=".github/assets/readme/map.svg" width="24" height="24" align="top" alt="" /> Before the trip
 
-- **Plan in a few questions.** Where you're going, when, your budget, and who is
-  coming. For each person you can note what matters: a wheelchair, no stairs,
-  short walks, halal or vegetarian food, naps, quiet places, a toilet nearby.
-- **Get a day-by-day plan.** Captain, Kancara's guide, builds an itinerary and
-  checks every stop against everyone's needs. Each stop shows clearly which needs
-  it meets and which it only partly meets.
-- **Settle different wishes fairly.** When members want different things, Kancara
-  suggests a middle ground instead of picking a winner.
-- **Have backups ready.** Each stop comes with alternatives for rain, a closed
-  place, a full restaurant, or a tired group, already checked for your group.
-- **Share one link with everyone.** Members join from a single group link, with
-  or without an account.
-- **Pack with confidence.** A packing list for each person, adjusted to the
-  weather at your destination.
-- **Keep it on paper.** Download the itinerary as a tidy PDF table.
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/list-checks.svg" width="28" height="28" alt="" /><br />
+      <b>Plan in a few questions</b><br />
+      Where, when, your budget, and who is coming, with what matters to each person: a wheelchair, short walks, halal food, naps, quiet places.
+    </td>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/calendar-days.svg" width="28" height="28" alt="" /><br />
+      <b>Get a day-by-day plan</b><br />
+      Captain, Kancara's guide, builds the itinerary and checks every stop against everyone's needs, showing what each stop meets.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/scale.svg" width="28" height="28" alt="" /><br />
+      <b>Settle different wishes fairly</b><br />
+      When members want different things, Kancara suggests a middle ground instead of picking a winner.
+    </td>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/life-buoy.svg" width="28" height="28" alt="" /><br />
+      <b>Have backups ready</b><br />
+      Alternatives for rain, a closed place, a full restaurant, or a tired group, already checked for your group.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/link.svg" width="28" height="28" alt="" /><br />
+      <b>One link for the whole group</b><br />
+      Members join from a single link, with or without an account.
+    </td>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/luggage.svg" width="28" height="28" alt="" /><br />
+      <b>Pack with confidence</b><br />
+      A packing list for each person, adjusted to the weather at your destination.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top" colspan="2">
+      <img src=".github/assets/readme/file-down.svg" width="28" height="28" alt="" /><br />
+      <b>Keep it on paper</b><br />
+      Download the whole itinerary as a tidy PDF table, one table per day.
+    </td>
+  </tr>
+</table>
 
-### During the trip
+### <img src=".github/assets/readme/route.svg" width="24" height="24" align="top" alt="" /> During the trip
 
-- **See today at a glance.** What's happening now, what's next, and how long the
-  drive is between stops, with a map of the day.
-- **Change plans on the spot.** Rain, a closed place, or tired kids: swap in a
-  backup for one stop or the rest of the day.
-- **Read menus and talk to locals.** Scan a menu to see what suits each person's
-  diet, and use the conversation translator face to face.
-- **Carry a field pass.** The trip's essentials, stays, food notes, phrases, and
-  emergency numbers, saved on your phone for when there's no signal.
-- **Split the bill.** Record shared expenses and see exactly who owes whom.
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/clock.svg" width="28" height="28" alt="" /><br />
+      <b>Today at a glance</b><br />
+      What's happening now, what's next, and the drive between stops, with a map of the day.
+    </td>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/refresh-cw.svg" width="28" height="28" alt="" /><br />
+      <b>Change plans on the spot</b><br />
+      Rain, a closed place, or tired kids: swap in a backup for one stop or the rest of the day.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/utensils-crossed.svg" width="28" height="28" alt="" /><br />
+      <b>Read any menu</b><br />
+      Scan a menu to see which dishes suit each person's diet.
+    </td>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/languages.svg" width="28" height="28" alt="" /><br />
+      <b>Talk to locals</b><br />
+      A face-to-face conversation translator, spoken aloud in the right voice.
+    </td>
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/compass.svg" width="28" height="28" alt="" /><br />
+      <b>Carry a field pass</b><br />
+      Stays, food notes, useful phrases, and emergency numbers, saved on your phone for when there's no signal.
+    </td>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/wallet.svg" width="28" height="28" alt="" /><br />
+      <b>Split the bill</b><br />
+      Record shared expenses and see exactly who owes whom.
+    </td>
+  </tr>
+</table>
 
-### If someone gets separated
+### <img src=".github/assets/readme/heart-handshake.svg" width="24" height="24" align="top" alt="" /> If someone gets separated
 
-- **One button: "I'm separated".** The group is told right away, and the person
-  sees the way to the meeting point, with a compass arrow on their phone.
-- **Call or message in one tap.** The group leader and important local numbers
-  are always close at hand.
-- **A meeting card for those without a phone.** A small card with a code that a
-  helpful stranger can scan to reach the group.
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/siren.svg" width="28" height="28" alt="" /><br />
+      <b>One button: "I'm separated"</b><br />
+      The group is told right away.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/navigation.svg" width="28" height="28" alt="" /><br />
+      <b>The way back</b><br />
+      Directions to the meeting point, with a compass arrow on the phone.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/phone.svg" width="28" height="28" alt="" /><br />
+      <b>Call in one tap</b><br />
+      The group leader and important local numbers, always close at hand.
+    </td>
+  </tr>
+  <tr>
+    <td width="100%" valign="top" colspan="3">
+      <img src=".github/assets/readme/qr-code.svg" width="28" height="28" alt="" /><br />
+      <b>A meeting card for those without a phone</b><br />
+      A small card with a code that a helpful stranger can scan to reach the group.
+    </td>
+  </tr>
+</table>
 
-### After the trip
+### <img src=".github/assets/readme/camera.svg" width="24" height="24" align="top" alt="" /> After the trip
 
-- **Look back together.** A trip recap with the route you took and the moments
-  the group saved, with photos and notes.
-- **Remember your travel companions.** Save the people you travel with and their
-  needs, so the next trip starts already filled in.
-- **See where you've been.** A map of the countries you have visited.
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/images.svg" width="28" height="28" alt="" /><br />
+      <b>Look back together</b><br />
+      A recap with the route you took and the moments the group saved.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/contact.svg" width="28" height="28" alt="" /><br />
+      <b>Remember your companions</b><br />
+      Save the people you travel with, so the next trip starts already filled in.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/globe.svg" width="28" height="28" alt="" /><br />
+      <b>See where you've been</b><br />
+      A map of the countries you have visited.
+    </td>
+  </tr>
+</table>
+
+## How it works
+
+### <img src=".github/assets/readme/workflow.svg" width="24" height="24" align="top" alt="" /> A team of AI agents, led by Captain
+
+Kancara is built as a **multi-agent system**. Instead of one AI trying to do everything, each part of the trip has
+an agent of its own, and Captain, the guide you meet in the app, brings their work together.
+
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/bot.svg" width="28" height="28" alt="" /><br />
+      <b>Trip planner</b><br />
+      Writes the day-by-day plan, looks up real places, measures the travel time between them, and prepares backups.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/scale.svg" width="28" height="28" alt="" /><br />
+      <b>Mediator</b><br />
+      Weighs what each member wants and proposes a middle ground the whole group can accept.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/luggage.svg" width="28" height="28" alt="" /><br />
+      <b>Packing assistant</b><br />
+      Reads the plan, the weather, and each person's needs, and adds what a fixed checklist would miss.
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/compass.svg" width="28" height="28" alt="" /><br />
+      <b>Field pass writer</b><br />
+      Turns the trip into one pocket guide: stays, food notes, phrases, and emergency numbers.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/utensils-crossed.svg" width="28" height="28" alt="" /><br />
+      <b>Menu reader</b><br />
+      Reads a photo of a menu against the group's diets and suggests what to ask the waiter.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/languages.svg" width="28" height="28" alt="" /><br />
+      <b>Translator</b><br />
+      Translates a conversation turn by turn, with tips on saying it politely.
+    </td>
+  </tr>
+</table>
+
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/badge-check.svg" width="28" height="28" alt="" /><br />
+      <b>Checked, not guessed</b><br />
+      Every stop and every backup is held against the group's needs before you see it. Agents answer in a fixed format that is checked before use, and each has a time limit and a fallback, so a slow answer never leaves you stuck.
+    </td>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/radar.svg" width="28" height="28" alt="" /><br />
+      <b>Live information</b><br />
+      Real places with their ratings, opening hours, and photos, real travel times, the weather forecast at your destination, and today's exchange rate.
+    </td>
+  </tr>
+</table>
+
+### <img src=".github/assets/readme/wifi-off.svg" width="24" height="24" align="top" alt="" /> Offline-first
+
+Trips happen where the signal is weak: on a mountain road, in a basement market, abroad without data.
+
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/smartphone.svg" width="28" height="28" alt="" /><br />
+      <b>An app on your phone</b><br />
+      Install Kancara to your home screen. It opens even with no connection.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/compass.svg" width="28" height="28" alt="" /><br />
+      <b>Your trip stays with you</b><br />
+      The plan, the field pass, and the help page are kept on the phone for when the signal drops.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/cloud-upload.svg" width="28" height="28" alt="" /><br />
+      <b>Nothing gets lost</b><br />
+      What you do offline, such as ticking off packing or saying you're separated, is sent as soon as you're back online.
+    </td>
+  </tr>
+</table>
+
+### <img src=".github/assets/readme/bell-ring.svg" width="24" height="24" align="top" alt="" /> The group stays connected
+
+When someone reports they're separated, or is found again, everyone in the group gets a notification on their
+phone straight away, even with the app closed.
 
 ## Made for everyone
 
-- **Inclusive by design.** Accessibility, dietary, rest, and sensory needs are
-  part of every plan, not an afterthought.
-- **Bahasa Indonesia and English.** Switch at any time.
-- **Works offline.** The plan, the field pass, and the help page stay available
-  without a connection.
-- **Install it like an app.** Add Kancara to your phone's home screen.
-- **Light and dark mode.** It follows your device, or you can choose.
-- **Easy to use for everyone.** Large tap targets, clear contrast, and full
-  keyboard and screen-reader support.
+<table>
+  <tr>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/accessibility.svg" width="28" height="28" alt="" /><br />
+      <b>Inclusive by design</b><br />
+      Accessibility, diet, rest, and sensory needs are part of every plan.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/languages.svg" width="28" height="28" alt="" /><br />
+      <b>Two languages</b><br />
+      Bahasa Indonesia and English, switch at any time.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/wifi-off.svg" width="28" height="28" alt="" /><br />
+      <b>Works offline</b><br />
+      The plan, the field pass, and help stay available without a signal.
+    </td>
+  </tr>
+  <tr>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/smartphone.svg" width="28" height="28" alt="" /><br />
+      <b>Install it like an app</b><br />
+      Add Kancara to your phone's home screen.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/sun-moon.svg" width="28" height="28" alt="" /><br />
+      <b>Light and dark</b><br />
+      Follows your device, or choose your own.
+    </td>
+    <td width="33%" valign="top">
+      <img src=".github/assets/readme/hand-heart.svg" width="28" height="28" alt="" /><br />
+      <b>Easy for everyone</b><br />
+      Large tap targets, clear contrast, keyboard and screen-reader support.
+    </td>
+  </tr>
+</table>
 
 ## Your data
 
-Health notes, allergies, and phone numbers are encrypted before they are stored.
-A group's information is only visible to the people in that group, and signing
-out clears what was kept on the device.
+<table>
+  <tr>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/lock.svg" width="28" height="28" alt="" /><br />
+      <b>Sensitive details are encrypted</b><br />
+      Health notes, allergies, and phone numbers are encrypted before they are stored.
+    </td>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/shield-check.svg" width="28" height="28" alt="" /><br />
+      <b>Only your group sees your trip</b><br />
+      A group's information is visible to its members only, and signing out clears what was kept on the device.
+    </td>
+  </tr>
+</table>
 
 ---
 
+## For developers
+
 <details>
-<summary><strong>For developers</strong></summary>
+<summary><b>Run Kancara locally, configure it, and find the project documents</b></summary>
 
-### Run it locally
+<br />
 
-You need Node.js 20.9 or newer.
+**Run it locally** (Node.js 20.9 or newer)
 
 ```bash
 git clone https://github.com/FR21/Kancara.git
@@ -106,15 +344,13 @@ npm run dev
 
 Then open http://localhost:3000.
 
-### Environment variables
-
-Put these in a `.env` file at the project root. It is never committed.
+**Environment variables** go in a `.env` file at the project root, which is never committed.
 
 | Variable | What it's for |
 | --- | --- |
 | `DATABASE_URL` | PostgreSQL (Neon) connection used by Prisma |
 | `DATA_ENCRYPTION_KEY` | Encrypts health notes and phone numbers |
-| `GEMINI_API_KEY` | Captain, the AI guide that writes plans, packing lists, translations, and menu checks |
+| `GEMINI_API_KEY` | Captain, the AI guide behind plans, packing lists, translations, and menu checks |
 | `GOOGLE_MAPS_API_KEY` | Server key for Google Places and travel times |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Browser key for the maps (Maps JavaScript API and Geocoding API) |
 | `NEXT_PUBLIC_FIREBASE_*`, `FIREBASE_*` | Sign-in and push notifications |
@@ -123,7 +359,7 @@ Put these in a `.env` file at the project root. It is never committed.
 | `NEXT_PUBLIC_SITE_URL` | The site's public address, for links and search engines |
 | `GOOGLE_SITE_VERIFICATION` | Optional: Google Search Console verification |
 
-### Commands
+**Commands**
 
 | Command | What it does |
 | --- | --- |
@@ -132,14 +368,16 @@ Put these in a `.env` file at the project root. It is never committed.
 | `npm run start` | Run the production build |
 | `npm run lint` | Check the code with ESLint |
 
-### Where things are described
+**Project documents**
 
-- `PRODUCT.md`: who Kancara is for and what it must feel like
-- `DESIGN.md`: the design system (colors, type, corners, spacing, components)
-- `rules.md`: the project's rules for code, design, and data
-- `prisma/schema.prisma`: the database tables
+| Document | What it covers |
+| --- | --- |
+| `PRODUCT.md` | Who Kancara is for and how it should feel |
+| `DESIGN.md` | The design system: colors, type, corners, spacing, components |
+| `rules.md` | The project's rules for code, design, and data |
+| `prisma/schema.prisma` | The database tables |
 
-Built with Next.js 16, React 19, TypeScript, Tailwind CSS 4, Prisma with
-PostgreSQL (Neon), Firebase, and Google Gemini.
+Built with Next.js 16, React 19, TypeScript, Tailwind CSS 4, Prisma with PostgreSQL (Neon), Firebase (sign-in and push notifications), Google Gemini (the agents), Google Places, Open-Meteo, and Serwist (offline support).
+Icons by [Lucide](https://lucide.dev) (ISC license).
 
 </details>
