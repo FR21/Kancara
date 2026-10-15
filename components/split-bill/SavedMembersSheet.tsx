@@ -6,6 +6,7 @@ import type { CSSProperties } from "react";
 import Checkbox from "@/components/ui/Checkbox";
 import EmptyState from "@/components/ui/EmptyState";
 import MemberAvatar from "@/components/ui/MemberAvatar";
+import { relationshipPresentation } from "@/lib/saved-profiles/relationship";
 import Sheet from "@/components/ui/Sheet";
 import { TEXT_LINK, buttonClass } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
@@ -91,7 +92,12 @@ export default function SavedMembersSheet({
                     <span className="flex size-6 shrink-0 items-center justify-center text-success">
                       <Check className="size-5" strokeWidth={3} aria-hidden="true" />
                     </span>
-                    <MemberAvatar ageGroup={profile.ageGroup} variant={index} className="size-10" />
+                    <MemberAvatar
+                      ageGroup={profile.ageGroup}
+                      variant={index}
+                      presentation={relationshipPresentation(profile.relationship)}
+                      className="size-10"
+                    />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-label-lg text-text">{profile.name}</span>
                       <span className="block text-caption text-text-muted">{text.alreadyAdded}</span>
@@ -100,7 +106,12 @@ export default function SavedMembersSheet({
                 ) : (
                   <label className="flex min-h-16 cursor-pointer items-center gap-3 py-2">
                     <Checkbox checked={selected.includes(profile.id)} onChange={(checked) => onToggle(profile.id, checked)} />
-                    <MemberAvatar ageGroup={profile.ageGroup} variant={index} className="size-10" />
+                    <MemberAvatar
+                      ageGroup={profile.ageGroup}
+                      variant={index}
+                      presentation={relationshipPresentation(profile.relationship)}
+                      className="size-10"
+                    />
                     <span className="min-w-0 flex-1">
                       <span className="block truncate text-label-lg text-text">{profile.name}</span>
                       {profile.relationship && <span className="block truncate text-caption text-text-muted">{profile.relationship}</span>}

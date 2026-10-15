@@ -1,11 +1,11 @@
 "use client";
 
-import { ArrowRight, Camera, Globe, Users } from "lucide-react";
+import { Camera, Globe, Users } from "lucide-react";
 import Link from "next/link";
 import { type ChangeEvent, useRef } from "react";
 import ProfilePhoto from "@/components/profile/ProfilePhoto";
 import IconButton from "@/components/ui/IconButton";
-import { OUTLINE_BUTTON } from "@/components/ui/styles";
+import { iconButtonClass } from "@/components/ui/styles";
 import { useMessages } from "@/lib/use-messages";
 
 type ProfileIdentityProps = {
@@ -17,11 +17,11 @@ type ProfileIdentityProps = {
   onPhotoChosen: (event: ChangeEvent<HTMLInputElement>) => void;
 };
 
-const PAGE_LINK = `group ${OUTLINE_BUTTON} w-full max-w-xs`;
-const LINK_ARROW = "size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1";
+// A round icon link, outlined like the outline buttons, in the primary colour like the icons it replaced.
+const PAGE_LINK = `group ${iconButtonClass("primaryQuiet")} border border-border-strong`;
 
 // The column beside the profile form, in three groups: the photo with the button that changes it and what it may
-// be, who this is, and the two pages that hang off the profile.
+// be, who this is, and the two pages that hang off the profile as round icon links on one row.
 export default function ProfileIdentity({ displayName, username, photo, disabled, onPhotoChosen }: ProfileIdentityProps) {
   const text = useMessages("profile");
   const travel = useMessages("travel");
@@ -63,22 +63,14 @@ export default function ProfileIdentity({ displayName, username, photo, disabled
       <p className="mt-6 max-w-full font-heading text-h2 text-balance wrap-break-word text-text">{displayName}</p>
       {username && <p className="mt-1 max-w-full text-body break-all text-primary">@{username}</p>}
 
-      <Link href="/profile/map" className={`${PAGE_LINK} mt-8`}>
-        <Globe
-          className="size-4 text-primary transition-[rotate] duration-500 ease-out group-hover:rotate-45"
-          aria-hidden="true"
-        />
-        {travel.open}
-        <ArrowRight className={LINK_ARROW} aria-hidden="true" />
-      </Link>
-      <Link href="/profile/saved-members" className={`${PAGE_LINK} mt-2`}>
-        <Users
-          className="size-4 text-primary transition-[scale] duration-200 ease-out group-hover:scale-110"
-          aria-hidden="true"
-        />
-        {text.savedMembersLink}
-        <ArrowRight className={LINK_ARROW} aria-hidden="true" />
-      </Link>
+      <nav aria-label={text.pagesLabel} className="mt-6 flex items-center justify-center gap-2">
+        <Link href="/profile/map" aria-label={travel.open} title={travel.open} className={PAGE_LINK}>
+          <Globe className="size-5 transition-[rotate] duration-500 ease-out group-hover:rotate-45" aria-hidden="true" />
+        </Link>
+        <Link href="/profile/saved-members" aria-label={text.savedMembersLink} title={text.savedMembersLink} className={PAGE_LINK}>
+          <Users className="size-5 transition-[scale] duration-200 ease-out group-hover:scale-110" aria-hidden="true" />
+        </Link>
+      </nav>
     </section>
   );
 }

@@ -1,5 +1,5 @@
 import type { ReactElement } from "react";
-import { Check, CloudSun, MessagesSquare, ShieldCheck, Sparkles, type LucideIcon } from "lucide-react";
+import { Check, CircleCheck, CloudSun, MessagesSquare, ShieldCheck, type LucideIcon } from "lucide-react";
 import Stamp from "@/components/ui/Stamp";
 import { BADGE, EASE } from "@/components/ui/styles";
 
@@ -13,6 +13,8 @@ type StepVisualProps = {
   items: StepItem[];
   result: string;
   liveLabel: string;
+  /** Which side of its column the card keeps to from 768px: the side facing the timeline. */
+  align?: "start" | "end";
 };
 
 type RowProps = { item: StepItem; delay: number };
@@ -89,13 +91,13 @@ const ROWS: Record<StepVisualKind, (props: RowProps) => ReactElement> = {
 
 // Each step is shown as one plain card: a teal band naming it, the rows, and the outcome under a hairline. A second
 // card peeks out behind it, and both straighten when the pointer is over them.
-export default function StepVisual({ kind, title, items, result, liveLabel }: StepVisualProps) {
+export default function StepVisual({ kind, title, items, result, liveLabel, align = "end" }: StepVisualProps) {
   const Icon = ICONS[kind];
   const Row = ROWS[kind];
   const listClass = kind === "match" ? "space-y-4" : "divide-y divide-border";
 
   return (
-    <div className="group/pass relative mx-auto w-full max-w-lg px-2 py-4 sm:px-4 sm:py-6">
+    <div className={`group/pass relative mx-auto w-full max-w-lg px-2 py-4 sm:px-4 sm:py-6 ${align === "end" ? "md:mr-0" : "md:ml-0"}`}>
       <span
         aria-hidden="true"
         className={`absolute inset-x-2 inset-y-4 rotate-3 rounded-surface bg-primary-200 transition-[rotate] group-hover/pass:rotate-1 sm:inset-x-4 sm:inset-y-6 dark:bg-primary-900 ${SETTLE}`}
@@ -135,7 +137,7 @@ export default function StepVisual({ kind, title, items, result, liveLabel }: St
           ) : (
             // Drawn like a BADGE, but free to wrap onto a second line: the outcome is a whole sentence in Indonesian.
             <p className="inline-flex min-h-7 items-center gap-1 rounded-full bg-accent-300 px-3 py-1 text-caption font-bold text-neutral-950">
-              <Sparkles className="size-4 shrink-0" aria-hidden="true" />
+              <CircleCheck className="size-4 shrink-0" aria-hidden="true" />
               {result}
             </p>
           )}

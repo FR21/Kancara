@@ -6,7 +6,6 @@
   "title": "Split the Bill",
   "subtitle": "Record what the group spent, and Kancara works out who should pay whom so everyone is even.",
   "save": {
-    "saving": "Saving...",
     "saved": "Saved to your account",
     "failed": "Your latest change is not saved yet. Check your internet connection, then try again.",
     "conflict": "This bill was changed somewhere else. Reload the page to continue.",

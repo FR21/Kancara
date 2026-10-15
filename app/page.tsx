@@ -24,7 +24,7 @@ export default async function Home() {
       <CoreFlowSection />
       <div className="relative">
         <OfflineSection />
-        <CtaSection />
+        <CtaSection page="home" />
       </div>
     </main>
   );

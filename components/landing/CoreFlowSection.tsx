@@ -36,7 +36,7 @@ export default function CoreFlowSection() {
             {t.steps.items.map((step, index) => (
               <li
                 key={step.number}
-                className={`relative flex flex-col-reverse items-center gap-6 md:flex-row md:gap-12 ${
+                className={`relative flex flex-col-reverse items-center gap-6 md:flex-row md:gap-16 ${
                   index % 2 === 1 ? "md:flex-row-reverse" : ""
                 }`}
               >
@@ -55,10 +55,11 @@ export default function CoreFlowSection() {
                     items={step.chartItems}
                     result={step.chartPill}
                     liveLabel={t.steps.liveLabel}
+                    align={index % 2 === 0 ? "end" : "start"}
                   />
                 </ScrollReveal>
 
-                <ScrollReveal delayMs={120} className="w-full text-left md:w-1/2">
+                <ScrollReveal delayMs={120} className={`w-full text-left md:w-1/2 ${index % 2 === 0 ? "md:pl-4" : "md:pr-4"}`}>
                   <h3 className="font-heading text-h1 font-extrabold text-balance text-text sm:text-4xl">
                     {step.title}
                   </h3>

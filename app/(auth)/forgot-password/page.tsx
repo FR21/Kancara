@@ -70,6 +70,7 @@ export default function ForgotPasswordPage() {
           <FormAlert message={error} />
           <TextField
             id="forgot-email"
+            required
             type="email"
             label={t.forgot.emailLabel}
             placeholder={t.forgot.emailPlaceholder}

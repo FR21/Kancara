@@ -98,9 +98,9 @@ export default function SafetyDock() {
           href={`/trips/${encodeURIComponent(ongoing.tripId)}/help`}
           aria-label={text.dock.sosLabel}
           title={text.dock.sosLabel}
-          className="pointer-events-auto relative inline-flex size-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg shadow-neutral-950/10 transition-[background-color,scale] duration-150 ease-out hover:bg-primary-hover active:scale-[0.97]"
+          className="group/sos pointer-events-auto relative inline-flex size-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg shadow-neutral-950/10 transition-[background-color,scale] duration-150 ease-out hover:bg-primary-hover active:scale-[0.97]"
         >
-          <LifeBuoy className="size-6" aria-hidden="true" />
+          <LifeBuoy className="size-6 transition-[rotate] duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] motion-safe:group-hover/sos:rotate-180" aria-hidden="true" />
           {/* The signal dot rides on the button while the viewer's own search is open. */}
           {ongoing.searches.some((search) => search.forViewer) && (
             <span aria-hidden="true" className="absolute top-0 right-0 size-4 rounded-full border-2 border-background bg-accent motion-safe:animate-signal" />

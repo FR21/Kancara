@@ -6,6 +6,7 @@ import { type CSSProperties, useState } from "react";
 import Checkbox from "@/components/ui/Checkbox";
 import ErrorAlert from "@/components/ui/ErrorAlert";
 import MemberAvatar from "@/components/ui/MemberAvatar";
+import { relationshipPresentation } from "@/lib/saved-profiles/relationship";
 import Sheet from "@/components/ui/Sheet";
 import { PRIMARY_BUTTON, TEXT_LINK } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
@@ -140,7 +141,12 @@ function PickerRow({ choice, variant, added, checked, planText, text, onToggle }
   const order = { "--item-index": variant } as CSSProperties;
   const body = (
     <>
-      <MemberAvatar ageGroup={choice.profile.ageGroup} variant={variant} className="size-10" />
+      <MemberAvatar
+        ageGroup={choice.profile.ageGroup}
+        variant={variant}
+        presentation={relationshipPresentation(choice.profile.relationship)}
+        className="size-10"
+      />
       <span className="min-w-0 flex-1">
         <span className="block text-label wrap-anywhere text-text">{choice.profile.name}</span>
         <span className="block text-caption wrap-anywhere text-text-muted">{choice.detail}</span>

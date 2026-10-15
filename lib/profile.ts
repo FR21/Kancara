@@ -2,7 +2,7 @@ import "server-only";
 import { Prisma } from "@prisma/client";
 import { photoUrl, type Viewer } from "@/lib/account";
 import { prisma } from "@/lib/prisma";
-import { GENDERS, isAgeValid, isUsernameValid } from "@/lib/profile-fields";
+import { ageFrom, GENDERS, isBirthDateValid, isNameValid, isUsernameValid } from "@/lib/profile-fields";
 import { normalizePhone } from "@/lib/safety/contact";
 import { seal, unseal } from "@/lib/secret-box";
 import { isCountryCode } from "@/lib/travel/countries";
@@ -15,7 +15,8 @@ export type Profile = {
   nationality: string;
   /** Their own number in international form. It is kept sealed and goes with them into the trips they join. */
   phone: string;
-  age: string;
+  /** YYYY-MM-DD, or empty for an account from before the profile asked for it. */
+  birthDate: string;
   gender: string;
   photo: string | null;
 };
@@ -46,25 +47,26 @@ export function parseProfileDetails(body: unknown): ProfileDetails | null {
   const phone = readPhone(input.phone);
   // A leading @ is how people write a username, not part of it.
   const username = typeof input.username === "string" ? input.username.trim().replace(/^@/, "") : null;
-  const age = typeof input.age === "string" || typeof input.age === "number" ? String(input.age).trim() : null;
+  const birthDate = typeof input.birthDate === "string" ? input.birthDate.trim() : null;
   const gender = typeof input.gender === "string" ? input.gender : null;
-  if (name === null || nationality === null || phone === null || username === null || age === null || gender === null) return null;
-  if (!isUsernameValid(username) || !isAgeValid(age)) return null;
+  if (name === null || nationality === null || phone === null || username === null || birthDate === null || gender === null) return null;
+  // The full name and the date of birth are required; everything else may stay empty.
+  if (!isNameValid(name) || !isUsernameValid(username) || !isBirthDateValid(birthDate)) return null;
   if (gender !== "" && !GENDERS.some((option) => option === gender)) return null;
-  return { name, username, nationality, phone, age, gender };
+  return { name, username, nationality, phone, birthDate, gender };
 }
 
 export async function getProfile(viewer: Viewer): Promise<Profile> {
   const user = await prisma.user.findUniqueOrThrow({
     where: { userId: viewer.userId },
-    select: { displayName: true, username: true, nationality: true, age: true, gender: true, phoneNumberCipher: true },
+    select: { displayName: true, username: true, nationality: true, birthDate: true, gender: true, phoneNumberCipher: true },
   });
   return {
     name: user.displayName ?? "",
     username: user.username ?? "",
     nationality: user.nationality ?? "",
     phone: unseal(user.phoneNumberCipher) ?? "",
-    age: user.age === null ? "" : String(user.age),
+    birthDate: user.birthDate ? user.birthDate.toISOString().slice(0, 10) : "",
     gender: user.gender ?? "",
     photo: viewer.picture,
   };
@@ -80,7 +82,9 @@ export async function saveProfile(viewer: Viewer, details: ProfileDetails): Prom
         username: details.username || null,
         nationality: details.nationality || null,
         phoneNumberCipher: details.phone ? seal(details.phone) : null,
-        age: details.age === "" ? null : Number(details.age),
+        birthDate: new Date(`${details.birthDate}T00:00:00Z`),
+        // The age is still kept, worked out from the date, for what reads it (joining a trip as yourself).
+        age: ageFrom(details.birthDate),
         gender: details.gender || null,
       },
     });

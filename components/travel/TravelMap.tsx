@@ -1,16 +1,15 @@
 "use client";
 
-import { Check, CircleAlert, Globe, Loader2, LocateFixed, Map as MapIcon, Minus, Plus, Search } from "lucide-react";
+import { Check, CircleAlert, Loader2, LocateFixed, Minus, Plus, Search } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import PageHeader from "@/components/layout/PageHeader";
 import Checkbox from "@/components/ui/Checkbox";
 import IconButton from "@/components/ui/IconButton";
-import SegmentedToggle from "@/components/ui/SegmentedToggle";
 import { EASE, INPUT, TEXT_LINK } from "@/components/ui/styles";
 import { saveVisitedCountries } from "@/lib/client/profile";
 import { fillTemplate } from "@/lib/plan-draft";
 import { COUNTRIES, countryNames } from "@/lib/travel/countries";
-import { MAX_ZOOM, MIN_ZOOM, type WorldMode } from "@/lib/travel/world-scene";
+import { MAX_ZOOM, MIN_ZOOM } from "@/lib/travel/world-scene";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
 import WorldStage from "./WorldStage";
@@ -21,8 +20,6 @@ type TravelMapProps = {
 
 type SaveState = "idle" | "saving" | "saved" | "error";
 
-const VIEWS: readonly WorldMode[] = ["globe", "map"];
-const VIEW_ICONS = { globe: Globe, map: MapIcon };
 const SAVE_DELAY_MS = 600;
 const ZOOM_STEP = 1.5;
 
@@ -31,7 +28,6 @@ export default function TravelMap({ initialVisited }: TravelMapProps) {
   const navText = useMessages("navbar");
   const locale = useLocale();
   const [visited, setVisited] = useState<ReadonlySet<string>>(() => new Set(initialVisited));
-  const [mode, setMode] = useState<WorldMode>("globe");
   const [zoom, setZoom] = useState(MIN_ZOOM);
   const [focus, setFocus] = useState<{ code: string; tick: number } | null>(null);
   const [query, setQuery] = useState("");
@@ -122,39 +118,11 @@ export default function TravelMap({ initialVisited }: TravelMapProps) {
 
       <div className="mt-8 lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-x-12">
         <section aria-label={text.view.label}>
-          <div className="flex items-center justify-between gap-3 motion-safe:animate-message-in motion-safe:[animation-delay:300ms]">
-            <SegmentedToggle
-              name="travel-view"
-              label={text.view.label}
-              options={VIEWS}
-              labels={{ globe: text.view.globe, map: text.view.map }}
-              icons={VIEW_ICONS}
-              value={mode}
-              onChange={setMode}
-            />
-            {/* Padded like the view switch beside it, so the two controls stand at one height. */}
-            <div className="flex rounded-full border border-border-strong bg-surface p-1">
-              <IconButton
-                label={text.stage.zoomOut}
-                onClick={() => setZoom((value) => Math.max(value / ZOOM_STEP, MIN_ZOOM))}
-                disabled={zoom <= MIN_ZOOM}
-              >
-                <Minus className="size-4" aria-hidden="true" />
-              </IconButton>
-              <IconButton
-                label={text.stage.zoomIn}
-                onClick={() => setZoom((value) => Math.min(value * ZOOM_STEP, MAX_ZOOM))}
-                disabled={zoom >= MAX_ZOOM}
-              >
-                <Plus className="size-4" aria-hidden="true" />
-              </IconButton>
-            </div>
-          </div>
-          <p className="mt-4 text-body-sm text-pretty text-text-muted">{text.stage.hint}</p>
-          <div className={`relative mt-2 w-full ${mode === "map" ? "aspect-2/1" : "aspect-square"}`}>
+          <p className="text-body-sm text-pretty text-text-muted">{text.stage.hint}</p>
+          <div className="relative mt-2 aspect-square w-full">
             <WorldStage
               visited={visited}
-              mode={mode}
+              mode="globe"
               zoom={zoom}
               focus={focus}
               names={names}
@@ -163,6 +131,25 @@ export default function TravelMap({ initialVisited }: TravelMapProps) {
               onToggle={(code) => toggle(code, false)}
               onZoom={setZoom}
             />
+            {/* The zoom sits in the globe's corner: one small pill of two 36px buttons, 4px in. */}
+            <div className="absolute top-0 right-0 z-10 flex rounded-full border border-border-strong bg-surface/90 p-1 shadow-sm shadow-neutral-950/10 backdrop-blur-sm motion-safe:animate-message-in">
+              <IconButton
+                label={text.stage.zoomOut}
+                onClick={() => setZoom((value) => Math.max(value / ZOOM_STEP, MIN_ZOOM))}
+                disabled={zoom <= MIN_ZOOM}
+                size="small"
+              >
+                <Minus className="size-4" aria-hidden="true" />
+              </IconButton>
+              <IconButton
+                label={text.stage.zoomIn}
+                onClick={() => setZoom((value) => Math.min(value * ZOOM_STEP, MAX_ZOOM))}
+                disabled={zoom >= MAX_ZOOM}
+                size="small"
+              >
+                <Plus className="size-4" aria-hidden="true" />
+              </IconButton>
+            </div>
           </div>
         </section>
 

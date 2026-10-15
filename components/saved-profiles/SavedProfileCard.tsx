@@ -5,6 +5,7 @@ import { BADGE, TEXT_LINK } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
 import { type InterestKey, fillTemplate, INTEREST_KEYS } from "@/lib/plan-draft";
 import type { SavedProfile } from "@/lib/saved-profiles/profile";
+import { relationshipPresentation } from "@/lib/saved-profiles/relationship";
 import ProfileTags from "./ProfileTags";
 
 type SavedProfileCardProps = {
@@ -38,7 +39,12 @@ export default function SavedProfileCard({ profile, variant, planText, text, onP
   return (
     <article className="flex w-full flex-col rounded-surface border border-border bg-surface p-surface">
       <header className="flex items-start gap-4">
-        <MemberAvatar ageGroup={profile.ageGroup} variant={variant} className="size-14" />
+        <MemberAvatar
+          ageGroup={profile.ageGroup}
+          variant={variant}
+          presentation={relationshipPresentation(profile.relationship)}
+          className="size-14"
+        />
         <div className="min-w-0 flex-1">
           <h2 className="text-label-lg text-pretty wrap-anywhere text-text">{profile.name}</h2>
           <p className="mt-1 text-body-sm text-pretty text-text-muted">{facts.join(" · ")}</p>

@@ -7,7 +7,8 @@ export type ProfileDetails = {
   nationality: string;
   /** In international form, or empty. */
   phone: string;
-  age: string;
+  /** YYYY-MM-DD. */
+  birthDate: string;
   gender: string;
 };
 

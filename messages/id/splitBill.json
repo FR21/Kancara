@@ -6,7 +6,6 @@
   "title": "Bagi Tagihan",
   "subtitle": "Catat pengeluaran bersama, lalu Kancara menghitung siapa perlu transfer ke siapa supaya semua impas.",
   "save": {
-    "saving": "Menyimpan...",
     "saved": "Tersimpan di akunmu",
     "failed": "Perubahan terakhir belum tersimpan. Periksa koneksi internetmu, lalu coba lagi.",
     "conflict": "Tagihan ini sudah berubah di tempat lain. Muat ulang halaman untuk melanjutkan.",

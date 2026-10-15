@@ -54,6 +54,7 @@ export default function LoginPage() {
         <FormAlert message={error} />
         <TextField
           id="login-email"
+          required
           type="email"
           label={t.login.emailLabel}
           placeholder={t.login.emailPlaceholder}
@@ -66,6 +67,7 @@ export default function LoginPage() {
         />
         <TextField
           id="login-password"
+          required
           type="password"
           label={t.login.passwordLabel}
           placeholder={t.login.passwordPlaceholder}

@@ -3,10 +3,10 @@
 import { Check, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import MemberAvatar from "@/components/ui/MemberAvatar";
-import SegmentedToggle from "@/components/ui/SegmentedToggle";
 import { BADGE, EASE } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
 import type { AgeGroup } from "@/lib/plan-draft";
+import { useMediaQuery } from "@/lib/use-media-query";
 
 type ManifestIllustrationProps = {
   text: Messages["about"]["manifest"];
@@ -23,44 +23,45 @@ const PASSENGERS: { key: PassengerKey; ageGroup: AgeGroup; loud?: boolean }[] = 
   { key: "dimas", ageGroup: "adult" },
   { key: "sekar", ageGroup: "adult" },
 ];
-const MODES: Mode[] = ["usual", "kancara"];
-const AUTO_SWITCH_MS = 1400;
+/** How long each way of planning stays on screen before the list turns to the other. */
+const PHASE_MS = 3200;
 const CHIP = `${BADGE} shrink-0 motion-safe:animate-pop-in`;
 
-// An illustration of what Kancara changes: the same five people, planned the
-// usual way and planned with every need written down first.
+// The same five people, planned the usual way and then with every need written down first, turning from one to
+// the other for as long as the list is on screen. It rests while it is off screen or the tab is hidden, and with
+// reduced motion it simply shows the Kancara way.
 export default function ManifestIllustration({ text }: ManifestIllustrationProps) {
-  const [mode, setMode] = useState<Mode>("usual");
+  const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const [turning, setTurning] = useState<Mode>("usual");
   const rootRef = useRef<HTMLDivElement>(null);
-  const touchedRef = useRef(false);
+  const mode: Mode = reduceMotion ? "kancara" : turning;
 
-  // Once the list scrolls into view it boards everyone by itself, unless the
-  // visitor has already used the switch.
   useEffect(() => {
     const root = rootRef.current;
-    if (!root) return;
-    let timer: ReturnType<typeof setTimeout> | undefined;
+    if (!root || reduceMotion) return;
+    let timer: ReturnType<typeof setInterval> | undefined;
+    let inView = false;
+    const run = () => {
+      clearInterval(timer);
+      timer = undefined;
+      if (!inView || document.visibilityState !== "visible") return;
+      timer = setInterval(() => setTurning((current) => (current === "usual" ? "kancara" : "usual")), PHASE_MS);
+    };
     const observer = new IntersectionObserver(
       ([entry]) => {
-        if (!entry.isIntersecting) return;
-        observer.disconnect();
-        timer = setTimeout(() => {
-          if (!touchedRef.current) setMode("kancara");
-        }, AUTO_SWITCH_MS);
+        inView = entry.isIntersecting;
+        run();
       },
-      { threshold: 0.6 },
+      { threshold: 0.4 },
     );
     observer.observe(root);
+    document.addEventListener("visibilitychange", run);
     return () => {
       observer.disconnect();
-      clearTimeout(timer);
+      document.removeEventListener("visibilitychange", run);
+      clearInterval(timer);
     };
-  }, []);
-
-  const choose = (next: Mode) => {
-    touchedRef.current = true;
-    setMode(next);
-  };
+  }, [reduceMotion]);
 
   const fair = mode === "kancara";
 
@@ -74,21 +75,15 @@ export default function ManifestIllustration({ text }: ManifestIllustrationProps
     <div ref={rootRef} className="rounded-surface border border-border bg-surface p-surface shadow-lg shadow-neutral-950/5">
       <div className="flex items-center justify-between gap-3">
         <h3 className="font-sans text-label-lg text-text">{text.title}</h3>
-        <span className={`${BADGE} shrink-0 border border-border-strong text-text-muted`}>
-          {text.sample}
-        </span>
+        {/* The way of planning on screen now, read out when it changes. */}
+        <p
+          key={mode}
+          aria-live="polite"
+          className={`${BADGE} shrink-0 motion-safe:animate-pop-in ${fair ? "bg-primary text-on-primary" : "bg-surface-muted text-text-muted"}`}
+        >
+          {fair ? text.kancara : text.usual}
+        </p>
       </div>
-
-      <SegmentedToggle
-        name="manifest-mode"
-        label={text.switchLabel}
-        options={MODES}
-        labels={{ usual: text.usual, kancara: text.kancara }}
-        value={mode}
-        onChange={choose}
-        block
-        className="mt-4"
-      />
 
       <ul className="mt-2 divide-y divide-border [&>li:last-child]:pb-0">
         {PASSENGERS.map((passenger, index) => {
@@ -101,20 +96,20 @@ export default function ManifestIllustration({ text }: ManifestIllustrationProps
                 <MemberAvatar
                   ageGroup={passenger.ageGroup}
                   variant={index}
-                  className={`size-14 transition-[scale,opacity] duration-300 ${EASE} motion-reduce:transition-none ${avatarScale(loud)}`}
+                  className={`size-14 transition-[scale,opacity] duration-500 ${EASE} motion-reduce:transition-none ${avatarScale(loud)}`}
                 />
               </span>
               <span className="min-w-0 flex-1">
-                <span className={`block text-label-lg ${looked ? "text-text" : "text-text-muted"}`}>{copy.name}</span>
+                <span className={`block text-label-lg transition-colors duration-500 ${looked ? "text-text" : "text-text-muted"}`}>{copy.name}</span>
                 <span className="block text-body-sm text-text-muted">{copy.need}</span>
               </span>
               {looked ? (
-                <span key={mode} className={`${CHIP} bg-success-subtle text-on-success-subtle`}>
+                <span key={mode} style={{ animationDelay: `${index * 80}ms` }} className={`${CHIP} bg-success-subtle text-on-success-subtle`}>
                   <Check className="size-3 shrink-0" strokeWidth={3} aria-hidden="true" />
                   {loud ? text.heard : text.kept}
                 </span>
               ) : (
-                <span key={mode} className={`${CHIP} border border-dashed border-border-strong text-text-muted`}>
+                <span key={mode} style={{ animationDelay: `${index * 80}ms` }} className={`${CHIP} border border-dashed border-border-strong text-text-muted`}>
                   <X className="size-3 shrink-0" strokeWidth={3} aria-hidden="true" />
                   {text.missed}
                 </span>

@@ -2,6 +2,7 @@
 
 import { Eye, EyeOff } from "lucide-react";
 import { type InputHTMLAttributes, type ReactNode, useState } from "react";
+import RequiredMark from "@/components/ui/RequiredMark";
 import { FIELD_LABEL, INPUT } from "@/components/ui/styles";
 
 type TextFieldProps = {
@@ -9,7 +10,8 @@ type TextFieldProps = {
   label: string;
   value: string;
   error?: string;
-  optionalLabel?: string;
+  /** Marks the label with * and tells the browser and assistive technology the field must be filled. */
+  required?: boolean;
   aside?: ReactNode;
   describedBy?: string;
   reveal?: { show: string; hide: string };
@@ -22,16 +24,12 @@ type TextFieldProps = {
 /** A field's label, which takes the primary colour while the field inside its `group` has the focus. */
 export const FOCUS_FIELD_LABEL = `${FIELD_LABEL} transition-colors duration-150 ease-out group-focus-within:text-primary`;
 
-export function OptionalMark({ label }: { label: string }) {
-  return <span className="ml-1 font-normal text-text-muted">({label})</span>;
-}
-
 export default function TextField({
   id,
   label,
   value,
   error,
-  optionalLabel,
+  required = false,
   aside,
   describedBy,
   reveal,
@@ -49,7 +47,7 @@ export default function TextField({
       <div className="mb-2 flex items-baseline justify-between gap-3">
         <label htmlFor={id} className={FOCUS_FIELD_LABEL}>
           {label}
-          {optionalLabel && <OptionalMark label={optionalLabel} />}
+          {required && <RequiredMark />}
         </label>
         {aside}
       </div>
@@ -60,6 +58,7 @@ export default function TextField({
           type={reveal && revealed ? "text" : type}
           value={value}
           onChange={(event) => onChange(event.target.value)}
+          required={required}
           aria-invalid={error ? true : undefined}
           aria-describedby={descriptions || undefined}
           className={`${INPUT} disabled:cursor-not-allowed aria-invalid:border-error ${reveal ? "pr-12" : ""}`}

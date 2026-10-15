@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, FilePlus2, Loader2 } from "lucide-react";
+import { FilePlus2 } from "lucide-react";
 import { useEffect, useMemo, useRef, useState } from "react";
 import Notice, { type NoticeMessage } from "@/components/layout/Notice";
 import PageHeader from "@/components/layout/PageHeader";
@@ -25,7 +25,7 @@ import MembersStage from "./MembersStage";
 import { saveReceiptImage } from "./receipt-image";
 import ResultsStage from "./ResultsStage";
 import SavedMembersSheet, { type SavedProfileChoice } from "./SavedMembersSheet";
-import { type SaveStatus, useBillAutosave } from "./use-bill-autosave";
+import { useBillAutosave } from "./use-bill-autosave";
 
 type Stage = "members" | "expenses" | "results";
 
@@ -51,25 +51,8 @@ async function copyText(value: string): Promise<boolean> {
   }
 }
 
-function SaveIndicator({ status, text }: { status: SaveStatus; text: { saving: string; saved: string } }) {
-  if (status === "pending") {
-    return (
-      <span className="inline-flex items-center gap-2">
-        <Loader2 className="size-4 motion-safe:animate-spin" aria-hidden="true" />
-        {text.saving}
-      </span>
-    );
-  }
-  if (status === "saved") {
-    return (
-      <span className="inline-flex items-center gap-2">
-        <Check className="size-4 text-success" aria-hidden="true" />
-        {text.saved}
-      </span>
-    );
-  }
-  return null;
-}
+// The "saved" notice is a glance, not news: shorter than the notices about something the person did.
+const SAVED_NOTICE_MS = 2500;
 
 export default function SplitBillWorkspace({ initialBill, stored }: SplitBillWorkspaceProps) {
   const text = useMessages("splitBill");
@@ -128,6 +111,19 @@ export default function SplitBillWorkspace({ initialBill, stored }: SplitBillWor
     }, 0);
     return () => clearTimeout(timer);
   }, [stored, initialBill.id, enqueue, markSaved, legacyMovedText]);
+
+  // A save that lands after a change says so briefly. It never covers a notice already showing, such as "2 people
+  // added", which the same change has just raised.
+  const savedText = text.save.saved;
+  const lastStatusRef = useRef(autosave.status);
+  useEffect(() => {
+    const was = lastStatusRef.current;
+    lastStatusRef.current = autosave.status;
+    if (was !== "pending" || autosave.status !== "saved") return;
+    noticeCountRef.current += 1;
+    const saved: NoticeMessage = { id: noticeCountRef.current, tone: "success", message: savedText, duration: SAVED_NOTICE_MS };
+    setNotice((current) => current ?? saved);
+  }, [autosave.status, savedText]);
 
   // After moving to another step, its heading takes the focus so a screen reader starts there.
   useEffect(() => {
@@ -253,24 +249,19 @@ export default function SplitBillWorkspace({ initialBill, stored }: SplitBillWor
         title={text.title}
         lead={text.subtitle}
         actions={
-          <>
-            <p role="status" className="inline-flex items-center text-body-sm text-text-muted">
-              <SaveIndicator status={autosave.status} text={text.save} />
-            </p>
-            {hasContent(bill) && (
-              <button
-                type="button"
-                onClick={() => {
-                  setNewBillError(null);
-                  setNewBillOpen(true);
-                }}
-                className={buttonClass("outline", "small")}
-              >
-                <FilePlus2 className="size-4" aria-hidden="true" />
-                {text.newBill.action}
-              </button>
-            )}
-          </>
+          hasContent(bill) && (
+            <button
+              type="button"
+              onClick={() => {
+                setNewBillError(null);
+                setNewBillOpen(true);
+              }}
+              className={buttonClass("outline", "small")}
+            >
+              <FilePlus2 className="size-4" aria-hidden="true" />
+              {text.newBill.action}
+            </button>
+          )
         }
       />
 

@@ -34,40 +34,60 @@ const TONES = {
   },
 };
 
-function CtaContent({ tone }: { tone: keyof typeof TONES }) {
-  const t = useMessages("landing");
+/** The words of a closing section. The note under the buttons is left out where a page has none. */
+type ClosingCopy = { heading: string; description: string; primary: string; secondary: string; note?: string };
+
+type CtaContentProps = { tone: keyof typeof TONES; copy: ClosingCopy; secondaryHref: string };
+
+function CtaContent({ tone, copy, secondaryHref }: CtaContentProps) {
   const classes = TONES[tone];
 
   return (
     <ScrollReveal className="mx-auto max-w-4xl text-center">
       <h2 className={`font-heading text-h1 leading-tight font-extrabold text-balance sm:text-5xl ${classes.heading}`}>
-        {t.cta.heading}
+        {copy.heading}
       </h2>
 
       <p className={`mx-auto mt-4 max-w-2xl text-body leading-relaxed font-normal text-pretty sm:text-h3 ${classes.body}`}>
-        {t.cta.description}
+        {copy.description}
       </p>
 
       <div className="mt-8 flex flex-col items-center justify-center gap-4 sm:flex-row">
         <Link href="/plan" className={`${CTA_BUTTON} ${classes.primary}`}>
-          {t.cta.ctaPrimary}
+          {copy.primary}
           <ArrowRight
             className="size-5 transition-[translate] duration-300 group-hover:translate-x-1"
             aria-hidden="true"
           />
         </Link>
 
-        <a href="#pwa-info" className={`${CTA_BUTTON} border ${classes.secondary}`}>
-          {t.cta.ctaSecondary}
-        </a>
+        <Link href={secondaryHref} className={`${CTA_BUTTON} border ${classes.secondary}`}>
+          {copy.secondary}
+        </Link>
       </div>
 
-      <p className={`mt-4 text-caption font-medium ${classes.note}`}>{t.cta.note}</p>
+      {copy.note && <p className={`mt-4 text-caption font-medium ${classes.note}`}>{copy.note}</p>}
     </ScrollReveal>
   );
 }
 
-export default function CtaSection() {
+type CtaSectionProps = {
+  /** Which page this closes: the words and the second button follow it. */
+  page: "home" | "about";
+};
+
+// The closing section of the public pages (home and About). On the home page it is painted twice, so a brush that
+// follows the pointer reveals the second coat, and it stays pinned under the section above. On About it is plain:
+// the page's own colours, fading from the section above into the footer.
+export default function CtaSection({ page }: CtaSectionProps) {
+  const landing = useMessages("landing").cta;
+  const about = useMessages("about").cta;
+  const copy: ClosingCopy =
+    page === "home"
+      ? { heading: landing.heading, description: landing.description, primary: landing.ctaPrimary, secondary: landing.ctaSecondary, note: landing.note }
+      : { heading: about.title, description: about.body, primary: about.primary, secondary: about.secondary };
+  const secondaryHref = page === "home" ? "/about" : "/#story-steps";
+  const brush = page === "home";
   const clipId = `cta-brush-${useId().replace(/:/g, "")}`;
   const sectionRef = useRef<HTMLElement>(null);
   const clipRef = useRef<SVGClipPathElement>(null);
@@ -75,14 +95,14 @@ export default function CtaSection() {
   useEffect(() => {
     const section = sectionRef.current;
     const clip = clipRef.current;
-    if (!section || !clip) return;
+    if (!brush || !section || !clip) return;
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     type Point = { x: number; y: number; bornAt: number };
     let points: Point[] = [];
     let target: { x: number; y: number } | null = null;
     let current: { x: number; y: number } | null = null;
-    let radius = 64;
+    let radius = 32;
     let frame = 0;
 
     const render = (now: number) => {
@@ -133,7 +153,7 @@ export default function CtaSection() {
 
     const locate = (event: PointerEvent) => {
       const rect = section.getBoundingClientRect();
-      radius = Math.min(Math.max(rect.width * 0.05, 40), 88);
+      radius = Math.min(Math.max(rect.width * 0.025, 24), 44);
       return { x: event.clientX - rect.left, y: event.clientY - rect.top };
     };
 
@@ -166,34 +186,43 @@ export default function CtaSection() {
       section.removeEventListener("pointerleave", onEnd);
       section.removeEventListener("pointercancel", onEnd);
     };
-  }, []);
+  }, [brush]);
 
   return (
     <section
       ref={sectionRef}
-      className="relative isolate z-0 w-full touch-pan-y overflow-hidden bg-[linear-gradient(to_bottom,var(--cta)_calc(100%_-_8rem),var(--background))] px-4 py-16 motion-safe:sticky motion-safe:bottom-0 sm:px-6 sm:py-24 md:px-12 lg:px-20"
+      className={`relative isolate z-0 w-full touch-pan-y overflow-hidden px-4 py-16 sm:px-6 sm:py-24 md:px-12 lg:px-20 ${
+        brush
+          ? "bg-[linear-gradient(to_bottom,var(--section-muted),var(--cta)_10rem,var(--cta)_calc(100%_-_8rem),var(--background))] motion-safe:sticky motion-safe:bottom-0"
+          : "bg-[linear-gradient(to_bottom,var(--section-muted),var(--background)_10rem)]"
+      }`}
     >
-      <svg aria-hidden="true" className="absolute size-0">
-        <defs>
-          <clipPath id={clipId} ref={clipRef} clipPathUnits="userSpaceOnUse" />
-        </defs>
-      </svg>
+      {brush && (
+        <>
+          <svg aria-hidden="true" className="absolute size-0">
+            <defs>
+              <clipPath id={clipId} ref={clipRef} clipPathUnits="userSpaceOnUse" />
+            </defs>
+          </svg>
+          <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
+            <div className="absolute top-1/2 -right-40 size-96 -translate-y-1/2 rounded-full bg-accent-300/10 blur-3xl" />
+            <div className="absolute top-1/2 -left-40 size-96 -translate-y-1/2 rounded-full bg-secondary-400/10 blur-3xl" />
+          </div>
+        </>
+      )}
 
-      <div className="pointer-events-none absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute top-1/2 -right-40 size-96 -translate-y-1/2 rounded-full bg-accent-300/10 blur-3xl" />
-        <div className="absolute top-1/2 -left-40 size-96 -translate-y-1/2 rounded-full bg-secondary-400/10 blur-3xl" />
-      </div>
+      <CtaContent tone="base" copy={copy} secondaryHref={secondaryHref} />
 
-      <CtaContent tone="base" />
-
-      <div
-        aria-hidden="true"
-        inert
-        className="pointer-events-none absolute inset-0 bg-night px-4 py-16 select-none sm:px-6 sm:py-24 md:px-12 lg:px-20 dark:bg-accent-300"
-        style={{ clipPath: `url(#${clipId})` }}
-      >
-        <CtaContent tone="reveal" />
-      </div>
+      {brush && (
+        <div
+          aria-hidden="true"
+          inert
+          className="pointer-events-none absolute inset-0 bg-night px-4 py-16 select-none sm:px-6 sm:py-24 md:px-12 lg:px-20 dark:bg-accent-300"
+          style={{ clipPath: `url(#${clipId})` }}
+        >
+          <CtaContent tone="reveal" copy={copy} secondaryHref={secondaryHref} />
+        </div>
+      )}
     </section>
   );
 }

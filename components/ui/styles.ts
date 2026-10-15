@@ -56,7 +56,11 @@ export const DANGER_BUTTON = buttonClass("danger");
 export type IconButtonTone = "plain" | "primary" | "primaryQuiet" | "danger";
 
 const ICON_BUTTON_BASE =
-  "inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full transition-[background-color,color,scale] duration-150 ease-out active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40";
+  "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full transition-[background-color,color,scale] duration-150 ease-out active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40";
+
+/** medium: 44px, the touch target everywhere. small: 36px, only inside another control's 44px pill. */
+export type IconButtonSize = "small" | "medium";
+const ICON_BUTTON_SIZES: Record<IconButtonSize, string> = { small: "size-9", medium: "size-11" };
 
 const ICON_BUTTON_TONES: Record<IconButtonTone, string> = {
   plain: "text-text hover:bg-surface-muted",
@@ -66,8 +70,8 @@ const ICON_BUTTON_TONES: Record<IconButtonTone, string> = {
 };
 
 /** A 44px round button holding only an icon. Use it through components/ui/IconButton where you can. */
-export function iconButtonClass(tone: IconButtonTone = "plain"): string {
-  return `${ICON_BUTTON_BASE} ${ICON_BUTTON_TONES[tone]}`;
+export function iconButtonClass(tone: IconButtonTone = "plain", size: IconButtonSize = "medium"): string {
+  return `${ICON_BUTTON_BASE} ${ICON_BUTTON_SIZES[size]} ${ICON_BUTTON_TONES[tone]}`;
 }
 
 export const ICON_BUTTON = iconButtonClass("plain");

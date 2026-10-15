@@ -3,9 +3,7 @@
   "lead": "Spin the globe, then tap the countries you've been to.",
   "open": "My travel map",
   "view": {
-    "label": "View",
-    "globe": "Globe",
-    "map": "Map"
+    "label": "View"
   },
   "stage": {
     "label": "World globe, {count} countries marked. Arrow keys turn the globe, Enter marks the country in the middle.",

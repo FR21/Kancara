@@ -314,7 +314,7 @@ phone straight away, even with the app closed.
     <td width="50%" valign="top">
       <img src=".github/assets/readme/lock.svg" width="28" height="28" alt="" /><br />
       <b>Sensitive details are encrypted</b><br />
-      Health notes, allergies, and phone numbers are encrypted before they are stored.
+      Phone numbers, the allergies and notes in saved profiles, and the field pass are encrypted before they are stored.
     </td>
     <td width="50%" valign="top">
       <img src=".github/assets/readme/shield-check.svg" width="28" height="28" alt="" /><br />

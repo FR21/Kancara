@@ -1,9 +1,12 @@
 import type { CSSProperties } from "react";
 import type { AgeGroup } from "@/lib/plan-draft";
+import type { AvatarPresentation } from "@/lib/saved-profiles/relationship";
 
 type MemberAvatarProps = {
   ageGroup: AgeGroup;
   variant: number;
+  /** When it is known (a father, a grandmother), the hair follows it instead of the variant. */
+  presentation?: AvatarPresentation;
   className?: string;
 };
 
@@ -62,10 +65,25 @@ function ChildHair({ look }: { look: number }) {
   );
 }
 
-export default function MemberAvatar({ ageGroup, variant, className = "" }: MemberAvatarProps) {
+// The look that reads as a woman's at each age: long hair for an adult, a bun for an elderly woman, pigtails for a
+// child. A man gets the first look (short hair; glasses for an elderly man) wherever the variant would have drawn
+// the woman's. Toddlers look alike either way.
+const FEMININE_LOOK: Partial<Record<AgeGroup, number>> = { adult: 1, elderly: 2, child: 1 };
+
+function pickLook(ageGroup: AgeGroup, variant: number, presentation: AvatarPresentation | undefined): number {
+  const look = variant % LOOKS;
+  const feminine = FEMININE_LOOK[ageGroup];
+  if (presentation === undefined || feminine === undefined) return look;
+  if (presentation === "feminine") return feminine;
+  // An adult's top knot can read as either, so a man keeps to plain short hair.
+  if (look === feminine || ageGroup === "adult") return 0;
+  return look;
+}
+
+export default function MemberAvatar({ ageGroup, variant, presentation, className = "" }: MemberAvatarProps) {
   const head = HEAD[ageGroup];
   const eyeY = head.cy + 1;
-  const look = variant % LOOKS;
+  const look = pickLook(ageGroup, variant, presentation);
   const style = { "--avatar-tone": memberTone(variant) } as CSSProperties;
 
   return (
