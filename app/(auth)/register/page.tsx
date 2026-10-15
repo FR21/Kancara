@@ -7,7 +7,7 @@ import { type FormEvent, useEffect, useRef, useState } from "react";
 import AuthHeading from "@/components/auth/AuthHeading";
 import { FormAlert, GoogleButton, OrDivider, PasswordRules, SubmitButton } from "@/components/auth/AuthParts";
 import LegalSheet, { type LegalKind } from "@/components/auth/LegalSheet";
-import TextField, { FOCUS_FIELD_LABEL, OptionalMark } from "@/components/auth/TextField";
+import TextField, { FOCUS_FIELD_LABEL } from "@/components/auth/TextField";
 import Stepper, { type StepperStep } from "@/components/ui/Stepper";
 import { GHOST_BUTTON, TEXT_LINK } from "@/components/ui/styles";
 import CountryPicker from "@/components/profile/CountryPicker";
@@ -18,7 +18,7 @@ import { signInWithGoogle, startSession } from "@/lib/auth/client";
 import { useAuthFlow } from "@/lib/auth/use-auth-flow";
 import { emailIssue, isPasswordStrong } from "@/lib/auth/validation";
 import { auth } from "@/lib/firebase/client";
-import { isAgeValid, isNameValid, isUsernameValid, MAX_AGE } from "@/lib/profile-fields";
+import { birthDateRange, isBirthDateValid, isNameValid, isUsernameValid } from "@/lib/profile-fields";
 import { normalizePhone } from "@/lib/safety/contact";
 import { callingCode, joinPhone } from "@/lib/travel/calling-codes";
 import { useMessages } from "@/lib/use-messages";
@@ -34,7 +34,7 @@ type Step = (typeof STEPS)[number];
 
 const STEP_FIELDS = {
   account: ["email", "password", "confirm"],
-  about: ["name", "username", "phone", "age"],
+  about: ["name", "username", "phone", "birthDate"],
 } as const;
 type CheckedField = (typeof STEP_FIELDS)[Step][number];
 
@@ -58,7 +58,7 @@ export default function RegisterPage() {
   const [dial, setDial] = useState("");
   const [dialTyped, setDialTyped] = useState(false);
   const [national, setNational] = useState("");
-  const [age, setAge] = useState("");
+  const [birthDate, setBirthDate] = useState("");
   const [gender, setGender] = useState("");
   const [takenEmail, setTakenEmail] = useState("");
   const [touched, setTouched] = useState<ReadonlySet<CheckedField>>(new Set());
@@ -88,6 +88,12 @@ export default function RegisterPage() {
     return "";
   };
 
+  const birthDateError = () => {
+    if (birthDate === "") return t.errors.required;
+    return isBirthDateValid(birthDate) ? "" : profile.birthDateError;
+  };
+  const birthRange = birthDateRange();
+
   const errors: Record<CheckedField, string> = {
     email: emailError(),
     password: isPasswordStrong(password) ? "" : t.errors.passwordRules,
@@ -95,7 +101,7 @@ export default function RegisterPage() {
     name: nameError(),
     username: isUsernameValid(username) ? "" : profile.usernameError,
     phone: national.trim() === "" || normalizePhone(joinPhone(dial, national)) !== null ? "" : profile.phoneError,
-    age: isAgeValid(age) ? "" : profile.ageError,
+    birthDate: birthDateError(),
   };
 
   const chooseCountry = (code: string) => {
@@ -122,7 +128,7 @@ export default function RegisterPage() {
           username: username.trim().replace(/^@/, ""),
           nationality,
           phone: joinPhone(dial, national),
-          age,
+          birthDate,
           gender,
         });
         return HOME;
@@ -182,6 +188,7 @@ export default function RegisterPage() {
           <div key="account" className="flex flex-col gap-4 motion-safe:animate-message-in">
             <TextField
               id="register-email"
+              required
               type="email"
               label={t.register.emailLabel}
               placeholder={t.register.emailPlaceholder}
@@ -196,6 +203,7 @@ export default function RegisterPage() {
             <div>
               <TextField
                 id="register-password"
+                required
                 type="password"
                 label={t.register.passwordLabel}
                 placeholder={t.register.passwordPlaceholder}
@@ -217,6 +225,7 @@ export default function RegisterPage() {
             </div>
             <TextField
               id="register-confirm"
+              required
               type="password"
               label={t.register.confirmLabel}
               placeholder={t.register.confirmPlaceholder}
@@ -237,6 +246,7 @@ export default function RegisterPage() {
           <div key="about" className="flex flex-col gap-4 motion-safe:animate-message-in">
             <TextField
               id="register-name"
+              required
               label={profile.nameLabel}
               placeholder={profile.namePlaceholder}
               autoComplete="name"
@@ -249,7 +259,6 @@ export default function RegisterPage() {
             <TextField
               id="register-username"
               label={profile.usernameLabel}
-              optionalLabel={t.common.optional}
               placeholder={profile.usernamePlaceholder}
               autoComplete="off"
               value={username}
@@ -261,7 +270,6 @@ export default function RegisterPage() {
             <div className="group">
               <label htmlFor="register-nationality" className={`mb-2 block ${FOCUS_FIELD_LABEL}`}>
                 {profile.nationalityLabel}
-                <OptionalMark label={t.common.optional} />
               </label>
               <CountryPicker
                 id="register-nationality"
@@ -275,7 +283,6 @@ export default function RegisterPage() {
             <div className="group">
               <label htmlFor="register-phone" className={`mb-2 block ${FOCUS_FIELD_LABEL}`}>
                 {profile.phoneLabel}
-                <OptionalMark label={t.common.optional} />
               </label>
               <PhoneField
                 id="register-phone"
@@ -299,24 +306,21 @@ export default function RegisterPage() {
             </div>
             <div className="grid gap-4 sm:grid-cols-2">
               <TextField
-                id="register-age"
-                type="number"
-                label={profile.ageLabel}
-                optionalLabel={t.common.optional}
-                placeholder={profile.agePlaceholder}
-                inputMode="numeric"
-                min={1}
-                max={MAX_AGE}
-                value={age}
-                error={shown("age")}
+                id="register-birthDate"
+                type="date"
+                label={profile.birthDateLabel}
+                required
+                min={birthRange.min}
+                max={birthRange.max}
+                value={birthDate}
+                error={shown("birthDate")}
                 disabled={pending}
-                onChange={setAge}
-                onBlur={() => touch("age")}
+                onChange={setBirthDate}
+                onBlur={() => touch("birthDate")}
               />
               <div className="group">
                 <label htmlFor="register-gender" className={`mb-2 block ${FOCUS_FIELD_LABEL}`}>
                   {profile.genderLabel}
-                  <OptionalMark label={t.common.optional} />
                 </label>
                 <GenderSelect
                   id="register-gender"

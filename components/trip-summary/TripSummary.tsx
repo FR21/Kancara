@@ -1,6 +1,6 @@
 "use client";
 
-import { MapPinOff, Share2, Sparkles } from "lucide-react";
+import { MapPinOff, Plus, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
@@ -175,7 +175,7 @@ export default function TripSummary({ tripId }: { tripId: string }) {
                 </button>
                 {card.status === "completed" && (
                   <Link href="/plan" className={buttonClass("outline", "small")}>
-                    <Sparkles className="size-4" aria-hidden="true" />
+                    <Plus className="size-4" aria-hidden="true" />
                     {text.nextTrip}
                   </Link>
                 )}

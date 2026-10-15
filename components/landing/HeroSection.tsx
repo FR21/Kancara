@@ -16,16 +16,25 @@ type HeroCopyProps = {
 // The hero stays pinned for the first half screen of scrolling. Over that stretch the trees, which start low
 // enough to leave the headline and its buttons in open sky, rise to their full height while the copy sinks to
 // meet them. Both distances are in svh, the unit the hero itself is sized in.
-const TREE_DROP_SVH = 20;
-const COPY_SINK_SVH = 25;
+const TREE_DROP_SVH = 30;
+const COPY_SINK_SVH = 32;
+/** How far the sky rises (svh) and how much it grows over the whole scroll: the slowest, deepest layer. */
+const SKY_RISE_SVH = 10;
+const SKY_GROWTH = 0.08;
+/** The copy settles back a little as it sinks, like something further away. */
+const COPY_SHRINK = 0.06;
 const COPY_FADE_PX = 600;
 // As the hero leaves the screen its layers part: the trees hang back while the two waves rise, the far one
 // much further than the near one. The trees' distance is in svh, the waves' in percent of their own height.
 // The near wave closes the hero's lower edge, so it never starts lower than its lowest crest allows.
-const TREE_LAG_SVH = 20;
-const FAR_WAVE_FROM = 30;
-const FAR_WAVE_TO = -20;
-const NEAR_WAVE_FROM = 16;
+const TREE_LAG_SVH = 32;
+const FAR_WAVE_FROM = 40;
+const FAR_WAVE_TO = -30;
+const NEAR_WAVE_FROM = 20;
+// How far each layer leans toward the pointer at the screen's edge, in pixels: nearer layers move more.
+const POINTER_SKY = 12;
+const POINTER_TREES = 32;
+const POINTER_COPY = 10;
 
 function HeroCopy({ text }: HeroCopyProps) {
   return (
@@ -100,7 +109,30 @@ function HeroCopy({ text }: HeroCopyProps) {
 export default function HeroSection() {
   const t = useMessages("landing");
   const reduceMotion = useMediaQuery("(prefers-reduced-motion: reduce)");
+  const finePointer = useMediaQuery("(hover: hover) and (pointer: fine)");
   const [scroll, setScroll] = useState({ y: 0, pinned: 0, leaving: 0 });
+  // Where the pointer is, from -1 to 1 across the screen each way. It stays at the centre on touch screens.
+  const [lean, setLean] = useState({ x: 0, y: 0 });
+
+  useEffect(() => {
+    if (reduceMotion || !finePointer) return;
+    let frame = 0;
+    let next = { x: 0, y: 0 };
+    const handleMove = (event: PointerEvent) => {
+      next = { x: (event.clientX / window.innerWidth) * 2 - 1, y: (event.clientY / window.innerHeight) * 2 - 1 };
+      if (frame === 0) {
+        frame = requestAnimationFrame(() => {
+          frame = 0;
+          setLean(next);
+        });
+      }
+    };
+    window.addEventListener("pointermove", handleMove, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("pointermove", handleMove);
+    };
+  }, [reduceMotion, finePointer]);
 
   useEffect(() => {
     let frame = 0;
@@ -132,28 +164,40 @@ export default function HeroSection() {
   const farWave = reduceMotion ? 0 : FAR_WAVE_FROM + (FAR_WAVE_TO - FAR_WAVE_FROM) * scroll.leaving;
   const nearWave = reduceMotion ? 0 : NEAR_WAVE_FROM * (1 - scroll.leaving);
   const copyOpacity = Math.max(1 - scroll.y / COPY_FADE_PX, 0);
+  const depth = reduceMotion ? 0 : (scroll.pinned + scroll.leaving) / 2;
+  const leanX = reduceMotion ? 0 : lean.x;
+  const leanY = reduceMotion ? 0 : lean.y;
 
   return (
     // Nothing of the hero is drawn past its own edges, so the copy cannot show through over the section below.
     // The bottom is let out by a pixel for the waves, which overlap the next section by that much to hide the seam.
     <section className="relative h-[150svh] w-full [clip-path:inset(0_0_-1px_0)]">
       <div className="pointer-events-none sticky top-0 z-0 h-svh w-full overflow-hidden">
-        <Image
-          src="/images/hero/Sky.webp"
-          alt=""
-          fill
-          priority
-          sizes="100vw"
-          className="object-cover object-top opacity-90"
-        />
+        {/* Drawn a little larger than the screen, so leaning toward the pointer never shows an edge. */}
+        <div
+          className="absolute inset-0 transition-[translate,scale] duration-700 ease-out"
+          style={{
+            translate: `${leanX * -POINTER_SKY}px calc(${-SKY_RISE_SVH * depth}svh + ${leanY * -POINTER_SKY}px)`,
+            scale: `${1.06 + SKY_GROWTH * depth}`,
+          }}
+        >
+          <Image
+            src="/images/hero/Sky.webp"
+            alt=""
+            fill
+            priority
+            sizes="100vw"
+            className="object-cover object-top opacity-90"
+          />
+        </div>
         <div className="absolute inset-0 bg-linear-to-b from-black/50 via-black/10 to-black/30" />
       </div>
 
       {/* The trees ignore the pointer, so a button they have risen over can still be pressed. */}
       <div className="pointer-events-none absolute inset-0 z-10 size-full overflow-hidden">
         <div
-          className="absolute inset-0"
-          style={{ translate: `0 ${TREE_DROP_SVH * (1 - travelled) + treeLag}svh` }}
+          className="absolute inset-0 transition-[translate] duration-500 ease-out"
+          style={{ translate: `${leanX * -POINTER_TREES}px calc(${TREE_DROP_SVH * (1 - travelled) + treeLag}svh + ${leanY * -POINTER_TREES * 0.4}px)` }}
         >
           <Image
             src="/images/hero/Treeline.webp"
@@ -190,11 +234,12 @@ export default function HeroSection() {
       </div>
 
       <div
-        className="pointer-events-none sticky top-0 z-5 -mt-[100svh] h-svh w-full"
+        className="pointer-events-none sticky top-0 z-5 -mt-[100svh] h-svh w-full transition-[translate,scale] duration-300 ease-out"
         style={{
           opacity: copyOpacity,
           visibility: copyOpacity === 0 ? "hidden" : undefined,
-          translate: `0 ${COPY_SINK_SVH * travelled}svh`,
+          translate: `${leanX * POINTER_COPY}px calc(${COPY_SINK_SVH * travelled}svh + ${leanY * POINTER_COPY * 0.6}px)`,
+          scale: `${1 - COPY_SHRINK * travelled}`,
         }}
       >
         <HeroCopy text={t.hero} />

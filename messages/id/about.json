@@ -33,13 +33,18 @@
   },
   "problem": {
     "title": "Biasanya, rencana mengikuti suara yang paling keras.",
-    "body": "Yang memakai kursi roda, orang tua dengan balita, teman dengan anggaran terbatas, atau yang punya pantangan makan akhirnya mengalah. Kadang malah memilih tidak ikut.",
-    "answer": "Kancara membalik urutannya. Kebutuhan tiap anggota dicatat dulu, baru rencananya disusun."
+    "intro": "Yang biasanya mengalah:",
+    "people": [
+      "Anggota yang memakai kursi roda",
+      "Orang tua yang membawa balita",
+      "Teman dengan anggaran terbatas",
+      "Yang punya pantangan makanan"
+    ],
+    "outcome": "Kadang mereka memilih tidak ikut sama sekali.",
+    "answer": "Kancara membalik urutannya: kebutuhan setiap anggota dicatat lebih dulu, lalu rencana disusun dari sana."
   },
   "manifest": {
     "title": "Daftar penumpang",
-    "sample": "Ilustrasi",
-    "switchLabel": "Bandingkan cara menyusun rencana",
     "usual": "Rencana biasa",
     "kancara": "Dengan Kancara",
     "heard": "Didengar",
@@ -134,10 +139,7 @@
         "question": "Kancara tersedia dalam bahasa apa?",
         "answer": "Bahasa Indonesia dan bahasa Inggris. Bahasa bisa diganti kapan saja lewat tombol ID dan EN."
       }
-    ],
-    "position": "Pertanyaan {current} dari {total}",
-    "previous": "Pertanyaan sebelumnya",
-    "next": "Pertanyaan berikutnya"
+    ]
   },
   "cta": {
     "title": "Siap berangkat bersama rombonganmu?",

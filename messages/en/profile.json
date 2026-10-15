@@ -2,14 +2,12 @@
   "title": "My profile",
   "subtitle": "Manage your account settings and preferences.",
   "emailLabel": "Email address",
-  "nameLabel": "Display name",
-  "namePlaceholder": "Enter your name",
+  "nameLabel": "Full name",
+  "namePlaceholder": "Your full name",
   "usernameLabel": "Username",
   "usernamePlaceholder": "@johndoe",
   "nationalityLabel": "Country of origin",
   "nationalityPlaceholder": "Search for a country",
-  "ageLabel": "Age",
-  "agePlaceholder": "e.g. 25",
   "genderLabel": "Gender",
   "genderOptions": {
     "none": "Select gender",
@@ -31,7 +29,6 @@
     "type": "Choose an image file (JPG, PNG, or WebP).",
     "size": "The image can be 2 MB at most."
   },
-  "ageError": "Enter an age between 1 and 120.",
   "nameError": "Enter a name, 2 to 50 characters.",
   "usernameError": "Usernames are 3 to 20 characters: letters, numbers, dots, or underscores.",
   "usernameTaken": "That username is taken. Choose another one.",
@@ -43,5 +40,10 @@
   "phoneError": "This number can't be read yet. Check the country code and the number.",
   "savedMembersLink": "Saved member profiles",
   "logoutError": "Couldn't log out. Check your connection, then try again.",
-  "dismiss": "Dismiss"
+  "dismiss": "Dismiss",
+  "birthDateLabel": "Date of birth",
+  "birthDateError": "Enter a valid date of birth, at least 1 year ago.",
+  "pagesLabel": "More profile pages",
+  "fixFields": "Your profile is not saved yet. Fix the marked fields first.",
+  "completeHint": "Add your full name and date of birth. Both are needed before your profile can be saved."
 }

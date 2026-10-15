@@ -331,7 +331,7 @@
     "memberName": "Name or nickname",
     "memberNamePlaceholder": "Example: Mum",
     "ageGroup": "Age group",
-    "age": "Age (optional)",
+    "age": "Age",
     "agePlaceholder": "Example: 67",
     "ageHint": "The age group follows the age.",
     "needsLegend": "Needs",
@@ -361,7 +361,9 @@
     "phone": "Phone number (optional)",
     "phoneHint": "For the WhatsApp, call, and text buttons if they get separated. A number that starts with 0 is read as Indonesian.",
     "phoneInvalid": "This number can't be read yet. Try it with the country code, for example +62.",
-    "noPhoneHint": "Without a phone, {name} gets a Meeting Card to print from the trip's Help page."
+    "noPhoneHint": "Without a phone, {name} gets a Meeting Card to print from the trip's Help page.",
+    "needsPlaceholder": "Choose needs",
+    "needsChosen": "{count} chosen"
   },
   "chat": {
     "resume": "Continue draft",

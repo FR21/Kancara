@@ -37,9 +37,12 @@ const DARK_HERO_ROUTES = new Set(["/"]);
 
 const MENU_BUTTON_ID = "mobile-menu-button";
 
-// A row of the phone menu: an 8px corner, since the rows sit one surface padding inside the menu's own corner.
+// A row of the phone menu: a 48px pill like the navbar above it. The panel holds the pills 8px in, so its corner
+// is the pill's 24px end plus that padding (rounded-pill-frame).
 const MENU_ROW =
-  "flex min-h-12 items-center gap-3 rounded-lg px-4 py-2 text-label-lg transition-[color,background-color,scale] duration-150 ease-out active:scale-[0.99]";
+  "flex min-h-12 items-center gap-3 rounded-full px-5 py-2 text-label-lg transition-[color,background-color,scale] duration-150 ease-out active:scale-[0.99]";
+// The logo leads home, so the navigation lists only the places to go.
+const MENU_LINKS = NAV_LINKS.filter((link) => link.href !== "/");
 
 function menuRowTone(active: boolean) {
   return active ? "bg-primary-subtle text-on-primary-subtle" : "text-text hover:bg-surface-muted";
@@ -189,7 +192,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
 
       <div
         data-over-hero={overHero || undefined}
-        className={`group/nav pointer-events-auto mx-auto flex w-full max-w-5xl items-center justify-between gap-4 rounded-full border py-2 pr-2 pl-4 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ease-out motion-safe:max-w-[calc(64rem-8rem*var(--nav-progress))] motion-safe:translate-y-[calc(var(--nav-progress)*-0.5rem)] ${
+        className={`group/nav pointer-events-auto mx-auto flex min-h-16 w-full max-w-5xl items-center justify-between gap-4 rounded-full border py-2 pr-2 pl-4 transition-[background-color,border-color,box-shadow,backdrop-filter] duration-300 ease-out motion-safe:max-w-[calc(64rem-8rem*var(--nav-progress))] motion-safe:translate-y-[calc(var(--nav-progress)*-0.5rem)] ${
           solid
             ? "border-border bg-surface/95 shadow-lg shadow-neutral-950/10 backdrop-blur-md"
             : "border-transparent bg-transparent"
@@ -216,7 +219,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
 
         <nav aria-label={text.navLabel} className="relative hidden lg:block">
           <ul ref={navListRef} className="flex items-center gap-1">
-            {NAV_LINKS.map((link) => {
+            {MENU_LINKS.map((link) => {
               const active = isActive(link.href);
               return (
                 <li key={link.href}>
@@ -278,7 +281,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
             label={menuOpen ? text.closeMenu : text.openMenu}
-            className="relative group-data-over-hero/nav:text-neutral-50 group-data-over-hero/nav:hover:bg-neutral-50/10 lg:hidden"
+            className="relative size-12 group-data-over-hero/nav:text-neutral-50 group-data-over-hero/nav:hover:bg-neutral-50/10 lg:hidden"
           >
             <Menu
               aria-hidden="true"
@@ -299,7 +302,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
       <div
         id="mobile-menu"
         inert={!menuOpen}
-        className={`mx-auto mt-2 max-w-5xl origin-top-right rounded-surface border border-border bg-surface p-surface shadow-lg shadow-neutral-950/10 transition-[opacity,scale,translate] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-opacity lg:hidden ${
+        className={`mx-auto mt-2 max-w-5xl origin-top-right rounded-pill-frame border border-border bg-surface p-surface shadow-lg [--surface-pad:0.5rem] shadow-neutral-950/10 transition-[opacity,scale,translate] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-opacity lg:hidden ${
           menuOpen
             ? "pointer-events-auto duration-250 opacity-100"
             : "-translate-y-1 scale-[0.97] opacity-0 duration-150"
@@ -307,7 +310,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
       >
         <nav aria-label={text.navLabel}>
           <ul className="flex flex-col gap-1">
-            {NAV_LINKS.map((link, index) => {
+            {MENU_LINKS.map((link, index) => {
               const active = isActive(link.href);
               return (
                 <li
@@ -327,27 +330,28 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
                 </li>
               );
             })}
+            {isLoggedIn && (
+              <li style={{ "--item-index": MENU_LINKS.length } as CSSProperties} className={menuOpen ? "motion-safe:animate-list-in" : ""}>
+                <Link
+                  href="/profile"
+                  onClick={closeMenu}
+                  aria-current={onProfile ? "page" : undefined}
+                  className={`${MENU_ROW} justify-between ${menuRowTone(onProfile)}`}
+                >
+                  {text.profile}
+                  {onProfile && <Smile className="h-2 w-5" />}
+                </Link>
+              </li>
+            )}
           </ul>
         </nav>
 
-        <div className="mt-4 border-t border-border pt-4">
-          {isLoggedIn ? (
-            <Link
-              href="/profile"
-              onClick={closeMenu}
-              aria-current={onProfile ? "page" : undefined}
-              className={`${MENU_ROW} ${menuRowTone(onProfile)}`}
-            >
-              <ProfilePhoto src={picture} className="size-8 ring-2 ring-border" />
-              {text.profile}
-            </Link>
-          ) : (
-            <Link href="/login" onClick={closeMenu} className={`w-full ${buttonClass("primary")}`}>
-              {text.login}
-            </Link>
-          )}
-        </div>
-        <div className="mt-4 flex items-center justify-between border-t border-border pt-4">
+        {!isLoggedIn && (
+          <Link href="/login" onClick={closeMenu} className={`mt-2 w-full ${buttonClass("primary")}`}>
+            {text.login}
+          </Link>
+        )}
+        <div className="mt-2 flex items-center justify-between border-t border-border px-2 pt-2">
           <LanguageToggle label={text.languageToggle} />
           <ThemeToggle label={text.themeToggle} />
         </div>

@@ -1,12 +1,9 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Plane } from "lucide-react";
-import Image from "next/image";
+import { Plane } from "lucide-react";
 import { Fragment, useState } from "react";
 import ScrollReveal from "@/components/landing/ScrollReveal";
-import IconButton from "@/components/ui/IconButton";
 import type { Messages } from "@/lib/messages";
-import { fillTemplate } from "@/lib/plan-draft";
 
 type AboutFaqProps = {
   text: Messages["about"]["faq"];
@@ -16,26 +13,18 @@ type AboutFaqProps = {
 const questionId = (index: number) => `faq-question-${index}`;
 const answerId = (index: number) => `faq-answer-${index}`;
 
-// Questions on the left, the open answer on one plain card on the right. On a phone the same markup stacks:
+// Questions on the left, the open answer on one plain card on the right, both with the same corner. On a phone the same markup stacks:
 // each answer opens under its question. Every answer is in the page whether or not it is the open one, and the
 // same text is published as structured data, so people, search engines, and AI assistants read one version.
 export default function AboutFaq({ text, className }: AboutFaqProps) {
   const [open, setOpen] = useState(0);
   const total = text.items.length;
 
-  // The buttons that step through the answers sit inside the answer that is about to be hidden, so focus moves
-  // to the question that opens instead of being dropped.
-  const step = (by: number) => {
-    const next = (open + by + total) % total;
-    setOpen(next);
-    document.getElementById(questionId(next))?.focus();
-  };
-
   return (
     <section id="faq" className="relative isolate overflow-clip bg-section-muted py-16 lg:py-24">
       <span
         aria-hidden="true"
-        className="parallax-y pointer-events-none absolute -bottom-32 -left-28 -z-10 aspect-square w-96 rounded-full border-2 border-dashed border-primary/25 [--parallax-from:8rem] [--parallax-to:-8rem] lg:w-[30rem]"
+        className="parallax-y pointer-events-none absolute top-1/4 -left-48 -z-10 aspect-square w-96 rounded-full border-2 border-dashed border-primary/25 [--parallax-from:4rem] [--parallax-to:-4rem] lg:w-[30rem]"
       />
       <div className={className}>
         <ScrollReveal className="max-w-2xl">
@@ -45,7 +34,7 @@ export default function AboutFaq({ text, className }: AboutFaqProps) {
 
         <ScrollReveal
           delayMs={120}
-          className="mt-12 lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start lg:gap-x-12"
+          className="mt-12 [--surface-pad:1rem] lg:grid lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)] lg:items-start lg:gap-x-12"
         >
           {text.items.map((item, index) => {
             const selected = index === open;
@@ -58,7 +47,7 @@ export default function AboutFaq({ text, className }: AboutFaqProps) {
                     aria-expanded={selected}
                     aria-controls={answerId(index)}
                     onClick={() => setOpen(index)}
-                    className={`group/question flex min-h-16 w-full cursor-pointer items-center gap-4 surface-compact rounded-surface p-surface text-left transition-[background-color,color,box-shadow,scale] duration-150 ease-out active:scale-[0.99] ${
+                    className={`group/question flex min-h-16 w-full cursor-pointer items-center gap-4 rounded-surface p-surface text-left transition-[background-color,color,box-shadow,scale] duration-150 ease-out active:scale-[0.99] ${
                       selected
                         ? "bg-surface text-text shadow-sm shadow-neutral-950/5 ring-1 ring-border"
                         : "text-text-muted hover:bg-surface/70 hover:text-text"
@@ -95,25 +84,6 @@ export default function AboutFaq({ text, className }: AboutFaqProps) {
                     <p className="text-body leading-relaxed text-pretty text-text sm:text-h3 sm:leading-relaxed">
                       {item.answer}
                     </p>
-                    <div className="mt-6 flex items-center gap-3 border-t border-border pt-4">
-                      <Image
-                        src="/images/logo/kancara_mascot_captain_logo.webp"
-                        alt=""
-                        width={500}
-                        height={500}
-                        sizes="40px"
-                        className="size-10 shrink-0"
-                      />
-                      <p className="min-w-0 flex-1 text-label text-text-muted tabular-nums">
-                        {fillTemplate(text.position, { current: index + 1, total })}
-                      </p>
-                      <IconButton label={text.previous} onClick={() => step(-1)} className="border border-border-strong">
-                        <ArrowLeft className="size-4" aria-hidden="true" />
-                      </IconButton>
-                      <IconButton label={text.next} onClick={() => step(1)} className="border border-border-strong">
-                        <ArrowRight className="size-4" aria-hidden="true" />
-                      </IconButton>
-                    </div>
                   </div>
                 </div>
               </Fragment>

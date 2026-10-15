@@ -3,7 +3,8 @@
 import { Check, CircleAlert, X } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 
-export type NoticeMessage = { id: number; tone: "success" | "error"; message: string };
+/** `duration` overrides how long this one notice stays, for one that is only a glance. */
+export type NoticeMessage = { id: number; tone: "success" | "error"; message: string; duration?: number };
 
 type NoticeProps = {
   /** The notice to show, or null for none. A new `id` is a new notice, even with the same words. */
@@ -38,11 +39,12 @@ export default function Notice({ notice, dismissLabel, duration = DEFAULT_MS, on
   if (!notice && shown && !leaving) setLeaving(true);
 
   const stays = shown?.tone === "error";
+  const stayMs = shown?.duration ?? duration;
   useEffect(() => {
     if (!shown || leaving || stays) return;
-    const timer = setTimeout(() => dismissRef.current(), duration);
+    const timer = setTimeout(() => dismissRef.current(), stayMs);
     return () => clearTimeout(timer);
-  }, [shown, leaving, stays, duration]);
+  }, [shown, leaving, stays, stayMs]);
 
   useEffect(() => {
     if (!leaving) return;
@@ -82,7 +84,7 @@ export default function Notice({ notice, dismissLabel, duration = DEFAULT_MS, on
             <span
               aria-hidden="true"
               className="absolute inset-x-0 bottom-0 h-0.5 origin-left bg-success/60 motion-safe:animate-notice-time"
-              style={{ animationDuration: `${duration}ms` }}
+              style={{ animationDuration: `${stayMs}ms` }}
             />
           )}
         </div>

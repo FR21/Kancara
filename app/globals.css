@@ -388,6 +388,7 @@
  *   surface-compact              a tighter surface for repeated standalone items: 12px padding, 20px corner
  *   rounded-lg                   anything inside a surface: fields, the button on a field's row, images, boxes
  *   rounded-media (12px)         a stop's photo or icon tile; the row padded around it takes rounded-media-frame
+ *   rounded-pill-frame           a panel of 48px pill rows (the phone menu): its padding plus the pills' 24px end
  *   rounded-full                 pills: buttons, chips, badges, toggles, avatars
  *   rounded-sm                   only the focus outline of an inline text link
  */
@@ -403,6 +404,22 @@
 
 @utility surface-compact {
   --surface-pad: 0.75rem;
+}
+
+/* A row of names drifting sideways for ever: the list is drawn twice, so half its width brings it back to the start.
+   It pauses while the pointer is on it. Use with motion-safe:, so reduced motion keeps the row still. */
+@keyframes marquee {
+  to {
+    translate: -50% 0;
+  }
+}
+
+@utility animate-marquee {
+  animation: marquee 40s linear infinite;
+
+  &:hover {
+    animation-play-state: paused;
+  }
 }
 
 /* A list arriving: each item 40ms after the one before, at most eight steps. Set --item-index on each item. */
@@ -433,6 +450,8 @@
   /* A 12px photo or icon tile, and the row around it: its padding plus 12px. */
   --radius-media: 0.75rem;
   --radius-media-frame: calc(var(--surface-pad) + 0.75rem);
+  /* A panel of 48px pill rows (a 24px end) at its own padding: the phone menu. */
+  --radius-pill-frame: calc(var(--surface-pad) + 1.5rem);
   --spacing-surface: var(--surface-pad);
   --color-background: var(--background);
   --color-surface: var(--surface);

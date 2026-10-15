@@ -2,14 +2,12 @@
   "title": "Profil saya",
   "subtitle": "Kelola pengaturan dan preferensi akun Anda.",
   "emailLabel": "Alamat email",
-  "nameLabel": "Nama tampilan",
-  "namePlaceholder": "Masukkan nama Anda",
+  "nameLabel": "Nama lengkap",
+  "namePlaceholder": "Nama lengkapmu",
   "usernameLabel": "Username",
   "usernamePlaceholder": "@johndoe",
   "nationalityLabel": "Asal negara",
   "nationalityPlaceholder": "Cari negara",
-  "ageLabel": "Umur",
-  "agePlaceholder": "Contoh: 25",
   "genderLabel": "Jenis kelamin",
   "genderOptions": {
     "none": "Pilih jenis kelamin",
@@ -31,7 +29,6 @@
     "type": "Pilih file gambar (JPG, PNG, atau WebP).",
     "size": "Ukuran gambar maksimal 2 MB."
   },
-  "ageError": "Isi umur antara 1 dan 120.",
   "nameError": "Isi nama, 2 sampai 50 karakter.",
   "usernameError": "Username 3 sampai 20 karakter: huruf, angka, titik, atau garis bawah.",
   "usernameTaken": "Username itu sudah dipakai. Pilih yang lain.",
@@ -43,5 +40,10 @@
   "phoneError": "Nomor ini belum bisa dibaca. Periksa kode negara dan nomornya.",
   "savedMembersLink": "Profil anggota rombongan",
   "logoutError": "Belum berhasil keluar. Periksa koneksimu, lalu coba lagi.",
-  "dismiss": "Tutup"
+  "dismiss": "Tutup",
+  "birthDateLabel": "Tanggal lahir",
+  "birthDateError": "Isi tanggal lahir yang benar, paling lambat 1 tahun yang lalu.",
+  "pagesLabel": "Halaman profil lainnya",
+  "fixFields": "Profil belum tersimpan. Perbaiki kolom yang ditandai dulu.",
+  "completeHint": "Lengkapi nama lengkap dan tanggal lahirmu. Keduanya wajib diisi sebelum profil bisa disimpan."
 }

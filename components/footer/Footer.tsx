@@ -1,6 +1,5 @@
 "use client";
 
-import { ArrowUp } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
@@ -61,11 +60,6 @@ export default function Footer() {
   const navLabels = useMessages("navbar").links;
   const year = new Date().getFullYear();
   const glowRef = useCursorGlow<HTMLDivElement>();
-
-  const scrollToTop = () => {
-    const reduceMotion = matchMedia("(prefers-reduced-motion: reduce)").matches;
-    window.scrollTo({ top: 0, behavior: reduceMotion ? "auto" : "smooth" });
-  };
 
   return (
     <footer className="relative mt-24 text-on-footer">
@@ -160,17 +154,6 @@ export default function Footer() {
         <div className="border-t border-footer-border">
           <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-4 px-6 py-4 text-body-sm text-on-footer-muted">
             <p>© {year} Kancara</p>
-            <button
-              type="button"
-              onClick={scrollToTop}
-              className="group -mx-4 inline-flex h-11 cursor-pointer items-center gap-2 rounded-full px-4 transition-[color,background-color,scale] duration-150 ease-out hover:bg-footer-border/60 hover:text-on-footer focus-visible:outline-accent active:scale-[0.97]"
-            >
-              {text.backToTop}
-              <ArrowUp
-                aria-hidden="true"
-                className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-y-1"
-              />
-            </button>
           </div>
         </div>
       </div>

@@ -33,13 +33,18 @@
   },
   "problem": {
     "title": "Usually, the plan follows the loudest voice.",
-    "body": "The member who uses a wheelchair, the parent with a toddler, the friend on a tight budget, or the one with dietary restrictions ends up giving way. Sometimes they just stay home.",
-    "answer": "Kancara turns the order around. Each member's needs go down first, and the plan is built from them."
+    "intro": "Who usually gives way:",
+    "people": [
+      "The member who uses a wheelchair",
+      "The parent with a toddler",
+      "The friend on a tight budget",
+      "The one with dietary restrictions"
+    ],
+    "outcome": "Sometimes they simply stay home.",
+    "answer": "Kancara turns the order around: every member's needs go down first, and the plan is built from them."
   },
   "manifest": {
     "title": "Passenger list",
-    "sample": "Illustration",
-    "switchLabel": "Compare ways of planning",
     "usual": "The usual plan",
     "kancara": "With Kancara",
     "heard": "Heard",
@@ -134,10 +139,7 @@
         "question": "Which languages is Kancara available in?",
         "answer": "Indonesian and English. You can switch at any time with the ID and EN buttons."
       }
-    ],
-    "position": "Question {current} of {total}",
-    "previous": "Previous question",
-    "next": "Next question"
+    ]
   },
   "cta": {
     "title": "Ready to set off with your group?",

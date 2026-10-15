@@ -1,5 +1,3 @@
-import { ArrowRight } from "lucide-react";
-import Link from "next/link";
 import PageBackdrop from "@/components/layout/PageBackdrop";
 import PageHeader from "@/components/layout/PageHeader";
 import PageShell from "@/components/layout/PageShell";
@@ -23,11 +21,10 @@ function splitHeading(heading: string, position: number): { number: string; titl
 }
 
 // A legal text laid out for reading: its title and when it changed, a rail of its sections that follows the
-// reader, the sections at a line length of about seventy characters, and the other document at the end. The
+// reader, and the sections at a line length of about seventy characters. The
 // privacy policy and the terms share it.
 export default function LegalDocument({ current, legal }: LegalDocumentProps) {
   const text = legal[current];
-  const other = LEGAL_LINKS.find((link) => link.key !== current);
   const sections = text.sections.map((section, index) => ({
     ...splitHeading(section.heading, index + 1),
     id: `section-${index + 1}`,
@@ -63,18 +60,6 @@ export default function LegalDocument({ current, legal }: LegalDocumentProps) {
             </section>
           ))}
 
-          {other && (
-            <Link
-              href={other.href}
-              className="group mt-12 flex items-center justify-between gap-4 rounded-surface border border-border-strong p-surface text-label-lg text-text transition-[background-color,border-color,scale] duration-150 ease-out hover:border-primary hover:bg-primary-subtle active:scale-[0.99]"
-            >
-              {legal[other.key].title}
-              <ArrowRight
-                className="size-5 shrink-0 text-primary transition-[translate] duration-200 ease-out group-hover:translate-x-1"
-                aria-hidden="true"
-              />
-            </Link>
-          )}
         </article>
       </div>
     </PageShell>

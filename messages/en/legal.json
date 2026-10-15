@@ -3,41 +3,133 @@
   "contents": "On this page",
   "privacy": {
     "title": "Privacy Policy",
-    "lastUpdated": "Last updated: October 10, 2026",
+    "lastUpdated": "Last updated: 15 October 2026",
     "sections": [
       {
-        "heading": "1. Data We Collect",
-        "body": "The data we collect from users includes, but is not limited to:\n- Member profiles, including names, ages, and nationalities.\n- User preferences and needs, including dietary preferences and accessibility requirements.\n- Location data, when users access map-related features.\n- Receipt images, to support budget management features."
+        "heading": "1. About this policy",
+        "body": "Kancara is an app for planning and taking group trips that respect every member's needs. This policy explains what data we collect, why, who else processes it, how long we keep it, and your rights over it.\nIt applies to the Kancara website and app, including when Kancara is installed on your phone. It is written with reference to Indonesia's Personal Data Protection Law (Law No. 27 of 2022, \"UU PDP\")."
       },
       {
-        "heading": "2. How We Use and Store Data",
-        "body": "We use the collected data to provide personalized travel plans and improve Kancara's services. We implement appropriate security measures to protect the data we manage and limit access to it to what is necessary for providing and operating our services."
+        "heading": "2. Data we collect",
+        "body": "We only collect what you enter yourself or what comes up when you use a particular feature:\n- Account: email address, name, username, profile photo (optional), age, gender (optional), country, and phone number.\n- Trip plans: origin, destinations, dates, budget, pace, extra notes, and the itinerary that is built.\n- Group members: nickname, age group, age, needs (for example a wheelchair, halal food, frequent breaks), allergies, interests, phone number if given, and whether the member carries a phone.\n- Help when separated: the meeting point, \"I'm separated\" and \"Found\" reports, and your location, only when you ask for directions or press the share-location button.\n- Other features: travel companions you save, shared bills (member names and expenses), trip memories and their photos, countries you have visited, and menu photos you scan.\n- Technical data: your device's notification token (if you turn notifications on), a session cookie that keeps you signed in, and your IP address, used briefly to limit excessive requests."
       },
       {
-        "heading": "3. Third-Party Services",
-        "body": "Kancara uses third-party services to support certain features, including:\n- Google Maps, to provide map and location features.\n- Gemini by Google, to support AI-powered processing and generate travel recommendations.\nThese third-party providers maintain their own privacy policies and data processing terms. Any personal data shared with or processed by these providers is subject to their respective policies and applicable terms."
+        "heading": "3. Needs and health data",
+        "body": "Needs such as a wheelchair, allergies, dietary restrictions, or rest breaks count as specific personal data under the UU PDP. We use them for one thing only: to build a plan that suits the group and to flag places that do not.\nThis data is never used for advertising, never sold, and never shared beyond the services needed to build your plan (see section 8)."
       },
       {
-        "heading": "4. User Rights Regarding Personal Data",
-        "body": "In accordance with applicable data protection laws (such as the GDPR and Indonesia's PDP Law), users have rights regarding their personal data, subject to applicable laws and regulations. These rights include the right to access and correct personal data, as well as to request its deletion, subject to applicable legal requirements.\nUsers may submit requests concerning their personal data through the Profile menu or by contacting the Kancara support team, in accordance with the procedures provided by the service."
+        "heading": "4. Data about other people and children",
+        "body": "When you plan, you enter details about your group, including children. By doing so you confirm that:\n- You have permission from those members to enter their details.\n- For minors, you are their parent or guardian, or you have their parent's or guardian's permission.\nMembers' details are visible only to the people in the same group."
+      },
+      {
+        "heading": "5. How we use data",
+        "body": "Data is used only to run Kancara:\n- To build the itinerary, backup plans, and a middle ground when members want different things.\n- To prepare packing lists that fit the weather and each person's needs.\n- To show the plan to members who join through the group link.\n- To notify the group when a member is separated or found.\n- To work out shared bills.\n- To keep the service secure, for example by limiting excessive requests.\nKancara shows no ads and does not sell personal data to anyone."
+      },
+      {
+        "heading": "6. Location",
+        "body": "Kancara does not track your location in the background. Your device's location is read only when you ask for it yourself:\n- When you ask for directions to the meeting point.\n- When you press the button to share your location with the group.\n- When you use \"My location\" to set a meeting point.\nThe location used to show you the way stays on your phone. It is sent to the group only after you press share."
+      },
+      {
+        "heading": "7. Artificial intelligence (AI)",
+        "body": "Some features use Google's Gemini AI models: itinerary planning, middle-ground suggestions, packing lists, the field pass, the translator, and the menu scanner.\n- To build a plan, trip details and the group's needs are sent to Gemini. Phone numbers are not sent.\n- For the menu scanner, only the menu photo and the list of restrictions are sent, without members' names.\n- For the translator, only the sentence you want translated is sent.\nAI results are checked against set rules before they are shown, but they can still be wrong. See also section 6 of the Terms and Conditions."
+      },
+      {
+        "heading": "8. Third-party services",
+        "body": "Kancara relies on these services to run its features. Each receives only the data its task needs:\n- Firebase by Google: sign-in (email or Google account) and notifications.\n- Google Gemini: AI features (see section 7).\n- Google Maps Platform: place details, travel times, maps, and location search.\n- Open-Meteo: weather forecasts and city search.\n- OpenStreetMap (Nominatim): the name and address of a meeting point picked on the map.\n- Frankfurter: today's exchange rates.\n- Booking.com via RapidAPI: accommodation search.\n- Neon: the database that stores account and trip data.\n- A file storage provider: profile photos and memory photos.\nUse of Google Maps Platform is subject to the Google Maps Terms of Service (https://maps.google.com/help/terms_maps/) and the Google Privacy Policy (https://policies.google.com/privacy). Google's general Terms of Service: https://policies.google.com/terms."
+      },
+      {
+        "heading": "9. Data stored on your device",
+        "body": "To keep working without a signal, Kancara stores some things on your device:\n- Pages and trip data you have opened.\n- Unfinished plan drafts.\n- A help pack with the group's contacts and the meeting point.\n- Actions taken offline, which are sent as soon as the signal returns.\nWhen you sign out, all of this is removed from the device. Only your language and display theme choices remain."
+      },
+      {
+        "heading": "10. Security",
+        "body": "This is how we protect data:\n- All connections use HTTPS.\n- Phone numbers (your own and the group's contacts), allergies and notes in saved profiles, the content of the field pass, and notification tokens are encrypted before they are stored.\n- A trip's data can only be opened by the members of that trip.\n- Your sign-in session is kept in a cookie that page scripts cannot read, and it lasts 14 days.\nNo system is completely immune. If a data breach puts you at risk, we will tell you as required by the UU PDP."
+      },
+      {
+        "heading": "11. How long we keep data",
+        "body": "- Account and trip data is kept while your account is active.\n- Data you delete (for example a trip, a saved profile, or a memory) is hidden right away and no longer used.\n- Data that comes from Google Maps Platform, such as coordinates, distances, and travel times, is kept for 30 days at most, except Google's place IDs.\n- If you ask for your account to be deleted, we delete your personal data, except what the law requires us to keep."
+      },
+      {
+        "heading": "12. Your rights",
+        "body": "Under the UU PDP, you have the right to:\n- Know what data we hold about you and get a copy of it.\n- Correct data that is wrong. Most of it you can change yourself in your Profile and on your trip pages.\n- Ask for data to be deleted, including your whole account.\n- Withdraw consent, for example by turning notifications off or no longer sharing your location.\n- Object to how your data is processed.\nFor anything you cannot do yourself in the app, contact us (see section 14). We will respond within the time limits set by the UU PDP."
+      },
+      {
+        "heading": "13. Changes to this policy",
+        "body": "This policy may change when features or the law change. The date of the last update is always shown at the top of this page. For important changes, we will let you know in the app before they take effect."
+      },
+      {
+        "heading": "14. Contact us",
+        "body": "For questions or requests about your personal data, contact the Kancara team."
       }
     ]
   },
   "terms": {
-    "title": "Terms & Conditions",
-    "lastUpdated": "Last updated: October 10, 2026",
+    "title": "Terms and Conditions",
+    "lastUpdated": "Last updated: 15 October 2026",
     "sections": [
       {
-        "heading": "1. Acceptable Use",
-        "body": "Users must use Kancara responsibly and must not misuse the service. Users must not submit excessive requests to the AI system or upload content that violates applicable laws."
+        "heading": "1. Agreement",
+        "body": "By creating an account or using Kancara, you agree to these Terms and Conditions and to Kancara's Privacy Policy. If you do not agree, please do not use the service."
       },
       {
-        "heading": "2. AI Limitations and Information Accuracy",
-        "body": "Kancara uses artificial intelligence (AI) to provide travel recommendations. Although we strive to provide accurate information, AI technology has limitations. Users are therefore responsible for independently verifying important information, including:\n- The halal status of food and its suitability for users' dietary needs and restrictions.\n- The availability of accessibility facilities at destinations.\n- Operating hours and ticket prices."
+        "heading": "2. About the service",
+        "body": "Kancara helps you plan and take group trips. Kancara is not a travel agent:\n- It does not sell tickets.\n- It does not book accommodation or transport on your behalf.\n- It does not guarantee that suggested places are available.\nAll bookings and payments are made by you, directly with the providers concerned."
       },
       {
-        "heading": "3. Limitation of Liability",
-        "body": "To the extent permitted by applicable law, Kancara is not liable for any losses, injuries, or inconvenience arising from users' reliance on its recommendations during their travels. Kancara's recommendations are provided for informational and guidance purposes only. Users remain responsible for verifying relevant information and making decisions based on their own judgment."
+        "heading": "3. Your account",
+        "body": "- You must be at least 17 years old, or have a parent's or guardian's permission, to create an account.\n- Keep your account details accurate and up to date.\n- Keep your password secret. You are responsible for all activity on your account.\n- If you think someone else is using your account, change your password straight away and contact us."
+      },
+      {
+        "heading": "4. Group members' data",
+        "body": "When you enter details about other people, such as group members or saved travel companions, you confirm you have their permission. For minors, that permission must come from a parent or guardian. Share the group link only with members of your group: anyone who holds it can join the trip."
+      },
+      {
+        "heading": "5. What you may not do",
+        "body": "When using Kancara, you may not:\n- Upload content that is illegal, offensive, or infringes the rights of others.\n- Make false \"I'm separated\" reports or misuse the help features.\n- Send large volumes of automated requests, scrape data, or try to break into the system.\n- Use other people's data without permission.\n- Use Kancara for any unlawful purpose.\nWe may limit or end access for accounts that break these rules."
+      },
+      {
+        "heading": "6. AI recommendations and their limits",
+        "body": "Part of Kancara's content is written by AI and checked against the group's needs, but it can still be wrong or out of date. Always check these yourself before you travel:\n- Halal status and ingredients, especially for allergies.\n- Accessibility facilities, such as wheelchair access and toilets.\n- Opening hours, prices, and availability.\n- Weather forecasts and travel times.\n- Emergency numbers in the field pass, against your destination's official sources.\nThe menu scanner and the translator can also be wrong. For severe allergies, always confirm directly with the restaurant."
+      },
+      {
+        "heading": "7. The help features are not an emergency service",
+        "body": "\"I'm separated\", the meeting point, and group notifications help a separated member find the group again. They do not replace emergency services:\n- In an emergency, call the local emergency number straight away (for example 112).\n- Notifications may be delayed or not arrive when the signal is weak or the device is saving power.\n- Reports made offline are only sent once the signal returns."
+      },
+      {
+        "heading": "8. Information from third parties",
+        "body": "Place details, maps, travel times, weather, exchange rates, and accommodation come from third-party providers such as Google Maps Platform, Open-Meteo, Frankfurter, and Booking.com. We do not guarantee that this information is always accurate or current. Google Maps content is subject to the Google Maps Terms of Service (https://maps.google.com/help/terms_maps/) and Google's Terms of Service (https://policies.google.com/terms)."
+      },
+      {
+        "heading": "9. Your content",
+        "body": "Photos, notes, and memories you upload remain yours. You allow Kancara to store them and show them to your group, only as far as needed to run the service. Make sure you have the right to share that content, including photos of other people."
+      },
+      {
+        "heading": "10. Availability",
+        "body": "We work to keep Kancara running, but we cannot guarantee it will always be available without interruption. Some features, such as plan building, the menu scanner, the translator, and maps, need an internet connection. Features may also change, be added, or be retired as Kancara develops."
+      },
+      {
+        "heading": "11. Cost",
+        "body": "Kancara is currently free to use. If paid features are ever introduced, we will explain their price and terms clearly before you use them."
+      },
+      {
+        "heading": "12. Limitation of liability",
+        "body": "As far as the law allows, Kancara is not liable for losses, injuries, delays, or costs that arise during a trip from using Kancara's recommendations or information. Final decisions during the trip remain with you and your group."
+      },
+      {
+        "heading": "13. Ending your use",
+        "body": "You can stop using Kancara at any time and ask for your account to be deleted. We may suspend or close accounts that break these terms and, where possible, will tell you why."
+      },
+      {
+        "heading": "14. Governing law",
+        "body": "These terms are governed by the laws of the Republic of Indonesia. Any dispute will first be settled through discussion in good faith."
+      },
+      {
+        "heading": "15. Changes to these terms",
+        "body": "These terms may change. The date of the last update is shown at the top of this page. For important changes, we will let you know in the app before they take effect. By continuing to use Kancara after a change takes effect, you accept it."
+      },
+      {
+        "heading": "16. Contact us",
+        "body": "For questions about these Terms and Conditions, contact the Kancara team."
       }
     ]
   }

@@ -2,11 +2,14 @@
 
 import { Check, CircleAlert, Loader2 } from "lucide-react";
 import { type FormEvent, useId, useRef, useState } from "react";
+import RequiredMark from "@/components/ui/RequiredMark";
+import SelectField from "@/components/ui/SelectField";
 import Sheet from "@/components/ui/Sheet";
-import { choiceClass, FIELD_LABEL, GHOST_BUTTON, INPUT, PRIMARY_BUTTON, TEXTAREA } from "@/components/ui/styles";
+import { FIELD_LABEL, GHOST_BUTTON, INPUT, PRIMARY_BUTTON, TEXTAREA } from "@/components/ui/styles";
 import { type SavedProfilesFailure, describeFailure } from "@/lib/client/saved-profiles";
 import type { Messages } from "@/lib/messages";
 import {
+  type AgeGroup,
   type Member,
   type PlanDraftAction,
   AGE_GROUPS,
@@ -20,7 +23,6 @@ import {
   type SavedProfileDraft,
   MAX_PROFILE_NAME_CHARS,
   MAX_PROFILE_NOTES_CHARS,
-  MAX_RELATIONSHIP_CHARS,
   MAX_SAVED_PROFILES,
   profileToMember,
 } from "@/lib/saved-profiles/profile";
@@ -95,6 +97,15 @@ export default function SavedProfileEditor({ target, planText, text, onClose, on
     }
   };
 
+  // A relationship typed by hand before the list existed stays a choice of its own, so opening the profile does not
+  // lose it. A listed one is matched however it was capitalised.
+  const listedRelationship = text.editor.relationships.find((choice) => sameText(choice, relationship));
+  const relationshipValue = listedRelationship ?? relationship;
+  const relationshipChoices =
+    relationshipValue === "" || listedRelationship !== undefined
+      ? text.editor.relationships
+      : [...text.editor.relationships, relationshipValue];
+
   const failureMessage = failure === "full" ? fillTemplate(text.errors.full, { count: MAX_SAVED_PROFILES }) : null;
   const formId = `${fieldId}-form`;
 
@@ -129,8 +140,9 @@ export default function SavedProfileEditor({ target, planText, text, onClose, on
       <form id={formId} noValidate onSubmit={submit} className={FORM_GROUPS}>
         <div className={FORM_GROUP}>
           <div>
-            <label htmlFor={`${fieldId}-name`} className={FIELD_LABEL}>
+            <label htmlFor={`${fieldId}-name`} className={`${FIELD_LABEL} block`}>
               {text.editor.name}
+              <RequiredMark />
             </label>
             <input
               ref={nameRef}
@@ -158,57 +170,45 @@ export default function SavedProfileEditor({ target, planText, text, onClose, on
           </div>
 
           <div>
-            <label htmlFor={`${fieldId}-relationship`} className={FIELD_LABEL}>
+            <label htmlFor={`${fieldId}-relationship`} className={`${FIELD_LABEL} block`}>
               {text.editor.relationship}
             </label>
-            <input
+            <SelectField
               id={`${fieldId}-relationship`}
-              type="text"
-              autoComplete="off"
-              maxLength={MAX_RELATIONSHIP_CHARS}
-              value={relationship}
-              placeholder={text.editor.relationshipPlaceholder}
+              value={relationshipValue}
               onChange={(event) => setRelationship(event.target.value)}
-              className={`${INPUT} mt-2`}
-            />
-            <div role="group" aria-label={text.editor.relationshipQuick} className="mt-2 flex flex-wrap gap-2">
-              {text.editor.relationships.map((choice) => {
-                const selected = sameText(relationship, choice);
-                return (
-                  <button
-                    key={choice}
-                    type="button"
-                    aria-pressed={selected}
-                    onClick={() => setRelationship(selected ? "" : choice)}
-                    className={choiceClass(selected)}
-                  >
-                    {choice}
-                  </button>
-                );
-              })}
-            </div>
+              className="mt-2"
+            >
+              <option value="">{text.editor.relationshipPlaceholder}</option>
+              {relationshipChoices.map((choice) => (
+                <option key={choice} value={choice}>
+                  {choice}
+                </option>
+              ))}
+            </SelectField>
           </div>
 
-          <fieldset className="min-w-0">
-            <legend className={FIELD_LABEL}>{planText.pass.ageGroup}</legend>
-            <div className="mt-2 flex flex-wrap gap-2">
-              {AGE_GROUPS.map((ageGroup) => {
-                const selected = member.ageGroup === ageGroup;
-                return (
-                  <button
-                    key={ageGroup}
-                    type="button"
-                    aria-pressed={selected}
-                    onClick={() => edit({ type: "updateMember", id: member.id, changes: { ageGroup } })}
-                    className={choiceClass(selected)}
-                  >
-                    {selected && <Check className="size-4" strokeWidth={3} aria-hidden="true" />}
-                    {planText.ageGroups[ageGroup]}
-                  </button>
-                );
-              })}
-            </div>
-          </fieldset>
+          <div>
+            <label htmlFor={`${fieldId}-age-group`} className={`${FIELD_LABEL} block`}>
+              {planText.pass.ageGroup}
+              <RequiredMark />
+            </label>
+            <SelectField
+              id={`${fieldId}-age-group`}
+              required
+              value={member.ageGroup}
+              onChange={(event) =>
+                edit({ type: "updateMember", id: member.id, changes: { ageGroup: event.target.value as AgeGroup } })
+              }
+              className="mt-2"
+            >
+              {AGE_GROUPS.map((ageGroup) => (
+                <option key={ageGroup} value={ageGroup}>
+                  {planText.ageGroups[ageGroup]}
+                </option>
+              ))}
+            </SelectField>
+          </div>
 
           <div>
             <label htmlFor={`${fieldId}-age`} className={`${FIELD_LABEL} block`}>
@@ -241,7 +241,7 @@ export default function SavedProfileEditor({ target, planText, text, onClose, on
 
         <div className={FORM_GROUP}>
           <div>
-            <label htmlFor={`${fieldId}-notes`} className={FIELD_LABEL}>
+            <label htmlFor={`${fieldId}-notes`} className={`${FIELD_LABEL} block`}>
               {text.editor.notes}
             </label>
             <textarea
@@ -251,7 +251,8 @@ export default function SavedProfileEditor({ target, planText, text, onClose, on
               placeholder={text.editor.notesPlaceholder}
               aria-describedby={`${fieldId}-notes-hint`}
               onChange={(event) => setNotes(event.target.value)}
-              className={`${TEXTAREA} mt-2 block`}
+              // One size: longer notes scroll inside the box instead of the box being dragged taller.
+              className={`${TEXTAREA} mt-2 block h-32 resize-none overflow-y-auto overscroll-contain`}
             />
             <p id={`${fieldId}-notes-hint`} className="mt-2 text-caption text-text-muted">
               {text.editor.notesHint}

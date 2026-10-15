@@ -1,12 +1,11 @@
 "use client";
 
-import { ArrowRight, Check, CircleDashed } from "lucide-react";
+import { Accessibility, Baby, Check, CircleDashed, type LucideIcon, Utensils, Wallet } from "lucide-react";
 import Image from "next/image";
-import Link from "next/link";
 import ScrollReveal from "@/components/landing/ScrollReveal";
-import { ACCENT_CTA, QUIET_CTA } from "@/components/landing/styles";
 import { useMessages } from "@/lib/use-messages";
 import { useTilt } from "@/lib/use-tilt";
+import CtaSection from "@/components/landing/CtaSection";
 import AboutFaq from "./AboutFaq";
 import AboutRouteCard from "./AboutRouteCard";
 import ManifestIllustration from "./ManifestIllustration";
@@ -16,6 +15,8 @@ const SECTION_TITLE = "font-heading text-h1 text-balance text-text sm:text-displ
 const LEAD = "text-body text-pretty text-text-muted sm:text-h3";
 const LIST_TITLE = "font-sans text-label text-text-muted";
 const STAMP_STEP_MS = 90;
+// One mark per kind of person who usually gives way, in the order the copy names them.
+const PEOPLE_ICONS: LucideIcon[] = [Accessibility, Baby, Wallet, Utensils];
 // A dashed ring that drifts behind a band at its own pace, echoing the route line on the card under the hero.
 const ROUTE_RING =
   "parallax-y pointer-events-none absolute -z-10 aspect-square rounded-full border-2 border-dashed [--parallax-from:10rem] [--parallax-to:-10rem]";
@@ -118,8 +119,22 @@ export default function AboutContent() {
       <section className={`${CONTAINER} py-16 lg:grid lg:grid-cols-[5fr_6fr] lg:items-center lg:gap-16 lg:py-24`}>
         <ScrollReveal from="left" className="lg:parallax-y lg:[--parallax-from:-2rem] lg:[--parallax-to:2rem]">
           <h2 className={SECTION_TITLE}>{text.problem.title}</h2>
-          <p className={`mt-4 ${LEAD}`}>{text.problem.body}</p>
-          <p className="mt-4 text-body font-bold text-pretty text-primary sm:text-h3 sm:font-semibold">
+          <p className={`mt-6 ${LEAD}`}>{text.problem.intro}</p>
+          <ul className="mt-4 space-y-3">
+            {text.problem.people.map((person, index) => {
+              const Icon = PEOPLE_ICONS[index % PEOPLE_ICONS.length];
+              return (
+                <li key={person} className="flex items-center gap-3 text-body text-pretty text-text">
+                  <span aria-hidden="true" className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-primary">
+                    <Icon className="size-4" />
+                  </span>
+                  {person}
+                </li>
+              );
+            })}
+          </ul>
+          <p className={`mt-4 ${LEAD}`}>{text.problem.outcome}</p>
+          <p className="mt-8 text-body font-bold text-pretty text-primary sm:text-h3 sm:font-semibold">
             {text.problem.answer}
           </p>
         </ScrollReveal>
@@ -197,35 +212,7 @@ export default function AboutContent() {
 
       <AboutFaq text={text.faq} className={CONTAINER} />
 
-      <section className="relative isolate overflow-clip bg-cta px-4 py-16 sm:px-6 lg:py-24">
-        <span aria-hidden="true" className={`${ROUTE_RING} -bottom-40 -left-24 w-80 border-primary/30 lg:w-[28rem]`} />
-        <ScrollReveal className="mx-auto max-w-3xl text-center">
-          <h2 className={SECTION_TITLE}>{text.cta.title}</h2>
-          <p className={`mx-auto mt-4 max-w-xl ${LEAD}`}>{text.cta.body}</p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-6">
-            <Link
-              href="/plan"
-              className={`${ACCENT_CTA} w-full sm:w-auto`}
-            >
-              <span
-                aria-hidden="true"
-                className="pointer-events-none absolute inset-y-0 left-0 w-1/3 bg-linear-to-r from-transparent via-neutral-50/70 to-transparent opacity-0 group-hover:motion-safe:animate-glint"
-              />
-              <span className="relative">{text.cta.primary}</span>
-              <ArrowRight
-                className="relative size-5 transition-[translate] duration-200 ease-out group-hover:translate-x-1"
-                aria-hidden="true"
-              />
-            </Link>
-            <Link
-              href="/#story-steps"
-              className={`${QUIET_CTA} text-text`}
-            >
-              {text.cta.secondary}
-            </Link>
-          </div>
-        </ScrollReveal>
-      </section>
+      <CtaSection page="about" />
     </main>
   );
 }

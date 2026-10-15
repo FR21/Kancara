@@ -3,9 +3,7 @@
   "lead": "Putar globenya, lalu ketuk negara yang pernah kamu kunjungi.",
   "open": "Jejak perjalananku",
   "view": {
-    "label": "Tampilan",
-    "globe": "Globe",
-    "map": "Peta"
+    "label": "Tampilan"
   },
   "stage": {
     "label": "Globe dunia, {count} negara ditandai. Tombol panah memutar globe, Enter menandai negara di tengah.",

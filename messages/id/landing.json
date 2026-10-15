@@ -105,37 +105,37 @@
   "offline": {
     "titlePart1": "Sinyal bisa hilang.",
     "titlePart2": "Rombongan tetap terhubung.",
-    "description": "Seluruh itinerary, peta rute, kontak darurat, dan pembaca menu OCR tersimpan otomatis di ponsel sebelum berangkat. Tetap berfungsi penuh tanpa internet.",
+    "description": "Itinerary, paspor lapangan, dan halaman bantuan lengkap dengan kontak darurat tersimpan otomatis di ponsel sebelum berangkat. Saat sinyal hilang, semuanya tetap bisa dibuka.",
     "points": [
-      "Peta rute offline & itinerary adaptif",
-      "Check in antar anggota rombongan tanpa sinyal",
-      "Dokumen perjalanan & kontak darurat siap 100%"
+      "Itinerary & paspor lapangan tetap bisa dibuka tanpa sinyal",
+      "Tombol \"Saya terpisah\" tetap bisa ditekan, lalu terkirim begitu sinyal kembali",
+      "Kontak darurat & nomor penting selalu ada di ponsel"
     ],
-    "cta": "Coba fitur offline",
-    "statusPill": "Semua anggota terhubung",
-    "subStatus": "Tersinkronisasi lokal · Tanpa internet",
+    "cta": "Rencanakan perjalanan",
+    "statusPill": "Tersimpan di ponsel",
+    "subStatus": "Siap dibuka tanpa internet",
     "offlineCard": {
       "title": "Offline",
-      "body": "Tetap terhubung"
+      "body": "Tetap bisa dibuka"
     },
     "calmCard": {
       "title": "Tetap tenang",
-      "body": "Berfungsi tanpa sinyal"
+      "body": "Tanpa sinyal pun siap"
     },
     "phone": {
-      "label": "Ilustrasi aplikasi Kancara saat offline: seluruh rombongan tetap terhubung lewat jaringan peer-to-peer.",
+      "label": "Ilustrasi aplikasi Kancara saat offline: rencana perjalanan, paspor lapangan, dan kontak darurat tetap bisa dibuka dari ponsel.",
       "app": "kancara",
       "saved": "Tersimpan",
       "destination": "Pine Ridge Camp",
-      "network": "Peer-to-peer aktif",
-      "checkIn": "Saya bersama rombongan"
+      "network": "Mode offline",
+      "checkIn": "Saya terpisah"
     }
   },
   "cta": {
     "heading": "Siap merencanakan liburan rombongan yang nyaman?",
     "description": "Mulai susun rencana rombongan inklusif pertamamu dalam 60 detik tanpa perlu pendaftaran rumit.",
     "ctaPrimary": "Mulai rencana sekarang",
-    "ctaSecondary": "Pelajari mode offline",
+    "ctaSecondary": "Kenali Kancara",
     "note": "100% gratis · Siap dipasang di ponsel"
   }
 }

@@ -331,7 +331,7 @@
     "memberName": "Nama atau panggilan",
     "memberNamePlaceholder": "Contoh: Ibu",
     "ageGroup": "Kelompok usia",
-    "age": "Usia (opsional)",
+    "age": "Usia",
     "agePlaceholder": "Contoh: 67",
     "ageHint": "Kelompok usia ikut menyesuaikan.",
     "needsLegend": "Kebutuhan",
@@ -361,7 +361,9 @@
     "phone": "Nomor telepon (opsional)",
     "phoneHint": "Untuk tombol WhatsApp, telepon, dan SMS saat terpisah. Nomor berawalan 0 dibaca sebagai nomor Indonesia.",
     "phoneInvalid": "Nomor ini belum bisa dibaca. Coba tulis dengan kode negara, misalnya +62.",
-    "noPhoneHint": "Tanpa HP, {name} mendapat Kartu Kumpul untuk dicetak dari halaman Bantuan trip."
+    "noPhoneHint": "Tanpa HP, {name} mendapat Kartu Kumpul untuk dicetak dari halaman Bantuan trip.",
+    "needsPlaceholder": "Pilih kebutuhan",
+    "needsChosen": "{count} dipilih"
   },
   "chat": {
     "resume": "Lanjutkan draf",

@@ -1,16 +1,16 @@
 "use client";
 
 import { signOut } from "firebase/auth";
-import { Check, Loader2, Lock, LogOut } from "lucide-react";
+import { Check, Info, Loader2, Lock, LogOut } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type ChangeEvent, type CSSProperties, type FormEvent, useEffect, useRef, useState } from "react";
 import { FOCUS_FIELD_LABEL } from "@/components/auth/TextField";
 import Notice, { type NoticeMessage } from "@/components/layout/Notice";
-import PageHeader from "@/components/layout/PageHeader";
 import CountryPicker from "@/components/profile/CountryPicker";
 import GenderSelect from "@/components/profile/GenderSelect";
 import PhoneField from "@/components/profile/PhoneField";
 import ProfileIdentity from "@/components/profile/ProfileIdentity";
+import RequiredMark from "@/components/ui/RequiredMark";
 import { buttonClass, GHOST_BUTTON, INPUT, PRIMARY_BUTTON } from "@/components/ui/styles";
 import { ProfileError, saveProfileDetails, uploadProfilePhoto } from "@/lib/client/profile";
 import { forgetPush } from "@/lib/client/push";
@@ -18,7 +18,7 @@ import { removeSession } from "@/lib/auth/session";
 import { clearOfflineCaches } from "@/lib/offline";
 import { auth } from "@/lib/firebase/client";
 import type { Profile } from "@/lib/profile";
-import { isAgeValid, isUsernameValid, MAX_AGE, MAX_PHOTO_BYTES } from "@/lib/profile-fields";
+import { birthDateRange, isBirthDateValid, isNameValid, isUsernameValid, MAX_PHOTO_BYTES } from "@/lib/profile-fields";
 import { normalizePhone } from "@/lib/safety/contact";
 import { callingCode, joinPhone, splitPhone } from "@/lib/travel/calling-codes";
 import { countryOf } from "@/lib/travel/country-search";
@@ -29,12 +29,16 @@ type ProfileWorkspaceProps = {
   profile: Profile;
 };
 
-const FIELDS = ["name", "username", "nationality", "phone", "age", "gender"] as const;
+const FIELDS = ["name", "username", "nationality", "phone", "birthDate", "gender"] as const;
+/** The fields a profile cannot be saved without. */
+const REQUIRED: readonly FieldKey[] = ["name", "birthDate"];
 type FieldKey = (typeof FIELDS)[number];
 type Details = Record<FieldKey, string>;
 
+// Each row arrives on its own, which gives it its own layer; the row holding the focus is lifted above the rows
+// after it, so a list that opens from its field (the country picker) is never drawn underneath them.
 const FIELD =
-  "group sm:grid sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start sm:gap-x-6 motion-safe:animate-list-in";
+  "group relative focus-within:z-20 sm:grid sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start sm:gap-x-6 motion-safe:animate-list-in";
 const FIELD_LABEL = `mb-2 block sm:mb-0 sm:leading-12 ${FOCUS_FIELD_LABEL}`;
 // The fields arrive after the page header and the photo column, which take the first places in the sequence.
 const FIRST_FIELD_PLACE = 3;
@@ -56,7 +60,7 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
     username: profile.username,
     nationality: countryOf(profile.nationality),
     phone: profile.phone,
-    age: profile.age,
+    birthDate: profile.birthDate,
     gender: profile.gender,
   });
   const [form, setForm] = useState<Details>(saved);
@@ -68,6 +72,9 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [notice, setNotice] = useState<NoticeMessage | null>(null);
+  // A field says what is wrong with it once it has been left, or once saving was tried, not the moment the page
+  // opens on an account that has never filled it.
+  const [checked, setChecked] = useState<ReadonlySet<FieldKey>>(new Set());
   const noticeCount = useRef(0);
 
   useEffect(
@@ -82,7 +89,7 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
     username: t.usernameLabel,
     nationality: t.nationalityLabel,
     phone: t.phoneLabel,
-    age: t.ageLabel,
+    birthDate: t.birthDateLabel,
     gender: t.genderLabel,
   };
   const placeholders: Details = {
@@ -90,14 +97,26 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
     username: t.usernamePlaceholder,
     nationality: t.nationalityPlaceholder,
     phone: t.phonePlaceholder,
-    age: t.agePlaceholder,
+    birthDate: "",
     gender: "",
   };
 
   const displayName = saved.name || email?.split("@")[0] || t.fallbackName;
   const displayPhoto = previewUrl || photo || null;
-  const ageInvalid = !isAgeValid(form.age);
+  const check = (field: FieldKey) => setChecked((current) => (current.has(field) ? current : new Set(current).add(field)));
+  const nameInvalid = !isNameValid(form.name);
+  const birthDateInvalid = !isBirthDateValid(form.birthDate);
+  const nameShown = nameInvalid && checked.has("name");
+  const birthDateShown = birthDateInvalid && checked.has("birthDate");
+  const birthRange = birthDateRange();
   const usernameInvalid = !isUsernameValid(form.username);
+  // An account from before these two were asked for opens with them empty, so the page says what to fill in.
+  const incomplete = saved.name === "" || saved.birthDate === "";
+  const fieldErrorId = (field: FieldKey) => {
+    if (field === "username" && usernameInvalid) return "profile-username-error";
+    if (field === "name" && nameShown) return "profile-name-error";
+    return undefined;
+  };
   const phoneInvalid = form.phone !== "" && normalizePhone(form.phone) === null;
   const dirty = selectedFile !== null || FIELDS.some((field) => form[field] !== saved[field]);
   const inputClass = `${INPUT} disabled:cursor-not-allowed aria-invalid:border-error`;
@@ -176,16 +195,19 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
 
   const handleSave = async (event: FormEvent) => {
     event.preventDefault();
-    if (usernameInvalid) {
-      document.getElementById("profile-username")?.focus();
-      return;
-    }
-    if (phoneInvalid) {
-      document.getElementById("profile-phone")?.focus();
-      return;
-    }
-    if (ageInvalid) {
-      document.getElementById("profile-age")?.focus();
+    // Every problem shows at once, the first one in the form's order takes the focus, and a notice says why
+    // nothing was saved, so a press of Save never ends in silence.
+    const invalid: Partial<Record<FieldKey, boolean>> = {
+      name: nameInvalid,
+      username: usernameInvalid,
+      phone: phoneInvalid,
+      birthDate: birthDateInvalid,
+    };
+    const firstInvalid = FIELDS.find((field) => invalid[field]);
+    if (firstInvalid) {
+      setChecked(new Set(FIELDS));
+      document.getElementById(`profile-${firstInvalid}`)?.focus();
+      announce("error", t.fixFields);
       return;
     }
 
@@ -199,7 +221,7 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
         username: form.username.trim().replace(/^@/, ""),
         nationality: form.nationality,
         phone: normalizePhone(form.phone) ?? "",
-        age: form.age,
+        birthDate: form.birthDate,
         gender: form.gender,
       };
 
@@ -225,9 +247,10 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
 
   return (
     <>
-      <PageHeader title={t.title} lead={t.subtitle} />
+      {/* The page needs no visible title: the photo and the name say whose profile this is. */}
+      <h1 className="sr-only">{t.title}</h1>
 
-      <div className="mt-8 lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start lg:gap-x-16">
+      <div className="lg:grid lg:grid-cols-[16rem_minmax(0,1fr)] lg:items-start lg:gap-x-16">
         <ProfileIdentity
           displayName={displayName}
           username={saved.username}
@@ -238,10 +261,20 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
 
         <form onSubmit={handleSave} noValidate className="mt-8 lg:mt-0">
           <div className="flex flex-col gap-4">
+            {incomplete && (
+              <p
+                style={arrival(FIRST_FIELD_PLACE - 1)}
+                className="flex items-start gap-3 rounded-lg bg-primary-subtle px-4 py-3 text-body-sm text-pretty text-on-primary-subtle motion-safe:animate-list-in"
+              >
+                <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                {t.completeHint}
+              </p>
+            )}
             {FIELDS.map((field, index) => (
               <div key={field} className={FIELD} style={arrival(FIRST_FIELD_PLACE + index)}>
                 <label htmlFor={`profile-${field}`} className={FIELD_LABEL}>
                   {labels[field]}
+                  {REQUIRED.includes(field) && <RequiredMark />}
                 </label>
                 {field === "gender" && (
                   <GenderSelect
@@ -252,25 +285,25 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
                     onChange={(value) => setField("gender", value)}
                   />
                 )}
-                {field === "age" && (
+                {field === "birthDate" && (
                   <div>
                     <input
-                      id="profile-age"
-                      type="number"
-                      inputMode="numeric"
-                      min={1}
-                      max={MAX_AGE}
-                      value={form.age}
-                      onChange={(event) => setField("age", event.target.value)}
+                      id="profile-birthDate"
+                      type="date"
+                      required
+                      min={birthRange.min}
+                      max={birthRange.max}
+                      value={form.birthDate}
+                      onChange={(event) => setField("birthDate", event.target.value)}
+                      onBlur={() => check("birthDate")}
                       disabled={saving}
-                      placeholder={placeholders.age}
-                      aria-invalid={ageInvalid}
-                      aria-describedby={ageInvalid ? "profile-age-error" : undefined}
+                      aria-invalid={birthDateShown || undefined}
+                      aria-describedby={birthDateShown ? "profile-birthDate-error" : undefined}
                       className={inputClass}
                     />
-                    {ageInvalid && (
-                      <p id="profile-age-error" className="mt-2 text-body-sm text-error motion-safe:animate-message-in">
-                        {t.ageError}
+                    {birthDateShown && (
+                      <p id="profile-birthDate-error" className="mt-2 text-body-sm text-error motion-safe:animate-message-in">
+                        {t.birthDateError}
                       </p>
                     )}
                   </div>
@@ -311,13 +344,20 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
                       type="text"
                       value={form[field]}
                       onChange={(event) => setField(field, event.target.value)}
+                      onBlur={() => check(field)}
                       disabled={saving}
                       placeholder={placeholders[field]}
                       autoComplete={field === "name" ? "name" : "off"}
-                      aria-invalid={field === "username" && usernameInvalid ? true : undefined}
-                      aria-describedby={field === "username" && usernameInvalid ? "profile-username-error" : undefined}
+                      required={field === "name"}
+                      aria-invalid={(field === "username" && usernameInvalid) || (field === "name" && nameShown) ? true : undefined}
+                      aria-describedby={fieldErrorId(field)}
                       className={inputClass}
                     />
+                    {field === "name" && nameShown && (
+                      <p id="profile-name-error" className="mt-2 text-body-sm text-error motion-safe:animate-message-in">
+                        {t.nameError}
+                      </p>
+                    )}
                     {field === "username" && usernameInvalid && (
                       <p
                         id="profile-username-error"

@@ -3,41 +3,133 @@
   "contents": "Di halaman ini",
   "privacy": {
     "title": "Kebijakan Privasi",
-    "lastUpdated": "Terakhir diperbarui: 10 Oktober 2026",
+    "lastUpdated": "Terakhir diperbarui: 15 Oktober 2026",
     "sections": [
       {
-        "heading": "1. Data yang Dikumpulkan",
-        "body": "Data yang dikumpulkan dari pengguna meliputi, tetapi tidak terbatas pada:\n- Profil anggota, termasuk nama, usia, dan kewarganegaraan.\n- Preferensi dan kebutuhan pengguna, termasuk preferensi makanan dan kebutuhan aksesibilitas.\n- Data lokasi, ketika pengguna menggunakan fitur yang berkaitan dengan peta.\n- Foto struk, untuk mendukung fitur manajemen anggaran."
+        "heading": "1. Tentang kebijakan ini",
+        "body": "Kancara adalah aplikasi untuk merencanakan dan menjalani perjalanan rombongan, dengan memperhatikan kebutuhan setiap anggotanya. Kebijakan ini menjelaskan data apa yang kami kumpulkan, untuk apa, siapa saja yang ikut memprosesnya, berapa lama data disimpan, dan hak-hakmu atas data tersebut.\nKebijakan ini berlaku untuk situs dan aplikasi Kancara, termasuk saat Kancara dipasang di ponsel. Kami menyusunnya dengan mengacu pada Undang-Undang Nomor 27 Tahun 2022 tentang Pelindungan Data Pribadi (UU PDP)."
       },
       {
-        "heading": "2. Penggunaan dan Penyimpanan Data",
-        "body": "Data yang dikumpulkan digunakan untuk menyediakan rencana perjalanan yang dipersonalisasi dan meningkatkan kualitas layanan Kancara. Data disimpan dan dikelola dengan langkah-langkah pengamanan yang sesuai serta diakses sesuai dengan kebutuhan penyelenggaraan layanan."
+        "heading": "2. Data yang kami kumpulkan",
+        "body": "Kami hanya mengumpulkan data yang kamu isi sendiri atau yang muncul saat kamu memakai fitur tertentu:\n- Akun: alamat email, nama, nama pengguna, foto profil (opsional), usia, jenis kelamin (opsional), negara asal, dan nomor telepon.\n- Rencana perjalanan: kota asal, tujuan, tanggal, anggaran, kecepatan perjalanan, catatan tambahan, serta itinerary yang disusun.\n- Anggota rombongan: nama panggilan, kelompok usia, usia, kebutuhan (misalnya kursi roda, makanan halal, sering istirahat), alergi, minat, nomor telepon bila diisi, dan apakah anggota membawa ponsel.\n- Fitur bantuan saat terpisah: titik kumpul, laporan \"Saya terpisah\" dan \"Sudah ditemukan\", serta lokasimu, hanya saat kamu meminta arah atau menekan tombol bagikan lokasi.\n- Fitur lain: profil teman perjalanan yang kamu simpan, tagihan bersama (nama anggota dan pengeluaran), kenangan perjalanan beserta fotonya, negara yang pernah dikunjungi, dan foto menu yang kamu pindai.\n- Data teknis: token notifikasi perangkat (bila kamu mengaktifkan notifikasi), cookie sesi untuk menjaga kamu tetap masuk, dan alamat IP yang dipakai sementara untuk membatasi permintaan berlebihan."
       },
       {
-        "heading": "3. Layanan Pihak Ketiga",
-        "body": "Kancara menggunakan layanan pihak ketiga untuk mendukung penyediaan fitur, antara lain:\n- Google Maps, untuk mendukung fitur peta dan lokasi.\n- Gemini dari Google, untuk mendukung pemrosesan berbasis AI dan penyusunan rekomendasi perjalanan.\nLayanan pihak ketiga tersebut memiliki kebijakan privasi dan ketentuan pemrosesan data masing-masing. Pemrosesan data oleh layanan tersebut tunduk pada kebijakan dan ketentuan yang berlaku pada penyedia layanan terkait."
+        "heading": "3. Data kebutuhan dan kesehatan",
+        "body": "Kebutuhan seperti kursi roda, alergi, pantangan makanan, atau kebutuhan istirahat termasuk data pribadi yang bersifat spesifik menurut UU PDP. Data ini kami pakai hanya untuk satu hal: menyusun rencana yang cocok untuk rombongan dan menandai tempat yang tidak cocok.\nData ini tidak pernah dipakai untuk iklan, tidak dijual, dan tidak dibagikan ke luar layanan yang diperlukan untuk menyusun rencanamu (lihat bagian 8)."
       },
       {
-        "heading": "4. Hak Pengguna atas Data Pribadi",
-        "body": "Sesuai dengan peraturan perlindungan data yang berlaku (termasuk GDPR dan UU PDP Indonesia), pengguna memiliki hak atas data pribadinya sesuai dengan ketentuan peraturan perundang-undangan yang berlaku, termasuk hak untuk mengakses, memperbarui atau memperbaiki, serta meminta penghapusan data pribadi dalam kondisi yang diatur oleh hukum.\nPengguna dapat mengajukan permintaan terkait data pribadinya melalui menu Profil atau dengan menghubungi tim dukungan Kancara, sesuai dengan mekanisme yang disediakan oleh layanan."
+        "heading": "4. Data tentang orang lain dan anak-anak",
+        "body": "Saat merencanakan, kamu mengisi data anggota rombongan, termasuk anak-anak. Dengan mengisinya, kamu menyatakan bahwa:\n- Kamu sudah mendapat izin dari anggota tersebut untuk mengisi datanya.\n- Untuk anak di bawah umur, kamu adalah orang tua atau wali, atau sudah mendapat izin dari orang tua atau wali mereka.\nData anggota hanya terlihat oleh orang-orang di rombongan yang sama."
+      },
+      {
+        "heading": "5. Untuk apa data dipakai",
+        "body": "Data dipakai hanya untuk menjalankan Kancara:\n- Menyusun itinerary, cadangan rencana, dan jalan tengah bila keinginan anggota berbeda.\n- Menyiapkan daftar bawaan sesuai cuaca dan kebutuhan setiap orang.\n- Menampilkan rencana kepada anggota rombongan yang bergabung lewat tautan grup.\n- Memberi tahu rombongan lewat notifikasi saat ada anggota yang terpisah atau ditemukan.\n- Menghitung pembagian tagihan bersama.\n- Menjaga keamanan layanan, misalnya membatasi permintaan berlebihan.\nKancara tidak menampilkan iklan dan tidak menjual data pribadi kepada siapa pun."
+      },
+      {
+        "heading": "6. Lokasi",
+        "body": "Kancara tidak melacak lokasimu di latar belakang. Lokasi perangkat hanya dibaca saat kamu sendiri memintanya, yaitu ketika:\n- Meminta arah ke titik kumpul.\n- Menekan tombol untuk membagikan lokasi kepada rombongan.\n- Memakai \"Lokasi saya\" saat menentukan titik kumpul.\nLokasi yang dipakai untuk menunjukkan arah tetap di ponselmu. Lokasi baru dikirim ke rombongan setelah kamu menekan tombol bagikan."
+      },
+      {
+        "heading": "7. Kecerdasan buatan (AI)",
+        "body": "Beberapa fitur memakai model AI Google Gemini: penyusunan itinerary, jalan tengah, daftar bawaan, paspor lapangan, penerjemah, dan pemindai menu.\n- Untuk menyusun rencana, detail perjalanan dan kebutuhan rombongan dikirim ke Gemini. Nomor telepon tidak ikut dikirim.\n- Untuk pemindai menu, yang dikirim hanya foto menu dan daftar pantangan, tanpa nama anggota.\n- Untuk penerjemah, yang dikirim hanya kalimat yang ingin diterjemahkan.\nHasil AI selalu dicek terhadap aturan yang sudah ditetapkan sebelum ditampilkan, tetapi tetap bisa keliru. Lihat juga Syarat & Ketentuan bagian 6."
+      },
+      {
+        "heading": "8. Layanan pihak ketiga",
+        "body": "Untuk menjalankan fitur-fiturnya, Kancara memakai layanan berikut. Setiap layanan hanya menerima data yang diperlukan untuk tugasnya:\n- Firebase dari Google: masuk akun (email atau akun Google) dan notifikasi.\n- Google Gemini: fitur AI (lihat bagian 7).\n- Google Maps Platform: data tempat, waktu tempuh, peta, dan pencarian lokasi.\n- Open-Meteo: prakiraan cuaca dan pencarian lokasi kota.\n- OpenStreetMap (Nominatim): nama dan alamat titik kumpul yang dipilih di peta.\n- Frankfurter: kurs mata uang hari ini.\n- Booking.com melalui RapidAPI: pencarian penginapan.\n- Neon: basis data tempat data akun dan perjalanan disimpan.\n- Penyedia penyimpanan berkas: foto profil dan foto kenangan.\nPemakaian Google Maps Platform tunduk pada Ketentuan Layanan Google Maps (https://maps.google.com/help/terms_maps/) dan Kebijakan Privasi Google (https://policies.google.com/privacy). Ketentuan Layanan Google secara umum: https://policies.google.com/terms."
+      },
+      {
+        "heading": "9. Data yang disimpan di perangkatmu",
+        "body": "Agar tetap bisa dipakai tanpa sinyal, Kancara menyimpan beberapa hal di perangkatmu:\n- Halaman dan data perjalanan yang sudah dibuka.\n- Draf rencana yang belum selesai.\n- Paket bantuan berisi kontak rombongan dan titik kumpul.\n- Aksi yang dilakukan saat offline, yang akan dikirim begitu sinyal kembali.\nSaat kamu keluar dari akun, semua data tersebut dihapus dari perangkat. Yang tetap tersimpan hanya pilihan bahasa dan tema tampilan."
+      },
+      {
+        "heading": "10. Keamanan",
+        "body": "Kami menjaga data dengan cara berikut:\n- Semua koneksi memakai HTTPS.\n- Nomor telepon (akunmu dan kontak rombongan), alergi dan catatan di profil tersimpan, isi paspor lapangan, dan token notifikasi dienkripsi sebelum disimpan.\n- Data sebuah perjalanan hanya bisa dibuka oleh anggota rombongan tersebut.\n- Sesi masuk disimpan dalam cookie yang tidak bisa dibaca oleh skrip halaman dan berlaku selama 14 hari.\nTidak ada sistem yang sepenuhnya kebal. Bila terjadi kebocoran data yang berisiko bagimu, kami akan memberi tahu sesuai ketentuan UU PDP."
+      },
+      {
+        "heading": "11. Berapa lama data disimpan",
+        "body": "- Data akun dan perjalanan disimpan selama akunmu aktif.\n- Data yang kamu hapus (misalnya perjalanan, profil tersimpan, atau kenangan) langsung disembunyikan dan tidak dipakai lagi.\n- Data yang berasal dari Google Maps Platform, seperti koordinat, jarak, dan waktu tempuh, disimpan paling lama 30 hari, kecuali ID tempat dari Google.\n- Bila kamu meminta akunmu dihapus, data pribadimu kami hapus, kecuali yang wajib disimpan menurut hukum."
+      },
+      {
+        "heading": "12. Hak-hakmu",
+        "body": "Sesuai UU PDP, kamu berhak untuk:\n- Mengetahui data apa yang kami simpan tentangmu dan memperoleh salinannya.\n- Memperbaiki data yang keliru. Sebagian besar data bisa kamu ubah langsung di menu Profil dan di halaman perjalanan.\n- Meminta data dihapus, termasuk menghapus akunmu.\n- Menarik persetujuan, misalnya mematikan notifikasi atau berhenti membagikan lokasi.\n- Mengajukan keberatan atas pemrosesan datamu.\nUntuk permintaan yang tidak bisa dilakukan sendiri di aplikasi, hubungi kami (lihat bagian 14). Kami akan menanggapinya dalam batas waktu yang diatur UU PDP."
+      },
+      {
+        "heading": "13. Perubahan kebijakan",
+        "body": "Kebijakan ini bisa berubah bila fitur atau aturan hukum berubah. Tanggal pembaruan terakhir selalu tercantum di bagian atas halaman ini. Untuk perubahan penting, kami akan memberi tahu lewat aplikasi sebelum perubahan berlaku."
+      },
+      {
+        "heading": "14. Hubungi kami",
+        "body": "Untuk pertanyaan atau permintaan terkait data pribadimu, hubungi tim Kancara."
       }
     ]
   },
   "terms": {
     "title": "Syarat & Ketentuan",
-    "lastUpdated": "Terakhir diperbarui: 10 Oktober 2026",
+    "lastUpdated": "Terakhir diperbarui: 15 Oktober 2026",
     "sections": [
       {
-        "heading": "1. Aturan Penggunaan",
-        "body": "Pengguna wajib menggunakan Kancara secara bertanggung jawab dan tidak menyalahgunakan layanan. Pengguna dilarang mengirimkan permintaan secara berlebihan kepada sistem kecerdasan buatan (AI) atau mengunggah konten yang melanggar hukum."
+        "heading": "1. Persetujuan",
+        "body": "Dengan membuat akun atau memakai Kancara, kamu setuju dengan Syarat & Ketentuan ini dan dengan Kebijakan Privasi Kancara. Bila tidak setuju, mohon jangan memakai layanan ini."
       },
       {
-        "heading": "2. Batasan AI dan Keakuratan Informasi",
-        "body": "Kancara menggunakan kecerdasan buatan (AI) untuk memberikan rekomendasi perjalanan. Meskipun Kancara berupaya memberikan informasi yang akurat, teknologi AI memiliki keterbatasan. Oleh karena itu, pengguna bertanggung jawab untuk memverifikasi informasi penting secara mandiri, termasuk:\n- Status kehalalan makanan atau kesesuaiannya dengan kebutuhan dan pantangan diet.\n- Ketersediaan fasilitas aksesibilitas di lokasi tujuan.\n- Jam operasional dan harga tiket."
+        "heading": "2. Tentang layanan",
+        "body": "Kancara membantu kamu merencanakan dan menjalani perjalanan rombongan. Kancara bukan agen perjalanan:\n- Kancara tidak menjual tiket.\n- Kancara tidak memesan penginapan atau transportasi atas namamu.\n- Kancara tidak menjamin ketersediaan tempat yang disarankan.\nSemua pemesanan dan pembayaran kamu lakukan sendiri langsung ke penyedia terkait."
       },
       {
-        "heading": "3. Tanggung Jawab",
-        "body": "Kancara tidak bertanggung jawab atas kerugian, cedera, atau ketidaknyamanan yang terjadi selama perjalanan sebagai akibat dari penggunaan rekomendasi yang diberikan, sepanjang diperbolehkan oleh hukum yang berlaku. Rekomendasi Kancara hanya berfungsi sebagai panduan. Pengguna tetap bertanggung jawab untuk memverifikasi informasi yang relevan dan mengambil keputusan berdasarkan pertimbangan masing-masing."
+        "heading": "3. Akun",
+        "body": "- Kamu harus berusia minimal 17 tahun, atau sudah mendapat izin dari orang tua atau wali, untuk membuat akun.\n- Isi data akun dengan benar dan perbarui bila berubah.\n- Jaga kerahasiaan kata sandimu. Kamu bertanggung jawab atas semua aktivitas di akunmu.\n- Bila menurutmu akunmu dipakai orang lain, segera ganti kata sandi dan hubungi kami."
+      },
+      {
+        "heading": "4. Data anggota rombongan",
+        "body": "Saat mengisi data orang lain, misalnya anggota rombongan atau profil teman perjalanan, kamu menyatakan sudah mendapat izin mereka. Untuk anak di bawah umur, izin itu harus dari orang tua atau wali. Bagikan tautan grup hanya kepada anggota rombonganmu, karena siapa pun yang memegang tautan itu bisa bergabung ke perjalanan."
+      },
+      {
+        "heading": "5. Penggunaan yang tidak diperbolehkan",
+        "body": "Saat memakai Kancara, kamu tidak boleh:\n- Mengunggah konten yang melanggar hukum, menyinggung, atau melanggar hak orang lain.\n- Membuat laporan \"Saya terpisah\" palsu atau menyalahgunakan fitur bantuan.\n- Mengirim permintaan otomatis dalam jumlah besar, mengambil data secara massal, atau mencoba menembus sistem.\n- Memakai data orang lain tanpa izin.\n- Memakai Kancara untuk tujuan yang melanggar hukum.\nKami dapat membatasi atau menghentikan akses akun yang melanggar ketentuan ini."
+      },
+      {
+        "heading": "6. Rekomendasi AI dan batasannya",
+        "body": "Sebagian isi Kancara disusun oleh AI dan dicek terhadap kebutuhan rombongan, tetapi tetap bisa keliru atau ketinggalan. Selalu periksa sendiri hal-hal penting berikut sebelum berangkat:\n- Status halal dan bahan makanan, terutama untuk alergi.\n- Fasilitas aksesibilitas, seperti akses kursi roda dan toilet.\n- Jam buka, harga, dan ketersediaan tempat.\n- Prakiraan cuaca dan waktu tempuh.\n- Nomor darurat di paspor lapangan, dengan mencocokkannya ke sumber resmi negara tujuan.\nHasil pemindai menu dan penerjemah juga bisa keliru. Untuk alergi berat, selalu pastikan langsung kepada pihak restoran."
+      },
+      {
+        "heading": "7. Fitur bantuan bukan layanan darurat",
+        "body": "Fitur \"Saya terpisah\", titik kumpul, dan notifikasi rombongan membantu anggota yang terpisah kembali ke rombongan. Fitur ini bukan pengganti layanan darurat:\n- Dalam keadaan darurat, segera hubungi nomor darurat setempat (misalnya 112).\n- Notifikasi bisa terlambat atau tidak sampai bila sinyal lemah atau perangkat dalam mode hemat daya.\n- Laporan yang dibuat saat offline baru terkirim setelah sinyal kembali."
+      },
+      {
+        "heading": "8. Informasi dari pihak ketiga",
+        "body": "Data tempat, peta, waktu tempuh, cuaca, kurs, dan penginapan berasal dari penyedia pihak ketiga, seperti Google Maps Platform, Open-Meteo, Frankfurter, dan Booking.com. Kami tidak menjamin data tersebut selalu akurat atau terbaru. Konten Google Maps tunduk pada Ketentuan Layanan Google Maps (https://maps.google.com/help/terms_maps/) dan Ketentuan Layanan Google (https://policies.google.com/terms)."
+      },
+      {
+        "heading": "9. Konten milikmu",
+        "body": "Foto, catatan, dan kenangan yang kamu unggah tetap milikmu. Kamu memberi Kancara izin untuk menyimpannya dan menampilkannya kepada rombonganmu, sebatas yang diperlukan untuk menjalankan layanan. Pastikan kamu berhak membagikan konten tersebut, termasuk foto orang lain."
+      },
+      {
+        "heading": "10. Ketersediaan layanan",
+        "body": "Kami berusaha menjaga Kancara tetap berjalan, tetapi tidak menjamin layanan selalu tersedia tanpa gangguan. Sebagian fitur, seperti penyusunan rencana, pemindai menu, penerjemah, dan peta, membutuhkan koneksi internet. Fitur juga bisa berubah, ditambah, atau dihentikan seiring pengembangan Kancara."
+      },
+      {
+        "heading": "11. Biaya",
+        "body": "Saat ini Kancara dapat dipakai tanpa biaya. Bila suatu saat ada fitur berbayar, kami akan menjelaskan harga dan ketentuannya dengan jelas sebelum kamu memakainya."
+      },
+      {
+        "heading": "12. Batasan tanggung jawab",
+        "body": "Sejauh diizinkan hukum, Kancara tidak bertanggung jawab atas kerugian, cedera, keterlambatan, atau biaya yang timbul selama perjalanan karena memakai rekomendasi atau informasi dari Kancara. Keputusan akhir selama perjalanan tetap ada pada kamu dan rombonganmu."
+      },
+      {
+        "heading": "13. Penghentian",
+        "body": "Kamu bisa berhenti memakai Kancara kapan saja dan meminta akunmu dihapus. Kami dapat menangguhkan atau menutup akun yang melanggar ketentuan ini, dan bila memungkinkan akan memberi tahu alasannya."
+      },
+      {
+        "heading": "14. Hukum yang berlaku",
+        "body": "Ketentuan ini diatur oleh hukum Republik Indonesia. Setiap perselisihan akan diusahakan selesai secara musyawarah terlebih dahulu."
+      },
+      {
+        "heading": "15. Perubahan ketentuan",
+        "body": "Ketentuan ini bisa berubah. Tanggal pembaruan terakhir tercantum di bagian atas halaman. Untuk perubahan penting, kami akan memberi tahu lewat aplikasi sebelum perubahan berlaku. Dengan tetap memakai Kancara setelah perubahan berlaku, kamu dianggap menyetujuinya."
+      },
+      {
+        "heading": "16. Hubungi kami",
+        "body": "Untuk pertanyaan tentang Syarat & Ketentuan ini, hubungi tim Kancara."
       }
     ]
   }

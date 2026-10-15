@@ -105,37 +105,37 @@
   "offline": {
     "titlePart1": "The signal can leave.",
     "titlePart2": "Your group won't.",
-    "description": "Your complete itinerary, route maps, emergency contacts, and OCR menu reader automatically save to your phone before departure. 100% functional without internet.",
+    "description": "Your itinerary, field pass, and help page with emergency contacts save to your phone automatically before you leave. When the signal drops, all of it still opens.",
     "points": [
-      "Offline route maps & adaptive itinerary",
-      "Peer to peer offline group check ins",
-      "Travel documents & emergency contacts ready 100%"
+      "Itinerary & field pass open without a signal",
+      "\"I'm separated\" still works offline and sends as soon as you're back online",
+      "Emergency contacts & key numbers always on your phone"
     ],
-    "cta": "Explore offline mode",
-    "statusPill": "Everyone checked in",
-    "subStatus": "Synced locally · No internet needed",
+    "cta": "Plan a trip",
+    "statusPill": "Saved on this phone",
+    "subStatus": "Ready to open offline",
     "offlineCard": {
       "title": "Offline",
-      "body": "Not out of touch"
+      "body": "Still opens"
     },
     "calmCard": {
       "title": "Travel calm",
-      "body": "Works beyond bars"
+      "body": "Ready without bars"
     },
     "phone": {
-      "label": "Illustration of the Kancara app offline: the whole group stays connected over a peer-to-peer network.",
+      "label": "Illustration of the Kancara app offline: the trip plan, field pass, and emergency contacts still open from the phone.",
       "app": "kancara",
       "saved": "Saved",
       "destination": "Pine Ridge Camp",
-      "network": "Peer-to-peer active",
-      "checkIn": "I'm with the group"
+      "network": "Offline mode",
+      "checkIn": "I'm separated"
     }
   },
   "cta": {
     "heading": "Ready to plan a seamless group trip?",
     "description": "Start your first inclusive group plan in 60 seconds, with no complicated sign-up.",
     "ctaPrimary": "Start planning now",
-    "ctaSecondary": "Explore offline mode",
+    "ctaSecondary": "Get to know Kancara",
     "note": "100% free · Ready to install on your phone"
   }
 }

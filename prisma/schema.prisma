@@ -27,7 +27,10 @@ model User {
   username        String?
   /// The country the person is from, as its two-letter code. Rows from before the country picker hold free text.
   nationality     String?
+  /// Kept for accounts that gave an age before the profile asked for a date of birth.
   age             Int?      @db.SmallInt
+  /// The person's date of birth; their age is worked out from it.
+  birthDate       DateTime? @map("birth_date") @db.Date
   gender          String?
   /// The person's own phone number, sealed (see lib/secret-box). It goes with them into the trips they join.
   phoneNumberCipher String? @map("phone_number_cipher")
