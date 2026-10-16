@@ -20,6 +20,7 @@ const withSerwist = withSerwistInit({
 });
 
 const nextConfig: NextConfig = {
+  output: "standalone",
   // Serwist adds a webpack setting even while it is switched off. Next refuses to run Turbopack beside a webpack
   // setting unless Turbopack has one of its own, so this empty one says the dev server is meant to use it.
   turbopack: {},

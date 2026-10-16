@@ -1,0 +1,15 @@
+Dockerfile*
+.dockerignore
+node_modules
+.next
+.git
+.gitignore
+.env*
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.github
+README.md
+CLAUDE.md
+AGENTS.md
+rules.md
