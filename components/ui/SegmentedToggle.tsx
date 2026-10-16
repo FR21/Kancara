@@ -44,7 +44,7 @@ export default function SegmentedToggle<Value extends string>({
       {options.map((option) => {
         const Icon: LucideIcon | undefined = icons?.[option];
         return (
-          <label key={option} className="relative min-w-0 cursor-pointer">
+          <label key={option} title={labels[option]} className="relative min-w-0 cursor-pointer">
             <input
               type="radio"
               name={name}
@@ -52,9 +52,9 @@ export default function SegmentedToggle<Value extends string>({
               onChange={() => onChange(option)}
               className="peer sr-only"
             />
-            <span className="flex h-9 items-center justify-center gap-2 rounded-full px-4 text-label whitespace-nowrap text-text-muted transition-colors duration-150 ease-out peer-checked:text-on-primary peer-hover:text-text peer-checked:peer-hover:text-on-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">
+            <span className="flex h-9 min-w-0 max-w-full items-center justify-center gap-1.5 rounded-full px-2 text-caption font-medium text-text-muted transition-colors duration-150 ease-out peer-checked:text-on-primary peer-hover:text-text peer-checked:peer-hover:text-on-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary sm:gap-2 sm:px-4 sm:text-label">
               {Icon && <Icon className="size-4 shrink-0" aria-hidden="true" />}
-              {labels[option]}
+              <span className="min-w-0 truncate">{labels[option]}</span>
             </span>
           </label>
         );

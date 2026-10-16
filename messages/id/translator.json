@@ -4,6 +4,8 @@
   "lead": "Ngobrol dua arah di {destination}: bicara atau ketik, terjemahannya tampil besar dan bisa dibacakan untuk lawan bicaramu.",
   "travelerName": "Kamu, bahasa {language}",
   "localName": "Lawan bicara, bahasa {language}",
+  "travelerToggle": "Kamu ({language})",
+  "localToggle": "Lawan bicara ({language})",
   "languages": {
     "english": "Inggris",
     "japanese": "Jepang",

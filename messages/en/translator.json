@@ -4,6 +4,8 @@
   "lead": "Talk both ways in {destination}: speak or type, and the translation shows large and can be read aloud for the person you are talking to.",
   "travelerName": "You, in {language}",
   "localName": "The other person, in {language}",
+  "travelerToggle": "You ({language})",
+  "localToggle": "Other ({language})",
   "languages": {
     "english": "English",
     "japanese": "Japanese",

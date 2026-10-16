@@ -50,6 +50,8 @@ export default function ConversationTranslator({ tripId, tripName, destination }
 
   const travelerName = fillTemplate(text.travelerName, { language: text.languages[traveler.key] });
   const localName = fillTemplate(text.localName, { language: text.languages[local.key] });
+  const travelerToggleName = fillTemplate(text.travelerToggle ?? text.travelerName, { language: text.languages[traveler.key] });
+  const localToggleName = fillTemplate(text.localToggle ?? text.localName, { language: text.languages[local.key] });
   const languageOf = (speaker: Speaker) => (speaker === "traveler" ? traveler : local);
   const otherSide = (speaker: Speaker) => (speaker === "traveler" ? local : traveler);
 
@@ -213,9 +215,10 @@ export default function ConversationTranslator({ tripId, tripName, destination }
             name="translator-speaker"
             label={text.speakerLabel}
             options={SPEAKERS}
-            labels={{ traveler: travelerName, local: localName }}
+            labels={{ traveler: travelerToggleName, local: localToggleName }}
             value={speaker}
             onChange={setSpeaker}
+            block
           />
         </div>
         <div className="grid gap-4 sm:grid-cols-2">
