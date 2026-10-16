@@ -59,7 +59,7 @@ export interface CaptainClient {
 
 export class CaptainError extends Error {}
 
-const BASE_URL = process.env.NEXT_PUBLIC_CAPTAIN_API_URL ?? "";
+const BASE_URL = process.env.NEXT_PUBLIC_CAPTAIN_API_URL || "/api";
 const MAX_BACKUPS = 4;
 const REQUEST_TIMEOUT_MS = 60000;
 const RATE_LIMIT_WAIT_MS = 1100;
@@ -164,6 +164,6 @@ const httpCaptain: CaptainClient = {
     parsePacking(await post("/captain/packing", { ...request, draft: withoutContacts(request.draft) }, signal)),
 };
 
-export const captainIsSample = BASE_URL === "";
+export const captainIsSample = process.env.NEXT_PUBLIC_USE_SAMPLE_CAPTAIN === "true";
 
 export const captain: CaptainClient = captainIsSample ? sampleCaptain : httpCaptain;
