@@ -27,23 +27,28 @@ function startsWith(bytes: Uint8Array, signature: number[]): boolean {
 
 /** The viewer's uploaded profile photo. It is private, so it is served here and not from the bucket. */
 export async function GET(request: NextRequest) {
-  const limited = rateLimit(request, "profile-photo-read");
-  if (limited) return limited;
+  try {
+    const limited = rateLimit(request, "profile-photo-read");
+    if (limited) return limited;
 
-  const viewer = await currentViewer();
-  if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    const viewer = await currentViewer();
+    if (!viewer) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const key = await avatarKey(viewer);
-  const stored = key ? await getObject(key) : null;
-  if (!stored) return NextResponse.json({ error: "No photo" }, { status: 404 });
+    const key = await avatarKey(viewer);
+    const stored = key ? await getObject(key) : null;
+    if (!stored) return NextResponse.json({ error: "No photo" }, { status: 404 });
 
-  return new NextResponse(stored.body, {
-    headers: {
-      "Content-Type": stored.headers.get("content-type") ?? "application/octet-stream",
-      // The address carries a version that changes with every upload, so this copy never goes stale.
-      "Cache-Control": `private, max-age=${ONE_YEAR_S}, immutable`,
-    },
-  });
+    return new NextResponse(stored.body, {
+      headers: {
+        "Content-Type": stored.headers.get("content-type") ?? "application/octet-stream",
+        // The address carries a version that changes with every upload, so this copy never goes stale.
+        "Cache-Control": `private, max-age=${ONE_YEAR_S}, immutable`,
+      },
+    });
+  } catch (error) {
+    console.warn("Failed to get profile photo:", error);
+    return NextResponse.json({ error: "No photo" }, { status: 404 });
+  }
 }
 
 /** Stores a new profile photo, points the profile at it, then removes the one it replaces. */

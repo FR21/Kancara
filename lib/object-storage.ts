@@ -46,16 +46,16 @@ export async function putObject(
 
 /** Retrieve an object from Google Cloud Storage, or null when not found */
 export async function getObject(key: string): Promise<Response | null> {
-  const bucket = getBucket();
-  const file = bucket.file(key);
-
-  const [exists] = await file.exists().catch(() => [false]);
-  if (!exists) return null;
-
   try {
+    const bucket = getBucket();
+    const file = bucket.file(key);
+
+    const [exists] = await file.exists().catch(() => [false]);
+    if (!exists) return null;
+
     const [buffer] = await file.download();
     const [metadata] = await file.getMetadata().catch(() => [{}]);
-    const contentType = (metadata as Record<string, unknown>)?.contentType as string || "application/octet-stream";
+    const contentType = ((metadata as Record<string, unknown>)?.contentType as string) || "application/octet-stream";
 
     return new Response(new Uint8Array(buffer), {
       headers: {

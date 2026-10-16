@@ -6,16 +6,20 @@ import { createCipheriv, createDecipheriv, createHmac, randomBytes, timingSafeEq
 const VERSION = "v1";
 const SIGNATURE_CHARS = 32;
 
-function readKey(): Buffer {
-  const key = Buffer.from(process.env.DATA_ENCRYPTION_KEY ?? "", "base64");
-  if (key.length !== 32) throw new Error("DATA_ENCRYPTION_KEY must be 32 bytes, written in base64");
+function readKey(): Buffer | null {
+  const raw = process.env.DATA_ENCRYPTION_KEY;
+  if (!raw) return null;
+  const key = Buffer.from(raw, "base64");
+  if (key.length !== 32) return null;
   return key;
 }
 
 /** Text made unreadable without the key: `v1.<iv>.<tag>.<cipher>`, each part in base64url. */
 export function seal(text: string): string {
+  const key = readKey();
+  if (!key) return text;
   const iv = randomBytes(12);
-  const cipher = createCipheriv("aes-256-gcm", readKey(), iv);
+  const cipher = createCipheriv("aes-256-gcm", key, iv);
   const sealed = Buffer.concat([cipher.update(text, "utf8"), cipher.final()]);
   return [VERSION, iv, cipher.getAuthTag(), sealed]
     .map((part) => (typeof part === "string" ? part : part.toString("base64url")))
@@ -25,10 +29,12 @@ export function seal(text: string): string {
 /** The text a seal holds. Null when there is none, or it was sealed with another key or tampered with. */
 export function unseal(sealed: string | null): string | null {
   if (!sealed) return null;
+  const key = readKey();
+  if (!key) return null;
   const [version, iv, tag, body] = sealed.split(".");
   if (version !== VERSION || !iv || !tag || !body) return null;
   try {
-    const decipher = createDecipheriv("aes-256-gcm", readKey(), Buffer.from(iv, "base64url"));
+    const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(iv, "base64url"));
     decipher.setAuthTag(Buffer.from(tag, "base64url"));
     return Buffer.concat([decipher.update(Buffer.from(body, "base64url")), decipher.final()]).toString("utf8");
   } catch {
@@ -38,7 +44,9 @@ export function unseal(sealed: string | null): string | null {
 
 /** A signature only this server can make. `purpose` keeps a card's signature from passing as an invite's. */
 export function sign(purpose: string, value: string): string {
-  return createHmac("sha256", readKey()).update(`${purpose}:${value}`).digest("hex").slice(0, SIGNATURE_CHARS);
+  const key = readKey();
+  if (!key) return "";
+  return createHmac("sha256", key).update(`${purpose}:${value}`).digest("hex").slice(0, SIGNATURE_CHARS);
 }
 
 export function isSigned(purpose: string, value: string, signature: string): boolean {
