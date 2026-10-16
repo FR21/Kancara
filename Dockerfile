@@ -1,4 +1,4 @@
-FROM node:20-alpine AS base
+FROM node:22-alpine AS base
 
 # Install dependencies needed for native modules and Prisma on Alpine
 RUN apk add --no-cache libc6-compat openssl
@@ -10,7 +10,7 @@ WORKDIR /app
 COPY package.json package-lock.json ./
 COPY prisma ./prisma/
 
-RUN npm ci
+RUN npm ci || npm install
 
 # Stage 2: Build the application
 FROM base AS builder
