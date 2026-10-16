@@ -24,6 +24,13 @@ ENV NODE_ENV=production
 
 # Provide fallback connection string so prisma/next build does not fail during static analysis
 ENV DATABASE_URL="postgresql://dummy:dummy@localhost:5432/dummy"
+ENV NEXT_PUBLIC_FIREBASE_API_KEY="AIzaSyDLzu9RILInj8wkLFl_5x85FZ7BDSZUkbM"
+ENV NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN="kancara-app.firebaseapp.com"
+ENV NEXT_PUBLIC_FIREBASE_PROJECT_ID="kancara-app"
+ENV NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET="kancara-app.firebasestorage.app"
+ENV NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID="855024553609"
+ENV NEXT_PUBLIC_FIREBASE_APP_ID="1:855024553609:web:6bcdeb85d1b62232d80058"
+ENV NEXT_PUBLIC_STORAGE_URL="https://storage.googleapis.com/kancara-app"
 
 RUN npm run build
 
