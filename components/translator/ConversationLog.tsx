@@ -101,7 +101,7 @@ export default function ConversationLog({ turns, translating, speakingId, onSpea
                     {turn.culturalTip}
                   </p>
                 )}
-                <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="mt-3 flex flex-wrap items-center gap-2">
                   <SpeakButton
                     label={text.play}
                     speakingLabel={text.playing}
@@ -109,7 +109,6 @@ export default function ConversationLog({ turns, translating, speakingId, onSpea
                     onSpeak={() => onSpeak(turn)}
                     variant={mine ? "inverse" : "outline"}
                   />
-                  {turn.politenessLevel && <span className="text-caption opacity-80">{turn.politenessLevel}</span>}
                 </div>
               </div>
             </li>

@@ -3,7 +3,7 @@
 import { Check, CloudOff, IdCard, LocateFixed, MapPin, MessageSquareText, Navigation2, Phone } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import { type ButtonVariant, FIELD_LABEL, INPUT, TEXT_LINK, buttonClass } from "@/components/ui/styles";
-import { describePoint } from "@/lib/client/safety";
+import { describePoint, geocodePlace } from "@/lib/client/safety";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
 import { MAX_LABEL_CHARS, MAX_NOTE_CHARS } from "@/lib/safety/action";
@@ -73,20 +73,45 @@ function MeetingForm({ context, onDone }: { context: HelpContext; onDone: () => 
 
   const readHere = () => {
     if (!("geolocation" in navigator)) return setPoint("failed");
+    const onPos = (position: GeolocationPosition) => {
+      const here = { latitude: position.coords.latitude, longitude: position.coords.longitude };
+      place(here);
+      setMine(here);
+    };
     navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const here = { latitude: position.coords.latitude, longitude: position.coords.longitude };
-        place(here);
-        setMine(here);
+      onPos,
+      () => {
+        // Fallback to network accuracy if GPS/high-accuracy times out
+        navigator.geolocation.getCurrentPosition(
+          onPos,
+          () => setPoint("failed"),
+          { enableHighAccuracy: false, timeout: 15_000 },
+        );
       },
-      () => setPoint("failed"),
-      { enableHighAccuracy: true, timeout: 20_000 },
+      { enableHighAccuracy: true, timeout: 8_000 },
     );
   };
   const save = async (clear = false) => {
+    if (clear) {
+      const outcome = await context.act({ type: "meetingPoint", point: null });
+      setFailed(outcome !== "done");
+      if (outcome === "done") onDone();
+      return;
+    }
     // A map nobody moved says nothing, so the position the point already had is kept.
-    const position = placed ? point : { latitude: kept?.latitude ?? null, longitude: kept?.longitude ?? null };
-    const outcome = await context.act({ type: "meetingPoint", point: clear ? null : { label, note, ...position } });
+    let position = placed ? point : { latitude: kept?.latitude ?? null, longitude: kept?.longitude ?? null };
+
+    // Auto-geocode if coordinates are missing so tracking always works!
+    if ((position.latitude === null || position.longitude === null) && label.trim() !== "") {
+      const near = pack.destinations[0] ?? "";
+      const query = near ? `${label}, ${near}` : label;
+      const found = await geocodePlace(query, near, locale);
+      if (found) {
+        position = { latitude: found.latitude, longitude: found.longitude };
+      }
+    }
+
+    const outcome = await context.act({ type: "meetingPoint", point: { label, note, ...position } });
     setFailed(outcome !== "done");
     if (outcome === "done") onDone();
   };
@@ -206,7 +231,44 @@ export default function GuidePanel({ context, actionLabel, onAction, onOpenCard 
   const viewer = pack.members.find((member) => member.id === pack.viewerMemberId) ?? null;
   const report = viewer ? openReportFor(pack, viewer.id) : null;
   const place = clock ? meetingPlace(pack, clock) : pack.meetingPoint;
-  const target = place && place.latitude !== null && place.longitude !== null ? { latitude: place.latitude, longitude: place.longitude } : null;
+  const [resolvedCoords, setResolvedCoords] = useState<Coordinates | null>(() => {
+    return place && place.latitude !== null && place.longitude !== null ? { latitude: place.latitude, longitude: place.longitude } : null;
+  });
+
+  // If place exists without coordinates, resolve via forward geocoding
+  useEffect(() => {
+    if (!place) {
+      setResolvedCoords(null);
+      return;
+    }
+    if (place.latitude !== null && place.longitude !== null) {
+      setResolvedCoords({ latitude: place.latitude, longitude: place.longitude });
+      return;
+    }
+    let cancelled = false;
+    const near = pack.destinations[0] ?? "";
+    const query = near ? `${place.label}, ${near}` : place.label;
+    geocodePlace(query, near, locale).then((found) => {
+      if (cancelled || !found) return;
+      setResolvedCoords({ latitude: found.latitude, longitude: found.longitude });
+      if (pack.canManage && pack.meetingPoint && (pack.meetingPoint.latitude === null || pack.meetingPoint.longitude === null)) {
+        context.act({
+          type: "meetingPoint",
+          point: {
+            label: pack.meetingPoint.label,
+            note: pack.meetingPoint.note,
+            latitude: found.latitude,
+            longitude: found.longitude,
+          },
+        });
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [place?.label, place?.latitude, place?.longitude, pack.destinations, pack.canManage, pack.meetingPoint, locale, context]);
+
+  const target = resolvedCoords;
   // The phone's position is read once the member is separated, or when they ask for the way; never just for opening the page.
   const guiding = target !== null && (report !== null || asked);
   const here = guiding && typeof fix === "object" ? fix : null;
@@ -225,12 +287,47 @@ export default function GuidePanel({ context, actionLabel, onAction, onOpenCard 
       const unsupported = setTimeout(() => setFix("off"), 0);
       return () => clearTimeout(unsupported);
     }
-    const watch = navigator.geolocation.watchPosition(
-      (position) => setFix({ latitude: position.coords.latitude, longitude: position.coords.longitude }),
-      () => setFix("off"),
-      { enableHighAccuracy: true, maximumAge: 15_000, timeout: 20_000 },
+
+    let activeWatch: number | null = null;
+    let cancelled = false;
+
+    // Fast initial fix with low latency
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        if (!cancelled) setFix({ latitude: pos.coords.latitude, longitude: pos.coords.longitude });
+      },
+      () => undefined,
+      { enableHighAccuracy: false, maximumAge: 60_000, timeout: 5000 },
     );
-    return () => navigator.geolocation.clearWatch(watch);
+
+    const startLowAccuracy = () => {
+      if (cancelled) return;
+      activeWatch = navigator.geolocation.watchPosition(
+        (position) => {
+          if (!cancelled) setFix({ latitude: position.coords.latitude, longitude: position.coords.longitude });
+        },
+        () => {
+          if (!cancelled) setFix("off");
+        },
+        { enableHighAccuracy: false, maximumAge: 30_000, timeout: 20_000 },
+      );
+    };
+
+    activeWatch = navigator.geolocation.watchPosition(
+      (position) => {
+        if (!cancelled) setFix({ latitude: position.coords.latitude, longitude: position.coords.longitude });
+      },
+      () => {
+        if (activeWatch !== null) navigator.geolocation.clearWatch(activeWatch);
+        startLowAccuracy();
+      },
+      { enableHighAccuracy: true, maximumAge: 15_000, timeout: 10_000 },
+    );
+
+    return () => {
+      cancelled = true;
+      if (activeWatch !== null) navigator.geolocation.clearWatch(activeWatch);
+    };
   }, [guiding]);
 
   // Which way the phone is held, where it says so. The arrow needs it: one drawn with north at the top would be
@@ -322,11 +419,11 @@ export default function GuidePanel({ context, actionLabel, onAction, onOpenCard 
                   {copy.compass}
                 </button>
               )}
-              {target && here && heading !== null && (
+              {target && here && (heading !== null || !compassNeedsAsking()) && (
                 <span className="flex size-20 shrink-0 items-center justify-center rounded-full border border-border bg-background motion-safe:animate-pop-in">
                   <Navigation2
                     className="size-9 fill-primary text-primary transition-[rotate] duration-300 ease-out"
-                    style={{ rotate: `${bearingBetween(here, target) - heading}deg` }}
+                    style={{ rotate: `${bearingBetween(here, target) - (heading ?? 0)}deg` }}
                     aria-hidden="true"
                   />
                 </span>
@@ -353,17 +450,17 @@ export default function GuidePanel({ context, actionLabel, onAction, onOpenCard 
                 <MapPin className="size-4 text-primary" aria-hidden="true" />
                 {copy.openMap}
               </button>
-              {target && !guiding && (
+              {target && (
                 <button
                   type="button"
                   onClick={() => {
                     askForCompass();
-                    setAsked(true);
+                    setAsked((prev) => !prev);
                   }}
-                  className={`${buttonClass("outline")} w-full`}
+                  className={`${buttonClass(guiding ? "primary" : "outline")} w-full`}
                 >
-                  <Navigation2 className="size-4 text-primary" aria-hidden="true" />
-                  {copy.showWay}
+                  <Navigation2 className={`size-4 ${guiding ? "text-on-primary" : "text-primary"}`} aria-hidden="true" />
+                  {guiding ? (locale === "id" ? "Sedang melacak" : "Tracking") : copy.showWay}
                 </button>
               )}
             </div>
@@ -411,8 +508,8 @@ export default function GuidePanel({ context, actionLabel, onAction, onOpenCard 
 
         {report && viewer && (
           <div className="space-y-3 motion-safe:animate-message-in">
-            {/* Two answers side by side once there is room; on a phone each gets the full width, so neither is cut. */}
-            <div className="grid gap-3 empty:hidden sm:grid-cols-2">
+            {/* Two answers side by side once there is room; on a phone or when only one remains, each gets the full width. */}
+            <div className={`grid gap-3 empty:hidden ${report.status === "SEARCHING" && !report.confirmedLost ? "sm:grid-cols-2" : "grid-cols-1"}`}>
               {report.status === "SEARCHING" && (
                 <button
                   type="button"

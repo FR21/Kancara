@@ -1,16 +1,15 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import FieldPassButton from "@/components/field-pass/FieldPassButton";
 import Notice, { type NoticeMessage } from "@/components/layout/Notice";
 import PageHeader from "@/components/layout/PageHeader";
 import { type TranslationContext, type TranslationRequest, TranslationError, blobToBase64, MAX_AUDIO_CHARS, translate } from "@/lib/client/translator";
 import { fillTemplate } from "@/lib/plan-draft";
+import { formatTripTitle } from "@/lib/trips/format";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
 import { useSpeech } from "@/lib/use-speech";
 import ConversationLog, { type ConversationTurnView } from "./ConversationLog";
-import FaceToFacePanel from "./FaceToFacePanel";
 import { guessLocalLanguage, languageByKey, travelerLanguage } from "./languages";
 import SpeakerComposer from "./SpeakerComposer";
 import TranslatorSettings, { languageLabel } from "./TranslatorSettings";
@@ -34,7 +33,6 @@ export default function ConversationTranslator({ tripId, tripName, destination }
   const [drafts, setDrafts] = useState<Record<Speaker, string>>({ traveler: "", local: "" });
   const [translating, setTranslating] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(true);
-  const [faceToFace, setFaceToFace] = useState(false);
   const [notice, setNotice] = useState<NoticeMessage | null>(null);
   const { supported: canSpeak, speakingId, speak } = useSpeech();
   const requestRef = useRef<AbortController | null>(null);
@@ -119,8 +117,7 @@ export default function ConversationTranslator({ tripId, tripName, destination }
     onFailure: (failure) => showError(voiceFailureText[failure]),
   });
 
-  const lastTravelerTurn = turns.findLast((turn) => turn.speaker === "traveler") ?? null;
-  const tripLabel = tripName || tripsText.card.untitled;
+  const tripLabel = formatTripTitle(tripName, [destination], locale, tripsText.card.untitled);
 
   const composer = (speaker: Speaker) => {
     const language = languageOf(speaker);
@@ -156,7 +153,6 @@ export default function ConversationTranslator({ tripId, tripName, destination }
         }}
         title={text.title}
         lead={fillTemplate(text.lead, { destination: destination || tripLabel })}
-        actions={<FieldPassButton tripId={tripId} destination={destination} />}
       />
 
       <div className="mt-8 motion-safe:animate-message-in">
@@ -165,18 +161,10 @@ export default function ConversationTranslator({ tripId, tripName, destination }
           onLanguage={setLocalKey}
           autoSpeak={autoSpeak}
           onAutoSpeak={setAutoSpeak}
-          faceToFace={faceToFace}
-          onFaceToFace={setFaceToFace}
           canSpeak={canSpeak}
           text={text}
         />
       </div>
-
-      {faceToFace && (
-        <div className="mt-8 motion-safe:animate-message-in">
-          <FaceToFacePanel turn={lastTravelerTurn} localName={localName} waitingText={text.faceToFaceWaiting} />
-        </div>
-      )}
 
       <div className="mt-8 min-h-64 flex-1">
         <ConversationLog

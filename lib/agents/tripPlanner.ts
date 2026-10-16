@@ -10,13 +10,29 @@ import {
   type AttractionDeal 
 } from '@/lib/hotel-search';
 
+import { prisma } from '@/lib/prisma';
+
 const client = new GoogleGenAI({});
 
 const GOOGLE_MAPS_API_KEY = process.env.GOOGLE_MAPS_API_KEY;
 const MAX_BACKUPS_PER_STOP = 2;
+const SIXTY_DAYS_MS = 60 * 24 * 60 * 60 * 1000;
 
 export async function executeSearchPlaces(query: string, locale: string = "id") {
   if (!GOOGLE_MAPS_API_KEY) return [];
+  const normalized = query.toLowerCase().trim();
+  const cacheKey = `place-search:${locale}:${normalized}`;
+
+  // 1. Check Neon DB first to prevent redundant Google Maps searches
+  try {
+    const cached = await prisma.apiCache.findUnique({ where: { cacheKey } });
+    if (cached && cached.expiresAt > new Date() && Array.isArray(cached.payload)) {
+      return cached.payload as any[];
+    }
+  } catch (err) {
+    console.warn("Neon DB place-search cache lookup failed:", err);
+  }
+
   try {
     const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
       method: "POST",
@@ -30,7 +46,7 @@ export async function executeSearchPlaces(query: string, locale: string = "id") 
     const data = await res.json();
     if (!data.places) return [];
     
-    return data.places.slice(0, 3).map((r: any) => {
+    const results = data.places.slice(0, 3).map((r: any) => {
       let imageUrl = undefined;
       if (r.photos && r.photos.length > 0) {
         // The photo is served through this app, so the key that fetches it stays on the server.
@@ -64,6 +80,20 @@ export async function executeSearchPlaces(query: string, locale: string = "id") 
         imageUrl
       };
     });
+
+    // 2. Persist to Neon DB api_caches for 60 days
+    if (results.length > 0) {
+      const expiresAt = new Date(Date.now() + SIXTY_DAYS_MS);
+      prisma.apiCache
+        .upsert({
+          where: { cacheKey },
+          update: { payload: results as any, expiresAt },
+          create: { cacheKey, payload: results as any, expiresAt },
+        })
+        .catch((saveErr) => console.warn("Gagal menyimpan place-search ke Neon DB:", saveErr));
+    }
+
+    return results;
   } catch {
     return [];
   }
@@ -71,15 +101,36 @@ export async function executeSearchPlaces(query: string, locale: string = "id") 
 
 async function executeGetTravelTime(origin: string, destination: string, locale: string = "id") {
   if (!GOOGLE_MAPS_API_KEY) return { error: "GOOGLE_MAPS_API_KEY belum dipasang di .env" };
+  const cacheKey = `travel-time:${locale}:${origin.toLowerCase().trim()}->${destination.toLowerCase().trim()}`;
+
+  // 1. Check Neon DB first
+  try {
+    const cached = await prisma.apiCache.findUnique({ where: { cacheKey } });
+    if (cached && cached.expiresAt > new Date() && typeof cached.payload === "object" && cached.payload !== null) {
+      return cached.payload as { distance?: string; duration?: string; error?: string };
+    }
+  } catch (err) {
+    console.warn("Neon DB travel-time cache lookup failed:", err);
+  }
+
   try {
     const res = await fetch(`https://maps.googleapis.com/maps/api/distancematrix/json?language=${locale}&origins=${encodeURIComponent(origin)}&destinations=${encodeURIComponent(destination)}&key=${GOOGLE_MAPS_API_KEY}`);
     const data = await res.json();
     const element = data.rows?.[0]?.elements?.[0];
     if (element?.status === "OK") {
-      return {
+      const result = {
         distance: element.distance.text,
         duration: element.duration.text
       };
+      const expiresAt = new Date(Date.now() + SIXTY_DAYS_MS);
+      prisma.apiCache
+        .upsert({
+          where: { cacheKey },
+          update: { payload: result as any, expiresAt },
+          create: { cacheKey, payload: result as any, expiresAt },
+        })
+        .catch(() => undefined);
+      return result;
     }
     return { error: "Rute tidak ditemukan" };
   } catch {

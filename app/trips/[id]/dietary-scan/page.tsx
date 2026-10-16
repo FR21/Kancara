@@ -22,7 +22,7 @@ export default async function DietaryScanPage({ params }: PageProps<"/trips/[id]
   // Phone numbers have no part in reading a menu, so they stay on the server.
   const members = plan.draft.members.map((member) => ({ ...member, phone: undefined }));
   return (
-    <PageShell width="reading">
+    <PageShell width="workspace">
       <PageBackdrop />
       <DietaryScanner
         tripId={id}

@@ -1,9 +1,10 @@
 "use client";
 
-import { Check, Trash2 } from "lucide-react";
+import { Trash2 } from "lucide-react";
 import { type Dispatch, useState } from "react";
 import type { Messages } from "@/lib/messages";
 import {
+  type AgeGroup,
   type Member,
   type PlanDraft,
   type PlanDraftAction,
@@ -18,7 +19,8 @@ import MemberNeedsFields from "@/components/members/MemberNeedsFields";
 import MemberWishesFields from "@/components/members/MemberWishesFields";
 import { FORM_GROUP, FORM_GROUPS } from "@/components/members/form-groups";
 import SegmentedToggle from "@/components/ui/SegmentedToggle";
-import { buttonClass, choiceClass, FIELD_LABEL, INPUT } from "@/components/ui/styles";
+import SelectField from "@/components/ui/SelectField";
+import { buttonClass, FIELD_LABEL, INPUT } from "@/components/ui/styles";
 
 type MemberEditorProps = {
   member: Member;
@@ -68,45 +70,50 @@ export default function MemberEditor({ member, draft, dispatch, text, onRemoved 
           />
         </div>
 
-        <fieldset className="min-w-0">
-          <legend className={FIELD_LABEL}>{text.pass.ageGroup}</legend>
-          <div className="mt-2 flex flex-wrap gap-2">
-            {AGE_GROUPS.map((ageGroup) => {
-              const selected = member.ageGroup === ageGroup;
-              return (
-                <button
-                  key={ageGroup}
-                  type="button"
-                  aria-pressed={selected}
-                  onClick={() => dispatch({ type: "updateMember", id: member.id, changes: { ageGroup } })}
-                  className={choiceClass(selected)}
-                >
-                  {selected && <Check className="size-4" strokeWidth={3} aria-hidden="true" />}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div>
+            <label htmlFor={`member-${member.id}-age-group`} className={`${FIELD_LABEL} block`}>
+              {text.pass.ageGroup}
+            </label>
+            <SelectField
+              id={`member-${member.id}-age-group`}
+              value={member.ageGroup}
+              onChange={(event) =>
+                dispatch({
+                  type: "updateMember",
+                  id: member.id,
+                  changes: { ageGroup: event.target.value as AgeGroup },
+                })
+              }
+              className="mt-2"
+            >
+              {AGE_GROUPS.map((ageGroup) => (
+                <option key={ageGroup} value={ageGroup}>
                   {text.ageGroups[ageGroup]}
-                </button>
-              );
-            })}
+                </option>
+              ))}
+            </SelectField>
           </div>
-        </fieldset>
 
-        <div>
-          <label htmlFor="member-age" className={`${FIELD_LABEL} block`}>
-            {text.pass.age}
-          </label>
-          <input
-            id="member-age"
-            type="text"
-            inputMode="numeric"
-            autoComplete="off"
-            value={member.age ?? ""}
-            placeholder={text.pass.agePlaceholder}
-            aria-describedby="member-age-hint"
-            onChange={(event) => setAge(event.target.value)}
-            className={`${INPUT} mt-2 max-w-40 tabular-nums`}
-          />
-          <p id="member-age-hint" className="mt-2 text-caption text-text-muted">
-            {text.pass.ageHint}
-          </p>
+          <div>
+            <label htmlFor={`member-${member.id}-age`} className={`${FIELD_LABEL} block`}>
+              {text.pass.age}
+            </label>
+            <input
+              id={`member-${member.id}-age`}
+              type="text"
+              inputMode="numeric"
+              autoComplete="off"
+              value={member.age ?? ""}
+              placeholder={text.pass.agePlaceholder}
+              aria-describedby={`member-${member.id}-age-hint`}
+              onChange={(event) => setAge(event.target.value)}
+              className={`${INPUT} mt-2 tabular-nums`}
+            />
+            <p id={`member-${member.id}-age-hint`} className="mt-2 text-caption text-text-muted">
+              {text.pass.ageHint}
+            </p>
+          </div>
         </div>
       </div>
 

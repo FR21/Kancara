@@ -10,14 +10,17 @@ type PageHeaderProps = {
   actions?: ReactNode;
   /** Lets a page move focus to its title after a client-side change of view. */
   titleId?: string;
+  /** How actions align with the title block: "end" (default, bottom-aligned) or "center" (vertically centered). */
+  alignActions?: "end" | "center";
 };
 
 // The top of every app page in one order: where you are, what this is, one sentence on it, what you can do.
-export default function PageHeader({ crumbs, title, lead, actions, titleId }: PageHeaderProps) {
+export default function PageHeader({ crumbs, title, lead, actions, titleId, alignActions = "end" }: PageHeaderProps) {
+  const alignClass = alignActions === "center" ? "sm:items-center" : "sm:items-end";
   return (
     <header className="motion-safe:animate-message-in">
       {crumbs && <Breadcrumbs label={crumbs.label} items={crumbs.items} />}
-      <div className={`flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between ${crumbs ? "mt-4" : ""}`}>
+      <div className={`flex flex-col gap-4 sm:flex-row ${alignClass} sm:justify-between ${crumbs ? "mt-4" : ""}`}>
         <div className="min-w-0">
           <h1 id={titleId} tabIndex={titleId ? -1 : undefined} className="text-h2 text-balance text-text outline-none sm:text-h1">
             {title}

@@ -1,12 +1,12 @@
 "use client";
 
 import { type CSSProperties, useEffect, useRef, useState } from "react";
-import FieldPassButton from "@/components/field-pass/FieldPassButton";
 import Notice, { type NoticeMessage } from "@/components/layout/Notice";
 import PageHeader from "@/components/layout/PageHeader";
 import ErrorAlert from "@/components/ui/ErrorAlert";
 import { type DietaryAnalysis, type ScanFailure, DietaryScanError, prepareMenuPhoto, scanMenu } from "@/lib/client/dietary-scan";
 import { type Member, fillTemplate, getMemberName, NEED_CATEGORIES } from "@/lib/plan-draft";
+import { formatTripTitle } from "@/lib/trips/format";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
 import { useSpeech } from "@/lib/use-speech";
@@ -48,6 +48,30 @@ export default function DietaryScanner({ tripId, tripName, destination, members 
   }, [photo]);
   useEffect(() => () => scanRef.current?.abort(), []);
 
+  // When language is switched (e.g. EN <-> ID), re-analyze the currently loaded photo if already scanned
+  const currentLocaleRef = useRef(locale);
+  useEffect(() => {
+    if (currentLocaleRef.current === locale) return;
+    currentLocaleRef.current = locale;
+    if (photo && analysis) {
+      scanRef.current?.abort();
+      const controller = new AbortController();
+      scanRef.current = controller;
+      setBusy("scanning");
+      setFailure(null);
+      scanMenu(tripId, photo.blob, locale, controller.signal)
+        .then((fresh) => {
+          if (!controller.signal.aborted) setAnalysis(fresh);
+        })
+        .catch((caught) => {
+          if (!controller.signal.aborted) setFailure(failureOf(caught));
+        })
+        .finally(() => {
+          if (!controller.signal.aborted) setBusy("idle");
+        });
+    }
+  }, [locale, photo, analysis, tripId]);
+
   const restrictionsOf = (member: Member) => [
     ...member.needs.filter((need) => DIET_NEEDS.includes(need)).map((need) => planText.needs[need]),
     ...member.customNeeds,
@@ -57,7 +81,7 @@ export default function DietaryScanner({ tripId, tripName, destination, members 
     .map((member) => ({ id: member.id, name: getMemberName(member, members, planText.ageGroups), restrictions: restrictionsOf(member) }))
     .filter((member) => member.restrictions.length > 0);
   const names = Object.fromEntries(restricted.map((member) => [member.id, member.name]));
-  const tripLabel = tripName || tripsText.card.untitled;
+  const tripLabel = formatTripTitle(tripName, [destination], locale, tripsText.card.untitled);
 
   const pick = async (file: File) => {
     scanRef.current?.abort();
@@ -109,7 +133,6 @@ export default function DietaryScanner({ tripId, tripName, destination, members 
         }}
         title={text.title}
         lead={fillTemplate(text.lead, { destination: destination || tripLabel })}
-        actions={<FieldPassButton tripId={tripId} destination={destination} />}
       />
 
       <div className="mt-8 space-y-8">
@@ -149,11 +172,17 @@ export default function DietaryScanner({ tripId, tripName, destination, members 
           </div>
         )}
 
-        {busy === "scanning" && <DietaryResultSkeleton />}
+        {busy === "scanning" && !analysis && <DietaryResultSkeleton />}
 
         {analysis && (
           <div className="space-y-8 motion-safe:animate-message-in" aria-live="polite">
-            <DietaryResult analysis={analysis} text={text.result} names={names} unrestricted={members.length - restricted.length} />
+            <DietaryResult
+              analysis={analysis}
+              text={text.result}
+              names={names}
+              unrestricted={members.length - restricted.length}
+              loading={busy === "scanning"}
+            />
             {analysis.waiterQuestion && (
               <WaiterQuestionCard
                 question={analysis.waiterQuestion}
@@ -161,6 +190,7 @@ export default function DietaryScanner({ tripId, tripName, destination, members 
                 speakingId={speakingId}
                 onSpeak={speakWords}
                 readerLanguageTag={locale === "en" ? "en-US" : "id-ID"}
+                loading={busy === "scanning"}
               />
             )}
           </div>

@@ -54,15 +54,25 @@ const hasNumber = (member: SafetyMember): member is SafetyMember & { phone: stri
 function StepDot({ index, current }: { index: number; current: number }) {
   if (index < current) {
     return (
-      <span aria-hidden="true" className="flex size-5 shrink-0 items-center justify-center rounded-full bg-primary text-on-primary motion-safe:animate-pop-in">
-        <Check className="size-3" strokeWidth={4} />
+      <span aria-hidden="true" className="flex size-6 shrink-0 items-center justify-center">
+        <span className="flex size-5 items-center justify-center rounded-full bg-primary text-on-primary motion-safe:animate-pop-in">
+          <Check className="size-3" strokeWidth={4} />
+        </span>
       </span>
     );
   }
   if (index === current) {
-    return <span aria-hidden="true" className="size-4 shrink-0 rounded-full border-4 border-primary bg-background ring-4 ring-primary/20" />;
+    return (
+      <span aria-hidden="true" className="flex size-6 shrink-0 items-center justify-center">
+        <span className="size-4 rounded-full border-4 border-primary bg-background ring-4 ring-primary/20" />
+      </span>
+    );
   }
-  return <span aria-hidden="true" className="size-4 shrink-0 rounded-full border-2 border-border-strong bg-background" />;
+  return (
+    <span aria-hidden="true" className="flex size-6 shrink-0 items-center justify-center">
+      <span className="size-4 rounded-full border-2 border-border-strong bg-background" />
+    </span>
+  );
 }
 
 /**
@@ -72,26 +82,41 @@ function StepDot({ index, current }: { index: number; current: number }) {
 export function SearchSteps({ report, context }: { report: SafetyReport; context: HelpContext }) {
   const current = REPORT_STATUSES.indexOf(report.status);
   return (
-    <ol className="flex items-center gap-2">
-      {REPORT_STATUSES.map((status, index) => (
-        <li
-          key={status}
-          aria-current={index === current ? "step" : undefined}
-          className={`flex min-w-0 items-center gap-2 ${index < REPORT_STATUSES.length - 1 ? "flex-1" : ""}`}
-        >
-          <StepDot index={index} current={current} />
-          <span className={`min-w-0 text-caption font-bold ${index <= current ? "text-text" : "text-text-muted"}`}>
-            {context.text.search.steps[status]}
-          </span>
-          {index < REPORT_STATUSES.length - 1 && (
-            <span
-              aria-hidden="true"
-              className={`h-1 min-w-3 flex-1 rounded-full transition-[background-color] duration-500 ease-out ${index < current ? "bg-primary" : "bg-primary/15"}`}
-            />
-          )}
-        </li>
-      ))}
-    </ol>
+    <div className="w-full">
+      {/* The dots and connecting tracks: equal width, no collisions with text */}
+      <ol className="flex items-center py-1">
+        {REPORT_STATUSES.map((status, index) => (
+          <li
+            key={status}
+            aria-current={index === current ? "step" : undefined}
+            className={`flex items-center ${index < REPORT_STATUSES.length - 1 ? "flex-1" : ""}`}
+          >
+            <StepDot index={index} current={current} />
+            {index < REPORT_STATUSES.length - 1 && (
+              <span
+                aria-hidden="true"
+                className={`mx-2 h-1 flex-1 rounded-full transition-colors duration-500 ease-out sm:mx-3 ${
+                  index < current ? "bg-primary" : "bg-primary/20"
+                }`}
+              />
+            )}
+          </li>
+        ))}
+      </ol>
+
+      {/* The step labels, cleanly positioned directly underneath each dot */}
+      <div className="mt-1.5 grid grid-cols-3 text-caption font-bold">
+        <span className={`text-left ${0 <= current ? "text-text" : "text-text-muted"}`}>
+          {context.text.search.steps[REPORT_STATUSES[0]]}
+        </span>
+        <span className={`text-center ${1 <= current ? "text-text" : "text-text-muted"}`}>
+          {context.text.search.steps[REPORT_STATUSES[1]]}
+        </span>
+        <span className={`text-right ${2 <= current ? "text-text" : "text-text-muted"}`}>
+          {context.text.search.steps[REPORT_STATUSES[2]]}
+        </span>
+      </div>
+    </div>
   );
 }
 

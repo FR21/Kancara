@@ -21,7 +21,7 @@ export default async function ConversationTranslatorPage({ params }: PageProps<"
 
   const destinations = plan.card.destinations.length > 0 ? plan.card.destinations : plan.draft.destinations;
   return (
-    <PageShell width="reading">
+    <PageShell width="workspace">
       <PageBackdrop />
       <ConversationTranslator tripId={id} tripName={plan.card.name} destination={destinations.filter(Boolean).join(", ")} />
     </PageShell>

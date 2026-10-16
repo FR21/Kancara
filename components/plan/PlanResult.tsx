@@ -46,18 +46,7 @@ function SaveStatus({ state, text, onSave }: { state: SaveState; text: Messages[
     );
   }
   if (state === "saved") {
-    return (
-      <div className="flex flex-wrap items-center gap-x-4">
-        <p className="flex min-h-11 items-center gap-2 text-body-sm text-text">
-          <Check className="size-4 shrink-0 text-success motion-safe:animate-stamp-in" strokeWidth={3} aria-hidden="true" />
-          {text.saved}
-        </p>
-        <Link href="/trips" className={TEXT_LINK}>
-          {text.viewTrips}
-          <ArrowRight className={FORWARD_ARROW} aria-hidden="true" />
-        </Link>
-      </div>
-    );
+    return null;
   }
   return (
     <div className="flex flex-wrap items-center gap-x-4">

@@ -147,30 +147,7 @@ export default function DayMap({ stops, destination, activeIndex, labels, onPick
   }, [activeIndex, state]);
 
   if (state === "failed") {
-    return (
-      <div className={`rounded-surface border border-border bg-surface p-surface ${className}`}>
-        <p className="text-body-sm text-pretty text-text-muted">{labels.unavailable}</p>
-        <ol className="mt-4 space-y-2">
-          {stops.map((stop, index) => (
-            <li key={`${stop.time}-${stop.title}`} className="flex items-center gap-3">
-              <span aria-hidden="true" className="flex size-8 shrink-0 items-center justify-center rounded-full bg-primary-subtle text-caption font-bold text-on-primary-subtle tabular-nums">
-                {index + 1}
-              </span>
-              <a
-                href={googleMapsLink(stop.address ? `${stop.title}, ${stop.address}` : `${stop.title}, ${destination}`, stop.placeId)}
-                target="_blank"
-                rel="noreferrer"
-                className="group inline-flex min-h-11 min-w-0 items-center gap-2 rounded-sm text-label text-primary underline-offset-4 hover:underline"
-              >
-                <span className="truncate">{stop.title}</span>
-                <ExternalLink className="size-4 shrink-0" aria-hidden="true" />
-                <span className="sr-only">{labels.open}</span>
-              </a>
-            </li>
-          ))}
-        </ol>
-      </div>
-    );
+    return null;
   }
 
   return (

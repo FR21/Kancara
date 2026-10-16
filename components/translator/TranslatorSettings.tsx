@@ -1,4 +1,4 @@
-import { ArrowDownUp, Volume2 } from "lucide-react";
+import { Volume2 } from "lucide-react";
 import SelectField from "@/components/ui/SelectField";
 import { FIELD_LABEL, choiceClass } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
@@ -9,8 +9,6 @@ type TranslatorSettingsProps = {
   onLanguage: (key: string) => void;
   autoSpeak: boolean;
   onAutoSpeak: (on: boolean) => void;
-  faceToFace: boolean;
-  onFaceToFace: (on: boolean) => void;
   canSpeak: boolean;
   text: Messages["translator"];
 };
@@ -21,13 +19,11 @@ export function languageLabel(language: LocalLanguage, names: Record<LanguageKey
   return name === language.nativeName ? name : `${name} (${language.nativeName})`;
 }
 
-// Who the traveler is talking to and how the phone helps: the other side's language, reading each translation
-// aloud, and turning the screen for the person across the table. The field and the two switches stand on rows of
-// their own, so a field's corner never sits beside a pill's.
-export default function TranslatorSettings({ localLanguage, onLanguage, autoSpeak, onAutoSpeak, faceToFace, onFaceToFace, canSpeak, text }: TranslatorSettingsProps) {
+// Who the traveler is talking to and how the phone helps: the other side's language and reading each translation aloud.
+export default function TranslatorSettings({ localLanguage, onLanguage, autoSpeak, onAutoSpeak, canSpeak, text }: TranslatorSettingsProps) {
   return (
-    <div className="space-y-4">
-      <div className="max-w-sm">
+    <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between sm:gap-4">
+      <div className="w-full max-w-sm">
         <label htmlFor="translator-language" className={`${FIELD_LABEL} block`}>
           {text.settings.language}
         </label>
@@ -39,18 +35,14 @@ export default function TranslatorSettings({ localLanguage, onLanguage, autoSpea
           ))}
         </SelectField>
       </div>
-      <div className="flex flex-wrap gap-2">
-        {canSpeak && (
+      {canSpeak && (
+        <div className="pb-0.5 sm:ml-auto">
           <button type="button" aria-pressed={autoSpeak} onClick={() => onAutoSpeak(!autoSpeak)} className={choiceClass(autoSpeak)}>
             <Volume2 className="size-4" aria-hidden="true" />
             {text.settings.autoSpeak}
           </button>
-        )}
-        <button type="button" aria-pressed={faceToFace} onClick={() => onFaceToFace(!faceToFace)} className={choiceClass(faceToFace)}>
-          <ArrowDownUp className="size-4" aria-hidden="true" />
-          {text.settings.faceToFace}
-        </button>
-      </div>
+        </div>
+      )}
     </div>
   );
 }

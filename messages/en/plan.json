@@ -1,32 +1,32 @@
 {
   "title": "Plan a trip",
   "start": {
-    "title": "Plan a trip for the group",
-    "lead": "Four short questions, one at a time. Then the boarding pass and a day-by-day plan for everyone are ready.",
+    "title": "Let's build an unforgettable trip for your group!",
+    "lead": "Just four quick questions, one by one. We'll craft personal boarding passes and day-by-day plans for everyone.",
     "form": "Start planning",
-    "captain": "Hi, I'm Captain. I'll stay with you until your boarding pass is ready.",
+    "captain": "Hi, I'm Captain! I'll guide you until your boarding passes are ready.",
     "savedProfiles": "Use saved profiles",
     "routeLabel": "The plan's steps",
     "route": {
       "trip": {
         "name": "Trip",
-        "asks": "Where from, where to, when, and how relaxed."
+        "asks": "Set your departure, destinations, travel dates, and daily rhythm."
       },
       "crew": {
         "name": "Group",
-        "asks": "Who is coming and what each of them needs."
+        "asks": "List every group member along with their dietary and access needs."
       },
       "budget": {
         "name": "Budget",
-        "asks": "Roughly what it comes to for everyone."
+        "asks": "Set an estimated total budget so expenses stay fair and clear."
       },
       "extras": {
         "name": "Extras",
-        "asks": "Lodging, a special occasion, or places to avoid. You can skip it."
+        "asks": "Add stay preferences, special occasions, and spots to avoid."
       },
       "pass": {
         "name": "Boarding pass",
-        "asks": "Check everything, then the day-by-day plan is made."
+        "asks": "Review your ticket summary before your daily itinerary is made."
       }
     }
   },
