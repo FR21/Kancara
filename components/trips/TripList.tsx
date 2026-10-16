@@ -4,7 +4,7 @@ import { ChevronRight, TriangleAlert } from "lucide-react";
 import type { CSSProperties, KeyboardEvent } from "react";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
-import { formatDays, formatDaysAhead, formatTripDates } from "@/lib/trips/format";
+import { formatDays, formatDaysAhead, formatTripDates, formatTripTitle } from "@/lib/trips/format";
 import { type TripCard, DRAFT_SECTIONS } from "@/lib/trips/trip";
 import { useLocale } from "@/lib/use-locale";
 import { StatusMark } from "./TripBadges";
@@ -34,7 +34,7 @@ export function tripRowId(id: string): string {
 function TripRow({ card, order, selected, text, onSelect }: TripRowProps) {
   const locale = useLocale();
   const route = [card.origin, card.destinations.join(", ")].filter(Boolean).join(" → ");
-  const title = card.name || route || text.card.untitled;
+  const title = formatTripTitle(card.name, card.destinations, locale, route || text.card.untitled);
   const dates = card.startDate ? formatTripDates(card.startDate, card.endDate, locale) : text.card.noDates;
   const subtitle = [card.name ? route : "", dates].filter(Boolean).join(" · ");
 

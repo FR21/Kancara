@@ -16,7 +16,7 @@ import { useExchangeRate } from "@/lib/use-exchange-rate";
 import { useLocale } from "@/lib/use-locale";
 import Checkbox from "@/components/ui/Checkbox";
 import SegmentedToggle from "@/components/ui/SegmentedToggle";
-import { FIELD_LABEL, INPUT, INPUT_BUTTON, choiceCardClass, choiceClass } from "@/components/ui/styles";
+import { FIELD_LABEL, INPUT, INPUT_BUTTON, choiceClass } from "@/components/ui/styles";
 import { CustomChip } from "./CustomAdd";
 
 type EditorProps = {
@@ -205,58 +205,77 @@ export function BudgetEditor({ draft, dispatch, text }: EditorProps) {
     setAmount(digits ? Number(digits) : null);
   };
 
-  return (
-    <div>
-      <SegmentedToggle
-        name="budget-currency"
-        label={copy.currencyLegend}
-        options={CURRENCIES}
-        labels={copy.currencies}
-        value={currency}
-        onChange={(value) => dispatch({ type: "setBudgetCurrency", value })}
-      />
+  const otherCurrency: Currency = currency === "IDR" ? "USD" : "IDR";
+  const otherAmount = amounts[otherCurrency];
+  const convertedText =
+    otherAmount !== null
+      ? `≈ ${money(otherCurrency).format(otherAmount)}`
+      : null;
 
-      <div className="mt-6 grid gap-4 sm:grid-cols-2">
-        {CURRENCIES.map((unit) => {
-          const active = unit === currency;
-          const amount = amounts[unit];
-          // The field being typed in keeps plain digits; the worked-out one is grouped for reading.
-          let shown: number | string = "";
-          if (amount !== null) shown = active ? amount : grouped.format(amount);
-          return (
-            <div key={unit}>
-              <label htmlFor={`pass-budget-${unit}`} className={`${FIELD_LABEL} block`}>
-                {copy.fields[unit]}
-              </label>
-              <input
-                id={`pass-budget-${unit}`}
-                type="text"
-                inputMode="numeric"
-                autoComplete="off"
-                disabled={!active}
-                value={shown}
-                placeholder={active ? copy.placeholders[unit] : copy.auto}
-                onChange={(event) => handleChange(event.target.value)}
-                className={`${INPUT} mt-2 tabular-nums disabled:cursor-not-allowed disabled:border-border disabled:bg-surface-muted disabled:text-text-muted`}
-              />
-            </div>
-          );
-        })}
+  return (
+    <div className="space-y-5">
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <label htmlFor={`pass-budget-${currency}`} className={FIELD_LABEL}>
+          {copy.fields[currency]}
+        </label>
+        <SegmentedToggle
+          name="budget-currency"
+          label={copy.currencyLegend}
+          options={CURRENCIES}
+          labels={copy.currencies}
+          value={currency}
+          block
+          onChange={(value) => dispatch({ type: "setBudgetCurrency", value })}
+        />
       </div>
 
-      <div role="group" aria-label={copy.quick} className="mt-4 flex flex-wrap items-center gap-2">
+      <div>
+        <div className="relative">
+          <span
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-y-0 left-0 flex items-center pl-4 text-label font-bold text-text-muted"
+          >
+            {currency === "IDR" ? "Rp" : "$"}
+          </span>
+          <input
+            id={`pass-budget-${currency}`}
+            type="text"
+            inputMode="numeric"
+            autoComplete="off"
+            value={amounts[currency] ?? ""}
+            placeholder={copy.placeholders[currency].replace(/^(Example:\s*|Contoh:\s*)/i, "")}
+            onChange={(event) => handleChange(event.target.value)}
+            className={`${INPUT} pl-12 text-body-lg font-semibold tabular-nums`}
+          />
+        </div>
+
+        {convertedText && (
+          <p className="mt-2 text-caption text-text-muted">
+            <span className="font-medium text-text">{convertedText}</span>
+            <span className="ml-1.5 opacity-80">({copy.auto})</span>
+          </p>
+        )}
+      </div>
+
+      <div role="group" aria-label={copy.quick} className="flex flex-wrap items-center gap-2 pt-1">
         <span className="text-caption font-bold text-text-muted">{copy.quick}</span>
         {BUDGET_PRESETS[currency].map((preset) => {
           const selected = amounts[currency] === preset;
           return (
-            <button key={preset} type="button" aria-pressed={selected} onClick={() => setAmount(preset)} className={choiceClass(selected)}>
+            <button
+              key={preset}
+              type="button"
+              aria-pressed={selected}
+              onClick={() => setAmount(preset)}
+              className={choiceClass(selected)}
+            >
               {money(currency, true).format(preset)}
             </button>
           );
         })}
       </div>
 
-      <p className="mt-6 text-caption text-text-muted">{rateLine}</p>
+      <p className="pt-2 text-caption text-text-muted">{rateLine}</p>
     </div>
   );
 }
@@ -265,7 +284,7 @@ export function PaceEditor({ draft, dispatch, text }: EditorProps) {
   return (
     <fieldset className="min-w-0">
       <legend className={FIELD_LABEL}>{text.pass.pace}</legend>
-      <div className="mt-2 grid gap-2 sm:grid-cols-2">
+      <div className="mt-2 flex flex-wrap gap-2">
         {PACES.map((pace) => {
           const selected = draft.pace === pace;
           return (
@@ -274,19 +293,19 @@ export function PaceEditor({ draft, dispatch, text }: EditorProps) {
               type="button"
               aria-pressed={selected}
               onClick={() => dispatch({ type: "setPace", value: pace })}
-              className={choiceCardClass(selected)}
+              className={choiceClass(selected)}
             >
-              <span className="min-w-0 flex-1">
-                <span className="block font-heading text-h3 font-extrabold">{text.paces[pace]}</span>
-                <span className={`mt-1 block text-body-sm ${selected ? "text-on-primary" : "text-text-muted"}`}>
-                  {text.paceHints[pace]}
-                </span>
-              </span>
-              {selected && <Check className="size-5 shrink-0" strokeWidth={3} aria-hidden="true" />}
+              {selected && <Check className="size-4" strokeWidth={3} aria-hidden="true" />}
+              {text.paces[pace]}
             </button>
           );
         })}
       </div>
+      {draft.pace && (
+        <p className="mt-2 text-caption text-pretty text-text-muted">
+          {text.paceHints[draft.pace]}
+        </p>
+      )}
     </fieldset>
   );
 }

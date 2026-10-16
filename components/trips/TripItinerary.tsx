@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, LifeBuoy, Route, Trophy } from "lucide-react";
+import { ArrowRight, Route, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import FieldPassSheet from "@/components/field-pass/FieldPassSheet";
@@ -14,7 +14,7 @@ import Breadcrumbs from "@/components/layout/Breadcrumbs";
 import { type Itinerary, captain, captainIsSample } from "@/lib/client/captain";
 import { settleLaundry } from "@/lib/client/laundry";
 import { trips, TripsError } from "@/lib/client/trips";
-import { formatDays, formatTripDates, plural } from "@/lib/trips/format";
+import { formatDays, formatTripDates, formatTripTitle, plural } from "@/lib/trips/format";
 import { type TripPlanView, countViolations, tripHref } from "@/lib/trips/trip";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
@@ -128,12 +128,14 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
     return text.itinerary.missingOrganizer;
   };
 
+  const tripTitle = card ? formatTripTitle(card.name, card.destinations, locale, text.card.untitled) : text.card.untitled;
+
   return (
     <PageShell width="workspace">
       <PageBackdrop />
       <Breadcrumbs
         label={navText.breadcrumb}
-        items={[{ label: navText.links.trips, href: "/trips" }, { label: card?.name || text.card.untitled }]}
+        items={[{ label: navText.links.trips, href: "/trips" }, { label: tripTitle }]}
       />
 
       {!plan && state === "loading" && (
@@ -159,20 +161,14 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
         <div className="motion-safe:animate-message-in">
           <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div className="min-w-0">
-              <h1 className="text-h2 text-balance text-text sm:text-h1">{card.name || text.card.untitled}</h1>
+              <h1 className="text-h2 text-balance text-text sm:text-h1">{tripTitle}</h1>
               {facts.length > 0 && <p className="mt-2 text-body text-pretty text-text-muted tabular-nums">{facts.join(" · ")}</p>}
             </div>
-            {card.status !== "draft" && (
+            {card.status === "completed" && (
               <div className="flex shrink-0 flex-wrap gap-2">
-                {card.status === "completed" && (
-                  <Link href={`/trips/${encodeURIComponent(card.id)}/summary`} className={buttonClass("outline", "small")}>
-                    <Trophy className="size-4 text-primary" aria-hidden="true" />
-                    {text.tools.recap}
-                  </Link>
-                )}
-                <Link href={`/trips/${encodeURIComponent(card.id)}/help`} className={buttonClass("primary", "small")}>
-                  <LifeBuoy className="size-4" aria-hidden="true" />
-                  {text.tools.help}
+                <Link href={`/trips/${encodeURIComponent(card.id)}/summary`} className={buttonClass("outline", "small")}>
+                  <Trophy className="size-4 text-primary" aria-hidden="true" />
+                  {text.tools.recap}
                 </Link>
               </div>
             )}

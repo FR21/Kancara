@@ -363,6 +363,7 @@ export default function SplitBillWorkspace({ initialBill, stored }: SplitBillWor
         }}
         onConfirm={startNewBill}
       />
+      <Notice notice={notice} dismissLabel={text.notice.dismiss} onDismiss={() => setNotice(null)} />
     </div>
   );
 }

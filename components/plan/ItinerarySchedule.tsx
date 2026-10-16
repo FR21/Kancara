@@ -16,6 +16,7 @@ import { BADGE, buttonClass } from "@/components/ui/styles";
 import { isLegCurrent, rebuildDayStops, switchToBackup } from "@/lib/backups";
 import type { BackupKind, Itinerary, ItineraryCover, ItineraryDay } from "@/lib/client/captain";
 import { fetchWeather } from "@/lib/client/weather";
+import { mapsAvailable } from "@/lib/itinerary-map";
 import { downloadItineraryPdf } from "@/lib/itinerary-pdf";
 import type { Messages } from "@/lib/messages";
 import { type Member, fillTemplate, getMemberName, parseLocalDate } from "@/lib/plan-draft";
@@ -239,7 +240,7 @@ export default function ItinerarySchedule({
         />
       </div>
 
-      <div className="mt-6 lg:grid lg:grid-cols-[minmax(0,40rem)_minmax(0,1fr)] lg:items-start lg:gap-8">
+      <div className={`mt-6 ${mapsAvailable ? "lg:grid lg:grid-cols-[minmax(0,40rem)_minmax(0,1fr)] lg:items-start lg:gap-8" : "w-full"}`}>
         <div role="tabpanel" id={panelId} aria-labelledby={tabId(selected)} className="min-w-0">
           <div key={day.date} className="motion-safe:animate-message-in">
             <header>
@@ -250,7 +251,7 @@ export default function ItinerarySchedule({
                     date: longDate.format(parseLocalDate(day.date)),
                   })}
                 </h3>
-                {day.items.length > 0 && (
+                {mapsAvailable && day.items.length > 0 && (
                   <button type="button" onClick={() => setMapOpen(true)} className={`${buttonClass("outline", "small")} lg:hidden`}>
                     <MapIcon className="size-4 text-primary" aria-hidden="true" />
                     {words.timeline.map}
@@ -335,7 +336,7 @@ export default function ItinerarySchedule({
           </div>
         </div>
 
-        {day.items.length > 0 && (
+        {mapsAvailable && day.items.length > 0 && (
           <aside aria-label={fillTemplate(words.timeline.mapTitle, { number: selected + 1 })} className="hidden lg:sticky lg:top-28 lg:block">
             <DayMap
               key={day.date}
@@ -350,21 +351,23 @@ export default function ItinerarySchedule({
         )}
       </div>
 
-      <Sheet open={mapOpen} title={fillTemplate(words.timeline.mapTitle, { number: selected + 1 })} closeLabel={words.close} onClose={() => setMapOpen(false)}>
-        {mapOpen && (
-          <DayMap
-            stops={day.items}
-            destination={destination}
-            activeIndex={pointed}
-            labels={mapLabels}
-            onPick={(index) => {
-              setMapOpen(false);
-              openStop(index);
-            }}
-            className="h-[60dvh]"
-          />
-        )}
-      </Sheet>
+      {mapsAvailable && (
+        <Sheet open={mapOpen} title={fillTemplate(words.timeline.mapTitle, { number: selected + 1 })} closeLabel={words.close} onClose={() => setMapOpen(false)}>
+          {mapOpen && (
+            <DayMap
+              stops={day.items}
+              destination={destination}
+              activeIndex={pointed}
+              labels={mapLabels}
+              onPick={(index) => {
+                setMapOpen(false);
+                openStop(index);
+              }}
+              className="h-[60dvh]"
+            />
+          )}
+        </Sheet>
+      )}
 
       <Sheet
         open={backupItem !== null}

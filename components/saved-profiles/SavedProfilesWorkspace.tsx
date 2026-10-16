@@ -267,6 +267,7 @@ export default function SavedProfilesWorkspace({ initial }: { initial: SavedProf
         onCancel={() => setDeleteTarget(null)}
         onConfirm={confirmDelete}
       />
+      <Notice notice={notice} dismissLabel={text.notice.dismiss} onDismiss={() => setNotice(null)} />
     </>
   );
 }

@@ -12,11 +12,13 @@ type SheetProps = {
   children: ReactNode;
   /** Actions that stay in reach at the foot while the content scrolls. */
   footer?: ReactNode;
+  /** Dialog width variant: 'default' (max-w-xl) or 'wide' (max-w-4xl for boarding passes/itineraries). */
+  size?: "default" | "wide";
 };
 
 // The help page's dialogs: a sheet rising from the bottom edge on a phone, where a thumb reaches it, and a
 // centred dialog from 640px. The same shape as a stop's details in the itinerary.
-export default function Sheet({ open, title, closeLabel, onClose, children, footer }: SheetProps) {
+export default function Sheet({ open, title, closeLabel, onClose, children, footer, size = "default" }: SheetProps) {
   const dialogRef = useRef<HTMLDialogElement>(null);
   const titleId = useId();
   // True while the sheet is being closed from outside, so that close is not reported back as the visitor's.
@@ -41,13 +43,15 @@ export default function Sheet({ open, title, closeLabel, onClose, children, foot
     if (event.target === event.currentTarget) onClose();
   };
 
+  const widthClass = size === "wide" ? "max-w-4xl sm:max-w-3xl lg:max-w-4xl" : "max-w-2xl sm:max-w-xl";
+
   return (
     <dialog
       ref={dialogRef}
       aria-labelledby={titleId}
       onClose={handleClose}
       onClick={closeOnBackdrop}
-      className="mx-auto mt-auto mb-0 max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-surface bg-background p-0 text-text backdrop:bg-neutral-950/70 open:flex open:motion-safe:animate-sheet-up sm:m-auto sm:max-h-[86dvh] sm:max-w-xl sm:rounded-surface sm:open:motion-safe:animate-message-in"
+      className={`mx-auto mt-auto mb-0 max-h-[92dvh] w-full ${widthClass} flex-col overflow-hidden rounded-t-surface bg-background p-0 text-text backdrop:bg-neutral-950/70 open:flex open:motion-safe:animate-sheet-up sm:m-auto sm:max-h-[86dvh] sm:rounded-surface sm:open:motion-safe:animate-message-in`}
     >
       {open && (
         <>

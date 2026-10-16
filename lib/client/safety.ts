@@ -272,6 +272,32 @@ export async function describePoint(point: { latitude: number; longitude: number
   }
 }
 
+/** Resolves a place name or address into coordinates using forward geocoding. */
+export async function geocodePlace(
+  query: string,
+  near?: string,
+  locale = "id",
+): Promise<{ latitude: number; longitude: number; label?: string; note?: string } | null> {
+  try {
+    const params = new URLSearchParams({ q: query, lang: locale });
+    if (near) params.set("near", near);
+    const res = await send(`/api/geocode?${params}`, { method: "GET" });
+    if (!res.ok) return null;
+    const data: unknown = await res.json();
+    if (isRecord(data) && typeof data.latitude === "number" && typeof data.longitude === "number") {
+      return {
+        latitude: data.latitude,
+        longitude: data.longitude,
+        label: typeof data.label === "string" ? data.label : undefined,
+        note: typeof data.note === "string" ? data.note : undefined,
+      };
+    }
+    return null;
+  } catch {
+    return null;
+  }
+}
+
 const LINK_PREFIX = "kancara-help-link:";
 const ORIGIN_PREFIX = "kancara-help-origin:";
 

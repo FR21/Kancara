@@ -79,6 +79,7 @@ export default function MeetingMap({ start, near, moveTo, text, onMove, onUnavai
         map.addListener("zoom_changed", report);
         mapRef.current = map;
         setReady(true);
+        if (origin) callbacksRef.current.onMove(origin);
       } catch {
         if (!controller.signal.aborted) callbacksRef.current.onUnavailable();
       }
@@ -93,6 +94,7 @@ export default function MeetingMap({ start, near, moveTo, text, onMove, onUnavai
     if (!ready || !moveTo) return;
     mapRef.current?.setCenter({ lat: moveTo.latitude, lng: moveTo.longitude });
     mapRef.current?.setZoom(PLACE_ZOOM);
+    callbacksRef.current.onMove(moveTo);
   }, [ready, moveTo]);
 
   return (

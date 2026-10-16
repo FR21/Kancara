@@ -380,7 +380,20 @@ export default function PlanWorkspace() {
         />
       )}
 
-      <PassDialog open={previewing} draft={draft} text={text} onClose={() => setPreviewing(false)} />
+      <PassDialog
+        open={previewing}
+        draft={draft}
+        text={text}
+        onClose={() => setPreviewing(false)}
+        onEdit={(targetQuestion, memberId) => {
+          setPreviewing(false);
+          editFromPass(targetQuestion, memberId);
+        }}
+        onAddMember={() => {
+          setPreviewing(false);
+          addMemberFromPass();
+        }}
+      />
 
       {stage === "pass" && (
         <TicketReview
@@ -431,6 +444,7 @@ export default function PlanWorkspace() {
 
       <Notice
         notice={noticeOpen ? { id: savedCount, tone: "success", message: text.result.savedNotice } : null}
+        duration={4000}
         dismissLabel={text.result.dismiss}
         onDismiss={() => setNoticeOpen(false)}
       />

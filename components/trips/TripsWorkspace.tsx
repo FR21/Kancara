@@ -1,12 +1,14 @@
 "use client";
 
-import { Loader2, Plus, Users, WifiOff } from "lucide-react";
+import { Loader2, Plus, WifiOff } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import ErrorAlert from "@/components/ui/ErrorAlert";
 import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/ui/styles";
 import { trips } from "@/lib/client/trips";
 import { fillTemplate } from "@/lib/plan-draft";
+import { formatTripTitle } from "@/lib/trips/format";
+import { useLocale } from "@/lib/use-locale";
 import type { ActiveTrips, HistoryTrips, TripCard } from "@/lib/trips/trip";
 import { useMediaQuery } from "@/lib/use-media-query";
 import { useMessages } from "@/lib/use-messages";
@@ -161,7 +163,8 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
     setSheetOpen(true);
   };
 
-  const nameOf = (card: TripCard) => card.name || text.card.untitled;
+  const locale = useLocale();
+  const nameOf = (card: TripCard) => formatTripTitle(card.name, card.destinations, locale, text.card.untitled);
 
   const duplicate = async (card: TripCard) => {
     const name = nameOf(card);
@@ -260,17 +263,12 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
       <PageHeader
         title={text.title}
         titleId={TITLE_ID}
+        alignActions="center"
         actions={
-          <>
-            <Link href="/profile/saved-members" className={`${OUTLINE_BUTTON} flex-1 sm:flex-none`}>
-              <Users className="size-4 text-primary" aria-hidden="true" />
-              {text.savedProfiles}
-            </Link>
-            <Link href={PLAN_HREF} className={`group ${PRIMARY_BUTTON} flex-1 sm:flex-none`}>
-              <Plus className="size-4 transition-[rotate] duration-300 ease-out group-hover:rotate-90" aria-hidden="true" />
-              {text.plan}
-            </Link>
-          </>
+          <Link href={PLAN_HREF} className={`group ${PRIMARY_BUTTON} flex-1 sm:flex-none`}>
+            <Plus className="size-4 transition-[rotate] duration-300 ease-out group-hover:rotate-90" aria-hidden="true" />
+            {text.plan}
+          </Link>
         }
       />
 

@@ -13,7 +13,7 @@ import { trips, TripsError } from "@/lib/client/trips";
 import { laundryInSync, planLaundry } from "@/lib/laundry";
 import { clearPendingPacking, readPendingPacking, writePendingPacking } from "@/lib/offline";
 import { type PlanDraftAction, planDraftReducer } from "@/lib/plan-draft";
-import { formatDays, formatTripDates } from "@/lib/trips/format";
+import { formatDays, formatTripDates, formatTripTitle } from "@/lib/trips/format";
 import { type TripPlanView, tripHref } from "@/lib/trips/trip";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
@@ -69,6 +69,9 @@ export default function PackingWorkspace({ tripId }: { tripId: string }) {
       if (latestRef.current !== current) return;
       clearPendingPacking(tripId);
       setSave("saved");
+      window.setTimeout(() => {
+        setSave((prev) => (prev === "saved" ? "idle" : prev));
+      }, 3000);
     } catch {
       waitingRef.current = !navigator.onLine;
       setSave(waitingRef.current ? "waiting" : "failed");
@@ -193,6 +196,8 @@ export default function PackingWorkspace({ tripId }: { tripId: string }) {
     : [];
   const waiting = save === "waiting" || (!online && save !== "saving");
 
+  const tripTitle = card ? formatTripTitle(card.name, card.destinations, locale, tripsText.card.untitled) : tripsText.card.untitled;
+
   return (
     <PageShell width="workspace">
       <PageBackdrop />
@@ -202,12 +207,12 @@ export default function PackingWorkspace({ tripId }: { tripId: string }) {
           items: [
             { label: navText.links.trips, href: "/trips" },
             // A draft has no itinerary page to step back to.
-            ...(card && card.status !== "draft" ? [{ label: card.name || text.back, href: `/trips/${encodeURIComponent(tripId)}` }] : []),
+            ...(card && card.status !== "draft" ? [{ label: tripTitle, href: `/trips/${encodeURIComponent(tripId)}` }] : []),
             { label: text.title },
           ],
         }}
         title={text.title}
-        lead={card ? [card.name || tripsText.card.untitled, ...facts].join(" · ") : undefined}
+        lead={card ? [tripTitle, ...facts].join(" · ") : undefined}
         actions={
           <p role="status" className="flex min-w-0 items-center gap-2 text-body-sm text-text-muted">
             {waiting && (

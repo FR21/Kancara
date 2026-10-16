@@ -120,7 +120,7 @@ export default function TicketCard({
     <div
       className={`surface-compact @container ${raised ? "drop-shadow-xl drop-shadow-neutral-950/15" : ""} ${arriving ? "motion-safe:animate-ticket-in" : ""}`}
     >
-      <div className="group/ticket @2xl:grid @2xl:grid-cols-[minmax(0,1fr)_18rem]">
+      <div className="group/ticket @2xl:grid @2xl:grid-cols-[minmax(0,1fr)_20rem]">
         <div
           className={`@container min-w-0 notch-bottom rounded-t-surface @2xl:notch-right @2xl:rounded-l-surface @2xl:rounded-tr-none ${HALF}`}
         >
@@ -132,7 +132,7 @@ export default function TicketCard({
           </div>
 
           <div className="p-surface">
-            <div className="grid gap-x-2 @sm:grid-cols-[minmax(0,1fr)_minmax(3rem,1fr)_minmax(0,1fr)] @sm:items-end">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-1.5 sm:gap-2">
               <Slot
                 interactive={interactive}
                 label={status(pass.origin, origin)}
@@ -144,30 +144,30 @@ export default function TicketCard({
                   {interactive && <Pencil aria-hidden="true" className={EDIT_ICON} />}
                 </span>
                 <span
-                  className={`block truncate font-heading text-h2 uppercase ${
+                  className={`block truncate font-heading text-h3 uppercase sm:text-h2 ${
                     origin ? "font-extrabold text-text" : "text-text-muted"
                   }`}
                 >
                   {origin || EMPTY_MARK}
                 </span>
               </Slot>
-              <div aria-hidden="true" className="flex items-center gap-3 px-2 text-primary @sm:pb-4">
-                <span className="hidden h-px flex-1 border-t border-dashed border-border-strong @sm:block" />
-                <Plane className="size-5 rotate-90 transition-[translate] duration-500 ease-spring group-hover/ticket:translate-y-1 @sm:rotate-0 @sm:group-hover/ticket:translate-x-2 @sm:group-hover/ticket:translate-y-0" />
-                <span className="h-px flex-1 border-t border-dashed border-border-strong" />
+              <div aria-hidden="true" className="flex shrink-0 items-center justify-center gap-1.5 pb-2 text-primary sm:gap-3 sm:px-2 sm:pb-4">
+                <span className="h-px w-3 border-t border-dashed border-border-strong sm:w-8" />
+                <Plane className="size-4 shrink-0 transition-[translate] duration-500 ease-spring group-hover/ticket:translate-x-1 sm:size-5" />
+                <span className="h-px w-3 border-t border-dashed border-border-strong sm:w-8" />
               </div>
               <Slot
                 interactive={interactive}
                 label={status(pass.destinations, destination)}
                 onClick={() => edit("trip")}
-                className={`min-w-0 text-left @sm:text-right ${FIELD}`}
+                className={`min-w-0 text-right ${FIELD}`}
               >
-                <span className={`${LABEL} @sm:justify-end`}>
+                <span className={`${LABEL} justify-end`}>
                   {ticket.to}
                   {interactive && <Pencil aria-hidden="true" className={EDIT_ICON} />}
                 </span>
                 <span
-                  className={`block truncate font-heading text-h2 uppercase ${
+                  className={`block truncate font-heading text-h3 uppercase sm:text-h2 ${
                     destination ? "font-extrabold text-text" : "text-text-muted"
                   }`}
                 >
@@ -176,28 +176,31 @@ export default function TicketCard({
               </Slot>
             </div>
 
-            <div className="mt-2 grid grid-cols-2 gap-x-2 gap-y-1 @lg:grid-cols-4">
-              {fields.map((field) => (
-                <Slot
-                  key={field.label}
-                  interactive={interactive}
-                  label={status(field.label, field.value)}
-                  onClick={() => edit(field.question)}
-                  className={`min-w-0 text-left ${FIELD}`}
-                >
-                  <span className={LABEL}>
-                    {field.label}
-                    {interactive && <Pencil aria-hidden="true" className={EDIT_ICON} />}
-                  </span>
-                  <span
-                    className={`mt-1 block truncate rounded-lg font-heading text-h3 ${
-                      field.value ? "font-extrabold text-text motion-safe:animate-pass-print" : "text-text-muted"
-                    }`}
+            <div className="mt-3.5 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-dashed border-border-strong/40 pt-3 @lg:grid-cols-4">
+              {fields.map((field, index) => {
+                const isRight = index % 2 === 1;
+                return (
+                  <Slot
+                    key={field.label}
+                    interactive={interactive}
+                    label={status(field.label, field.value)}
+                    onClick={() => edit(field.question)}
+                    className={`min-w-0 ${FIELD} ${isRight ? "text-right @lg:text-left" : "text-left"}`}
                   >
-                    {field.value || EMPTY_MARK}
-                  </span>
-                </Slot>
-              ))}
+                    <span className={`${LABEL} ${isRight ? "justify-end @lg:justify-start" : "justify-start"}`}>
+                      {field.label}
+                      {interactive && <Pencil aria-hidden="true" className={EDIT_ICON} />}
+                    </span>
+                    <span
+                      className={`mt-1 block truncate rounded-lg font-heading text-h3 ${
+                        field.value ? "font-extrabold text-text motion-safe:animate-pass-print" : "text-text-muted"
+                      } ${isRight ? "text-right @lg:text-left" : "text-left"}`}
+                    >
+                      {field.value || EMPTY_MARK}
+                    </span>
+                  </Slot>
+                );
+              })}
             </div>
           </div>
 

@@ -106,7 +106,11 @@ function RollRow({ context, member, index, onOpen }: { context: HelpContext; mem
         <span className="min-w-0 flex-1">
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="min-w-0 text-label-lg text-pretty wrap-anywhere text-text">{name}</span>
-            {isViewer && <span className={`${BADGE} border border-primary text-primary`}>{copy.you}</span>}
+            {isViewer && (
+              <span className="inline-flex h-5 items-center rounded-full border border-primary px-2 text-[11px] font-semibold text-primary sm:h-6 sm:px-2.5 sm:text-caption">
+                {copy.you}
+              </span>
+            )}
             {searching && (
               <span className={`${BADGE} bg-primary-subtle text-on-primary-subtle`}>
                 <span aria-hidden="true" className="size-2 shrink-0 rounded-full bg-accent motion-safe:animate-signal" />

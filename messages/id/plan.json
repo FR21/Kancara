@@ -1,32 +1,32 @@
 {
   "title": "Rencanakan trip",
   "start": {
-    "title": "Rencanakan perjalanan rombongan",
-    "lead": "Empat pertanyaan singkat, satu per satu. Setelah itu boarding pass dan rencana per hari untuk semua orang siap.",
+    "title": "Yuk, rancang liburan seru bareng rombonganmu!",
+    "lead": "Cukup jawab empat pertanyaan santai. Kami siapkan boarding pass dan rencana harian lengkap untuk semua orang.",
     "form": "Mulai merencanakan",
-    "captain": "Halo, aku Captain. Aku temani sampai boarding pass-mu jadi.",
+    "captain": "Halo! Aku Captain, siap temani sampai boarding pass-mu jadi.",
     "savedProfiles": "Pakai profil tersimpan",
     "routeLabel": "Langkah-langkah rencana",
     "route": {
       "trip": {
         "name": "Perjalanan",
-        "asks": "Dari mana, ke mana, kapan, dan seberapa santai."
+        "asks": "Tentukan titik awal, destinasi tujuan, tanggal, dan ritme."
       },
       "crew": {
         "name": "Rombongan",
-        "asks": "Siapa saja yang ikut dan apa kebutuhan masing-masing."
+        "asks": "Daftarkan anggota rombongan serta kebutuhan diet dan akses."
       },
       "budget": {
         "name": "Anggaran",
-        "asks": "Kira-kira total untuk semua orang."
+        "asks": "Tetapkan estimasi biaya agar terencana adil dan transparan."
       },
       "extras": {
         "name": "Tambahan",
-        "asks": "Penginapan, acara khusus, atau tempat yang ingin dihindari. Boleh dilewati."
+        "asks": "Tambahkan preferensi penginapan dan tempat yang dihindari."
       },
       "pass": {
         "name": "Boarding pass",
-        "asks": "Periksa semuanya, lalu rencana per hari dibuat."
+        "asks": "Periksa ringkasan tiket dan dapatkan rencana harian grup."
       }
     }
   },

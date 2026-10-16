@@ -10,7 +10,7 @@ import { NEED_CHIP } from "@/components/ui/NeedChips";
 import { PRIMARY_BUTTON } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate, PASS_FIELDS } from "@/lib/plan-draft";
-import { formatDays, formatDaysAhead, formatMoney, formatTripDates, plural } from "@/lib/trips/format";
+import { formatDays, formatDaysAhead, formatMoney, formatTripDates, formatTripTitle, plural } from "@/lib/trips/format";
 import { type TripCard, DRAFT_SECTIONS, tripHref } from "@/lib/trips/trip";
 import { useLocale } from "@/lib/use-locale";
 import MemberStack from "./MemberStack";
@@ -45,7 +45,7 @@ const NEED = `${NEED_CHIP} wrap-anywhere`;
 export default function TripDetail({ card, text, needLabels, actions, headingId, onClose }: TripDetailProps) {
   const locale = useLocale();
   const [showFieldPass, setShowFieldPass] = useState(false);
-  const title = card.name || text.card.untitled;
+  const title = formatTripTitle(card.name, card.destinations, locale, text.card.untitled);
   const detail = text.detail;
   const route = [card.origin, card.destinations.join(", ")].filter(Boolean).join(" → ");
   const onTheWay = card.status === "ongoing" || card.status === "upcoming";
