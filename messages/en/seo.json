@@ -12,19 +12,19 @@
       "description": "Kancara is a multi-agent travel companion for groups with different needs. See how it plans for every member instead of the loudest voice."
     },
     "login": {
-      "title": "Log In",
+      "title": "Log in",
       "description": "Log in to Kancara to plan your group trip."
     },
     "register": {
-      "title": "Sign Up",
+      "title": "Sign up",
       "description": "Create a Kancara account and start planning a group trip that works for every member."
     },
     "forgotPassword": {
-      "title": "Forgot Password",
+      "title": "Forgot password",
       "description": "Reset your Kancara account password."
     },
     "plan": {
-      "title": "Plan a Trip",
+      "title": "Plan a trip",
       "description": "Enter the route, dates, members, and budget, then get a day-by-day plan from Kancara."
     },
     "trips": {
@@ -60,7 +60,7 @@
       "description": "Manage your Kancara profile and account settings."
     },
     "travelMap": {
-      "title": "Travel Map",
+      "title": "Travel map",
       "description": "Mark the countries you have visited on the Kancara globe."
     },
     "privacy": {

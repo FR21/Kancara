@@ -20,11 +20,11 @@
       "description": "Buat akun Kancara dan mulai rencanakan perjalanan rombongan yang pas untuk semua anggota."
     },
     "forgotPassword": {
-      "title": "Lupa Kata Sandi",
+      "title": "Lupa kata sandi",
       "description": "Atur ulang kata sandi akun Kancara."
     },
     "plan": {
-      "title": "Rencanakan Trip",
+      "title": "Rencanakan perjalanan",
       "description": "Isi rute, tanggal, anggota, dan anggaran, lalu dapatkan rencana perjalanan per hari dari Kancara."
     },
     "trips": {
@@ -45,11 +45,11 @@
     },
     "finder": {
       "title": "Kartu Kumpul",
-      "description": "Beri tahu rombongan bahwa anggotanya aman bersama Anda."
+      "description": "Beri tahu rombongan bahwa anggotanya aman bersamamu."
     },
     "join": {
-      "title": "Gabung ke trip",
-      "description": "Bergabung ke trip Kancara lewat tautan undangan."
+      "title": "Gabung ke perjalanan",
+      "description": "Bergabung ke perjalanan Kancara lewat tautan undangan."
     },
     "tripToday": {
       "title": "Jadwal hari ini",
@@ -60,7 +60,7 @@
       "description": "Kelola profil dan pengaturan akun Kancara."
     },
     "travelMap": {
-      "title": "Jejak Perjalanan",
+      "title": "Jejak perjalanan",
       "description": "Tandai negara yang sudah kamu kunjungi di globe Kancara."
     },
     "privacy": {

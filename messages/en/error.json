@@ -1,15 +1,15 @@
 {
-  "500": {
-    "title": "Server error",
-    "description": "Sorry, we encountered a problem while processing your request. Please try again in a moment."
-  },
   "404": {
     "title": "Page not found",
-    "description": "Sorry, we couldn't find the page you're looking for. The URL might be incorrect or the page may have been removed."
+    "description": "This page doesn't exist. The link may be mistyped or removed."
+  },
+  "500": {
+    "title": "Something broke on our side",
+    "description": "Your trips are safe. Try again in a moment."
   },
   "offline": {
     "title": "You're offline",
-    "description": "This page was never opened on this device. Trips you've opened before are still there.",
+    "description": "This page isn't saved on this phone yet. Connect and try again, or open a trip you've already saved.",
     "trips": "My Trips"
   },
   "retry": "Try again",

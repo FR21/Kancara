@@ -34,7 +34,7 @@
   "status": {
     "saving": "Saving…",
     "saved": "Saved",
-    "error": "Couldn't save. Check your connection.",
+    "error": "This country isn't saved yet. Check your connection, then try again.",
     "retry": "Try again"
   },
   "announce": {

@@ -1,13 +1,13 @@
 "use client";
 
-import { ArrowRight, Check, CloudOff, Loader2 } from "lucide-react";
+import { ArrowRight, Check, CloudOff, Loader2, Luggage, MapPinOff } from "lucide-react";
 import PageHeader from "@/components/layout/PageHeader";
 import PageShell from "@/components/layout/PageShell";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import PageBackdrop from "@/components/layout/PageBackdrop";
 import ErrorAlert from "@/components/ui/ErrorAlert";
-import { OUTLINE_BUTTON } from "@/components/ui/styles";
+import { OUTLINE_BUTTON, buttonClass } from "@/components/ui/styles";
 import { settleLaundry } from "@/lib/client/laundry";
 import { trips, TripsError } from "@/lib/client/trips";
 import { laundryInSync, planLaundry } from "@/lib/laundry";
@@ -19,6 +19,7 @@ import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
 import { useOnline } from "@/lib/use-online";
 import PackingBoard, { type LaundrySync } from "@/components/trips/PackingBoard";
+import EmptyState from "@/components/ui/EmptyState";
 
 type LoadState = "loading" | "failed" | "notFound";
 /** "waiting" is a change kept on this device because there was no connection to send it. */
@@ -251,16 +252,35 @@ export default function PackingWorkspace({ tripId }: { tripId: string }) {
         </div>
       )}
 
-      {!plan && state === "notFound" && <p className="mt-8 text-body text-pretty text-text-muted">{text.notFound}</p>}
+      {!plan && state === "notFound" && (
+        <EmptyState
+          icon={MapPinOff}
+          title={text.notFoundTitle}
+          body={text.notFound}
+          headingLevel={2}
+          className="mt-8"
+          action={
+            <Link href="/trips" className={buttonClass("primary")}>
+              {navText.links.trips}
+            </Link>
+          }
+        />
+      )}
 
       {plan && card && !ready && (
-        <div className="mt-8 flex min-h-48 flex-col items-center justify-center rounded-surface border border-dashed border-border-strong p-surface text-center">
-          <p className="mx-auto max-w-md text-body-sm text-pretty text-text-muted">{text.notReady}</p>
-          <Link href={tripHref(card)} className={`${OUTLINE_BUTTON} mt-6`}>
-            {tripsText.card.continue}
-            <ArrowRight className="size-4" aria-hidden="true" />
-          </Link>
-        </div>
+        <EmptyState
+          icon={Luggage}
+          title={text.notReadyTitle}
+          body={text.notReady}
+          headingLevel={2}
+          className="mt-8"
+          action={
+            <Link href={tripHref(card)} className={OUTLINE_BUTTON}>
+              {tripsText.card.continue}
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </Link>
+          }
+        />
       )}
 
       {plan && ready && (

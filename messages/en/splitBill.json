@@ -8,16 +8,17 @@
   "save": {
     "saved": "Saved to your account",
     "failed": "Your latest change is not saved yet. Check your internet connection, then try again.",
-    "conflict": "This bill was changed somewhere else. Reload the page to continue.",
+    "conflict": "Changed on another device. Reload to see the latest (your last change here will be lost).",
     "retry": "Try again",
-    "reload": "Reload"
+    "reload": "Reload",
+    "waitingOffline": "Offline. Changes to this bill are kept on this phone and sent automatically once you're back online."
   },
   "newBill": {
     "action": "Start a new bill",
     "title": "Start a new bill?",
     "body": "All members, expenses, and paid marks on this bill will be deleted.",
     "confirm": "Delete and start over",
-    "pending": "Deleting...",
+    "pending": "Deleting…",
     "cancel": "Cancel",
     "failed": "The bill could not be deleted. Check your internet connection, then try again."
   },
@@ -68,7 +69,7 @@
       "other": "{count} expenses paid by {name} will also be removed from this bill."
     },
     "removeConfirm": "Remove member",
-    "removePending": "Removing...",
+    "removePending": "Removing…",
     "cancel": "Cancel"
   },
   "picker": {
@@ -113,7 +114,6 @@
     "extraHint": "Such as delivery or an admin fee.",
     "extraPlaceholder": "e.g. 5,000",
     "extraShortcut": "+{amount}",
-    "optional": "optional",
     "invalidAmount": "This number cannot be worked out. Check the signs and thousand separators.",
     "preview": "= {amount}",
     "sharedByLabel": "Shared by",
@@ -142,8 +142,8 @@
     "noteExtra": "+{amount} extra fee",
     "removeTitle": "Remove {name}?",
     "removeBody": "This expense will be removed from the bill and the totals.",
-    "removeConfirm": "Remove expense",
-    "removePending": "Removing...",
+    "removeConfirm": "Delete expense",
+    "removePending": "Removing…",
     "cancel": "Cancel",
     "back": "Back to members",
     "next": "See results"
@@ -164,7 +164,7 @@
     "perPerson": "Average per person",
     "categories": "By category",
     "download": "Download image",
-    "downloading": "Making the image...",
+    "downloading": "Making the image…",
     "copySummary": "Copy summary",
     "breakdownHeading": "Breakdown per member",
     "breakdownSubtitle": "Choose a name to see their share of each expense.",
@@ -194,7 +194,9 @@
     "reminder": "Hi {debtor}, a reminder from our trip's shared costs: please transfer {amount} to {creditor}. Thank you!",
     "allEven": "Everyone is even",
     "allEvenBody": "Everyone paid exactly their share, so nobody needs to transfer anything.",
-    "back": "Back to expenses"
+    "back": "Back to expenses",
+    "showBreakdown": "See each person's breakdown",
+    "hideBreakdown": "Hide breakdown"
   },
   "summary": {
     "title": "Kancara bill split, {date}",

@@ -76,8 +76,8 @@ export default function ActionMenu({ label, items }: ActionMenuProps) {
         aria-controls={open ? menuId : undefined}
         onClick={() => {
           const rect = buttonRef.current?.getBoundingClientRect();
-          // Each row is 44px, plus the list's padding and its 8px gap from the button.
-          const needed = items.length * 44 + 32;
+          // Each row is 44px, plus the list's 12px padding at both ends and its 8px gap from the button.
+          const needed = items.length * 44 + 40;
           setUpward(rect !== undefined && window.innerHeight - rect.bottom < needed && rect.top > needed);
           setOpen((current) => !current);
         }}
@@ -91,7 +91,7 @@ export default function ActionMenu({ label, items }: ActionMenuProps) {
           id={menuId}
           role="menu"
           aria-label={label}
-          className={`absolute right-0 z-30 w-56 rounded-surface ${upward ? "bottom-full mb-2 origin-bottom-right" : "top-full mt-2 origin-top-right"} border border-border bg-background p-surface shadow-lg shadow-neutral-950/10 [--surface-pad:0.5rem] motion-safe:animate-pop-in`}
+          className={`absolute right-0 z-30 w-56 surface-compact rounded-surface ${upward ? "bottom-full mb-2 origin-bottom-right" : "top-full mt-2 origin-top-right"} border border-border bg-background p-surface shadow-lg shadow-neutral-950/10 motion-safe:animate-pop-in`}
         >
           {items.map((item, index) => {
             const Icon = item.icon;

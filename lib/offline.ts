@@ -1,7 +1,10 @@
+import { type Itinerary, parseItinerary } from "@/lib/client/captain";
 import { PUSH_SCOPE } from "@/lib/client/push";
+import { isPersonalCache } from "@/lib/offline-caches";
 import { type PackingState, parsePacking } from "./plan-draft";
 
 const PENDING_PREFIX = "kancara-packing-pending:";
+const PENDING_ITINERARY_PREFIX = "kancara-itinerary-pending:";
 
 /**
  * Starts the service worker that keeps opened pages and trips for use without a connection. Serwist builds it
@@ -12,12 +15,13 @@ export function registerOfflineSupport() {
   if (!("serviceWorker" in navigator)) return;
   if (process.env.NODE_ENV !== "production") {
     // A worker left on this address by a production run would hand the dev server's pages that build's scripts
-    // and styles, so edits would never show. It is removed, with everything it kept.
+    // and styles, so edits would never show. It is removed, with the pages and answers it kept. What was typed
+    // into this browser (plan drafts, packing changes not sent yet) stays: a reload must not throw it away.
     navigator.serviceWorker
       .getRegistrations()
       // The worker that receives push notifications has a scope of its own and no pages to go stale; it stays.
       .then((found) => Promise.all(found.filter((entry) => !entry.scope.endsWith(PUSH_SCOPE)).map((entry) => entry.unregister())))
-      .then(clearOfflineCaches)
+      .then(clearKeptPages)
       .catch(() => undefined);
     return;
   }
@@ -40,10 +44,18 @@ export async function clearOfflineCaches() {
   } catch {
     // No storage here: nothing was kept.
   }
+  await clearKeptPages();
+}
+
+/**
+ * Forgets the pages, answers, and photos kept for the person. The precache stays: it holds the app's own files
+ * and the offline page, which belong to nobody, and without it nothing could be shown with no connection.
+ */
+async function clearKeptPages() {
   try {
     navigator.serviceWorker?.controller?.postMessage("clear");
     const keys = await caches.keys();
-    await Promise.all(keys.map((key) => caches.delete(key)));
+    await Promise.all(keys.filter(isPersonalCache).map((key) => caches.delete(key)));
   } catch {
     // No cache storage here: nothing was kept, so nothing has to go.
   }
@@ -70,6 +82,32 @@ export function writePendingPacking(tripId: string, packing: PackingState) {
 export function clearPendingPacking(tripId: string) {
   try {
     localStorage.removeItem(PENDING_PREFIX + tripId);
+  } catch {
+    // Nothing was kept.
+  }
+}
+
+/** An itinerary changed on this device (a stop switched to a backup) that has not reached the server yet. */
+export function readPendingItinerary(tripId: string): Itinerary | null {
+  try {
+    const raw = localStorage.getItem(PENDING_ITINERARY_PREFIX + tripId);
+    return raw === null ? null : parseItinerary(JSON.parse(raw));
+  } catch {
+    return null;
+  }
+}
+
+export function writePendingItinerary(tripId: string, itinerary: Itinerary) {
+  try {
+    localStorage.setItem(PENDING_ITINERARY_PREFIX + tripId, JSON.stringify(itinerary));
+  } catch {
+    // Storage unavailable: the change lasts until the page is closed, and is sent as soon as it can be.
+  }
+}
+
+export function clearPendingItinerary(tripId: string) {
+  try {
+    localStorage.removeItem(PENDING_ITINERARY_PREFIX + tripId);
   } catch {
     // Nothing was kept.
   }

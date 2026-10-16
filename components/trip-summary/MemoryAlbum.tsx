@@ -92,7 +92,7 @@ export default function MemoryAlbum({ album, days, defaultDay, places, members, 
     <>
       <div className="space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-4">
-          <p className="min-w-0 flex-1 basis-64 text-body text-pretty text-text-muted">{momentsText.intro}</p>
+          <p className="min-w-0 max-w-2xl flex-1 basis-64 text-body text-pretty text-text-muted">{momentsText.intro}</p>
           {album.total > 0 && addButton}
         </div>
 

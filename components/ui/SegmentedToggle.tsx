@@ -52,7 +52,7 @@ export default function SegmentedToggle<Value extends string>({
               onChange={() => onChange(option)}
               className="peer sr-only"
             />
-            <span className="flex h-11 items-center justify-center gap-2 rounded-full px-4 text-label whitespace-nowrap text-text-muted transition-colors duration-150 ease-out peer-checked:text-on-primary peer-hover:text-text peer-checked:peer-hover:text-on-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">
+            <span className="flex h-9 items-center justify-center gap-2 rounded-full px-4 text-label whitespace-nowrap text-text-muted transition-colors duration-150 ease-out peer-checked:text-on-primary peer-hover:text-text peer-checked:peer-hover:text-on-primary peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary">
               {Icon && <Icon className="size-4 shrink-0" aria-hidden="true" />}
               {labels[option]}
             </span>

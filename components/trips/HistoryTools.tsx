@@ -5,6 +5,7 @@ import Link from "next/link";
 import { choiceClass, INPUT } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
 import { plural } from "@/lib/trips/format";
+import { TEXT_LINK } from "@/components/ui/styles";
 import { useLocale } from "@/lib/use-locale";
 
 type HistoryToolsProps = {
@@ -43,10 +44,10 @@ export default function HistoryTools({
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
           <Link
             href="/profile/saved-members"
-            className="group inline-flex min-h-11 items-center gap-1.5 rounded-sm text-label text-primary underline-offset-4 hover:underline"
+            className={TEXT_LINK}
           >
             <Users className="size-4" aria-hidden="true" />
-            {locale === "id" ? "Profil Tersimpan" : "Saved Profiles"}
+            {text.savedProfiles}
             <ArrowRight
               className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1"
               aria-hidden="true"
@@ -54,7 +55,7 @@ export default function HistoryTools({
           </Link>
           <Link
             href="/profile/map"
-            className="group inline-flex min-h-11 items-center gap-1.5 rounded-sm text-label text-primary underline-offset-4 hover:underline"
+            className={TEXT_LINK}
           >
             <Globe className="size-4" aria-hidden="true" />
             {mapLabel}
@@ -90,7 +91,7 @@ export default function HistoryTools({
           <div
             role="group"
             aria-label={text.yearLabel}
-            className="-mx-surface flex gap-2 overflow-x-auto px-surface py-1 [scrollbar-width:none] sm:mx-0 sm:px-0"
+            className="flex flex-wrap gap-2"
           >
             {yearOptions.map((option) => {
               const selected = option === year;

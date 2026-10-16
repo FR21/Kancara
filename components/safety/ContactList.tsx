@@ -58,7 +58,7 @@ export default function ContactList({ pack, text, onRemove }: ContactListProps) 
                 </CallLink>
                 {onRemove && (
                   <IconButton label={fillTemplate(copy.remove, { name: contact.placeName })} onClick={() => onRemove(contact.id)}>
-                    <Trash2 className="size-4" aria-hidden="true" />
+                    <Trash2 className="size-5" aria-hidden="true" />
                   </IconButton>
                 )}
               </li>

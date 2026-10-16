@@ -1,10 +1,11 @@
 "use client";
 
-import { CircleAlert, Save } from "lucide-react";
+import { Check } from "lucide-react";
 import { type FormEvent, useEffect, useId, useRef, useState } from "react";
 import MemberAvatar from "@/components/ui/MemberAvatar";
 import SelectField from "@/components/ui/SelectField";
-import { FIELD_LABEL, INPUT, TEXT_LINK, buttonClass, choiceClass } from "@/components/ui/styles";
+import RequiredMark from "@/components/ui/RequiredMark";
+import { FIELD_LABEL, INPUT, TEXT_LINK, buttonClass, choiceClass, FIELD_DESCRIPTION } from "@/components/ui/styles";
 import type { Locale } from "@/lib/locale";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
@@ -14,6 +15,7 @@ import { newId } from "@/lib/split-bill/edit";
 import { formatRupiah } from "@/lib/split-bill/format";
 import AmountField from "./AmountField";
 import { CATEGORY_ICONS } from "./category-icons";
+import FieldError from "@/components/ui/FieldError";
 
 type ExpenseFormProps = {
   members: BillMember[];
@@ -117,6 +119,7 @@ export default function ExpenseForm({ members, editing, text, categories, locale
         <div>
           <label htmlFor={descriptionId} className={FIELD_LABEL}>
             {text.descriptionLabel}
+            <RequiredMark />
           </label>
           <input
             ref={descriptionRef}
@@ -132,10 +135,7 @@ export default function ExpenseForm({ members, editing, text, categories, locale
             className={`${INPUT} mt-2 aria-invalid:border-error`}
           />
           {descriptionProblem && (
-            <p id={descriptionProblemId} role="alert" className="mt-2 flex items-start gap-2 text-body-sm text-error">
-              <CircleAlert className="mt-1 size-4 shrink-0" aria-hidden="true" />
-              {descriptionProblem}
-            </p>
+            <FieldError id={descriptionProblemId} role="alert">{descriptionProblem}</FieldError>
           )}
         </div>
 
@@ -167,6 +167,7 @@ export default function ExpenseForm({ members, editing, text, categories, locale
       <div className="mt-6 space-y-4">
         <AmountField
           label={text.baseLabel}
+          required
           hint={text.baseHint}
           placeholder={text.basePlaceholder}
           value={baseInput}
@@ -178,7 +179,6 @@ export default function ExpenseForm({ members, editing, text, categories, locale
         <div className="grid gap-4 sm:grid-cols-2">
           <AmountField
             label={text.taxLabel}
-            labelNote={text.optional}
             hint={text.taxHint}
             placeholder={text.taxPlaceholder}
             value={taxInput}
@@ -190,7 +190,6 @@ export default function ExpenseForm({ members, editing, text, categories, locale
           />
           <AmountField
             label={text.extraLabel}
-            labelNote={text.optional}
             hint={text.extraHint}
             placeholder={text.extraPlaceholder}
             value={extraInput}
@@ -210,6 +209,7 @@ export default function ExpenseForm({ members, editing, text, categories, locale
         <div>
           <label htmlFor={payerFieldId} className={FIELD_LABEL}>
             {text.paidByLabel}
+            <RequiredMark />
           </label>
           <SelectField id={payerFieldId} value={payerId} onChange={(event) => setPayerId(event.target.value)} className="mt-2">
             {members.map((member) => (
@@ -226,7 +226,7 @@ export default function ExpenseForm({ members, editing, text, categories, locale
               <p id={sharedLabelId} className={FIELD_LABEL}>
                 {text.sharedByLabel}
               </p>
-              <p id={sharedHintId} className="mt-1 text-caption text-pretty text-text-muted">
+              <p id={sharedHintId} className={FIELD_DESCRIPTION}>
                 {text.sharedByHint}
               </p>
             </div>
@@ -255,14 +255,15 @@ export default function ExpenseForm({ members, editing, text, categories, locale
             {fillTemplate(text.total, { amount: money(amounts.total) })}
           </p>
         )}
-        <div className="flex flex-col-reverse gap-3 sm:ml-auto sm:flex-row">
+        {/* Side by side at every width: the main action takes the room, cancelling stays beside it. */}
+        <div className="flex gap-3 sm:ml-auto">
           {editing && (
             <button type="button" onClick={onCancel} className={buttonClass("ghost")}>
               {text.cancelEdit}
             </button>
           )}
-          <button type="submit" className={buttonClass("primary")}>
-            <Save className="size-4" aria-hidden="true" />
+          <button type="submit" className={`${buttonClass("primary")} flex-1 sm:flex-none`}>
+            <Check className="size-4" aria-hidden="true" />
             {editing ? text.saveChanges : text.add}
           </button>
         </div>

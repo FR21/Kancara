@@ -16,7 +16,7 @@ export default function AuthTopBar() {
   useEffect(() => followSystemTheme(), []);
 
   return (
-    <header className="relative z-10 flex h-20 items-center justify-between gap-4 px-4 sm:px-8 lg:col-span-2 lg:col-start-1 lg:row-start-1 lg:px-12">
+    <header className="relative z-10 flex h-[calc(env(safe-area-inset-top)+5rem)] items-center justify-between gap-4 px-4 pt-[env(safe-area-inset-top)] sm:px-8 lg:col-span-2 lg:col-start-1 lg:row-start-1 lg:px-12">
       <Link href="/" aria-label={text.homeLabel} className="flex min-h-11 items-center rounded-lg">
         <Image
           src="/images/logo/kancara_wordmark_logo.webp"

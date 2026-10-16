@@ -179,7 +179,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
   return (
     <header
       ref={headerRef}
-      className="pointer-events-none fixed inset-x-0 top-0 z-50 px-4 pt-4 [--nav-progress:0] sm:px-6 sm:pt-6"
+      className="safe-x pointer-events-none fixed inset-x-0 top-0 z-50 pt-[calc(env(safe-area-inset-top)+1rem)] [--nav-progress:0] sm:pt-[calc(env(safe-area-inset-top)+1.5rem)]"
     >
       {/* A tap anywhere outside the open menu closes it, the way a phone's own menus behave. */}
       {menuOpen && (
@@ -269,7 +269,11 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
                 />
               </Link>
             ) : (
-              <Link href="/login" className={`ml-2 shrink-0 shadow-sm ${buttonClass("primary", "small")}`}>
+              // Quieter than the page's own call to action, so the landing page keeps one button that leads.
+              <Link
+                href="/login"
+                className={`ml-2 shrink-0 ${buttonClass("outline", "small")} group-data-over-hero/nav:border-neutral-50/40 group-data-over-hero/nav:text-neutral-50 group-data-over-hero/nav:hover:bg-neutral-50/10`}
+              >
                 {text.login}
               </Link>
             )}
@@ -281,7 +285,8 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
             aria-expanded={menuOpen}
             aria-controls="mobile-menu"
             label={menuOpen ? text.closeMenu : text.openMenu}
-            className="relative size-12 group-data-over-hero/nav:text-neutral-50 group-data-over-hero/nav:hover:bg-neutral-50/10 lg:hidden"
+            size="large"
+            className="relative group-data-over-hero/nav:text-neutral-50 group-data-over-hero/nav:hover:bg-neutral-50/10 lg:hidden"
           >
             <Menu
               aria-hidden="true"
@@ -302,7 +307,7 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
       <div
         id="mobile-menu"
         inert={!menuOpen}
-        className={`mx-auto mt-2 max-w-5xl origin-top-right rounded-pill-frame border border-border bg-surface p-surface shadow-lg [--surface-pad:0.5rem] shadow-neutral-950/10 transition-[opacity,scale,translate] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-opacity lg:hidden ${
+        className={`mx-auto mt-2 max-h-[calc(100dvh-env(safe-area-inset-top)-7rem)] max-w-5xl origin-top-right overflow-y-auto overscroll-contain rounded-pill-frame border border-border bg-surface p-surface shadow-lg [--surface-pad:0.5rem] shadow-neutral-950/10 transition-[opacity,scale,translate] ease-[cubic-bezier(0.23,1,0.32,1)] motion-reduce:transition-opacity lg:hidden ${
           menuOpen
             ? "pointer-events-auto duration-250 opacity-100"
             : "-translate-y-1 scale-[0.97] opacity-0 duration-150"

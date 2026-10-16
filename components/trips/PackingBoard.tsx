@@ -1,10 +1,10 @@
 "use client";
 
-import { ArrowRight, CalendarCheck, Check, CloudOff, Info, Loader2, Plus, RotateCcw, Shirt, TriangleAlert } from "lucide-react";
+import { ArrowRight, CalendarCheck, Check, CloudOff, Info, Loader2, Plus, RotateCcw, RotateCw, Shirt, TriangleAlert, Undo2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { type KeyboardEvent, useEffect, useRef, useState } from "react";
-import { INPUT, choiceClass, INPUT_BUTTON, buttonClass, TEXT_LINK, FIELD_LABEL } from "@/components/ui/styles";
+import { INPUT, choiceClass, INPUT_BUTTON, buttonClass, TEXT_LINK, FIELD_LABEL, FIELD_DESCRIPTION } from "@/components/ui/styles";
 import SelectField from "@/components/ui/SelectField";
 import Stamp from "@/components/ui/Stamp";
 import { type Itinerary, captain } from "@/lib/client/captain";
@@ -331,7 +331,7 @@ export default function PackingBoard({
               </p>
             ) : (
               <>
-                <label htmlFor="packing-add" className="block text-caption font-bold text-text-muted">
+                <label htmlFor="packing-add" className={`${FIELD_LABEL} block`}>
                   {addLabel}
                 </label>
                 <div className="mt-2 flex gap-2">
@@ -366,7 +366,7 @@ export default function PackingBoard({
                 <Shirt className="size-4 shrink-0 text-primary" aria-hidden="true" />
                 {fillTemplate(text.laundry.title, { days: tripDayCount(draft) })}
               </p>
-              <p className="mt-1 text-caption text-pretty text-text-muted">{text.laundry.hint}</p>
+              <p className={FIELD_DESCRIPTION}>{text.laundry.hint}</p>
               <div className="mt-3 flex flex-wrap gap-2">
                 {LAUNDRY_CHOICES.map((choice) => {
                   const selected = draft.packing.laundry === choice;
@@ -399,7 +399,7 @@ export default function PackingBoard({
                   {laundrySettled && (
                     <Link
                       href={itineraryHref}
-                      className="group inline-flex min-h-11 items-center gap-1 rounded-sm text-label text-primary underline-offset-4 hover:underline"
+                      className={TEXT_ACTION}
                     >
                       {text.laundry.plan.view}
                       <ArrowRight
@@ -410,7 +410,7 @@ export default function PackingBoard({
                   )}
                   {laundrySync === "failed" && itinerary && (
                     <button type="button" onClick={onLaundryRetry} className={TEXT_ACTION}>
-                      <RotateCcw className="size-4" aria-hidden="true" />
+                      <RotateCw className="size-4" aria-hidden="true" />
                       {text.retry}
                     </button>
                   )}
@@ -445,7 +445,7 @@ export default function PackingBoard({
                 onClick={() => onChange({ type: "restorePackingItems" })}
                 className={TEXT_ACTION}
               >
-                <RotateCcw className="size-4" aria-hidden="true" />
+                <Undo2 className="size-4" aria-hidden="true" />
                 {text.restore}
               </button>
             </div>

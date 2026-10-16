@@ -84,7 +84,7 @@ export default function FieldPassDetails({ pass, text, speakingId, onSpeak }: Fi
               {fillTemplate(text.dietary.people, { count: pass.memberCount })}
             </li>
           </ul>
-          <p lang={pass.languageTag} className="mt-4 border-l-4 border-primary pl-3 text-h3 text-pretty text-text">
+          <p lang={pass.languageTag} className="mt-4 rounded-lg bg-primary-subtle px-4 py-3 text-h3 text-pretty text-on-primary-subtle">
             {pass.dietary.localText}
           </p>
           {pass.dietary.romanized && pass.dietary.romanized !== pass.dietary.localText && (
@@ -143,7 +143,7 @@ export default function FieldPassDetails({ pass, text, speakingId, onSpeak }: Fi
               </li>
             ))}
         </ul>
-        <p className="mt-2 text-caption text-pretty text-text-muted">{text.emergency.checkNote}</p>
+        <p className="mt-2 text-body-sm text-pretty text-text-muted">{text.emergency.checkNote}</p>
       </section>
     </>
   );

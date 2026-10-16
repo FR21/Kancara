@@ -8,16 +8,17 @@
   "save": {
     "saved": "Tersimpan di akunmu",
     "failed": "Perubahan terakhir belum tersimpan. Periksa koneksi internetmu, lalu coba lagi.",
-    "conflict": "Tagihan ini sudah berubah di tempat lain. Muat ulang halaman untuk melanjutkan.",
+    "conflict": "Tagihan ini diubah di HP lain. Muat ulang untuk melihat versi terbaru (perubahan terakhirmu di sini akan hilang).",
     "retry": "Coba lagi",
-    "reload": "Muat ulang"
+    "reload": "Muat ulang",
+    "waitingOffline": "Offline. Perubahan tagihan disimpan di HP ini dan dikirim otomatis saat kembali online."
   },
   "newBill": {
     "action": "Mulai tagihan baru",
     "title": "Mulai tagihan baru?",
     "body": "Semua anggota, pengeluaran, dan tanda lunas di tagihan ini akan dihapus.",
     "confirm": "Hapus dan mulai baru",
-    "pending": "Menghapus...",
+    "pending": "Menghapus…",
     "cancel": "Batal",
     "failed": "Tagihan belum bisa dihapus. Periksa koneksi internetmu, lalu coba lagi."
   },
@@ -68,7 +69,7 @@
       "other": "{count} pengeluaran yang dibayar {name} ikut terhapus dari tagihan ini."
     },
     "removeConfirm": "Hapus anggota",
-    "removePending": "Menghapus...",
+    "removePending": "Menghapus…",
     "cancel": "Batal"
   },
   "picker": {
@@ -80,7 +81,7 @@
     "manage": "Kelola profil tersimpan",
     "alreadyAdded": "Sudah ada di tagihan",
     "selectAll": "Pilih semua",
-    "clearAll": "Batalkan pilihan",
+    "clearAll": "Hapus pilihan",
     "confirm": {
       "one": "Tambahkan {count} anggota",
       "other": "Tambahkan {count} anggota"
@@ -113,7 +114,6 @@
     "extraHint": "Misalnya ongkos kirim atau biaya admin.",
     "extraPlaceholder": "Contoh: 5.000",
     "extraShortcut": "+{amount}",
-    "optional": "opsional",
     "invalidAmount": "Angka ini belum bisa dihitung. Periksa tanda dan pemisah ribuannya.",
     "preview": "= {amount}",
     "sharedByLabel": "Dinikmati oleh",
@@ -143,7 +143,7 @@
     "removeTitle": "Hapus {name}?",
     "removeBody": "Pengeluaran ini akan dihapus dari tagihan dan perhitungan.",
     "removeConfirm": "Hapus pengeluaran",
-    "removePending": "Menghapus...",
+    "removePending": "Menghapus…",
     "cancel": "Batal",
     "back": "Kembali ke anggota",
     "next": "Lihat hasil"
@@ -164,7 +164,7 @@
     "perPerson": "Rata-rata per orang",
     "categories": "Per kategori",
     "download": "Unduh gambar",
-    "downloading": "Membuat gambar...",
+    "downloading": "Membuat gambar…",
     "copySummary": "Salin ringkasan",
     "breakdownHeading": "Rincian per anggota",
     "breakdownSubtitle": "Pilih nama untuk melihat bagiannya di tiap pengeluaran.",
@@ -194,7 +194,9 @@
     "reminder": "Halo {debtor}, ini pengingat dari patungan perjalanan kita: kamu perlu transfer {amount} ke {creditor}. Terima kasih!",
     "allEven": "Semua sudah impas",
     "allEvenBody": "Setiap orang membayar sesuai bagiannya, jadi tidak ada yang perlu transfer.",
-    "back": "Kembali ke pengeluaran"
+    "back": "Kembali ke pengeluaran",
+    "showBreakdown": "Lihat rincian per orang",
+    "hideBreakdown": "Sembunyikan rincian"
   },
   "summary": {
     "title": "Bagi tagihan Kancara, {date}",

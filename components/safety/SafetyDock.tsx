@@ -5,8 +5,9 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useState } from "react";
 import { buttonClass } from "@/components/ui/styles";
-import { type Alerts, type AlertSearch, fetchAlerts } from "@/lib/client/safety";
+import { type Alerts, type AlertSearch, type SafetyAlert, fetchAlerts } from "@/lib/client/safety";
 import { fillTemplate } from "@/lib/plan-draft";
+import { keepOngoingTrip, useKeptOngoingTrip } from "@/lib/use-kept-ongoing-trip";
 import { useMessages } from "@/lib/use-messages";
 
 // Push notifications are not wired yet, so a search reaches the rest of the group this way: every open Kancara
@@ -17,6 +18,11 @@ const SOS_PATHS = /^\/$|^\/trips(\/|$)/;
 // Pages that are themselves the answer to an alert, or that a stranger sees.
 const QUIET_PATHS = /^\/trips\/[^/]+\/help|^\/f\/|^\/join\/|^\/login|^\/register/;
 
+// The pill leads to the trip where the viewer already asked for help, when there is one.
+const ongoingOf = (alerts: SafetyAlert[]) =>
+  alerts.find((alert) => alert.ongoing && alert.searches.some((search) => search.forViewer)) ??
+  alerts.find((alert) => alert.ongoing);
+
 // Mounted once in the root layout. While someone is signed in it shows, on whatever page they are, any search
 // under way on their trips, and keeps the trip's help page one tap away during a trip. The button only opens that
 // page: the group is told nothing until "I am separated" is pressed there.
@@ -24,7 +30,9 @@ export default function SafetyDock() {
   const pathname = usePathname();
   const text = useMessages("safety");
   const planText = useMessages("plan");
-  const [state, setState] = useState<Alerts>({ signedIn: false, alerts: [] });
+  // Null until the server has answered, which it never does while the phone has no connection.
+  const [state, setState] = useState<Alerts | null>(null);
+  const keptTripId = useKeptOngoingTrip();
   const quiet = QUIET_PATHS.test(pathname);
 
   useEffect(() => {
@@ -38,6 +46,8 @@ export default function SafetyDock() {
           const next = await fetchAlerts(controller.signal);
           signedIn = next.signedIn;
           if (!controller.signal.aborted) setState(next);
+          // Someone signed out, or with no trip under way, has no SOS button to bring back offline.
+          keepOngoingTrip(ongoingOf(next.alerts)?.tripId ?? null);
         } catch {
           // A missed round is made up by the next one.
         }
@@ -53,12 +63,12 @@ export default function SafetyDock() {
   }, [pathname, quiet]);
 
   if (quiet) return null;
-  // The pill leads to the trip where the viewer already asked for help, when there is one.
-  const ongoing =
-    state.alerts.find((alert) => alert.ongoing && alert.searches.some((search) => search.forViewer)) ??
-    state.alerts.find((alert) => alert.ongoing);
+  const alerts = state?.alerts ?? [];
+  const ongoing = ongoingOf(alerts);
+  // Before the server answers, and all along without a connection, the button stands on the trip last heard of.
+  const sosTripId = state ? (ongoing?.tripId ?? null) : keptTripId;
   // A member who pressed SOS already knows; the alert is for everyone else.
-  const searches = state.alerts.flatMap((alert) =>
+  const searches = alerts.flatMap((alert) =>
     alert.searches
       .filter((search) => !(search.forViewer && search.source === "SOS"))
       .map((search) => ({ tripId: alert.tripId, search })),
@@ -70,12 +80,12 @@ export default function SafetyDock() {
     return fillTemplate(template, { name: nameOf(search) });
   };
 
-  const showSos = ongoing !== undefined && SOS_PATHS.test(pathname);
+  const showSos = sosTripId !== null && SOS_PATHS.test(pathname);
   if (searches.length === 0 && !showSos) return null;
 
   // Everything the dock shows sits at the bottom edge, in thumb reach and clear of the page's title and controls.
   return (
-    <div className="safe-bottom pointer-events-none fixed inset-x-0 bottom-0 z-40 flex flex-col items-end gap-2 px-4">
+    <div className="safe-bottom safe-x pointer-events-none fixed inset-x-0 bottom-(--dock-lift,0px) z-40 flex flex-col items-end gap-2 transition-[bottom] duration-300 ease-out">
       {searches.length > 0 && (
         <ul role="status" aria-label={text.dock.label} className="flex w-full max-w-md flex-col gap-2">
           {searches.map(({ tripId, search }) => (
@@ -95,14 +105,14 @@ export default function SafetyDock() {
       )}
       {showSos && (
         <Link
-          href={`/trips/${encodeURIComponent(ongoing.tripId)}/help`}
+          href={`/trips/${encodeURIComponent(sosTripId)}/help`}
           aria-label={text.dock.sosLabel}
           title={text.dock.sosLabel}
           className="group/sos pointer-events-auto relative inline-flex size-14 items-center justify-center rounded-full bg-primary text-on-primary shadow-lg shadow-neutral-950/10 transition-[background-color,scale] duration-150 ease-out hover:bg-primary-hover active:scale-[0.97]"
         >
           <LifeBuoy className="size-6 transition-[rotate] duration-700 ease-[cubic-bezier(0.23,1,0.32,1)] motion-safe:group-hover/sos:rotate-180" aria-hidden="true" />
           {/* The signal dot rides on the button while the viewer's own search is open. */}
-          {ongoing.searches.some((search) => search.forViewer) && (
+          {ongoing?.searches.some((search) => search.forViewer) && (
             <span aria-hidden="true" className="absolute top-0 right-0 size-4 rounded-full border-2 border-background bg-accent motion-safe:animate-signal" />
           )}
         </Link>

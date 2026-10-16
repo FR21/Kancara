@@ -1,6 +1,6 @@
 "use client";
 
-import { Pencil, Plane, UserPlus } from "lucide-react";
+import { Pencil, Plane, UserRoundPlus } from "lucide-react";
 import type { ReactNode } from "react";
 import Stamp from "@/components/ui/Stamp";
 import type { Messages } from "@/lib/messages";
@@ -132,7 +132,7 @@ export default function TicketCard({
           </div>
 
           <div className="p-surface">
-            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-1.5 sm:gap-2">
+            <div className="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-end gap-2 sm:gap-2">
               <Slot
                 interactive={interactive}
                 label={status(pass.origin, origin)}
@@ -144,14 +144,14 @@ export default function TicketCard({
                   {interactive && <Pencil aria-hidden="true" className={EDIT_ICON} />}
                 </span>
                 <span
-                  className={`block truncate font-heading text-h3 uppercase sm:text-h2 ${
+                  className={`line-clamp-2 font-heading text-h3 uppercase wrap-anywhere sm:text-h2 ${
                     origin ? "font-extrabold text-text" : "text-text-muted"
                   }`}
                 >
                   {origin || EMPTY_MARK}
                 </span>
               </Slot>
-              <div aria-hidden="true" className="flex shrink-0 items-center justify-center gap-1.5 pb-2 text-primary sm:gap-3 sm:px-2 sm:pb-4">
+              <div aria-hidden="true" className="flex shrink-0 items-center justify-center gap-2 pb-2 text-primary sm:gap-3 sm:px-2 sm:pb-4">
                 <span className="h-px w-3 border-t border-dashed border-border-strong sm:w-8" />
                 <Plane className="size-4 shrink-0 transition-[translate] duration-500 ease-spring group-hover/ticket:translate-x-1 sm:size-5" />
                 <span className="h-px w-3 border-t border-dashed border-border-strong sm:w-8" />
@@ -167,7 +167,7 @@ export default function TicketCard({
                   {interactive && <Pencil aria-hidden="true" className={EDIT_ICON} />}
                 </span>
                 <span
-                  className={`block truncate font-heading text-h3 uppercase sm:text-h2 ${
+                  className={`line-clamp-2 font-heading text-h3 uppercase wrap-anywhere sm:text-h2 ${
                     destination ? "font-extrabold text-text" : "text-text-muted"
                   }`}
                 >
@@ -176,7 +176,7 @@ export default function TicketCard({
               </Slot>
             </div>
 
-            <div className="mt-3.5 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-dashed border-border-strong/40 pt-3 @lg:grid-cols-4">
+            <div className="mt-4 grid grid-cols-2 gap-x-4 gap-y-2 border-t border-dashed border-border-strong/40 pt-3 @lg:grid-cols-4">
               {fields.map((field, index) => {
                 const isRight = index % 2 === 1;
                 return (
@@ -209,7 +209,7 @@ export default function TicketCard({
               <h2 className={LABEL}>{pass.manifest}</h2>
               {interactive && (
                 <button type="button" onClick={onAddMember} className={`${TEXT_LINK} pr-2`}>
-                  <UserPlus className="size-4" aria-hidden="true" />
+                  <UserRoundPlus className="size-4" aria-hidden="true" />
                   {pass.addMember}
                 </button>
               )}

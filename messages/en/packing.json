@@ -4,7 +4,7 @@
   "back": "Itinerary",
   "loading": "Loading the packing list",
   "error": "The packing list couldn't be loaded. Check your connection, then try again.",
-  "notFound": "This trip wasn't found. It may have been deleted.",
+  "notFound": "It may have been deleted, or the link may be incomplete.",
   "notReady": "The packing list is built from the dates and the group. Finish the plan first.",
   "retry": "Try again",
   "progress": "{done} of {total} packed",
@@ -12,7 +12,7 @@
   "saving": "Saving",
   "saved": "Saved",
   "saveFailed": "The change wasn't saved. Check your connection, then try again.",
-  "offline": "Offline. Changes are kept on this device and sent once you're back online.",
+  "offline": "Offline. Changes are kept on this phone and sent once you're back online.",
   "offlineUnavailable": "There's no connection, and this list was never opened on this device.",
   "filters": {
     "label": "Filter the list",
@@ -152,5 +152,7 @@
     "drivingLicense": "Driving licence and rental papers",
     "transitCard": "Transit card",
     "outdoorKit": "Walking shoes and insect repellent"
-  }
+  },
+  "notFoundTitle": "This trip could not be found",
+  "notReadyTitle": "The packing list can't be made yet"
 }

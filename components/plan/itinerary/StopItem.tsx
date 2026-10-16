@@ -6,7 +6,6 @@ import {
   Check,
   Coffee,
   Landmark,
-  LifeBuoy,
   type LucideIcon,
   MapPin,
   Repeat2,
@@ -56,32 +55,11 @@ type StopItemProps = {
   onPoint: (pointing: boolean) => void;
 };
 
-/** The stop's photo, or its category's icon on a tint when there is none or it fails to load. */
-function StopThumb({ item }: { item: ItineraryItem }) {
-  const [failed, setFailed] = useState(false);
-  const Icon = item.errand ? WashingMachine : CATEGORY_ICONS[item.category ?? "other"];
-  if (item.imageUrl && !failed) {
-    return (
-      // eslint-disable-next-line @next/next/no-img-element -- place photos are served per request by /api/place-photo
-      <img
-        src={item.imageUrl}
-        alt=""
-        loading="lazy"
-        onError={() => setFailed(true)}
-        className="size-16 shrink-0 rounded-media bg-surface-muted object-cover"
-      />
-    );
-  }
-  return (
-    <span aria-hidden="true" className="flex size-16 shrink-0 items-center justify-center rounded-media bg-primary-subtle text-primary">
-      <Icon className="size-6" />
-    </span>
-  );
-}
-
 // One stop on the day's line: its number on the line (the same number as its pin on the map), the time and how long
-// it lasts beside it, then the place, what kind of place it is and what it costs, and how it meets the group's
-// needs. The whole row opens the stop's details; its one other control opens the prepared backups.
+// it lasts beside it, then the place. The place leads with its photo, wide across the card, because seeing it is
+// what tells the group where they are going; a place without one (or whose photo fails) gets its category's icon
+// beside the name instead of an empty frame. Under the name: what kind of place it is, what it costs, and how it
+// meets the group's needs. The whole card opens the stop's details; its one other control opens the backups.
 export default function StopItem({ item, number, phase, active, text, needLabels, onOpen, onBackups, onPoint }: StopItemProps) {
   const { start } = splitTime(item.time);
   const duration = formatDuration(item.time, text);
@@ -91,6 +69,9 @@ export default function StopItem({ item, number, phase, active, text, needLabels
   const met = item.covers.filter((cover) => !partly.has(cover.need));
   const backups = listBackups(item).filter((backup) => backup.kind !== "main").length;
   const done = phase === "done";
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const showPhoto = Boolean(item.imageUrl) && !photoFailed;
+  const Icon = item.errand ? WashingMachine : CATEGORY_ICONS[item.category ?? "other"];
 
   return (
     <li
@@ -117,64 +98,86 @@ export default function StopItem({ item, number, phase, active, text, needLabels
       </div>
 
       <div
-        className={`group/stop relative flex gap-4 rounded-media-frame p-surface transition-[background-color] duration-150 ease-out [--surface-pad:1rem] ${
+        className={`group/stop relative rounded-media-frame p-surface transition-[background-color] duration-150 ease-out [--surface-pad:1rem] ${
           phase === "now" ? "bg-primary-subtle" : ""
         } ${active && phase !== "now" ? "bg-surface-muted" : ""} hover:bg-surface-muted`}
       >
-        <div className="min-w-0 flex-1">
-          <h4 className="text-label-lg text-pretty">
-            {/* The button's ::after covers the row, so the whole row opens the stop. */}
-            <button
-              type="button"
-              onClick={onOpen}
-              className={`cursor-pointer text-left font-semibold after:absolute after:inset-0 after:rounded-media-frame focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-primary ${
-                done ? "text-text-muted" : "text-text"
-              }`}
-            >
-              {item.title}
-            </button>
-          </h4>
-          {facts && <p className="mt-1 text-body-sm text-pretty text-text-muted">{facts}</p>}
-
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            {phase !== null && <PhaseBadge phase={phase} text={text} />}
-            {item.errand && <ErrandBadge kind={item.errand} text={text} />}
-            {item.standIn && (
-              <span className={`${BADGE} border border-primary text-primary`}>
-                <Repeat2 className="size-3 shrink-0" aria-hidden="true" />
-                {text.backups.inUse}
+        <div className="sm:flex sm:items-start sm:gap-4">
+          {showPhoto && (
+            // eslint-disable-next-line @next/next/no-img-element -- place photos are served per request by /api/place-photo
+            <img
+              src={item.imageUrl}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              onError={() => setPhotoFailed(true)}
+              className={`h-36 w-full rounded-media bg-surface-muted object-cover transition-[opacity] duration-200 ease-out sm:aspect-4/3 sm:h-auto sm:w-40 sm:shrink-0 ${done ? "opacity-60" : ""}`}
+            />
+          )}
+          <div className={`flex min-w-0 flex-1 items-start gap-3 ${showPhoto ? "mt-4 sm:mt-0" : ""}`}>
+            {!showPhoto && (
+              <span aria-hidden="true" className="flex size-12 shrink-0 items-center justify-center rounded-media bg-primary-subtle text-primary">
+                <Icon className="size-6" />
               </span>
             )}
-            {met.map((cover) => (
-              <span key={cover.need} className={`${BADGE} bg-success-subtle text-on-success-subtle`}>
-                <Check className="size-3 shrink-0" strokeWidth={3} aria-hidden="true" />
-                {needLabels[cover.need]}
-                <span className="sr-only">, {text.timeline.needMet}</span>
-              </span>
-            ))}
-            {[...partly].map((need) => (
-              <span key={need} className={`${BADGE} bg-warning-subtle text-on-warning-subtle`}>
-                <TriangleAlert className="size-3 shrink-0" aria-hidden="true" />
-                {fillTemplate(text.timeline.needPartly, { need: needLabels[need] })}
-              </span>
-            ))}
-            {item.rating !== undefined && (
-              <span className="inline-flex items-center gap-1 text-caption font-bold text-text tabular-nums">
-                <Star className="size-3 fill-warning text-warning" aria-hidden="true" />
-                <span aria-hidden="true">{item.rating.toFixed(1)}</span>
-                <span className="sr-only">{fillTemplate(text.rating, { rating: item.rating })}</span>
-              </span>
+            <div className="min-w-0 flex-1">
+              <h4 className="text-label-lg text-pretty">
+                {/* The button's ::after covers the row, so the whole row opens the stop. */}
+                <button
+                  type="button"
+                  onClick={onOpen}
+                  className={`cursor-pointer text-left font-semibold after:absolute after:inset-0 after:rounded-media-frame focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-primary ${
+                    done ? "text-text-muted" : "text-text"
+                  }`}
+                >
+                  {item.title}
+                </button>
+              </h4>
+              {facts && <p className="mt-1 text-body-sm text-pretty text-text-muted">{facts}</p>}
+
+              <div className="mt-2 flex flex-wrap items-center gap-2">
+                {phase !== null && <PhaseBadge phase={phase} text={text} />}
+                {item.errand && <ErrandBadge kind={item.errand} text={text} />}
+                {item.standIn && (
+                  <span className={`${BADGE} border border-primary text-primary`}>
+                    <Repeat2 className="size-3 shrink-0" aria-hidden="true" />
+                    {text.backups.inUse}
+                  </span>
+                )}
+                {met.map((cover) => (
+                  <span key={cover.need} className={`${BADGE} bg-success-subtle text-on-success-subtle`}>
+                    <Check className="size-3 shrink-0" strokeWidth={3} aria-hidden="true" />
+                    {needLabels[cover.need]}
+                    <span className="sr-only">, {text.timeline.needMet}</span>
+                  </span>
+                ))}
+                {[...partly].map((need) => (
+                  <span key={need} className={`${BADGE} bg-warning-subtle text-on-warning-subtle`}>
+                    <TriangleAlert className="size-3 shrink-0" aria-hidden="true" />
+                    {fillTemplate(text.timeline.needPartly, { need: needLabels[need] })}
+                  </span>
+                ))}
+                {item.rating !== undefined && (
+                  <span className="inline-flex items-center gap-1 text-caption font-bold text-text tabular-nums">
+                    <Star className="size-3 fill-accent text-accent-500" aria-hidden="true" />
+                    <span aria-hidden="true">{item.rating.toFixed(1)}</span>
+                    <span className="sr-only">{fillTemplate(text.rating, { rating: item.rating })}</span>
+                  </span>
+                )}
+              </div>
+            </div>
+
+            {backups > 0 && (
+              <IconButton
+                label={fillTemplate(text.timeline.backupsFor, { name: item.title })}
+                onClick={onBackups}
+                tone="primaryQuiet"
+                className="relative z-10 -mt-2 -mr-2"
+              >
+                <Repeat2 className="size-5" aria-hidden="true" />
+              </IconButton>
             )}
           </div>
-        </div>
-
-        <div className="relative z-10 flex shrink-0 flex-col items-end gap-2">
-          <StopThumb item={item} />
-          {backups > 0 && (
-            <IconButton label={fillTemplate(text.timeline.backupsFor, { name: item.title })} onClick={onBackups} tone="primaryQuiet">
-              <LifeBuoy className="size-5" aria-hidden="true" />
-            </IconButton>
-          )}
         </div>
       </div>
     </li>

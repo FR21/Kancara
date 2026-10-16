@@ -73,7 +73,7 @@ export default function StopBackups({
             <li
               key={`${backup.kind}-${backup.title}`}
               style={{ "--item-index": index } as CSSProperties}
-              className={`rounded-lg border p-3 motion-safe:animate-list-in ${
+              className={`surface-compact rounded-surface border p-surface motion-safe:animate-list-in ${
                 isMain ? "border-primary bg-primary-subtle" : "border-dashed border-border-strong"
               }`}
             >
@@ -100,7 +100,7 @@ export default function StopBackups({
                   )}
                   {backup.rating !== undefined && (
                     <span className="inline-flex items-center gap-1 text-caption text-text-muted tabular-nums">
-                      <Star className="size-3 fill-primary text-primary" aria-hidden="true" />
+                      <Star className="size-3 fill-accent text-accent-500" aria-hidden="true" />
                       {fillTemplate(text.rating, { rating: backup.rating })}
                     </span>
                   )}

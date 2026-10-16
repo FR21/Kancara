@@ -1,5 +1,5 @@
 import { ArrowUp, Mic, Square } from "lucide-react";
-import { iconButtonClass } from "@/components/ui/styles";
+import { iconButtonClass, FIELD_LABEL } from "@/components/ui/styles";
 import type { FormEvent } from "react";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
@@ -54,7 +54,7 @@ export default function SpeakerComposer({
   return (
     <form onSubmit={submit} className="min-w-0">
       <div className="flex min-h-11 flex-wrap items-center justify-between gap-x-3">
-        <label htmlFor={id} className="text-label text-text">
+        <label htmlFor={id} className={FIELD_LABEL}>
           {label}
         </label>
         {listening && (

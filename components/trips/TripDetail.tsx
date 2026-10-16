@@ -7,7 +7,7 @@ import FieldPassSheet from "@/components/field-pass/FieldPassSheet";
 import ActionMenu, { type ActionMenuItem } from "@/components/ui/ActionMenu";
 import IconButton from "@/components/ui/IconButton";
 import { NEED_CHIP } from "@/components/ui/NeedChips";
-import { PRIMARY_BUTTON } from "@/components/ui/styles";
+import { PRIMARY_BUTTON, buttonClass } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate, PASS_FIELDS } from "@/lib/plan-draft";
 import { formatDays, formatDaysAhead, formatMoney, formatTripDates, formatTripTitle, plural } from "@/lib/trips/format";
@@ -16,6 +16,9 @@ import { useLocale } from "@/lib/use-locale";
 import MemberStack from "./MemberStack";
 import { OfflineBadge, StatusPill, ViolationsBadge } from "./TripBadges";
 import TripTools from "./TripTools";
+import Disclosure from "@/components/ui/Disclosure";
+import { useTripKeptOffline } from "@/lib/use-trip-kept-offline";
+import type { OfflineState } from "@/lib/trips/trip";
 
 export type TripActions = {
   onDuplicate: (card: TripCard) => void;
@@ -49,7 +52,12 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
   const detail = text.detail;
   const route = [card.origin, card.destinations.join(", ")].filter(Boolean).join(" → ");
   const onTheWay = card.status === "ongoing" || card.status === "upcoming";
-  const hasBadges = card.violations !== undefined || card.offline !== undefined;
+  // Whether this trip opens without signal is read on the device (its pages are in the offline cache), not from the
+  // server, which cannot know. Null while the cache is being read.
+  const kept = useTripKeptOffline(card.id);
+  let offlineState: OfflineState | undefined;
+  if (kept !== null) offlineState = kept ? "downloaded" : "notDownloaded";
+  const hasBadges = card.violations !== undefined || offlineState !== undefined;
   const hasNeeds = card.needs.length + card.customNeeds.length > 0;
 
   const openLabels = {
@@ -130,19 +138,24 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
             moreLabel={text.card.moreMembers}
           />
         </div>
+        {/* The needs being looked after are folded under one link, so the card leads with what to do now. */}
         {hasNeeds && (
-          <ul aria-label={detail.needs} className="mt-3 flex flex-wrap gap-2">
-            {card.needs.map((need) => (
-              <li key={need} className={NEED}>
-                {needLabels[need]}
-              </li>
-            ))}
-            {card.customNeeds.map((need) => (
-              <li key={need} className={NEED}>
-                {need}
-              </li>
-            ))}
-          </ul>
+          <div className="mt-2">
+            <Disclosure showLabel={detail.showMore} hideLabel={detail.showLess}>
+              <ul aria-label={detail.needs} className="flex flex-wrap gap-2">
+                {card.needs.map((need) => (
+                  <li key={need} className={NEED}>
+                    {needLabels[need]}
+                  </li>
+                ))}
+                {card.customNeeds.map((need) => (
+                  <li key={need} className={NEED}>
+                    {need}
+                  </li>
+                ))}
+              </ul>
+            </Disclosure>
+          </div>
         )}
       </section>
 
@@ -212,21 +225,40 @@ export default function TripDetail({ card, text, needLabels, actions, headingId,
           {card.violations !== undefined && (
             <ViolationsBadge count={card.violations} label={plural(text.card.violations, card.violations, locale)} />
           )}
-          {card.offline !== undefined && <OfflineBadge state={card.offline} label={text.card.offline[card.offline]} />}
+          {offlineState !== undefined && <OfflineBadge state={offlineState} label={text.card.offline[offlineState]} />}
         </div>
       )}
 
-      <div className="mt-6 border-t border-border pt-4">
-        <Link href={tripHref(card)} className={`group ${PRIMARY_BUTTON} w-full`}>
-          {openLabels[card.status]}
-          <ArrowRight className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1" aria-hidden="true" />
-        </Link>
-        {onTheWay && (
-          <div className="mt-4">
-            <TripTools tripId={card.id} text={text.tools} onOpenFieldPass={() => setShowFieldPass(true)} />
+      {/* As a sheet on a phone, the trip's tools come first and the one main action is pinned to the bottom of the
+          sheet, in thumb reach however far the card scrolls. Beside the list on a laptop, the action leads. */}
+      {onClose ? (
+        <>
+          {onTheWay && (
+            <div className="mt-6 border-t border-border pt-4">
+              <TripTools tripId={card.id} text={text.tools} onOpenFieldPass={() => setShowFieldPass(true)} />
+            </div>
+          )}
+          {/* A full-width 56px button with room under it: the bottom edge of a phone is where a thumb is least sure. */}
+          <div className="sticky bottom-0 z-10 -mx-surface -mb-surface mt-6 border-t border-border bg-surface px-surface pt-4 pb-[max(1.5rem,calc(env(safe-area-inset-bottom)+0.75rem))]">
+            <Link href={tripHref(card)} className={`group ${buttonClass("primary", "large")} w-full`}>
+              {openLabels[card.status]}
+              <ArrowRight className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1" aria-hidden="true" />
+            </Link>
           </div>
-        )}
-      </div>
+        </>
+      ) : (
+        <div className="mt-6 border-t border-border pt-4">
+          <Link href={tripHref(card)} className={`group ${PRIMARY_BUTTON} w-full`}>
+            {openLabels[card.status]}
+            <ArrowRight className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1" aria-hidden="true" />
+          </Link>
+          {onTheWay && (
+            <div className="mt-4">
+              <TripTools tripId={card.id} text={text.tools} onOpenFieldPass={() => setShowFieldPass(true)} />
+            </div>
+          )}
+        </div>
+      )}
 
       {onTheWay && (
         <FieldPassSheet

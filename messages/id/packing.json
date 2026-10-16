@@ -4,7 +4,7 @@
   "back": "Itinerary",
   "loading": "Memuat daftar bawaan",
   "error": "Daftar bawaan belum bisa dimuat. Periksa koneksimu, lalu coba lagi.",
-  "notFound": "Perjalanan ini tidak ditemukan. Mungkin sudah dihapus.",
+  "notFound": "Mungkin sudah dihapus, atau tautannya tidak lengkap.",
   "notReady": "Daftar bawaan disusun dari tanggal dan rombongan. Lengkapi dulu rencananya.",
   "retry": "Coba lagi",
   "progress": "{done} dari {total} siap",
@@ -12,7 +12,7 @@
   "saving": "Menyimpan",
   "saved": "Tersimpan",
   "saveFailed": "Perubahan belum tersimpan. Periksa koneksimu, lalu coba lagi.",
-  "offline": "Offline. Perubahan disimpan di perangkat ini dan dikirim saat kembali online.",
+  "offline": "Offline. Perubahan disimpan di HP ini dan dikirim saat kembali online.",
   "offlineUnavailable": "Tidak ada koneksi, dan daftar ini belum pernah dibuka di perangkat ini.",
   "filters": {
     "label": "Saring daftar",
@@ -152,5 +152,7 @@
     "drivingLicense": "SIM dan dokumen sewa mobil",
     "transitCard": "Kartu uang elektronik untuk transportasi",
     "outdoorKit": "Sepatu jalan dan obat nyamuk"
-  }
+  },
+  "notFoundTitle": "Perjalanan ini tidak ditemukan",
+  "notReadyTitle": "Daftar bawaan belum bisa dibuat"
 }

@@ -89,7 +89,7 @@ export default function SavedMembersSheet({
               <li key={profile.id} style={{ "--item-index": index } as CSSProperties} className="motion-safe:animate-list-in">
                 {profile.added ? (
                   <div className="flex min-h-16 items-center gap-3 py-2 opacity-60">
-                    <span className="flex size-6 shrink-0 items-center justify-center text-success">
+                    <span className="flex size-6 shrink-0 items-center justify-center text-primary">
                       <Check className="size-5" strokeWidth={3} aria-hidden="true" />
                     </span>
                     <MemberAvatar

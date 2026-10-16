@@ -3,14 +3,17 @@
 import { useEffect, useRef, useState } from "react";
 import Notice, { type NoticeMessage } from "@/components/layout/Notice";
 import PageHeader from "@/components/layout/PageHeader";
+import OfflineNote from "@/components/ui/OfflineNote";
 import { type TranslationContext, type TranslationRequest, TranslationError, blobToBase64, MAX_AUDIO_CHARS, translate } from "@/lib/client/translator";
 import { fillTemplate } from "@/lib/plan-draft";
 import { formatTripTitle } from "@/lib/trips/format";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
+import { useOnline } from "@/lib/use-online";
 import { useSpeech } from "@/lib/use-speech";
 import ConversationLog, { type ConversationTurnView } from "./ConversationLog";
 import { guessLocalLanguage, languageByKey, travelerLanguage } from "./languages";
+import SegmentedToggle from "@/components/ui/SegmentedToggle";
 import SpeakerComposer from "./SpeakerComposer";
 import TranslatorSettings, { languageLabel } from "./TranslatorSettings";
 import { type Speaker, type VoiceFailure, useVoiceInput } from "./use-voice-input";
@@ -21,11 +24,14 @@ type TurnInput = { speaker: Speaker; context?: TranslationContext } & ({ text: s
 
 // The translator of one trip: two people with no shared language take turns, by voice or by typing, and each turn
 // is shown and read aloud in the other's language.
+const SPEAKERS: readonly Speaker[] = ["traveler", "local"];
+
 export default function ConversationTranslator({ tripId, tripName, destination }: ConversationTranslatorProps) {
   const text = useMessages("translator");
   const navText = useMessages("navbar");
   const tripsText = useMessages("trips");
   const locale = useLocale();
+  const online = useOnline();
   const traveler = travelerLanguage(locale);
   const [localKey, setLocalKey] = useState<string>(() => guessLocalLanguage(destination, locale).key);
   const local = languageByKey(localKey);
@@ -33,6 +39,8 @@ export default function ConversationTranslator({ tripId, tripName, destination }
   const [drafts, setDrafts] = useState<Record<Speaker, string>>({ traveler: "", local: "" });
   const [translating, setTranslating] = useState(false);
   const [autoSpeak, setAutoSpeak] = useState(true);
+  // On a phone one composer shows at a time, for whoever is speaking now; from 640px both sit side by side.
+  const [speaker, setSpeaker] = useState<Speaker>("traveler");
   const [notice, setNotice] = useState<NoticeMessage | null>(null);
   const { supported: canSpeak, speakingId, speak } = useSpeech();
   const requestRef = useRef<AbortController | null>(null);
@@ -61,6 +69,11 @@ export default function ConversationTranslator({ tripId, tripName, destination }
 
   const runTurn = async (input: TurnInput) => {
     if (translating) return;
+    // A quick phrase can still be tapped offline; it is answered at once instead of after a request that cannot go.
+    if (!navigator.onLine) {
+      showError(text.errors.offline);
+      return;
+    }
     const source = languageOf(input.speaker);
     const target = otherSide(input.speaker);
     const controller = new AbortController();
@@ -133,7 +146,8 @@ export default function ConversationTranslator({ tripId, tripName, destination }
         onMic={() => voice.toggle(speaker, language.tag)}
         listening={voice.activeSpeaker === speaker}
         elapsedSeconds={voice.elapsedSeconds}
-        busy={translating}
+        // Every turn is translated on the server, so typing and speaking wait for a connection.
+        busy={translating || !online}
         voiceMode={voice.mode}
         text={text.composer}
       />
@@ -154,6 +168,12 @@ export default function ConversationTranslator({ tripId, tripName, destination }
         title={text.title}
         lead={fillTemplate(text.lead, { destination: destination || tripLabel })}
       />
+
+      {!online && (
+        <div className="mt-8">
+          <OfflineNote message={text.offlineNote} />
+        </div>
+      )}
 
       <div className="mt-8 motion-safe:animate-message-in">
         <TranslatorSettings
@@ -179,14 +199,29 @@ export default function ConversationTranslator({ tripId, tripName, destination }
         />
       </div>
 
-      {/* The two ways to talk sit right under the conversation they add to, with what this browser can hear. */}
-      <div className="mt-6 border-t border-border pt-6">
-        <div className="grid gap-4 sm:grid-cols-2">
-          {composer("traveler")}
-          {composer("local")}
+      {voice.mode === "none" && <p className="mt-6 text-body-sm text-pretty text-text-muted">{text.noMicrophone}</p>}
+      {voice.mode === "recording" && <p className="mt-6 text-body-sm text-pretty text-text-muted">{text.recordingMode}</p>}
+
+      {/* The ways to talk sit right under the conversation they add to. On a phone they stay pinned at the bottom of
+          the screen, in thumb reach however long the conversation grows, with a switch for who is speaking now. */}
+      <div
+        data-bottom-bar="below-sm"
+        className="safe-bottom safe-x sticky bottom-0 z-20 -mx-(--gutter) mt-6 border-t border-border bg-background pt-3 sm:static sm:mx-0 sm:px-0 sm:pt-6 sm:pb-0"
+      >
+        <div className="mb-3 sm:hidden">
+          <SegmentedToggle
+            name="translator-speaker"
+            label={text.speakerLabel}
+            options={SPEAKERS}
+            labels={{ traveler: travelerName, local: localName }}
+            value={speaker}
+            onChange={setSpeaker}
+          />
         </div>
-        {voice.mode === "none" && <p className="mt-4 text-body-sm text-pretty text-text-muted">{text.noMicrophone}</p>}
-        {voice.mode === "recording" && <p className="mt-4 text-body-sm text-pretty text-text-muted">{text.recordingMode}</p>}
+        <div className="grid gap-4 sm:grid-cols-2">
+          <div className={speaker === "traveler" ? "" : "hidden sm:block"}>{composer("traveler")}</div>
+          <div className={speaker === "local" ? "" : "hidden sm:block"}>{composer("local")}</div>
+        </div>
       </div>
 
       <Notice notice={notice} dismissLabel={text.dismiss} onDismiss={() => setNotice(null)} />

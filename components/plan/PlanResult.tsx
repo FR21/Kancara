@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight, Check, CircleAlert, Loader2, Luggage, RotateCcw } from "lucide-react";
+import { ArrowRight, CircleAlert, Loader2, Luggage, RotateCw } from "lucide-react";
 import Link from "next/link";
 import PageHeader from "@/components/layout/PageHeader";
 import type { Itinerary } from "@/lib/client/captain";
@@ -8,10 +8,11 @@ import type { Messages } from "@/lib/messages";
 import type { PlanDraft } from "@/lib/plan-draft";
 import { useMessages } from "@/lib/use-messages";
 import AgreementList from "./AgreementList";
-import { FORWARD_ARROW } from "./DeckFooter";
+import DeckFooter, { FORWARD_ARROW } from "./DeckFooter";
 import ErrorAlert from "@/components/ui/ErrorAlert";
 import ItinerarySchedule from "@/components/plan/ItinerarySchedule";
-import { GHOST_BUTTON, OUTLINE_BUTTON, TEXT_LINK } from "@/components/ui/styles";
+import { PRIMARY_BUTTON, TEXT_LINK } from "@/components/ui/styles";
+import Disclosure from "@/components/ui/Disclosure";
 
 export type SaveState = "idle" | "saving" | "saved" | "failed";
 
@@ -55,7 +56,7 @@ function SaveStatus({ state, text, onSave }: { state: SaveState; text: Messages[
         {text.saveFailed}
       </p>
       <button type="button" onClick={onSave} className={TEXT_LINK}>
-        <RotateCcw className="size-4" aria-hidden="true" />
+        <RotateCw className="size-4" aria-hidden="true" />
         {text.saveRetry}
       </button>
     </div>
@@ -125,25 +126,26 @@ export default function PlanResult({
         </div>
       )}
 
-      {itinerary && !pending && <AgreementList draft={draft} text={text} onChange={onChangeAgreements} />}
+      {/* The agreements behind the plan are there for whoever wants them; the itinerary above is the answer. */}
+      {itinerary && !pending && (
+        <Disclosure showLabel={text.result.agreementsShow} hideLabel={text.result.agreementsHide}>
+          <AgreementList draft={draft} text={text} onChange={onChangeAgreements} />
+        </Disclosure>
+      )}
 
       {failed && <ErrorAlert message={text.chat.error} retryLabel={text.chat.retry} onRetry={onRetry} />}
 
-      {/* The ways on from here share one row: back to the pass on the left, the saved trip's packing list on the
-          right, so neither stands alone in a box of its own. */}
-      <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <button type="button" onClick={onBackToPass} className={`group ${GHOST_BUTTON} -ml-4`}>
-          <ArrowLeft className="size-4 transition-[translate] duration-200 ease-out group-hover:-translate-x-1" aria-hidden="true" />
-          {text.result.backToPass}
-        </button>
+      {/* The ways on from here, pinned at the foot like every step of the plan: back to the pass, and the saved
+          trip's packing list as the one thing to do next. */}
+      <DeckFooter backLabel={text.result.backToPass} onBack={onBackToPass} note={null}>
         {itinerary && !pending && packingHref && (
-          <Link href={packingHref} className={`group ${OUTLINE_BUTTON} motion-safe:animate-message-in`}>
-            <Luggage className="size-4 text-primary" aria-hidden="true" />
+          <Link href={packingHref} className={`group ${PRIMARY_BUTTON} motion-safe:animate-message-in`}>
+            <Luggage className="size-4" aria-hidden="true" />
             {packingText.open}
             <ArrowRight className={FORWARD_ARROW} aria-hidden="true" />
           </Link>
         )}
-      </div>
+      </DeckFooter>
     </div>
   );
 }

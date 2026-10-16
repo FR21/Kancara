@@ -9,7 +9,7 @@ import { FormAlert, GoogleButton, OrDivider, PasswordRules, SubmitButton } from 
 import LegalSheet, { type LegalKind } from "@/components/auth/LegalSheet";
 import TextField, { FOCUS_FIELD_LABEL } from "@/components/auth/TextField";
 import Stepper, { type StepperStep } from "@/components/ui/Stepper";
-import { GHOST_BUTTON, TEXT_LINK } from "@/components/ui/styles";
+import { GHOST_BUTTON, TEXT_LINK, FIELD_HINT_TYPE } from "@/components/ui/styles";
 import CountryPicker from "@/components/profile/CountryPicker";
 import GenderSelect from "@/components/profile/GenderSelect";
 import PhoneField from "@/components/profile/PhoneField";
@@ -300,7 +300,7 @@ export default function RegisterPage() {
                 onNationalChange={setNational}
                 onBlur={() => touch("phone")}
               />
-              <p id="register-phone-hint" className={`mt-2 text-body-sm text-pretty ${shown("phone") ? "text-error" : "text-text-muted"}`}>
+              <p id="register-phone-hint" className={`${FIELD_HINT_TYPE} ${shown("phone") ? "text-error" : "text-text-muted"}`}>
                 {shown("phone") || profile.phoneHint}
               </p>
             </div>

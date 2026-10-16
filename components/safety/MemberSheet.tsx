@@ -4,7 +4,7 @@ import { Check, CloudOff, IdCard, Link2, MapPin, MessageCircle, MessageSquareTex
 import { useEffect, useState } from "react";
 import Checkbox from "@/components/ui/Checkbox";
 import Sheet from "@/components/ui/Sheet";
-import { FIELD_LABEL, INPUT, OUTLINE_BUTTON, TEXT_LINK, buttonClass } from "@/components/ui/styles";
+import { FIELD_LABEL, INPUT, OUTLINE_BUTTON, TEXT_LINK, buttonClass, FIELD_HINT_TYPE } from "@/components/ui/styles";
 import { fillTemplate } from "@/lib/plan-draft";
 import { mapLink, MAX_PHONE_CHARS, whatsAppLink } from "@/lib/safety/contact";
 import { type SafetyMember, type SafetyReport, openReportFor, REPORT_STATUSES } from "@/lib/safety/safety-pack";
@@ -13,6 +13,7 @@ import { useLocale } from "@/lib/use-locale";
 import { CallLink } from "./CallLink";
 import ContactList, { CALL_ROW } from "./ContactList";
 import { type HelpContext, helpLink, nameIn, searchMessage } from "@/components/safety/help-context";
+import FieldError from "@/components/ui/FieldError";
 
 type MemberSheetProps = {
   context: HelpContext;
@@ -105,7 +106,7 @@ export function SearchSteps({ report, context }: { report: SafetyReport; context
       </ol>
 
       {/* The step labels, cleanly positioned directly underneath each dot */}
-      <div className="mt-1.5 grid grid-cols-3 text-caption font-bold">
+      <div className="mt-2 grid grid-cols-3 text-caption font-bold">
         <span className={`text-left ${0 <= current ? "text-text" : "text-text-muted"}`}>
           {context.text.search.steps[REPORT_STATUSES[0]]}
         </span>
@@ -218,18 +219,16 @@ function ContactForm({ context, member }: { context: HelpContext; member: Safety
             }}
             className={`${INPUT} mt-2 tabular-nums`}
           />
-          <p id="member-phone-hint" className={`mt-2 text-caption text-pretty ${state === "invalid" ? "text-error" : "text-text-muted"}`}>
+          <p id="member-phone-hint" className={`${FIELD_HINT_TYPE} ${state === "invalid" ? "text-error" : "text-text-muted"}`}>
             {state === "invalid" ? copy.phoneInvalid : copy.phoneHint}
           </p>
         </div>
       )}
       {state === "failed" && (
-        <p role="alert" className="mt-2 text-caption text-error">
-          {context.online ? context.text.failed : context.text.offlineOnly}
-        </p>
+        <FieldError role="alert">{context.online ? context.text.failed : context.text.offlineOnly}</FieldError>
       )}
       {changed && (
-        <button type="button" disabled={state === "saving"} onClick={save} className={`${buttonClass("primary", "small")} mt-6 motion-safe:animate-pop-in`}>
+        <button type="button" disabled={state === "saving"} onClick={save} className={`${buttonClass("outline", "small")} mt-6 motion-safe:animate-pop-in`}>
           {context.text.save}
         </button>
       )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Route, Trophy } from "lucide-react";
+import { ArrowRight, MapPinOff, Route, Trophy } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import FieldPassSheet from "@/components/field-pass/FieldPassSheet";
@@ -8,6 +8,7 @@ import TripTools from "./TripTools";
 import PageBackdrop from "@/components/layout/PageBackdrop";
 import PageShell from "@/components/layout/PageShell";
 import ErrorAlert from "@/components/ui/ErrorAlert";
+import OfflineNote from "@/components/ui/OfflineNote";
 import ItinerarySchedule from "@/components/plan/ItinerarySchedule";
 import { OUTLINE_BUTTON, PRIMARY_BUTTON, buttonClass } from "@/components/ui/styles";
 import Breadcrumbs from "@/components/layout/Breadcrumbs";
@@ -18,6 +19,10 @@ import { formatDays, formatTripDates, formatTripTitle, plural } from "@/lib/trip
 import { type TripPlanView, countViolations, tripHref } from "@/lib/trips/trip";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
+import { useOnline } from "@/lib/use-online";
+import { clearPendingItinerary, readPendingItinerary, writePendingItinerary } from "@/lib/offline";
+import EmptyState from "@/components/ui/EmptyState";
+import PageHeader from "@/components/layout/PageHeader";
 
 type TripItineraryProps = {
   tripId: string;
@@ -47,10 +52,18 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
 
   useEffect(() => {
     const controller = new AbortController();
-    trips.plan(tripId, controller.signal).then(setPlan, (caught: unknown) => {
+    trips.plan(tripId, controller.signal).then(
+      (loaded) => {
+        // A change made here without signal is shown again over the saved plan, and waits to be sent.
+        const pending = readPendingItinerary(tripId);
+        setPlan(pending ? { ...loaded, itinerary: pending } : loaded);
+        setUnsaved(pending);
+      },
+      (caught: unknown) => {
       if (controller.signal.aborted) return;
       setState(caught instanceof TripsError && caught.status === 404 ? "notFound" : "failed");
-    });
+      },
+    );
     return () => controller.abort();
   }, [tripId, reloads]);
 
@@ -91,11 +104,13 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
   };
 
   // A stop switched to a backup stays switched on screen even when saving fails: on the road the change is what
-  // the group is acting on, and it can be sent again once there is a connection.
+  // the group is acting on. It is kept on this device too, so closing the page loses nothing, and it is sent again
+  // on its own once there is a connection.
   const changeItinerary = async (itinerary: Itinerary) => {
     if (!plan) return;
     setPlan({ ...plan, itinerary });
     setUnsaved(null);
+    writePendingItinerary(plan.card.id, itinerary);
     try {
       await trips.update(
         {
@@ -106,10 +121,29 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
         },
         plan.card.id,
       );
+      clearPendingItinerary(plan.card.id);
     } catch {
       setUnsaved(itinerary);
     }
   };
+
+  // A change still waiting is sent once while there is a connection, and once more each time the connection comes
+  // back; a server that keeps refusing it is not asked again and again (the alert offers a manual retry).
+  const online = useOnline();
+  const sendRef = useRef(changeItinerary);
+  const triedRef = useRef<Itinerary | null>(null);
+  useEffect(() => {
+    sendRef.current = changeItinerary;
+  });
+  useEffect(() => {
+    if (!online) {
+      triedRef.current = null;
+      return;
+    }
+    if (!unsaved || triedRef.current === unsaved) return;
+    triedRef.current = unsaved;
+    void sendRef.current(unsaved);
+  }, [online, unsaved]);
 
   const card = plan?.card;
   const route = card ? [card.origin, card.destinations.join(", ")].filter(Boolean).join(" → ") : "";
@@ -154,28 +188,39 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
       )}
 
       {!plan && state === "notFound" && (
-        <p className="mt-6 text-body text-pretty text-text-muted">{text.itinerary.notFound}</p>
+        <EmptyState
+          icon={MapPinOff}
+          title={text.itinerary.notFoundTitle}
+          body={text.itinerary.notFound}
+          headingLevel={2}
+          className="mt-8"
+          action={
+            <Link href="/trips" className={buttonClass("primary")}>
+              {navText.links.trips}
+            </Link>
+          }
+        />
       )}
 
       {plan && card && (
         <div className="motion-safe:animate-message-in">
-          <div className="mt-4 flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-            <div className="min-w-0">
-              <h1 className="text-h2 text-balance text-text sm:text-h1">{tripTitle}</h1>
-              {facts.length > 0 && <p className="mt-2 text-body text-pretty text-text-muted tabular-nums">{facts.join(" · ")}</p>}
-            </div>
-            {card.status === "completed" && (
-              <div className="flex shrink-0 flex-wrap gap-2">
-                <Link href={`/trips/${encodeURIComponent(card.id)}/summary`} className={buttonClass("outline", "small")}>
-                  <Trophy className="size-4 text-primary" aria-hidden="true" />
-                  {text.tools.recap}
-                </Link>
-              </div>
-            )}
+          <div className="mt-4">
+            <PageHeader
+              title={tripTitle}
+              lead={facts.length > 0 ? <span className="tabular-nums">{facts.join(" · ")}</span> : undefined}
+              actions={
+                card.status === "completed" && (
+                  <Link href={`/trips/${encodeURIComponent(card.id)}/summary`} className={buttonClass("outline", "small")}>
+                    <Trophy className="size-4 text-primary" aria-hidden="true" />
+                    {text.tools.recap}
+                  </Link>
+                )
+              }
+            />
           </div>
 
           {(card.status === "ongoing" || card.status === "upcoming") && (
-            <div className="mt-6 max-w-md">
+            <div className="mt-8 max-w-md">
               <TripTools tripId={card.id} text={text.tools} onOpenFieldPass={() => setShowFieldPass(true)} />
             </div>
           )}
@@ -194,7 +239,12 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
               />
             )}
 
-            {unsaved && (
+            {unsaved && !online && (
+              <div className="mt-4">
+                <OfflineNote message={text.itinerary.waitingOffline} />
+              </div>
+            )}
+            {unsaved && online && (
               <div className="mt-4">
                 <ErrorAlert
                   message={text.itinerary.changeFailed}
@@ -217,22 +267,25 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
             )}
 
             {!plan.itinerary && build !== "building" && (
-              <div className="flex min-h-48 flex-col items-center justify-center rounded-surface border border-dashed border-border-strong p-surface text-center">
-                <p className="text-label-lg text-text">{text.itinerary.missing}</p>
-                <p className="mx-auto mt-2 max-w-md text-body-sm text-pretty text-text-muted">{missingHint()}</p>
-                {card.status === "draft" && (
-                  <Link href={tripHref(card)} className={`${OUTLINE_BUTTON} mt-6`}>
-                    {text.card.continue}
-                    <ArrowRight className="size-4" aria-hidden="true" />
-                  </Link>
-                )}
-                {card.status !== "draft" && (
-                  <button type="button" onClick={buildItinerary} className={`${PRIMARY_BUTTON} mt-6`}>
-                    <Route className="size-4" aria-hidden="true" />
-                    {text.itinerary.generate}
-                  </button>
-                )}
-              </div>
+              <EmptyState
+                icon={Route}
+                title={text.itinerary.missing}
+                body={missingHint()}
+                headingLevel={2}
+                action={
+                  card.status === "draft" ? (
+                    <Link href={tripHref(card)} className={OUTLINE_BUTTON}>
+                      {text.card.continue}
+                      <ArrowRight className="size-4" aria-hidden="true" />
+                    </Link>
+                  ) : (
+                    <button type="button" onClick={buildItinerary} className={PRIMARY_BUTTON}>
+                      <Route className="size-4" aria-hidden="true" />
+                      {text.itinerary.generate}
+                    </button>
+                  )
+                }
+              />
             )}
 
             {!plan.itinerary && build === "failed" && (

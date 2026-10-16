@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { Messages } from "@/lib/messages";
 import { type Member, type NeedKey, fillTemplate, listCustomNeeds, NEED_KEYS, sameText } from "@/lib/plan-draft";
+import { BADGE } from "@/components/ui/styles";
 
 type NeedSummaryProps = {
   members: Member[];
@@ -18,8 +19,7 @@ const SERVICE_CODES: Partial<Record<NeedKey, string>> = {
 };
 
 /** A need as a small tag. Also used for needs typed by hand, which have no service code. */
-export const NEED_CHIP =
-  "inline-flex max-w-full items-center gap-2 rounded-full border border-border bg-surface px-2 py-1 text-caption font-bold text-text";
+export const NEED_CHIP = `${BADGE} border border-border bg-surface text-text`;
 
 /** One need as a small tag, led by its airline service code when it has one. */
 export function NeedChip({ need, text, children }: { need: NeedKey; text: Messages["plan"]; children?: ReactNode }) {

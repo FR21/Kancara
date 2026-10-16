@@ -96,8 +96,10 @@ export default function ConversationLog({ turns, translating, speakingId, onSpea
                   <p className="mt-1 text-body-sm opacity-90">{fillTemplate(text.pronunciation, { romanized: turn.romanized })}</p>
                 )}
                 {turn.culturalTip && (
-                  <p className={`mt-3 flex gap-2 border-l-2 pl-3 text-caption ${mine ? "border-on-primary/60" : "border-primary"}`}>
-                    <Lightbulb className="size-4 shrink-0" aria-hidden="true" />
+                  <p className={`mt-3 flex items-start gap-2 border-l pl-3 text-body-sm text-pretty ${mine ? "border-on-primary/60" : "border-primary"}`}>
+                    <span aria-hidden="true" className="flex h-5 shrink-0 items-center">
+                      <Lightbulb className="size-4" />
+                    </span>
                     {turn.culturalTip}
                   </p>
                 )}

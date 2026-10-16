@@ -71,11 +71,12 @@ export default function ConfirmDialog({
           </p>
         )}
 
-        <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+        {/* Side by side at every width, the way a phone's own confirmations are: cancel first, the act last. */}
+        <div className="mt-6 flex gap-3 sm:justify-end">
           <button type="button" onClick={onCancel} disabled={pending} className={GHOST_BUTTON}>
             {cancelLabel}
           </button>
-          <button type="button" onClick={onConfirm} disabled={pending} className={DANGER_BUTTON}>
+          <button type="button" onClick={onConfirm} disabled={pending} className={`${DANGER_BUTTON} flex-1 sm:flex-none`}>
             {pending ? (
               <Loader2 className="size-4 motion-safe:animate-spin" aria-hidden="true" />
             ) : (

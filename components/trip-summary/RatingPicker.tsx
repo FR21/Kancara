@@ -31,7 +31,7 @@ export default function RatingPicker({ labelId, hintId, value, locale, text, onC
           >
             <Star
               aria-hidden="true"
-              className={`size-6 transition-colors duration-150 ${lit ? "fill-warning text-warning" : "text-border-strong"}`}
+              className={`size-6 transition-colors duration-150 ${lit ? "fill-accent text-accent-500" : "text-border-strong"}`}
             />
           </button>
         );

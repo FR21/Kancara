@@ -87,8 +87,13 @@ export default function FinderPage({ token }: { token: string }) {
           <div className="mt-8 h-32 w-full rounded-surface border border-border bg-surface" />
         </div>
       )}
-      {(load.status === "expired" || load.status === "failed") && (
+      {load.status === "expired" && (
         <p className="text-center text-body text-pretty text-text-muted motion-safe:animate-message-in">{HELP_PHRASES.en.expired}</p>
+      )}
+      {/* A load that failed says nothing about the card, which most likely still works: the finder is told to try
+          again or call, never that the person they are standing with can no longer be helped through it. */}
+      {load.status === "failed" && (
+        <p className="text-center text-body text-pretty text-text-muted motion-safe:animate-message-in">{HELP_PHRASES.en.weakSignal}</p>
       )}
 
       {view && (
@@ -130,7 +135,7 @@ export default function FinderPage({ token }: { token: string }) {
               <button type="button" disabled={tell === "telling"} onClick={tellTheGroup} className={`${buttonClass("primary", "large")} w-full`}>
                 {fillTemplate(phrases.withThem, { name })}
               </button>
-              <label className="mt-3 flex min-h-11 cursor-pointer items-center justify-center gap-3 text-body-sm text-text">
+              <label className="mt-2 flex min-h-11 cursor-pointer items-center justify-center gap-3 text-body-sm text-text">
                 <Checkbox checked={withLocation} onChange={setWithLocation} />
                 {phrases.shareLocation}
               </label>

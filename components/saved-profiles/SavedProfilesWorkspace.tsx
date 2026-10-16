@@ -1,6 +1,6 @@
 "use client";
 
-import { Plus, Search, SearchX, Users } from "lucide-react";
+import { Accessibility, Plus, Search, SearchX, Users } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type CSSProperties, useState } from "react";
 import Notice, { type NoticeMessage } from "@/components/layout/Notice";
@@ -23,11 +23,20 @@ import { useMessages } from "@/lib/use-messages";
 import { useSavedProfiles } from "@/lib/use-saved-profiles";
 import ProfileStats from "./ProfileStats";
 import EmptyState from "@/components/ui/EmptyState";
+import MemberAvatar from "@/components/ui/MemberAvatar";
 import SavedProfileCard from "./SavedProfileCard";
 import SavedProfileEditor, { type EditorTarget } from "./SavedProfileEditor";
 import TripSuggestions from "./TripSuggestions";
 
 type Filter = "all" | AgeGroup | "withNeeds";
+
+// Each filter shows who it finds: the age groups by the same characters the profiles are drawn as, everyone as a
+// group, and people with needs by the accessibility sign.
+function FilterMark({ filter }: { filter: Filter }) {
+  if (filter === "all") return <Users className="size-4 shrink-0" aria-hidden="true" />;
+  if (filter === "withNeeds") return <Accessibility className="size-4 shrink-0" aria-hidden="true" />;
+  return <MemberAvatar ageGroup={filter} variant={0} className="-ml-2 size-7" />;
+}
 
 function matchesFilter(profile: SavedProfile, filter: Filter): boolean {
   if (filter === "all") return true;
@@ -122,19 +131,31 @@ export default function SavedProfilesWorkspace({ initial }: { initial: SavedProf
         crumbs={{ label: navText.breadcrumb, items: [{ label: navText.profile, href: "/profile" }, { label: text.title }] }}
         title={text.title}
         lead={text.subtitle}
+        // With nobody saved yet the empty state carries the one "Add" button. Otherwise "Add" sits beside the title
+        // on a wide screen and waits at the bottom of a phone, in thumb reach.
         actions={
-          <>
-            {profiles.length > 0 && (
+          profiles.length > 0 && (
+            <>
               <button type="button" onClick={() => planWith(profiles)} className={OUTLINE_BUTTON}>
                 <Users className="size-4" aria-hidden="true" />
                 {text.planWithAll}
               </button>
-            )}
+              <div className="hidden sm:block">
+                <button type="button" onClick={() => openEditor(EMPTY_PROFILE_DRAFT, null)} className={PRIMARY_BUTTON}>
+                  <Plus className="size-4" aria-hidden="true" />
+                  {text.add}
+                </button>
+              </div>
+            </>
+          )
+        }
+        mobileAction={
+          profiles.length > 0 && (
             <button type="button" onClick={() => openEditor(EMPTY_PROFILE_DRAFT, null)} className={PRIMARY_BUTTON}>
               <Plus className="size-4" aria-hidden="true" />
               {text.add}
             </button>
-          </>
+          )
         }
       />
 
@@ -161,13 +182,13 @@ export default function SavedProfilesWorkspace({ initial }: { initial: SavedProf
         <>
           <ProfileStats profiles={profiles} text={text.stats} />
 
-          <div className="mt-8 flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-            <div className="relative w-full lg:max-w-sm">
+          <div className="mt-8 flex flex-col gap-4">
+            <div className="group relative w-full lg:max-w-sm">
               <label htmlFor="saved-profiles-search" className="sr-only">
                 {text.search.label}
               </label>
               <Search
-                className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-text-muted"
+                className="pointer-events-none absolute top-1/2 left-4 size-5 -translate-y-1/2 text-text-muted transition-colors duration-150 ease-out group-focus-within:text-primary"
                 aria-hidden="true"
               />
               <input
@@ -189,6 +210,7 @@ export default function SavedProfilesWorkspace({ initial }: { initial: SavedProf
                   onClick={() => setFilter(option.value)}
                   className={choiceClass(filter === option.value)}
                 >
+                  <FilterMark filter={option.value} />
                   {option.label}
                 </button>
               ))}
@@ -267,7 +289,6 @@ export default function SavedProfilesWorkspace({ initial }: { initial: SavedProf
         onCancel={() => setDeleteTarget(null)}
         onConfirm={confirmDelete}
       />
-      <Notice notice={notice} dismissLabel={text.notice.dismiss} onDismiss={() => setNotice(null)} />
     </>
   );
 }

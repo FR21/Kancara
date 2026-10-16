@@ -79,7 +79,7 @@ export default function MemberWishesFields({ id, member, planText, onEdit }: Mem
                 label={fillTemplate(planText.custom.remove, { name: wish.label })}
                 onClick={() => onEdit({ type: "setMemberCustomInterest", id: member.id, label: wish.label, level: null })}
               >
-                <X className="size-4" aria-hidden="true" />
+                <X className="size-5" aria-hidden="true" />
               </IconButton>
             </div>
             <SegmentedToggle

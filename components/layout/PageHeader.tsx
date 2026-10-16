@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import Breadcrumbs, { type Crumb } from "@/components/layout/Breadcrumbs";
+import MobileActionBar from "@/components/layout/MobileActionBar";
 
 type PageHeaderProps = {
   /** The trail to this page; the page itself last. Left out on top-level pages. */
@@ -12,10 +13,15 @@ type PageHeaderProps = {
   titleId?: string;
   /** How actions align with the title block: "end" (default, bottom-aligned) or "center" (vertically centered). */
   alignActions?: "end" | "center";
+  /**
+   * The page's main action on a phone, pinned in a bar at the bottom of the screen where the thumb rests, instead
+   * of at the top of a long page. From 640px the page shows its own copy among `actions`.
+   */
+  mobileAction?: ReactNode;
 };
 
 // The top of every app page in one order: where you are, what this is, one sentence on it, what you can do.
-export default function PageHeader({ crumbs, title, lead, actions, titleId, alignActions = "end" }: PageHeaderProps) {
+export default function PageHeader({ crumbs, title, lead, actions, titleId, alignActions = "end", mobileAction }: PageHeaderProps) {
   const alignClass = alignActions === "center" ? "sm:items-center" : "sm:items-end";
   return (
     <header className="motion-safe:animate-message-in">
@@ -27,8 +33,10 @@ export default function PageHeader({ crumbs, title, lead, actions, titleId, alig
           </h1>
           {lead && <p className="mt-2 max-w-2xl text-body text-pretty text-text-muted">{lead}</p>}
         </div>
-        {actions && <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>}
+        {/* On a phone the actions share one row, each as wide as the others, instead of stacking unevenly. */}
+        {actions && <div className="flex shrink-0 gap-2 empty:hidden max-sm:*:flex-1">{actions}</div>}
       </div>
+      {mobileAction && <MobileActionBar>{mobileAction}</MobileActionBar>}
     </header>
   );
 }

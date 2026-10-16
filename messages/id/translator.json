@@ -24,12 +24,10 @@
   },
   "settings": {
     "language": "Bahasa lawan bicara",
-    "autoSpeak": "Bacakan otomatis",
-    "faceToFace": "Mode berhadapan"
+    "autoSpeak": "Bacakan otomatis"
   },
   "noMicrophone": "Browser ini belum bisa mendengar suara. Ketik saja kalimatnya, terjemahannya tetap muncul.",
   "recordingMode": "Di browser ini suara direkam dulu: tekan mikrofon untuk mulai, tekan lagi untuk mengirim.",
-  "faceToFaceWaiting": "Terjemahan kalimatmu akan tampil di sini, menghadap lawan bicara.",
   "composer": {
     "placeholder": "Ketik dalam bahasa {language}",
     "speak": "Bicara",
@@ -84,10 +82,12 @@
   "noVoice": "HP ini belum punya suara bahasa {language}. Tunjukkan saja tulisannya.",
   "errors": {
     "offline": "Menerjemahkan butuh koneksi internet. Sambungkan dulu, lalu coba lagi.",
-    "failed": "Kalimat ini belum bisa diterjemahkan. Coba lagi.",
+    "failed": "Kalimat ini belum bisa diterjemahkan. Coba lagi, atau pakai kalimat yang lebih pendek.",
     "micBlocked": "Akses mikrofon diblokir. Izinkan mikrofon di pengaturan browser, atau ketik saja kalimatnya.",
     "noSpeech": "Belum ada suara yang terdengar. Coba bicara lebih dekat ke HP.",
     "micFailed": "Mikrofon belum bisa dipakai. Ketik saja kalimatnya."
   },
-  "dismiss": "Tutup"
+  "dismiss": "Tutup",
+  "offlineNote": "Kamu sedang offline. Menerjemahkan butuh internet, jadi kirim dan mikrofon aktif lagi begitu HP tersambung.",
+  "speakerLabel": "Siapa yang bicara"
 }

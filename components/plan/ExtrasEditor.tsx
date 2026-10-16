@@ -118,7 +118,7 @@ export default function ExtrasEditor({ draft, dispatch, text }: ExtrasEditorProp
                 <p className={FIELD_LABEL}>{title}</p>
               )}
               <IconButton label={fillTemplate(text.custom.remove, { name: title })} onClick={() => removeGroup(group)}>
-                <X className="size-4" aria-hidden="true" />
+                <X className="size-5" aria-hidden="true" />
               </IconButton>
             </div>
             <div className={group.kind === "time" ? "mt-2 grid grid-cols-2 gap-4" : "mt-2"}>
@@ -127,7 +127,7 @@ export default function ExtrasEditor({ draft, dispatch, text }: ExtrasEditorProp
                 return (
                   <div key={field}>
                     {!single && (
-                      <label htmlFor={`extra-${field}`} className="mb-2 block text-caption font-bold text-text-muted">
+                      <label htmlFor={`extra-${field}`} className={`${FIELD_LABEL} mb-2 block`}>
                         {text.pass[field]}
                       </label>
                     )}

@@ -1,17 +1,17 @@
 {
-  "500": {
-    "title": "Terjadi kesalahan server",
-    "description": "Maaf, kami mengalami masalah dalam memproses permintaan Anda. Silakan coba beberapa saat lagi."
-  },
   "404": {
     "title": "Halaman tidak ditemukan",
-    "description": "Maaf, kami tidak dapat menemukan halaman yang Anda cari. Mungkin URL-nya salah atau halaman sudah dihapus."
+    "description": "Halaman ini tidak ada. Mungkin tautannya salah ketik atau sudah dihapus."
+  },
+  "500": {
+    "title": "Ada gangguan di pihak kami",
+    "description": "Data perjalananmu tetap aman. Coba lagi sebentar lagi."
   },
   "offline": {
     "title": "Sedang offline",
-    "description": "Halaman ini belum pernah dibuka di perangkat ini. Perjalanan yang sudah pernah dibuka tetap bisa dilihat.",
+    "description": "Halaman ini belum tersimpan di HP ini. Sambungkan internet lalu coba lagi, atau buka perjalanan yang sudah tersimpan.",
     "trips": "Perjalanan Saya"
   },
   "retry": "Coba lagi",
-  "home": "Ke Beranda"
+  "home": "Ke beranda"
 }

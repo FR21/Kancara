@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { buttonClass } from "@/components/ui/styles";
 import type { HelpContext } from "@/components/safety/help-context";
+import FieldError from "@/components/ui/FieldError";
 
 /**
  * The surface every part of the help page stands in: blocks stacked inside, split by hairlines. It clips nothing
@@ -10,7 +11,8 @@ import type { HelpContext } from "@/components/safety/help-context";
 export const HELP_FRAME = "divide-y divide-border rounded-surface border border-border bg-surface";
 
 /** The two buttons that close a form in a block: keep it, or leave things as they were. */
-export const SAVE_BUTTON = buttonClass("primary", "small");
+/** Saving a detail on the help page is drawn quieter than "I'm separated", the page's one primary action. */
+export const SAVE_BUTTON = buttonClass("outline", "small");
 export const CANCEL_BUTTON = buttonClass("ghost", "small");
 
 type BlockHeadingProps = {
@@ -53,8 +55,6 @@ export function HelpBlock({ children, className = "", ...heading }: HelpBlockPro
 export function Problem({ context, show }: { context: HelpContext; show: boolean }) {
   if (!show) return null;
   return (
-    <p role="alert" className="mt-2 text-caption text-pretty text-error">
-      {context.online ? context.text.failed : context.text.offlineOnly}
-    </p>
+    <FieldError role="alert">{context.online ? context.text.failed : context.text.offlineOnly}</FieldError>
   );
 }

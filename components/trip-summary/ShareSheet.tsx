@@ -45,7 +45,7 @@ export default function ShareSheet({ message, text, onClose }: ShareSheetProps) 
       onClose={close}
       footer={
         <>
-          <button type="button" onClick={copyMessage} className={`${buttonClass("outline")} flex-1 basis-48`}>
+          <button type="button" onClick={copyMessage} className={`${buttonClass("outline")} flex-1 basis-36`}>
             {copy === "copied" ? (
               <Check className="size-4 text-success motion-safe:animate-pop-in" strokeWidth={3} aria-hidden="true" />
             ) : (
@@ -57,7 +57,7 @@ export default function ShareSheet({ message, text, onClose }: ShareSheetProps) 
             href={`https://wa.me/?text=${encodeURIComponent(message ?? "")}`}
             target="_blank"
             rel="noopener noreferrer"
-            className={`${buttonClass("primary")} flex-1 basis-48`}
+            className={`${buttonClass("primary")} flex-1 basis-36`}
           >
             <MessageCircle className="size-4" aria-hidden="true" />
             {text.whatsapp}

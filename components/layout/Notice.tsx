@@ -1,7 +1,7 @@
 "use client";
 
 import { Check, CircleAlert, X } from "lucide-react";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 
 /** `duration` overrides how long this one notice stays, for one that is only a glance. */
@@ -19,15 +19,14 @@ type NoticeProps = {
 const DEFAULT_MS = 5000;
 // As long as the leave animation in globals.css, with a little to spare for a browser that never reports its end.
 const LEAVE_MS = 220;
+const subscribeNever = () => () => undefined;
 
 // The one notice of the whole app: a short line about something that just happened. It drops in right under the
 // fixed navbar so it is never covered or obscured, shows how long it will stay as a line that runs out, and lifts
-// away again. It portals directly to document.body at z-[70] to escape any parent stacking contexts.
+// away again. It portals directly to document.body at z-70 to escape any parent stacking contexts.
 export default function Notice({ notice, dismissLabel, duration = DEFAULT_MS, onDismiss }: NoticeProps) {
-  const [mounted, setMounted] = useState(false);
-  useEffect(() => {
-    setMounted(true);
-  }, []);
+  // document.body exists only in the browser: the server and the first render in the browser draw nothing.
+  const mounted = useSyncExternalStore(subscribeNever, () => true, () => false);
 
   // The notice on screen outlives the one asked for by the length of its leave, so it can be seen going.
   const [shown, setShown] = useState<NoticeMessage | null>(notice);
@@ -65,12 +64,12 @@ export default function Notice({ notice, dismissLabel, duration = DEFAULT_MS, on
   const content = (
     <div
       role="status"
-      className="pointer-events-none fixed inset-x-0 top-0 z-[70] flex justify-center px-4 pt-[max(5.75rem,calc(env(safe-area-inset-top)+4.75rem))] sm:pt-[max(6.5rem,calc(env(safe-area-inset-top)+5.25rem))]"
+      className="safe-x pointer-events-none fixed inset-x-0 top-0 z-70 flex justify-center pt-[calc(env(safe-area-inset-top)+5.75rem)] sm:pt-[calc(env(safe-area-inset-top)+6.5rem)]"
     >
       {shown && (
         <div
           key={shown.id}
-          className={`pointer-events-auto relative flex max-w-md items-center gap-3 overflow-clip rounded-full border border-border bg-surface/95 py-2.5 pr-2.5 pl-4 shadow-xl shadow-neutral-950/15 backdrop-blur-md ${
+          className={`pointer-events-auto relative flex max-w-md items-center gap-3 overflow-clip rounded-full border border-border bg-surface py-2 pr-2 pl-4 shadow-xl shadow-neutral-950/15 ${
             leaving ? "motion-safe:animate-notice-out" : "motion-safe:animate-notice-in"
           }`}
         >
@@ -85,9 +84,9 @@ export default function Notice({ notice, dismissLabel, duration = DEFAULT_MS, on
             aria-label={dismissLabel}
             title={dismissLabel}
             onClick={onDismiss}
-            className="inline-flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-full text-text-muted transition-[background-color,color,scale] duration-150 ease-out hover:bg-surface-muted hover:text-text active:scale-[0.97]"
+            className="inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-text-muted transition-[background-color,color,scale] duration-150 ease-out hover:bg-surface-muted hover:text-text active:scale-[0.97]"
           >
-            <X className="size-4" aria-hidden="true" />
+            <X className="size-5" aria-hidden="true" />
           </button>
           {/* The time left, as a line along the foot that runs out. It is decoration: the notice leaves on its timer. */}
           {!stays && !leaving && (

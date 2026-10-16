@@ -16,6 +16,8 @@ type MenuPhotoPickerProps = {
   scanned: boolean;
   onPick: (file: File) => void;
   onScan: () => void;
+  /** False while there is no connection: a photo can still be picked, and is scanned once the phone is back online. */
+  canScan?: boolean;
 };
 
 // The file input sits inside its label, visually hidden but still focusable, so a keyboard opens it with Enter and
@@ -34,7 +36,7 @@ function PickButton({ label, icon, primary, camera, onChange }: { label: string;
   );
 }
 
-export default function MenuPhotoPicker({ text, previewUrl, busy, scanned, onPick, onScan }: MenuPhotoPickerProps) {
+export default function MenuPhotoPicker({ text, previewUrl, busy, scanned, onPick, onScan, canScan = true }: MenuPhotoPickerProps) {
   // A phone has a camera to point at a menu; on a computer both buttons would open the same file picker.
   const touch = useMediaQuery("(pointer: coarse)");
 
@@ -85,7 +87,7 @@ export default function MenuPhotoPicker({ text, previewUrl, busy, scanned, onPic
         <h2 className="text-h3 text-text">{text.ready}</h2>
         <p className="mt-2 text-body-sm text-pretty text-text-muted">{text.readyHint}</p>
         <div className="mt-6 flex flex-col gap-3">
-          <button type="button" onClick={onScan} disabled={busy !== "idle"} className={buttonClass(scanned ? "outline" : "primary")}>
+          <button type="button" onClick={onScan} disabled={busy !== "idle" || !canScan} className={buttonClass(scanned ? "outline" : "primary")}>
             {busy === "scanning" ? (
               <Loader2 className="size-4 motion-safe:animate-spin" aria-hidden="true" />
             ) : (

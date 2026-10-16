@@ -3,6 +3,7 @@ import { NEED_CHIP, NeedChip } from "@/components/ui/NeedChips";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
 import type { SavedProfileDraft } from "@/lib/saved-profiles/profile";
+import { BADGE } from "@/components/ui/styles";
 
 type ProfileTagsProps = {
   profile: SavedProfileDraft;
@@ -30,8 +31,8 @@ export default function ProfileTags({ profile, planText, text }: ProfileTagsProp
         </li>
       ))}
       {allergies !== "" && (
-        <li className="inline-flex max-w-full items-center gap-2 rounded-full bg-warning-subtle px-2 py-1 text-caption font-bold text-on-warning-subtle">
-          <CircleAlert className="size-4 shrink-0" aria-hidden="true" />
+        <li className={`${BADGE} bg-warning-subtle text-on-warning-subtle`}>
+          <CircleAlert className="size-3 shrink-0" aria-hidden="true" />
           <span className="min-w-0 wrap-anywhere">{fillTemplate(text.card.allergies, { allergies })}</span>
         </li>
       )}

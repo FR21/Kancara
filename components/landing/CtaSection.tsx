@@ -48,7 +48,7 @@ function CtaContent({ tone, copy, secondaryHref }: CtaContentProps) {
         {copy.heading}
       </h2>
 
-      <p className={`mx-auto mt-4 max-w-2xl text-body leading-relaxed font-normal text-pretty sm:text-h3 ${classes.body}`}>
+      <p className={`mx-auto mt-4 max-w-2xl text-body text-pretty sm:text-lead ${classes.body}`}>
         {copy.description}
       </p>
 

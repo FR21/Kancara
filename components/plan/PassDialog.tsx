@@ -47,7 +47,7 @@ export default function PassDialog({ open, draft, text, onClose, onEdit, onAddMe
           onEdit={onEdit}
           onAddMember={onAddMember}
         >
-          <div className="flex flex-col gap-2.5">
+          <div className="flex flex-col gap-2">
             <p className="px-2 text-center text-caption text-pretty text-text-muted">{text.deck.previewNote}</p>
             <button
               type="button"

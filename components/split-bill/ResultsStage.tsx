@@ -1,12 +1,11 @@
-import { ArrowLeft } from "lucide-react";
 import { type Ref, useId } from "react";
-import { buttonClass } from "@/components/ui/styles";
+import DeckFooter from "@/components/plan/DeckFooter";
+import Disclosure from "@/components/ui/Disclosure";
 import type { Messages } from "@/lib/messages";
 import type { SettledTransfer, SplitBill } from "@/lib/split-bill/bill";
 import type { BillSummary } from "@/lib/split-bill/settle-up";
 import BillOverview from "./BillOverview";
 import MemberBreakdown from "./MemberBreakdown";
-import { BACK_ARROW } from "./stage-arrows";
 import TransferList from "./TransferList";
 
 type ResultsStageProps = {
@@ -82,18 +81,20 @@ export default function ResultsStage({
               {results.breakdownHeading}
             </h3>
             <p className="mt-1 text-body-sm text-pretty text-text-muted">{results.breakdownSubtitle}</p>
-            <div className="mt-4">
-              <MemberBreakdown bill={bill} balances={summary.balances} text={results} locale={locale} />
+            {/* Who pays whom is the answer; how each share was reached is there for whoever asks. */}
+            <div className="mt-2">
+              <Disclosure showLabel={results.showBreakdown} hideLabel={results.hideBreakdown}>
+                <MemberBreakdown bill={bill} balances={summary.balances} text={results} locale={locale} />
+              </Disclosure>
             </div>
           </section>
         </div>
       </div>
 
       <div className="mt-8">
-        <button type="button" onClick={onBack} className={`group ${buttonClass("ghost")} -ml-4`}>
-          <ArrowLeft className={BACK_ARROW} aria-hidden="true" />
-          {results.back}
-        </button>
+        <DeckFooter backLabel={results.back} onBack={onBack} note={null}>
+          {null}
+        </DeckFooter>
       </div>
     </section>
   );

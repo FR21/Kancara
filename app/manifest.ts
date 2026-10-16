@@ -9,8 +9,13 @@ export default function manifest(): MetadataRoute.Manifest {
     short_name: text.siteName,
     description: text.description,
     lang: DEFAULT_LOCALE,
-    start_url: "/",
+    // One id for the installed app wherever it starts, so changing where it opens never installs it twice.
+    id: "/",
+    scope: "/",
+    // Opened from the home screen, the app is there for the trips, and their list is kept for use offline.
+    start_url: "/trips",
     display: "standalone",
+    // A manifest has one background colour, with no dark variant, so the splash screen stays light.
     background_color: "#ffffff",
     theme_color: "#035d60",
     icons: [

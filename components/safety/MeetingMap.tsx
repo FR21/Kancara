@@ -5,6 +5,7 @@ import { useEffect, useRef, useState } from "react";
 import type { Messages } from "@/lib/messages";
 import type { Coordinates } from "@/lib/safety/contact";
 import { type GoogleMap, loadMaps } from "@/lib/safety/google-map";
+import { FIELD_HINT } from "@/components/ui/styles";
 
 type MeetingMapProps = {
   /** Where the map opens: the meeting point as it stands, when it has a position. */
@@ -114,7 +115,7 @@ export default function MeetingMap({ start, near, moveTo, text, onMove, onUnavai
           />
         )}
       </div>
-      <p className="mt-2 text-caption text-pretty text-text-muted">{text.mapHint}</p>
+      <p className={FIELD_HINT}>{text.mapHint}</p>
     </div>
   );
 }

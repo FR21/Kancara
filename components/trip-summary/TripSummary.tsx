@@ -192,7 +192,6 @@ export default function TripSummary({ tripId }: { tripId: string }) {
             labels={viewLabels}
             value={view}
             onChange={setView}
-            block
             className="mt-8"
           />
 

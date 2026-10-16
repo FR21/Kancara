@@ -52,7 +52,7 @@ export default function MemoryCard({ memory, locale, text, onRemove }: MemoryCar
                 <Star
                   key={star}
                   aria-hidden="true"
-                  className={`size-4 ${star <= (memory.rating ?? 0) ? "fill-warning text-warning" : "text-border-strong"}`}
+                  className={`size-4 ${star <= (memory.rating ?? 0) ? "fill-accent text-accent-500" : "text-border-strong"}`}
                 />
               ))}
             </span>

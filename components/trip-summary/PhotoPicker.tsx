@@ -1,11 +1,12 @@
 "use client";
 
-import { CircleAlert, ImagePlus, X } from "lucide-react";
+import { ImagePlus, X } from "lucide-react";
 import Image from "next/image";
 import { type ChangeEvent, useEffect, useId, useRef, useState } from "react";
-import { FIELD_LABEL, buttonClass } from "@/components/ui/styles";
+import { FIELD_LABEL, buttonClass, FIELD_DESCRIPTION } from "@/components/ui/styles";
 import { MAX_MEMORY_PHOTO_BYTES, MEMORY_PHOTO_TYPES } from "@/lib/client/trip-memories";
 import type { Messages } from "@/lib/messages";
+import FieldError from "@/components/ui/FieldError";
 
 type PhotoPickerProps = {
   photo: File | null;
@@ -57,7 +58,7 @@ export default function PhotoPicker({ photo, text, onChange }: PhotoPickerProps)
   return (
     <div>
       <p className={FIELD_LABEL}>{text.photo}</p>
-      <p id={hintId} className="mt-1 text-body-sm text-text-muted">
+      <p id={hintId} className={FIELD_DESCRIPTION}>
         {text.photoHint}
       </p>
       {preview && (
@@ -89,10 +90,7 @@ export default function PhotoPicker({ photo, text, onChange }: PhotoPickerProps)
         )}
       </div>
       {problem && (
-        <p role="alert" className="mt-2 flex items-start gap-2 text-body-sm text-error">
-          <CircleAlert className="mt-1 size-4 shrink-0" aria-hidden="true" />
-          {problem}
-        </p>
+        <FieldError role="alert">{problem}</FieldError>
       )}
     </div>
   );

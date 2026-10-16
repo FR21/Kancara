@@ -1,9 +1,9 @@
 "use client";
 
-import { Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSun, type LucideIcon, Download, Loader2, Map as MapIcon, RefreshCw, ShieldAlert, ShieldCheck, Snowflake, Sun } from "lucide-react";
+import { Cloud, CloudDrizzle, CloudFog, CloudLightning, CloudRain, CloudSun, type LucideIcon, Download, Loader2, Map as MapIcon, SlidersHorizontal, ShieldAlert, ShieldCheck, Snowflake, Sun } from "lucide-react";
 import { Fragment, useEffect, useId, useState } from "react";
 import DayAdjustSheet, { type StopSwitch } from "@/components/plan/DayAdjustSheet";
-import DayChips from "@/components/plan/itinerary/DayChips";
+import DayPicker from "@/components/plan/itinerary/DayPicker";
 import DayMap from "@/components/plan/itinerary/DayMap";
 import StopItem from "@/components/plan/itinerary/StopItem";
 import { RestSlot, TravelSegment } from "@/components/plan/itinerary/TimelineGaps";
@@ -11,6 +11,7 @@ import { restAfter, restingMembers, summarize } from "@/components/plan/itinerar
 import StopBackups from "@/components/plan/StopBackups";
 import StopDialog from "@/components/plan/StopDialog";
 import type { StopPhase } from "@/components/plan/StopBadges";
+import IconButton from "@/components/ui/IconButton";
 import Sheet from "@/components/ui/Sheet";
 import { BADGE, buttonClass } from "@/components/ui/styles";
 import { isLegCurrent, rebuildDayStops, switchToBackup } from "@/lib/backups";
@@ -19,12 +20,13 @@ import { fetchWeather } from "@/lib/client/weather";
 import { mapsAvailable } from "@/lib/itinerary-map";
 import { downloadItineraryPdf } from "@/lib/itinerary-pdf";
 import type { Messages } from "@/lib/messages";
-import { type Member, fillTemplate, getMemberName, parseLocalDate } from "@/lib/plan-draft";
+import { type Member, fillTemplate, getMemberName } from "@/lib/plan-draft";
 import { splitTime, toMinutes } from "@/lib/stop-time";
 import { plural } from "@/lib/trips/format";
 import { useWibNow } from "@/lib/use-jakarta-clock";
 import { useLocale } from "@/lib/use-locale";
 import { type Sky, type WeatherDay, isRainy, shownSky } from "@/lib/weather";
+import FieldError from "@/components/ui/FieldError";
 
 const SKY_ICONS: Record<Sky, LucideIcon> = {
   clear: Sun,
@@ -94,8 +96,8 @@ function DayWeather({ weather, text }: { weather: WeatherDay; text: Messages["pl
   );
 }
 
-// The itinerary as a day you can read at a glance: the days as a row of dates, then the chosen day as a line of
-// numbered stops with the drives and rests between them. From 1024px the day's map stands beside the line, with
+// The itinerary as a day you can read at a glance: the day and a date picker for moving between days, then the
+// chosen day as a line of numbered stops with the drives and rests between them. From 1024px the day's map stands beside the line, with
 // the same numbers on its pins; on a phone it opens from the day's header.
 export default function ItinerarySchedule({
   itinerary,
@@ -130,9 +132,7 @@ export default function ItinerarySchedule({
   const rainy = dayWeather ? isRainy(dayWeather) : false;
   const firstDate = itinerary.days[0]?.date;
   const lastDate = itinerary.days[dayCount - 1]?.date;
-  const panelId = `${baseId}-panel`;
-  const tabId = (index: number) => `${baseId}-tab-${index}`;
-  const longDate = new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "short" });
+  const dayTitleId = `${baseId}-day`;
   const kilometres = new Intl.NumberFormat(locale, { maximumFractionDigits: 1 });
 
   // The forecast for the trip's dates. Keyed on the dates, not the days, so switching a stop to a backup does not
@@ -221,69 +221,74 @@ export default function ItinerarySchedule({
         </div>
       </div>
       {pdf === "failed" && (
-        <p role="alert" className="mt-2 text-body-sm text-error">
-          {words.pdf.failed}
-        </p>
+        <FieldError role="alert">{words.pdf.failed}</FieldError>
       )}
 
-      <div className="mt-4">
-        <DayChips
-          days={itinerary.days}
-          selected={selected}
-          today={clock?.date ?? null}
-          locale={locale}
-          label={words.daysLabel}
-          todayLabel={words.timeline.today}
-          panelId={panelId}
-          tabId={tabId}
-          onSelect={selectDay}
-        />
-      </div>
-
       <div className={`mt-6 ${mapsAvailable ? "lg:grid lg:grid-cols-[minmax(0,40rem)_minmax(0,1fr)] lg:items-start lg:gap-8" : "w-full"}`}>
-        <div role="tabpanel" id={panelId} aria-labelledby={tabId(selected)} className="min-w-0">
-          <div key={day.date} className="motion-safe:animate-message-in">
-            <header>
-              <div className="flex items-start justify-between gap-3">
-                <h3 className="text-h3 text-pretty text-text">
-                  {fillTemplate(words.timeline.dayHeading, {
-                    day: fillTemplate(words.day, { number: selected + 1 }),
-                    date: longDate.format(parseLocalDate(day.date)),
-                  })}
-                </h3>
+        <section aria-labelledby={dayTitleId} className="min-w-0">
+          {/* The header stays while the day changes, so the date picker keeps its place and its focus. */}
+          <header className="relative">
+            <div className="flex flex-wrap items-center justify-between gap-3">
+              <h3 id={dayTitleId} className="text-h3 text-text tabular-nums">
+                {fillTemplate(words.picker.position, { number: selected + 1, total: dayCount })}
+              </h3>
+              <div className="flex items-center gap-2">
+                {/* Adjusting the day (rain, a closed place) sits with the day it changes, as one round button. */}
+                {onChange && day.items.length > 0 && (
+                  <IconButton
+                    label={words.adjust.open}
+                    onClick={() => setAdjusting({ kind: "closed", key: Date.now() })}
+                    className="border border-border-strong"
+                  >
+                    <SlidersHorizontal className="size-5" aria-hidden="true" />
+                  </IconButton>
+                )}
+                <DayPicker
+                  days={itinerary.days}
+                  selected={selected}
+                  today={clock?.date ?? null}
+                  locale={locale}
+                  text={words.picker}
+                  onSelect={selectDay}
+                />
+                {/* The map stands beside the day from 1024px; below that it opens from here. A wrapper hides it,
+                    since "hidden" on the button itself would race the button's own display. */}
                 {mapsAvailable && day.items.length > 0 && (
-                  <button type="button" onClick={() => setMapOpen(true)} className={`${buttonClass("outline", "small")} lg:hidden`}>
-                    <MapIcon className="size-4 text-primary" aria-hidden="true" />
-                    {words.timeline.map}
-                  </button>
+                  <div className="lg:hidden">
+                    <IconButton label={words.timeline.map} onClick={() => setMapOpen(true)} className="border border-border-strong">
+                      <MapIcon className="size-5 text-primary" aria-hidden="true" />
+                    </IconButton>
+                  </div>
                 )}
               </div>
-              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-2">
-                <p className="flex flex-wrap items-center gap-x-2 text-body-sm text-text-muted tabular-nums">
-                  {summaryLine.join(" · ")}
-                  <span aria-hidden="true">·</span>
-                  <span className={`inline-flex items-center gap-1 ${summary.issues > 0 ? "text-warning" : "text-success"}`}>
-                    {summary.issues > 0 ? (
-                      <ShieldAlert className="size-4 shrink-0" aria-hidden="true" />
-                    ) : (
-                      <ShieldCheck className="size-4 shrink-0" aria-hidden="true" />
-                    )}
-                    {plural(words.timeline.issues, summary.issues, locale)}
-                  </span>
-                </p>
-                {dayWeather && <DayWeather weather={dayWeather} text={words.weather} />}
-              </div>
-            </header>
+            </div>
+          </header>
+          <div key={day.date} className="motion-safe:animate-message-in">
+            <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2">
+              <p className="flex flex-wrap items-center gap-x-2 text-body-sm text-text-muted tabular-nums">
+                {summaryLine.join(" · ")}
+                <span aria-hidden="true">·</span>
+                <span className={`inline-flex items-center gap-1 ${summary.issues > 0 ? "text-warning" : "text-success"}`}>
+                  {summary.issues > 0 ? (
+                    <ShieldAlert className="size-4 shrink-0" aria-hidden="true" />
+                  ) : (
+                    <ShieldCheck className="size-4 shrink-0" aria-hidden="true" />
+                  )}
+                  {plural(words.timeline.issues, summary.issues, locale)}
+                </span>
+              </p>
+              {dayWeather && <DayWeather weather={dayWeather} text={words.weather} />}
+            </div>
 
             {rainy && dayWeather && (
-              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg bg-primary-subtle py-2 pr-2 pl-4 text-body-sm text-on-primary-subtle">
+              <div className="mt-4 flex flex-wrap items-center justify-between gap-3 surface-compact rounded-surface bg-primary-subtle p-surface text-body-sm text-on-primary-subtle">
                 <p className="flex min-h-11 min-w-0 flex-1 basis-56 items-center gap-2 text-pretty">
                   <CloudRain className="size-4 shrink-0" aria-hidden="true" />
                   {fillTemplate(words.weather.rainAlert, { chance: Math.round(dayWeather.rainChance ?? 50) })}
                 </p>
                 {onChange && day.items.length > 0 && (
                   <button type="button" onClick={() => setAdjusting({ kind: "rain", key: Date.now() })} className={`${buttonClass("outline", "small")} bg-background`}>
-                    <RefreshCw className="size-4" aria-hidden="true" />
+                    <SlidersHorizontal className="size-4" aria-hidden="true" />
                     {words.adjust.forRain}
                   </button>
                 )}
@@ -325,16 +330,8 @@ export default function ItinerarySchedule({
               </div>
             )}
 
-            {onChange && day.items.length > 0 && (
-              <div className="mt-6">
-                <button type="button" onClick={() => setAdjusting({ kind: "closed", key: Date.now() })} className={buttonClass("outline")}>
-                  <RefreshCw className="size-4" aria-hidden="true" />
-                  {words.adjust.open}
-                </button>
-              </div>
-            )}
           </div>
-        </div>
+        </section>
 
         {mapsAvailable && day.items.length > 0 && (
           <aside aria-label={fillTemplate(words.timeline.mapTitle, { number: selected + 1 })} className="hidden lg:sticky lg:top-28 lg:block">

@@ -1,5 +1,9 @@
-import { ArrowRight, RotateCcw, X } from "lucide-react";
+"use client";
+
+import { ArrowRight, RotateCcw, Trash2, X } from "lucide-react";
+import { useState } from "react";
 import IconButton from "@/components/ui/IconButton";
+import { buttonClass } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
 import { type PlanDraft, fillTemplate, missingFields, PASS_FIELDS } from "@/lib/plan-draft";
 
@@ -13,6 +17,8 @@ type ResumeBannerProps = {
 // A quiet second way in under the start button: pick up the draft saved on this device. One pill holding two
 // controls, so its own buttons are pills too, 4px in.
 export default function ResumeBanner({ savedDraft, text, onResume, onClear }: ResumeBannerProps) {
+  // Deleting the draft takes a second tap: it sits right beside "resume", and a deleted draft cannot come back.
+  const [confirming, setConfirming] = useState(false);
   const title =
     savedDraft.destinations.length > 0
       ? fillTemplate(text.resumeTitle, { destination: savedDraft.destinations.join(", ") })
@@ -43,10 +49,24 @@ export default function ResumeBanner({ savedDraft, text, onResume, onClear }: Re
         />
       </button>
 
-      {onClear && (
-        <IconButton label={text.clearDraft} onClick={onClear}>
-          <X className="size-4" aria-hidden="true" />
+      {onClear && !confirming && (
+        <IconButton label={text.clearDraft} onClick={() => setConfirming(true)}>
+          <X className="size-5" aria-hidden="true" />
         </IconButton>
+      )}
+      {onClear && confirming && (
+        <button
+          type="button"
+          aria-label={text.clearDraftConfirmLabel}
+          onClick={onClear}
+          onBlur={() => setConfirming(false)}
+          // The confirm takes the focus it replaces, so a second press of Enter or Space confirms too.
+          ref={(element) => element?.focus()}
+          className={`${buttonClass("danger", "small")} shrink-0 motion-safe:animate-pop-in`}
+        >
+          <Trash2 className="size-4" aria-hidden="true" />
+          {text.clearDraftConfirm}
+        </button>
       )}
     </div>
   );

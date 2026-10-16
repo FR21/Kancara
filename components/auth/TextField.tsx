@@ -4,6 +4,7 @@ import { Eye, EyeOff } from "lucide-react";
 import { type InputHTMLAttributes, type ReactNode, useState } from "react";
 import RequiredMark from "@/components/ui/RequiredMark";
 import { FIELD_LABEL, INPUT } from "@/components/ui/styles";
+import FieldError from "@/components/ui/FieldError";
 
 type TextFieldProps = {
   id: string;
@@ -76,9 +77,7 @@ export default function TextField({
         )}
       </div>
       {error && (
-        <p id={errorId} className="mt-2 text-body-sm text-error motion-safe:animate-message-in">
-          {error}
-        </p>
+        <FieldError id={errorId}>{error}</FieldError>
       )}
     </div>
   );

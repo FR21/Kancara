@@ -79,7 +79,10 @@
     "sectionMissing": "not filled in yet",
     "openItinerary": "View itinerary",
     "openSummary": "View summary",
-    "more": "More actions for {name}"
+    "more": "More actions for {name}",
+    "emptyTitle": "Nothing picked yet",
+    "showMore": "Show details",
+    "showLess": "Hide details"
   },
   "menu": {
     "duplicate": "Duplicate",
@@ -97,10 +100,10 @@
   },
   "notice": {
     "duplicated": "New draft created from {name}.",
-    "duplicateFailed": "The trip wasn't duplicated. Try again.",
+    "duplicateFailed": "The trip wasn't duplicated. Check your connection, then try again.",
     "deleted": "{name} deleted.",
     "copied": "Link copied.",
-    "shareFailed": "The link wasn't copied. Try again.",
+    "shareFailed": "The link wasn't copied. Press and hold it to copy manually.",
     "dismiss": "Dismiss"
   },
   "history": {
@@ -116,7 +119,8 @@
     "searchPlaceholder": "Search by city or trip name",
     "yearLabel": "Year",
     "allYears": "All",
-    "clear": "Clear filters"
+    "clear": "Clear filters",
+    "savedProfiles": "Saved profiles"
   },
   "empty": {
     "activeTitle": "No trips yet.",
@@ -133,14 +137,16 @@
   "itinerary": {
     "loading": "Loading itinerary",
     "error": "The itinerary couldn't be loaded. Check your connection, then try again.",
-    "notFound": "This trip wasn't found. It may have been deleted.",
+    "notFound": "It may have been deleted, or the link may be incomplete.",
     "missing": "This trip doesn't have an itinerary yet.",
     "missingOrganizer": "Captain can build it now from the dates, group, and needs already saved.",
     "missingDraft": "Finish the plan first, then the itinerary is built from it.",
     "generate": "Create itinerary",
     "generating": "Captain is putting the itinerary together. It usually takes less than a minute.",
     "generateFailed": "The itinerary couldn't be created. Check your connection, then try again.",
-    "changeFailed": "The change wasn't saved. Check your connection, then try again."
+    "changeFailed": "The change wasn't saved. Check your connection, then try again.",
+    "notFoundTitle": "This trip could not be found",
+    "waitingOffline": "Offline. Your change is kept on this phone and sent automatically once you're back online."
   },
   "loadMore": "Show more",
   "tools": {

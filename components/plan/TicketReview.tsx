@@ -53,7 +53,7 @@ export default function TicketReview({
             type="button"
             disabled={!ready || busy}
             onClick={onMakePlan}
-            className={`group ${buttonClass("primary", "large")} w-full whitespace-nowrap px-4 text-center sm:px-6`}
+            className={`group ${buttonClass("primary", "large")} w-full text-center`}
           >
             <span>{hasClashes ? ticket.toMeet : hasPlan ? ticket.remake : ticket.makePlan}</span>
             <ArrowRight className={FORWARD_ARROW} aria-hidden="true" />

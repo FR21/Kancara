@@ -45,7 +45,7 @@ export default function AboutContent() {
 
         <div className={`${CONTAINER} grid items-center gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:gap-16`}>
           <div className="parallax-top-fade [--parallax-to:16svh]">
-            <h1 className="font-heading text-5xl leading-[1.05] font-extrabold tracking-tight text-balance text-white motion-safe:animate-rise-in sm:text-6xl lg:text-7xl">
+            <h1 className="font-heading text-5xl leading-[1.15] font-extrabold tracking-tight text-balance text-white motion-safe:animate-rise-in sm:text-6xl sm:leading-[1.05] lg:text-7xl">
               {text.hero.headline}{" "}
               <span className="whitespace-nowrap text-accent-300">
                 <span className="relative inline-block">
@@ -71,7 +71,7 @@ export default function AboutContent() {
                 {text.hero.headlineEnd}
               </span>
             </h1>
-            <p className="mt-6 max-w-xl text-body font-medium text-pretty text-white/90 motion-safe:animate-rise-in motion-safe:[animation-delay:100ms] sm:mt-8 sm:text-h3">
+            <p className="mt-6 max-w-xl text-body font-medium text-pretty text-white/90 motion-safe:animate-rise-in motion-safe:[animation-delay:100ms] sm:mt-8 sm:text-lead">
               {text.hero.lead}
             </p>
           </div>

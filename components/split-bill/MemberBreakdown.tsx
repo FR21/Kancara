@@ -21,7 +21,7 @@ type MemberBreakdownProps = {
 
 const NET_TONES = {
   receive: "bg-success-subtle text-on-success-subtle",
-  pay: "bg-error-subtle text-on-error-subtle",
+  pay: "bg-warning-subtle text-on-warning-subtle",
   even: "bg-surface-muted text-text-muted",
 };
 

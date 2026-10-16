@@ -38,7 +38,7 @@ export function StopCovers({
       {item.covers.map((cover) => (
         <li key={cover.need} title={describeCover(cover)} className={`${BADGE} bg-success-subtle text-on-success-subtle`}>
           <Check className="size-3 shrink-0" strokeWidth={3} aria-hidden="true" />
-          <span className="truncate">{describeCover(cover)}</span>
+          <span className="min-w-0 wrap-anywhere">{describeCover(cover)}</span>
         </li>
       ))}
     </ul>

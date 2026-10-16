@@ -4,7 +4,7 @@ import { ArrowRight, Check, CloudRain, Coffee, DoorClosed, MapPin, TriangleAlert
 import { type CSSProperties, useState } from "react";
 import Checkbox from "@/components/ui/Checkbox";
 import Sheet from "@/components/ui/Sheet";
-import { GHOST_BUTTON, PRIMARY_BUTTON, TEXT_LINK, choiceClass } from "@/components/ui/styles";
+import { GHOST_BUTTON, PRIMARY_BUTTON, TEXT_LINK, choiceClass, FIELD_LABEL } from "@/components/ui/styles";
 import { findBackupIndexForKind, listBackups } from "@/lib/backups";
 import { BACKUP_KINDS, type BackupKind, type ItineraryDay, type ItineraryItem } from "@/lib/client/captain";
 import type { Messages } from "@/lib/messages";
@@ -104,7 +104,7 @@ export default function DayAdjustSheet({
   return (
     <Sheet open={open} title={fillTemplate(words.title, { number: dayNumber })} closeLabel={text.close} onClose={onClose} footer={footer}>
       <fieldset>
-        <legend className="text-label-lg text-text">{words.what}</legend>
+        <legend className={FIELD_LABEL}>{words.what}</legend>
         <div className="mt-2 flex flex-wrap gap-2">
           {BACKUP_KINDS.map((option) => {
             const Icon = KIND_ICONS[option];
@@ -168,7 +168,7 @@ export default function DayAdjustSheet({
                 </label>
 
                 {on && chosen && (
-                  <div className="mt-3 ml-9 border-l-2 border-primary pl-3 motion-safe:animate-message-in">
+                  <div className="mt-3 ml-9 border-l border-primary pl-4 motion-safe:animate-message-in">
                     <p className="flex items-center gap-2 text-caption font-bold text-primary">
                       <ArrowRight className="size-4 shrink-0" aria-hidden="true" />
                       {text.backups.kinds[chosen.kind]}
@@ -176,9 +176,9 @@ export default function DayAdjustSheet({
                     <p className="mt-1 text-label text-text">{chosen.title}</p>
                     {chosen.detail && <p className="mt-1 line-clamp-2 text-body-sm text-text-muted">{chosen.detail}</p>}
                     {chosen.address && (
-                      <p className="mt-1 flex items-center gap-1 text-caption text-text-muted">
+                      <p className="mt-1 flex items-start gap-1 text-caption text-text-muted">
                         <MapPin className="size-4 shrink-0" aria-hidden="true" />
-                        <span className="truncate">{chosen.address}</span>
+                        <span className="min-w-0 wrap-anywhere">{chosen.address}</span>
                       </p>
                     )}
                     {backups.length > 1 && (
@@ -188,6 +188,7 @@ export default function DayAdjustSheet({
                             key={`${backup.kind}-${backup.title}`}
                             type="button"
                             aria-pressed={chosenIndex === backupIndex}
+                            title={backup.title}
                             onClick={() => setPicked((current) => ({ ...current, [index]: backupIndex }))}
                             className={`${choiceClass(chosenIndex === backupIndex)} max-w-full`}
                           >

@@ -17,6 +17,7 @@ import { useLocale } from "@/lib/use-locale";
 import ContactList from "./ContactList";
 import { CANCEL_BUTTON, HELP_FRAME, HelpBlock, Problem, SAVE_BUTTON } from "./HelpBlock";
 import { type HelpContext, nameIn } from "@/components/safety/help-context";
+import FieldError from "@/components/ui/FieldError";
 
 function ContactsBlock({ context }: { context: HelpContext }) {
   const { pack, text } = context;
@@ -138,9 +139,7 @@ function ContactsBlock({ context }: { context: HelpContext }) {
               className={`${INPUT} mt-2 tabular-nums`}
             />
             {problem === "invalid" && (
-              <p role="alert" className="mt-2 text-caption text-error">
-                {copy.phoneInvalid}
-              </p>
+              <FieldError role="alert">{copy.phoneInvalid}</FieldError>
             )}
           </div>
           <Problem context={context} show={problem === "failed"} />
@@ -210,9 +209,7 @@ function SecondNumberBlock({ context }: { context: HelpContext }) {
             className={`${INPUT} tabular-nums`}
           />
           {problem === "invalid" && (
-            <p role="alert" className="mt-2 text-caption text-pretty text-error">
-              {text.member.phoneInvalid}
-            </p>
+            <FieldError role="alert">{text.member.phoneInvalid}</FieldError>
           )}
           <Problem context={context} show={problem === "failed"} />
           <div className="mt-6 flex flex-wrap gap-2">
@@ -260,7 +257,7 @@ function CountriesBlock({ context }: { context: HelpContext }) {
             >
               <span className="min-w-0 truncate">{name}</span>
               <IconButton label={fillTemplate(copy.remove, { name })} onClick={() => change(pack.countryCodes.filter((entry) => entry !== code))}>
-                <X className="size-4" aria-hidden="true" />
+                <X className="size-5" aria-hidden="true" />
               </IconButton>
             </li>
           );
@@ -292,7 +289,7 @@ function ReadyBlock({ context }: { context: HelpContext }) {
   const items = [
     { key: "reach", done: unreachable.length === 0, label: copy.items.reach, still: names(unreachable) },
     { key: "cards", done: cardless.length === 0, label: copy.items.cards, still: names(cardless) },
-    { key: "second", done: pack.secondaryPhone !== null, label: copy.items.second, still: "", optional: true },
+    { key: "second", done: pack.secondaryPhone !== null, label: copy.items.second, still: "" },
     { key: "push", done: push === "on", label: copy.items.push, still: "" },
   ];
   const done = items.filter((item) => item.done).length;
@@ -318,7 +315,6 @@ function ReadyBlock({ context }: { context: HelpContext }) {
             <span className="min-w-0">
               <span className={`block text-body-sm text-pretty ${item.done ? "text-text-muted" : "text-text"}`}>
                 {item.label}
-                {item.optional && !item.done && <span className="text-text-muted"> ({copy.optional})</span>}
               </span>
               {!item.done && item.still && (
                 <span className="mt-1 block text-caption text-pretty text-text-muted">{fillTemplate(copy.still, { names: item.still })}</span>
@@ -334,7 +330,7 @@ function ReadyBlock({ context }: { context: HelpContext }) {
           {copy.pushEnable}
         </button>
       )}
-      <p role="status" className="mt-2 text-caption text-pretty text-text-muted empty:hidden">
+      <p role="status" className="mt-2 text-body-sm text-pretty text-text-muted empty:hidden">
         {push === "failed" && copy.pushFailed}
         {push === "blocked" && copy.pushBlocked}
         {push === "unsupported" && copy.pushUnsupported}

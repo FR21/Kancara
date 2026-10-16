@@ -11,7 +11,7 @@
   "retry": "Try again",
   "kept": "Saved on this phone, opens without signal",
   "keeping": "Saving so it opens without signal",
-  "keepFailed": "Not saved for use without signal yet.",
+  "keepFailed": "Not saved for offline yet. Stay on this page while online, then tap Save again.",
   "keepAgain": "Save again",
   "rewrite": "Write again",
   "rewriting": "Writing again",

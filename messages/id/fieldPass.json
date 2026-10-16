@@ -11,7 +11,7 @@
   "retry": "Coba lagi",
   "kept": "Tersimpan di HP ini, bisa dibuka tanpa sinyal",
   "keeping": "Menyimpan agar bisa dibuka tanpa sinyal",
-  "keepFailed": "Belum tersimpan untuk dibuka tanpa sinyal.",
+  "keepFailed": "Belum tersimpan untuk dibuka tanpa sinyal. Tetap di halaman ini saat ada internet, lalu ketuk Simpan lagi.",
   "keepAgain": "Simpan lagi",
   "rewrite": "Susun ulang",
   "rewriting": "Menyusun ulang",

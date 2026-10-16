@@ -7,7 +7,6 @@ import {
   Car,
   Clock,
   ExternalLink,
-  LifeBuoy,
   MapPin,
   Repeat2,
   Star,
@@ -32,6 +31,7 @@ import {
 } from "./StopBadges";
 import StopBackups, { BACKUPS_ID } from "./StopBackups";
 import IconButton from "@/components/ui/IconButton";
+import { useSwipeToClose } from "@/components/ui/use-swipe-to-close";
 import { OUTLINE_BUTTON, TEXT_LINK } from "@/components/ui/styles";
 
 type StopDialogProps = {
@@ -82,6 +82,7 @@ export default function StopDialog({
 }: StopDialogProps) {
   const locale = useLocale();
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const swipe = useSwipeToClose(dialogRef, onClose);
   const scrollRef = useRef<HTMLDivElement>(null);
   const open = index !== null;
   const item = index === null ? null : (items[index] ?? null);
@@ -136,14 +137,17 @@ export default function StopDialog({
     >
       {item && index !== null && (
         <>
-          <span aria-hidden="true" className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-border-strong sm:hidden" />
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border py-1 pr-2 pl-surface sm:py-2">
-            <p className="min-w-0 truncate text-label text-text-muted tabular-nums">
-              {dayLabel} · {fillTemplate(text.position, { current: index + 1, total: items.length })}
-            </p>
-            <IconButton label={text.close} onClick={onClose}>
-              <X className="size-5" aria-hidden="true" />
-            </IconButton>
+          {/* The grab bar and the top row are where a thumb pulls the sheet down to close it. */}
+          <div className="shrink-0 touch-none sm:touch-auto" {...swipe}>
+            <span aria-hidden="true" className="mx-auto mt-2 block h-1 w-10 rounded-full bg-border-strong sm:hidden" />
+            <div className="flex items-center justify-between gap-3 border-b border-border py-1 pr-2 pl-surface sm:py-2">
+              <p className="min-w-0 truncate text-label text-text-muted tabular-nums">
+                {dayLabel} · {fillTemplate(text.position, { current: index + 1, total: items.length })}
+              </p>
+              <IconButton label={text.close} onClick={onClose}>
+                <X className="size-5" aria-hidden="true" />
+              </IconButton>
+            </div>
           </div>
 
           <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain [scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin] motion-safe:scroll-smooth">
@@ -177,7 +181,7 @@ export default function StopDialog({
                     onClick={() => document.getElementById(BACKUPS_ID)?.scrollIntoView({ block: "start" })}
                     className={`${TEXT_LINK} mt-2 tabular-nums`}
                   >
-                    <LifeBuoy className="size-4 shrink-0" aria-hidden="true" />
+                    <Repeat2 className="size-4 shrink-0" aria-hidden="true" />
                     {plural(text.backups.ready, standingBy, locale)}
                     <ArrowDown
                       className="size-4 shrink-0 transition-[translate] duration-200 ease-out group-hover:translate-y-1"
@@ -231,7 +235,7 @@ export default function StopDialog({
                 )}
                 {item.rating !== undefined && (
                   <div className="flex items-start gap-3">
-                    <Star className="size-5 shrink-0 fill-primary text-primary" aria-hidden="true" />
+                    <Star className="size-5 shrink-0 fill-accent text-accent-500" aria-hidden="true" />
                     <div className="min-w-0">
                       <dt className={FACT_LABEL}>{text.ratingLabel}</dt>
                       <dd className="text-body-sm text-text tabular-nums">

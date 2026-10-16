@@ -61,12 +61,12 @@ function TripRow({ card, order, selected, text, onSelect }: TripRowProps) {
             id={tripRowId(card.id)}
             aria-current={selected ? "true" : undefined}
             onClick={() => onSelect(card)}
-            className="block max-w-full cursor-pointer truncate text-left text-label-lg text-text after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-primary"
+            className="line-clamp-2 max-w-full cursor-pointer text-left text-label-lg text-text after:absolute after:inset-0 focus-visible:outline-none focus-visible:after:outline-2 focus-visible:after:-outline-offset-2 focus-visible:after:outline-primary"
           >
             {title}
           </button>
           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1">
-            <p className="min-w-0 basis-full truncate text-body-sm text-text-muted tabular-nums sm:flex-1 sm:basis-0">
+            <p className="min-w-0 basis-full text-body-sm text-pretty text-text-muted tabular-nums sm:flex-1 sm:basis-0">
               {subtitle}
             </p>
             {card.violations !== undefined && card.violations > 0 && (

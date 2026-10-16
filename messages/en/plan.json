@@ -26,7 +26,7 @@
       },
       "pass": {
         "name": "Boarding pass",
-        "asks": "Review your ticket summary before your daily itinerary is made."
+        "asks": "Review your boarding pass before the daily itinerary is made."
       }
     }
   },
@@ -68,13 +68,12 @@
       },
       "extras": {
         "title": "Anything else Captain should know?",
-        "hint": "Optional. The more you add, the better the plan fits."
+        "hint": "The more you add, the better the plan fits."
       }
     },
     "required": "Still missing: {items}.",
     "previewNote": "This is a preview. Finish the questions to continue.",
     "previewClose": "Close",
-    "previewTitle": "Boarding pass preview",
     "routeSketch": "Trip route: {route}"
   },
   "crew": {
@@ -243,10 +242,11 @@
     "saving": "Saving to My Trips",
     "saved": "Saved to My Trips automatically.",
     "savedNotice": "Plan saved to My Trips.",
-    "viewTrips": "View My Trips",
     "saveFailed": "The plan wasn't saved to My Trips. Check your connection, then try again.",
     "saveRetry": "Save again",
-    "dismiss": "Dismiss"
+    "dismiss": "Dismiss",
+    "agreementsShow": "See the group's agreements",
+    "agreementsHide": "Hide agreements"
   },
   "ageGroups": {
     "adult": "Adult",
@@ -358,7 +358,7 @@
     "carriesPhone": "Carries a phone on the trip?",
     "carriesYes": "Yes",
     "carriesNo": "No",
-    "phone": "Phone number (optional)",
+    "phone": "Phone number",
     "phoneHint": "For the WhatsApp, call, and text buttons if they get separated. A number that starts with 0 is read as Indonesian.",
     "phoneInvalid": "This number can't be read yet. Try it with the country code, for example +62.",
     "noPhoneHint": "Without a phone, {name} gets a Meeting Card to print from the trip's Help page.",
@@ -373,12 +373,13 @@
     "retry": "Try again",
     "itineraryPending": "Captain is building the itinerary",
     "itineraryIntro": "Here's an itinerary that accounts for each member's needs. Pick a day to see the details.",
-    "clearDraft": "Delete draft"
+    "clearDraft": "Delete draft",
+    "clearDraftConfirm": "Delete draft?",
+    "clearDraftConfirmLabel": "Tap again to delete this draft"
   },
   "itinerary": {
     "title": "{destination} itinerary",
     "sample": "Sample",
-    "daysLabel": "Choose a day",
     "day": "Day {number}",
     "honours": "Covers",
     "everyone": "Everyone",
@@ -470,7 +471,6 @@
       "cancel": "Cancel"
     },
     "timeline": {
-      "today": "today",
       "dayHeading": "{day} · {date}",
       "byCar": "{distance} by car",
       "issues": {
@@ -516,6 +516,17 @@
         "rating": "Rating",
         "next": "To the next place"
       }
+    },
+    "picker": {
+      "previous": "Previous day",
+      "next": "Next day",
+      "choose": "Choose a date. Now {date}",
+      "calendar": "Trip calendar",
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month",
+      "dayLabel": "Day {number}",
+      "today": "today",
+      "position": "Day {number} of {total}"
     }
   },
   "invite": {

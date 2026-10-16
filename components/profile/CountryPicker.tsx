@@ -129,7 +129,7 @@ export default function CountryPicker({
         <div
           // Pressing in the list must not take the focus from the field, or the list would close before the press lands.
           onMouseDown={(event) => event.preventDefault()}
-          className="absolute inset-x-0 top-full z-30 mt-2 origin-top overflow-clip surface-compact rounded-surface border border-border bg-background py-2 shadow-lg shadow-neutral-950/10 motion-safe:animate-pop-in"
+          className="absolute inset-x-0 top-full z-30 mt-2 origin-top overflow-clip surface-compact rounded-surface border border-border bg-background py-surface shadow-lg shadow-neutral-950/10 motion-safe:animate-pop-in"
         >
         <ul
           ref={listRef}

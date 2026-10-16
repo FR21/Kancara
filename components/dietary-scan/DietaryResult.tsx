@@ -71,7 +71,7 @@ export default function DietaryResult({ analysis, text, names, unrestricted, loa
           </div>
           <SuitabilityBadge status={analysis.suitability} label={text.status[analysis.suitability]} />
         </div>
-        {analysis.summary && <p className="mt-4 text-body text-pretty text-text">{analysis.summary}</p>}
+        {analysis.summary && <p className="mt-4 max-w-2xl text-body text-pretty text-text">{analysis.summary}</p>}
 
         {analysis.ingredients.length + analysis.doubtfulIngredients.length > 0 && (
           <div className="mt-4 border-t border-border pt-4">

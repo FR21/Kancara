@@ -9,7 +9,7 @@ type DeckFooterProps = {
   /** Why the way on is closed, or how far along the visitor is. Beside the buttons from 640px, under them on a phone. */
   note: string | null;
   /** Lets the forward button point at the note as its description. */
-  noteId: string;
+  noteId?: string;
   /** The way on: one button. */
   children: ReactNode;
 };
@@ -21,7 +21,7 @@ export const FORWARD_ARROW = "size-4 transition-[translate] duration-200 ease-ou
 // thumb reach at the bottom of the screen while the content above scrolls.
 export default function DeckFooter({ backLabel, onBack, note, noteId, children }: DeckFooterProps) {
   return (
-    <div className="safe-bottom sticky bottom-0 z-10 -mx-4 border-t border-border bg-background px-4 pt-3 sm:mx-0 sm:px-0">
+    <div data-bottom-bar="always" className="safe-bottom safe-x sticky bottom-0 z-10 -mx-(--gutter) border-t border-border bg-background pt-3 sm:mx-0 sm:px-0">
       <div className="flex items-center justify-between gap-3">
         {onBack ? (
           <button type="button" onClick={onBack} className={`group ${GHOST_BUTTON} -ml-4`}>

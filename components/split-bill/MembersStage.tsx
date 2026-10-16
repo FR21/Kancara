@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, CircleAlert, Plus, Users, X } from "lucide-react";
+import { ArrowRight, Plus, Users, X } from "lucide-react";
 import { type FormEvent, type Ref, useId, useState } from "react";
 import EmptyState from "@/components/ui/EmptyState";
 import IconButton from "@/components/ui/IconButton";
@@ -12,7 +12,9 @@ import { fillTemplate } from "@/lib/plan-draft";
 import { BILL_LIMITS, type SplitBill } from "@/lib/split-bill/bill";
 import { memberNameTaken } from "@/lib/split-bill/edit";
 import { plural } from "@/lib/trips/format";
+import DeckFooter from "@/components/plan/DeckFooter";
 import { NEXT_ARROW } from "./stage-arrows";
+import FieldError from "@/components/ui/FieldError";
 
 type MembersStageProps = {
   bill: SplitBill;
@@ -85,10 +87,7 @@ export default function MembersStage({ bill, text, locale, headingRef, onAdd, on
               </button>
             </div>
             {problem && (
-              <p id={problemId} role="alert" className="mt-2 flex items-start gap-2 text-body-sm text-error">
-                <CircleAlert className="mt-1 size-4 shrink-0" aria-hidden="true" />
-                {problem}
-              </p>
+              <FieldError id={problemId} role="alert">{problem}</FieldError>
             )}
             {full && (
               <p className="mt-2 text-body-sm text-text-muted">{fillTemplate(text.full, { count: BILL_LIMITS.members })}</p>
@@ -128,11 +127,13 @@ export default function MembersStage({ bill, text, locale, headingRef, onAdd, on
         )}
       </div>
 
-      <div className="mt-8 flex justify-end">
-        <button type="button" disabled={bill.members.length === 0} onClick={onNext} className={`group ${buttonClass("primary")} w-full sm:w-auto`}>
-          {text.next}
-          <ArrowRight className={NEXT_ARROW} aria-hidden="true" />
-        </button>
+      <div className="mt-8">
+        <DeckFooter backLabel="" onBack={null} note={null}>
+          <button type="button" disabled={bill.members.length === 0} onClick={onNext} className={`group ${buttonClass("primary")}`}>
+            {text.next}
+            <ArrowRight className={NEXT_ARROW} aria-hidden="true" />
+          </button>
+        </DeckFooter>
       </div>
     </section>
   );

@@ -3,7 +3,7 @@
 import { FileDown, ImageDown } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import Checkbox from "@/components/ui/Checkbox";
-import { FIELD_LABEL, INPUT, PRIMARY_BUTTON, buttonClass } from "@/components/ui/styles";
+import { FIELD_HINT_TYPE, FIELD_LABEL, INPUT, PRIMARY_BUTTON, buttonClass } from "@/components/ui/styles";
 import { fillTemplate } from "@/lib/plan-draft";
 import { CARD_HEIGHT, CARD_WIDTH, drawCard, saveCardImage, saveCardPdf } from "@/lib/safety/card";
 import { MAX_PHONE_CHARS } from "@/lib/safety/contact";
@@ -30,6 +30,11 @@ function CardNumber({ context }: { context: HelpContext }) {
   if (!pack.canManage) return <p className="text-body text-pretty text-text">{copy.needLead}</p>;
 
   const viewerId = pack.viewerMemberId;
+  const failedText = context.online ? text.failed : text.offlineOnly;
+  // What is wrong, in place of the hint: a number that cannot be read, or a save that did not go through.
+  let problem = "";
+  if (state === "invalid") problem = text.member.phoneInvalid;
+  else if (state === "failed") problem = failedText;
   const save = async () => {
     setState("saving");
     const outcome = await context.act(
@@ -62,8 +67,8 @@ function CardNumber({ context }: { context: HelpContext }) {
         }}
         className={`${INPUT} mt-2 tabular-nums`}
       />
-      <p id="card-number-hint" role="status" className={`mt-2 text-caption text-pretty ${state === "idle" || state === "saving" ? "text-text-muted" : "text-error"}`}>
-        {state === "invalid" ? text.member.phoneInvalid : state === "failed" ? (context.online ? text.failed : text.offlineOnly) : text.member.phoneHint}
+      <p id="card-number-hint" role="status" className={`${FIELD_HINT_TYPE} ${problem ? "text-error" : "text-text-muted"}`}>
+        {problem || text.member.phoneHint}
       </p>
       <button type="button" disabled={phone.trim() === "" || state === "saving"} onClick={save} className={`${PRIMARY_BUTTON} mt-6 w-full`}>
         {text.save}

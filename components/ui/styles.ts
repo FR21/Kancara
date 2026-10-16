@@ -9,6 +9,14 @@ export const INPUT_BUTTON =
 
 export const FIELD_LABEL = "text-label text-text";
 
+/** The help under a field: one size on every form. Its colour comes apart, so a hint that turns into the error can
+ * swap it (Tailwind does not let a later colour class win over an earlier one). */
+export const FIELD_HINT_TYPE = "mt-2 text-body-sm text-pretty";
+export const FIELD_HINT = `${FIELD_HINT_TYPE} text-text-muted`;
+
+/** A line that explains a field before it is filled, between its label and the control. */
+export const FIELD_DESCRIPTION = "mt-1 text-body-sm text-pretty text-text-muted";
+
 /** outlineDanger: a destructive action that is not the main one on its screen (delete beside share). */
 export type ButtonVariant = "primary" | "outline" | "ghost" | "danger" | "outlineDanger";
 export type ButtonSize = "small" | "medium" | "large";
@@ -58,9 +66,12 @@ export type IconButtonTone = "plain" | "primary" | "primaryQuiet" | "danger";
 const ICON_BUTTON_BASE =
   "inline-flex shrink-0 cursor-pointer items-center justify-center rounded-full transition-[background-color,color,scale] duration-150 ease-out active:scale-[0.97] disabled:cursor-not-allowed disabled:opacity-40";
 
-/** medium: 44px, the touch target everywhere. small: 36px, only inside another control's 44px pill. */
-export type IconButtonSize = "small" | "medium";
-const ICON_BUTTON_SIZES: Record<IconButtonSize, string> = { small: "size-9", medium: "size-11" };
+/**
+ * medium: 44px, the touch target everywhere. small: 36px, only inside another control's 44px pill. large: 48px, the
+ * navbar's menu button, as tall as the other controls in the bar.
+ */
+export type IconButtonSize = "small" | "medium" | "large";
+const ICON_BUTTON_SIZES: Record<IconButtonSize, string> = { small: "size-9", medium: "size-11", large: "size-12" };
 
 const ICON_BUTTON_TONES: Record<IconButtonTone, string> = {
   plain: "text-text hover:bg-surface-muted",
@@ -83,8 +94,11 @@ export const TEXT_LINK =
 export const TEXTAREA =
   "min-h-28 w-full rounded-lg border border-border-strong bg-background px-4 py-3 text-body text-text transition-colors duration-150 placeholder:text-text-muted";
 
-/** A status or flag tag: one shape everywhere. Pair it with a tone, e.g. "bg-success-subtle text-on-success-subtle". */
-export const BADGE = "inline-flex h-7 max-w-full items-center gap-1 rounded-full px-3 text-caption font-bold";
+/**
+ * A status or flag tag: one shape everywhere. Pair it with a tone, e.g. "bg-success-subtle text-on-success-subtle".
+ * It is 28px for one line and grows when long words must wrap, so a tag never cuts what it says on a phone.
+ */
+export const BADGE = "inline-flex min-h-7 max-w-full items-center gap-1 rounded-full px-3 py-1 text-caption font-bold";
 
 const CHOICE_BASE =
   "inline-flex h-11 cursor-pointer items-center gap-2 rounded-full border px-4 text-label transition-[background-color,border-color,color,scale] duration-150 ease-out active:scale-[0.97]";

@@ -68,7 +68,7 @@ export default function CoreFlowSection() {
                     {step.subheading}
                   </p>
 
-                  <p className="mt-4 max-w-md text-body leading-relaxed text-pretty text-text-muted">
+                  <p className="mt-4 max-w-md text-body text-pretty text-text-muted">
                     {step.description}
                   </p>
 

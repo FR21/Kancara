@@ -29,7 +29,7 @@ export default function AboutFaq({ text, className }: AboutFaqProps) {
       <div className={className}>
         <ScrollReveal className="max-w-2xl">
           <h2 className="font-heading text-h1 text-balance text-text sm:text-display">{text.heading}</h2>
-          <p className="mt-4 text-body text-pretty text-text-muted sm:text-h3">{text.subtitle}</p>
+          <p className="mt-4 text-body text-pretty text-text-muted sm:text-lead">{text.subtitle}</p>
         </ScrollReveal>
 
         <ScrollReveal
@@ -81,7 +81,7 @@ export default function AboutFaq({ text, className }: AboutFaqProps) {
                   className="pt-2 pb-6 lg:sticky lg:top-28 lg:col-start-2 lg:py-0"
                 >
                   <div className="rounded-surface border border-border bg-surface p-surface shadow-lg shadow-neutral-950/5 motion-safe:animate-message-in">
-                    <p className="text-body leading-relaxed text-pretty text-text sm:text-h3 sm:leading-relaxed">
+                    <p className="text-body text-pretty text-text sm:text-lead">
                       {item.answer}
                     </p>
                   </div>

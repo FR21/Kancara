@@ -1,15 +1,18 @@
 "use client";
 
-import { CircleAlert, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
 import { type FormEvent, useId, useState } from "react";
 import PhotoPicker from "@/components/trip-summary/PhotoPicker";
 import RatingPicker from "@/components/trip-summary/RatingPicker";
 import SelectField from "@/components/ui/SelectField";
 import Sheet from "@/components/ui/Sheet";
-import { buttonClass, FIELD_LABEL, INPUT, TEXTAREA } from "@/components/ui/styles";
+import RequiredMark from "@/components/ui/RequiredMark";
+import { buttonClass, FIELD_LABEL, INPUT, TEXTAREA, FIELD_DESCRIPTION } from "@/components/ui/styles";
 import type { NewMemory } from "@/lib/client/trip-memories";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
+import FieldError from "@/components/ui/FieldError";
+import ErrorAlert from "@/components/ui/ErrorAlert";
 
 type MemoryFormSheetProps = {
   open: boolean;
@@ -92,7 +95,7 @@ export default function MemoryFormSheet({
           <button type="button" onClick={close} disabled={saving} className={`${buttonClass("ghost")} flex-1 basis-32`}>
             {formText.cancel}
           </button>
-          <button type="submit" form={formId} disabled={saving} className={`${buttonClass("primary")} flex-1 basis-48`}>
+          <button type="submit" form={formId} disabled={saving} className={`${buttonClass("primary")} flex-1 basis-36`}>
             {saving && <Loader2 className="size-4 motion-safe:animate-spin" aria-hidden="true" />}
             {saving ? formText.saving : formText.save}
           </button>
@@ -105,6 +108,7 @@ export default function MemoryFormSheet({
           <div>
             <label htmlFor={placeId} className={FIELD_LABEL}>
               {formText.place}
+              <RequiredMark />
             </label>
             <input
               id={placeId}
@@ -126,10 +130,7 @@ export default function MemoryFormSheet({
               </datalist>
             )}
             {triedSaving && missingPlace && (
-              <p id={placeErrorId} role="alert" className="mt-2 flex items-start gap-2 text-body-sm text-error">
-                <CircleAlert className="mt-1 size-4 shrink-0" aria-hidden="true" />
-                {formText.placeRequired}
-              </p>
+              <FieldError id={placeErrorId} role="alert">{formText.placeRequired}</FieldError>
             )}
           </div>
           <div className="grid gap-4 sm:grid-cols-2">
@@ -168,7 +169,7 @@ export default function MemoryFormSheet({
             <p id={ratingLabelId} className={FIELD_LABEL}>
               {formText.rating}
             </p>
-            <p id={ratingHintId} className="mt-1 text-body-sm text-text-muted">
+            <p id={ratingHintId} className={FIELD_DESCRIPTION}>
               {formText.ratingOptional}
             </p>
             <RatingPicker
@@ -199,10 +200,9 @@ export default function MemoryFormSheet({
         <PhotoPicker photo={photo} text={formText} onChange={setPhoto} />
 
         {failed && (
-          <p role="alert" className="flex items-start gap-2 rounded-lg bg-error-subtle px-4 py-3 text-body-sm text-on-error-subtle motion-safe:animate-message-in">
-            <CircleAlert className="mt-1 size-4 shrink-0 text-error" aria-hidden="true" />
-            {formText.failed}
-          </p>
+          <div className="motion-safe:animate-message-in">
+            <ErrorAlert message={formText.failed} />
+          </div>
         )}
       </form>
     </Sheet>

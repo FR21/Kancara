@@ -24,6 +24,7 @@ import MemberAvatar from "@/components/ui/MemberAvatar";
 import type { Messages } from "@/lib/messages";
 import type { PackingItem, PackingReason } from "@/lib/packing";
 import { type Member, type NeedCategory, fillTemplate, NEED_CATEGORIES, NEED_CATEGORY_KEYS } from "@/lib/plan-draft";
+import { BADGE } from "@/components/ui/styles";
 
 type PackingRowProps = {
   item: PackingItem;
@@ -106,7 +107,7 @@ export default function PackingRow({
           </span>
           <span className="mt-1 flex flex-wrap items-center gap-x-3 gap-y-1 text-caption text-text-muted">
             {item.essential && (
-              <span className="rounded-full border border-primary px-2 py-1 font-bold text-primary">{text.essential}</span>
+              <span className={`${BADGE} border border-primary text-primary`}>{text.essential}</span>
             )}
             <span className="inline-flex items-center gap-1 font-bold text-text">
               {owner ? (
@@ -117,7 +118,7 @@ export default function PackingRow({
               <span className="min-w-0 wrap-anywhere">{owner ? owner.name : text.everyone}</span>
             </span>
             {item.reason.kind === "captain" && (
-              <span className="inline-flex items-center gap-1 rounded-full bg-accent py-1 pr-2 pl-1 font-bold text-on-accent">
+              <span className={`${BADGE} bg-accent pl-1 text-on-accent`}>
                 <Image
                   src="/images/logo/kancara_mascot_captain_logo.webp"
                   alt=""
@@ -144,7 +145,7 @@ export default function PackingRow({
         onClick={onRemove}
         className="mt-1 inline-flex size-11 shrink-0 cursor-pointer items-center justify-center rounded-full text-text-muted transition-[background-color,color,scale] duration-150 ease-out hover:bg-error-subtle hover:text-error active:scale-[0.95]"
       >
-        <X className="size-4" aria-hidden="true" />
+        <X className="size-5" aria-hidden="true" />
       </button>
     </li>
   );

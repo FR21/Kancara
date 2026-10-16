@@ -21,6 +21,8 @@ export type HelpPhrases = {
   callSecond: string;
   thanks: string;
   expired: string;
+  /** The finder's page when the card could not be read for want of signal, not because it is no longer in use. */
+  weakSignal: string;
 };
 
 export const HELP_LANGUAGES = ["en", "id", "ja", "ko", "zh", "th", "vi", "ms", "ar", "fr", "de", "es"] as const;
@@ -41,6 +43,7 @@ export const HELP_PHRASES: Record<HelpLanguage, HelpPhrases> = {
     callSecond: "Call the second number",
     thanks: "The group has been told. Please stay with {name} until someone arrives or calls.",
     expired: "This card is no longer in use.",
+    weakSignal: "The connection is weak. Try again, or call the number printed on the card.",
   },
   id: {
     language: "Bahasa Indonesia",
@@ -56,6 +59,7 @@ export const HELP_PHRASES: Record<HelpLanguage, HelpPhrases> = {
     callSecond: "Telepon nomor kedua",
     thanks: "Rombongan sudah diberi tahu. Mohon temani {name} sampai ada yang datang atau menelepon.",
     expired: "Kartu ini sudah tidak dipakai.",
+    weakSignal: "Koneksi internet sedang lemah. Silakan coba lagi, atau telepon nomor yang tercetak di kartu.",
   },
   ja: {
     language: "日本語",
@@ -73,6 +77,7 @@ export const HELP_PHRASES: Record<HelpLanguage, HelpPhrases> = {
     callSecond: "もう一つの番号に電話する",
     thanks: "グループに連絡しました。迎えが来るか電話があるまで、{name}さんのそばにいてください。",
     expired: "このカードは現在使われていません。",
+    weakSignal: "通信状態が不安定です。もう一度お試しいただくか、カードに印刷された番号にお電話ください。",
   },
   ko: {
     language: "한국어",
@@ -88,6 +93,7 @@ export const HELP_PHRASES: Record<HelpLanguage, HelpPhrases> = {
     callSecond: "두 번째 번호로 전화하기",
     thanks: "일행에게 알렸습니다. 누군가 오거나 전화할 때까지 {name} 님 곁에 있어 주세요.",
     expired: "이 카드는 더 이상 사용되지 않습니다.",
+    weakSignal: "연결 상태가 좋지 않습니다. 다시 시도하시거나 카드에 인쇄된 번호로 전화해 주세요.",
   },
   zh: {
     language: "中文",
@@ -103,6 +109,7 @@ export const HELP_PHRASES: Record<HelpLanguage, HelpPhrases> = {
     callSecond: "拨打第二个号码",
     thanks: "已通知同伴。在有人赶来或来电之前，请陪在 {name} 身边。",
     expired: "这张卡片已停止使用。",
+    weakSignal: "网络信号较弱。请重试，或拨打卡片上印的电话号码。",
   },
   th: {
     language: "ไทย",
@@ -118,6 +125,7 @@ export const HELP_PHRASES: Record<HelpLanguage, HelpPhrases> = {
     callSecond: "โทรหมายเลขที่สอง",
     thanks: "แจ้งกลุ่มแล้ว กรุณาอยู่กับ {name} จนกว่าจะมีคนมาหรือโทรมา",
     expired: "บัตรนี้ไม่ได้ใช้งานแล้ว",
+    weakSignal: "สัญญาณอินเทอร์เน็ตอ่อน กรุณาลองอีกครั้ง หรือโทรไปที่หมายเลขที่พิมพ์อยู่บนบัตร",
   },
   vi: {
     language: "Tiếng Việt",
@@ -133,6 +141,7 @@ export const HELP_PHRASES: Record<HelpLanguage, HelpPhrases> = {
     callSecond: "Gọi số thứ hai",
     thanks: "Đã báo cho đoàn. Xin hãy ở cùng {name} cho đến khi có người đến hoặc gọi.",
     expired: "Thẻ này không còn được dùng nữa.",
+    weakSignal: "Kết nối mạng yếu. Vui lòng thử lại, hoặc gọi số điện thoại in trên thẻ.",
   },
   ms: {
     language: "Bahasa Melayu",
@@ -148,6 +157,7 @@ export const HELP_PHRASES: Record<HelpLanguage, HelpPhrases> = {
     callSecond: "Telefon nombor kedua",
     thanks: "Kumpulan telah diberitahu. Sila temani {name} sehingga ada yang datang atau menelefon.",
     expired: "Kad ini tidak lagi digunakan.",
+    weakSignal: "Sambungan internet lemah. Sila cuba lagi, atau hubungi nombor yang dicetak pada kad.",
   },
   ar: {
     language: "العربية",
@@ -163,6 +173,7 @@ export const HELP_PHRASES: Record<HelpLanguage, HelpPhrases> = {
     callSecond: "اتصل بالرقم الثاني",
     thanks: "تم إبلاغ المجموعة. يرجى البقاء مع {name} حتى يصل أحد أو يتصل.",
     expired: "هذه البطاقة لم تعد مستخدمة.",
+    weakSignal: "الاتصال ضعيف. يُرجى المحاولة مرة أخرى، أو الاتصال بالرقم المطبوع على البطاقة.",
   },
   fr: {
     language: "Français",
@@ -178,6 +189,7 @@ export const HELP_PHRASES: Record<HelpLanguage, HelpPhrases> = {
     callSecond: "Appeler le second numéro",
     thanks: "Le groupe est prévenu. Merci de rester avec {name} jusqu'à ce que quelqu'un arrive ou appelle.",
     expired: "Cette carte n'est plus utilisée.",
+    weakSignal: "La connexion est faible. Réessayez, ou appelez le numéro imprimé sur la carte.",
   },
   de: {
     language: "Deutsch",
@@ -193,6 +205,7 @@ export const HELP_PHRASES: Record<HelpLanguage, HelpPhrases> = {
     callSecond: "Die zweite Nummer anrufen",
     thanks: "Die Gruppe wurde benachrichtigt. Bitte bleiben Sie bei {name}, bis jemand kommt oder anruft.",
     expired: "Diese Karte wird nicht mehr verwendet.",
+    weakSignal: "Die Verbindung ist schwach. Versuchen Sie es erneut oder rufen Sie die auf der Karte gedruckte Nummer an.",
   },
   es: {
     language: "Español",
@@ -208,6 +221,7 @@ export const HELP_PHRASES: Record<HelpLanguage, HelpPhrases> = {
     callSecond: "Llamar al segundo número",
     thanks: "El grupo ha sido avisado. Por favor, quédese con {name} hasta que alguien llegue o llame.",
     expired: "Esta tarjeta ya no está en uso.",
+    weakSignal: "La conexión es débil. Inténtelo de nuevo o llame al número impreso en la tarjeta.",
   },
 };
 

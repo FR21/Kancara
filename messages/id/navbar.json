@@ -3,7 +3,7 @@
     "home": "Beranda",
     "plan": "Rencanakan",
     "trips": "Perjalanan Saya",
-    "splitBill": "Split Bill",
+    "splitBill": "Bagi Tagihan",
     "about": "Tentang"
   },
   "homeLabel": "Kancara, ke beranda",
@@ -13,7 +13,6 @@
   "themeToggle": "Ganti tema terang/gelap",
   "languageToggle": "Bahasa",
   "login": "Masuk",
-  "logout": "Keluar",
   "profile": "Profil",
   "breadcrumb": "Jejak halaman"
 }

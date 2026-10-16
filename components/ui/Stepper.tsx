@@ -27,7 +27,7 @@ type StepperProps = {
 };
 
 const STATION =
-  "relative z-10 flex size-11 shrink-0 items-center justify-center rounded-full outline-offset-2 transition-[scale] duration-150 ease-out max-[22.5rem]:size-10";
+  "relative z-10 flex size-11 shrink-0 items-center justify-center rounded-full outline-offset-2 transition-[scale] duration-150 ease-out";
 
 function labelTone(step: StepperStep): string {
   if (step.current) return "text-primary";
@@ -66,7 +66,7 @@ export default function Stepper({ steps, text }: StepperProps) {
 
   return (
     <nav aria-label={text.label}>
-      <div className="relative [--station:2.75rem] max-[22.5rem]:[--station:2.5rem]">
+      <div className="relative [--station:2.75rem]">
         {/* The track runs between the first and the last station's centres. */}
         <span aria-hidden="true" className="absolute inset-x-[calc(var(--station)/2)] top-1/2 h-1 -translate-y-1/2 rounded-full bg-primary/15" />
         <span

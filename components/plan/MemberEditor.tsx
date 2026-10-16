@@ -20,7 +20,7 @@ import MemberWishesFields from "@/components/members/MemberWishesFields";
 import { FORM_GROUP, FORM_GROUPS } from "@/components/members/form-groups";
 import SegmentedToggle from "@/components/ui/SegmentedToggle";
 import SelectField from "@/components/ui/SelectField";
-import { buttonClass, FIELD_LABEL, INPUT } from "@/components/ui/styles";
+import { buttonClass, FIELD_LABEL, INPUT, FIELD_HINT_TYPE, FIELD_HINT } from "@/components/ui/styles";
 
 type MemberEditorProps = {
   member: Member;
@@ -38,6 +38,8 @@ export default function MemberEditor({ member, draft, dispatch, text, onRemoved 
   const carriesPhone = member.carriesPhone ?? carriesPhoneByDefault(member.ageGroup);
   // A number is judged once the field is left, not while it is still being typed.
   const [phoneChecked, setPhoneChecked] = useState(false);
+  // Removing someone takes a second tap, as on the crew grid: the button sits just above the step's Back.
+  const [confirmingRemove, setConfirmingRemove] = useState(false);
   const phone = member.phone ?? "";
   const phoneInvalid = phoneChecked && phone.trim() !== "" && normalizePhone(phone) === null;
 
@@ -140,7 +142,7 @@ export default function MemberEditor({ member, draft, dispatch, text, onRemoved 
             className="mt-2"
           />
           {!carriesPhone && (
-            <p className="mt-2 text-caption text-pretty text-text-muted">{fillTemplate(text.pass.noPhoneHint, { name: displayName })}</p>
+            <p className={FIELD_HINT}>{fillTemplate(text.pass.noPhoneHint, { name: displayName })}</p>
           )}
         </div>
 
@@ -166,7 +168,7 @@ export default function MemberEditor({ member, draft, dispatch, text, onRemoved 
               onBlur={() => setPhoneChecked(true)}
               className={`${INPUT} mt-2 tabular-nums`}
             />
-            <p id="member-phone-hint" className={`mt-2 text-caption text-pretty ${phoneInvalid ? "text-error" : "text-text-muted"}`}>
+            <p id="member-phone-hint" className={`${FIELD_HINT_TYPE} ${phoneInvalid ? "text-error" : "text-text-muted"}`}>
               {phoneInvalid ? text.pass.phoneInvalid : text.pass.phoneHint}
             </p>
           </div>
@@ -174,9 +176,15 @@ export default function MemberEditor({ member, draft, dispatch, text, onRemoved 
       </div>
 
       <div className={FORM_GROUP}>
-        <button type="button" onClick={removeMember} className={`${buttonClass("ghost", "small")} -ml-4`}>
-          <Trash2 className="size-4 text-error" aria-hidden="true" />
-          {fillTemplate(text.pass.removeMember, { name: displayName })}
+        <button
+          type="button"
+          aria-label={confirmingRemove ? fillTemplate(text.crew.removeConfirmLabel, { name: displayName }) : undefined}
+          onClick={() => (confirmingRemove ? removeMember() : setConfirmingRemove(true))}
+          onBlur={() => setConfirmingRemove(false)}
+          className={buttonClass(confirmingRemove ? "danger" : "outlineDanger", "small")}
+        >
+          <Trash2 className="size-4" aria-hidden="true" />
+          {confirmingRemove ? text.crew.removeConfirm : fillTemplate(text.pass.removeMember, { name: displayName })}
         </button>
       </div>
     </div>

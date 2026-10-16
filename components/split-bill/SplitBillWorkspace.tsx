@@ -6,6 +6,7 @@ import Notice, { type NoticeMessage } from "@/components/layout/Notice";
 import PageHeader from "@/components/layout/PageHeader";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import ErrorAlert from "@/components/ui/ErrorAlert";
+import OfflineNote from "@/components/ui/OfflineNote";
 import Stepper, { type StepperStep } from "@/components/ui/Stepper";
 import { buttonClass } from "@/components/ui/styles";
 import { splitBills } from "@/lib/client/split-bill";
@@ -18,6 +19,7 @@ import { settleUp } from "@/lib/split-bill/settle-up";
 import { plural } from "@/lib/trips/format";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
+import { useOnline } from "@/lib/use-online";
 import { useSavedProfiles } from "@/lib/use-saved-profiles";
 import { billSummaryText } from "./bill-summary-text";
 import ExpensesStage from "./ExpensesStage";
@@ -56,6 +58,7 @@ const SAVED_NOTICE_MS = 2500;
 
 export default function SplitBillWorkspace({ initialBill, stored }: SplitBillWorkspaceProps) {
   const text = useMessages("splitBill");
+  const online = useOnline();
   const locale = useLocale();
   const [bill, setBill] = useState(initialBill);
   const [stage, setStage] = useState<Stage>(() => stageFor(initialBill));
@@ -67,7 +70,11 @@ export default function SplitBillWorkspace({ initialBill, stored }: SplitBillWor
   const [newBillPending, setNewBillPending] = useState(false);
   const [newBillError, setNewBillError] = useState<string | null>(null);
   const [downloading, setDownloading] = useState(false);
-  const autosave = useBillAutosave(bill, stored);
+  // A bill changed offline and not sent before a reload opens as it was left, not as the account last had it.
+  const autosave = useBillAutosave(bill, stored, (kept) => {
+    setBill(kept);
+    setStage(stageFor(kept));
+  });
   const { enqueue, markSaved } = autosave;
   const { profiles } = useSavedProfiles();
   const summary = useMemo(() => settleUp(bill), [bill]);
@@ -265,7 +272,11 @@ export default function SplitBillWorkspace({ initialBill, stored }: SplitBillWor
         }
       />
 
-      {autosave.status === "failed" && (
+      {/* Without signal the bill is kept on this phone and sent later, which is calm news, not an error. */}
+      {!online && (autosave.status === "pending" || autosave.status === "failed") && (
+        <OfflineNote message={text.save.waitingOffline} />
+      )}
+      {online && autosave.status === "failed" && (
         <div className="motion-safe:animate-message-in">
           <ErrorAlert message={text.save.failed} retryLabel={text.save.retry} onRetry={autosave.retry} />
         </div>
@@ -363,7 +374,6 @@ export default function SplitBillWorkspace({ initialBill, stored }: SplitBillWor
         }}
         onConfirm={startNewBill}
       />
-      <Notice notice={notice} dismissLabel={text.notice.dismiss} onDismiss={() => setNotice(null)} />
     </div>
   );
 }

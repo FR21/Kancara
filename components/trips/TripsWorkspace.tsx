@@ -1,10 +1,11 @@
 "use client";
 
-import { Loader2, Plus, WifiOff } from "lucide-react";
+import { Loader2, Plus, MousePointerClick } from "lucide-react";
+import OfflineNote from "@/components/ui/OfflineNote";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import ErrorAlert from "@/components/ui/ErrorAlert";
-import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/ui/styles";
+import { OUTLINE_BUTTON, buttonClass } from "@/components/ui/styles";
 import { trips } from "@/lib/client/trips";
 import { fillTemplate } from "@/lib/plan-draft";
 import { formatTripTitle } from "@/lib/trips/format";
@@ -23,6 +24,7 @@ import Notice, { type NoticeMessage } from "@/components/layout/Notice";
 import PageHeader from "@/components/layout/PageHeader";
 import TripsSkeleton from "./TripsSkeleton";
 import TripTabs, { type TripTab, TRIPS_PANEL_ID, tripTabId } from "./TripTabs";
+import EmptyState from "@/components/ui/EmptyState";
 
 type TripsWorkspaceProps = {
   initialTab: TripTab;
@@ -263,27 +265,25 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
       <PageHeader
         title={text.title}
         titleId={TITLE_ID}
-        alignActions="center"
-        actions={
-          <Link href={PLAN_HREF} className={`group ${PRIMARY_BUTTON} flex-1 sm:flex-none`}>
+      />
+
+      {/* The list's two views and a new plan share one row: what you are looking at on the left, starting another
+          trip on the right. With no trips yet the empty state below carries the one "Plan" button instead. Quieter
+          than opening the current trip, the screen's main action. */}
+      <div className="mt-6 flex items-center justify-between gap-3 motion-safe:animate-message-in motion-safe:[animation-delay:40ms]">
+        <TripTabs tab={tab} text={text.tabs} onChange={changeTab} />
+        {!nothingYet && (
+          <Link href={PLAN_HREF} className={`group ${buttonClass("outline", "small")} shrink-0`}>
             <Plus className="size-4 transition-[rotate] duration-300 ease-out group-hover:rotate-90" aria-hidden="true" />
             {text.plan}
           </Link>
-        }
-      />
-
-      <div className="mt-6 motion-safe:animate-message-in motion-safe:[animation-delay:40ms]">
-        <TripTabs tab={tab} text={text.tabs} onChange={changeTab} />
+        )}
       </div>
 
       {!online && (
-        <p
-          role="status"
-          className="mt-6 flex items-center gap-3 rounded-surface bg-warning-subtle p-surface text-body-sm text-on-warning-subtle surface-compact motion-safe:animate-message-in"
-        >
-          <WifiOff className="size-5 shrink-0" aria-hidden="true" />
-          {text.offline}
-        </p>
+        <div className="mt-6">
+          <OfflineNote message={text.offline} />
+        </div>
       )}
 
       <div key={tab} id={TRIPS_PANEL_ID} role="tabpanel" aria-labelledby={tripTabId(tab)} aria-busy={loading} className="mt-6 motion-safe:animate-message-in">
@@ -339,9 +339,7 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
                   />
                 </div>
               ) : (
-                <div className="rounded-surface border border-dashed border-border-strong p-surface">
-                  <p className="py-12 text-center text-body text-pretty text-text-muted">{text.detail.empty}</p>
-                </div>
+                <EmptyState icon={MousePointerClick} title={text.detail.emptyTitle} body={text.detail.empty} headingLevel={2} />
               )}
             </aside>
           </div>

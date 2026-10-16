@@ -4,12 +4,12 @@
   "lead": "For when someone is separated from the group.",
   "back": "Itinerary",
   "loading": "Loading help",
-  "error": "Help couldn't be loaded.",
+  "error": "Help couldn't load. Connect and try again. Emergency? Call 112.",
   "retry": "Try again",
   "notFound": "This trip wasn't found, or you haven't joined it yet.",
   "offline": "No connection. What you do here is sent once you are back online.",
-  "offlineOnly": "This needs a connection to change.",
-  "failed": "Not saved. Try again.",
+  "offlineOnly": "This needs a connection. Connect, then save again.",
+  "failed": "Not saved. Check your connection, then try again.",
   "close": "Close",
   "save": "Save",
   "cancel": "Cancel",
@@ -102,7 +102,7 @@
     "share": "Share my location",
     "shareHint": "Sent once. Kancara does not track you.",
     "shared": "Your location has been shared.",
-    "shareFailed": "The location can't be read on this phone.",
+    "shareFailed": "Your location couldn't be read. Turn on GPS and allow location, or type the address.",
     "onWay": "I'm on my way",
     "lost": "I'm lost",
     "back": "I'm back with the group",
@@ -140,7 +140,7 @@
     "placePlaceholder": "For example: Kyoto Station",
     "kind": "Kind of contact",
     "phone": "Phone number",
-    "phoneInvalid": "This number can't be read yet.",
+    "phoneInvalid": "Can't read this number yet. Include the country code, e.g. +62 812 3456 7890.",
     "remove": "Remove the contact {name}",
     "empty": "No local contacts yet. Add the information desk or security of a place you visit."
   },
@@ -155,7 +155,7 @@
     "notePlaceholder": "For example: by the ticket office",
     "here": "Use my location now",
     "hereHint": "Press the button above to use this phone's position. Its name and address fill in by themselves.",
-    "hereFailed": "The location can't be read on this phone.",
+    "hereFailed": "Your location couldn't be read. Turn on GPS and allow location, or type the address.",
     "clear": "Remove the meeting point",
     "where": "Location",
     "mapLabel": "Map to pick the meeting point",
@@ -200,7 +200,6 @@
   "ready": {
     "title": "Ready to go",
     "count": "{done} of {total} done",
-    "optional": "recommended",
     "items": {
       "reach": "Every member who carries a phone is connected or has a number on record",
       "cards": "Every member without a phone has a saved meeting card",
@@ -239,17 +238,17 @@
     "open": "Open the trip's help page",
     "loading": "Loading the invite",
     "invalid": "This invite link no longer works. Ask the group leader for a new one.",
-    "error": "The invite couldn't be loaded.",
-    "failed": "Joining didn't work. Try again.",
+    "error": "The invite couldn't load. Check your connection, then try again.",
+    "failed": "Joining didn't work. Check your connection and try again. If it keeps failing, ask the leader for a new link.",
     "leadOpen": "Pick your name. No account needed.",
     "pickOpen": "I am {name}",
-    "haveAccount": "Have a Kancara account? Sign in to join under your own name and hear when someone is separated.",
-    "signIn": "Sign in to join",
+    "haveAccount": "Have a Kancara account? Log in to join under your own name and hear when someone is separated.",
+    "signIn": "Log in to join",
     "asSelf": "Join as {name}",
     "asAccount": "Join with my account",
     "asSelfHint": "You are in the group right away. The leader doesn't have to add you first.",
     "listed": "Already added by the group leader? Pick your name",
-    "emptyOpen": "No names on the list yet. Sign in with a Kancara account to join right away.",
+    "emptyOpen": "No names on the list yet. Log in with a Kancara account to join right away.",
     "full": "This group is full."
   },
   "link": {
@@ -257,7 +256,8 @@
     "lead": "If you get separated from the group, press \"I'm separated\". The group is told at once and you are shown the way back.",
     "keep": "Your help page for {trip}. Open it again any time from the same link.",
     "notFound": "This link no longer works. Ask the group leader for a new one.",
-    "notYou": "Not {name}? Pick again"
+    "notYou": "Not {name}? Pick again",
+    "notFoundTitle": "This link no longer works"
   },
   "call": {
     "title": "Call {name}",
@@ -280,5 +280,11 @@
     "body": "Open Kancara to see the meeting point and reach them.",
     "askingBody": "Open Kancara and answer so they know how you are.",
     "foundBody": "The search on {trip} is over."
+  },
+  "notFoundTitle": "This trip could not be found",
+  "emergencyFallback": {
+    "title": "Emergency",
+    "body": "If you are separated and this page can't load yet, call the emergency number.",
+    "call": "Call 112"
   }
 }

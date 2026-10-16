@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowLeft, ArrowRight } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import { type Ref, useId, useRef, useState } from "react";
 import ConfirmDialog from "@/components/ui/ConfirmDialog";
 import { buttonClass } from "@/components/ui/styles";
@@ -11,7 +11,8 @@ import { type BillExpense, type SplitBill, BILL_LIMITS } from "@/lib/split-bill/
 import { plural } from "@/lib/trips/format";
 import ExpenseForm from "./ExpenseForm";
 import ExpenseList from "./ExpenseList";
-import { BACK_ARROW, NEXT_ARROW } from "./stage-arrows";
+import DeckFooter from "@/components/plan/DeckFooter";
+import { NEXT_ARROW } from "./stage-arrows";
 
 type ExpensesStageProps = {
   bill: SplitBill;
@@ -107,15 +108,13 @@ export default function ExpensesStage({ bill, text, categories, locale, headingR
       </div>
 
       {/* Saving an expense is the step's one main action, so moving on is drawn quieter. */}
-      <div className="mt-8 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">
-        <button type="button" onClick={onBack} className={`group ${buttonClass("ghost")} sm:-ml-4`}>
-          <ArrowLeft className={BACK_ARROW} aria-hidden="true" />
-          {text.back}
-        </button>
-        <button type="button" disabled={bill.expenses.length === 0} onClick={onNext} className={`group ${buttonClass("outline")}`}>
-          {text.next}
-          <ArrowRight className={NEXT_ARROW} aria-hidden="true" />
-        </button>
+      <div className="mt-8">
+        <DeckFooter backLabel={text.back} onBack={onBack} note={null}>
+          <button type="button" disabled={bill.expenses.length === 0} onClick={onNext} className={`group ${buttonClass("outline")}`}>
+            {text.next}
+            <ArrowRight className={NEXT_ARROW} aria-hidden="true" />
+          </button>
+        </DeckFooter>
       </div>
 
       <ConfirmDialog

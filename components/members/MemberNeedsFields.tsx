@@ -2,7 +2,7 @@
 
 import CustomAdd, { CustomChip } from "@/components/plan/CustomAdd";
 import MultiSelectField from "@/components/ui/MultiSelectField";
-import { FIELD_LABEL, INPUT } from "@/components/ui/styles";
+import { FIELD_LABEL, INPUT, FIELD_DESCRIPTION } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
 import { type Member, type PlanDraftAction, fillTemplate, NEED_CATEGORIES, NEED_CATEGORY_KEYS, NEED_KEYS, sameText } from "@/lib/plan-draft";
 import { MAX_ALLERGIES_CHARS } from "@/lib/saved-profiles/profile";
@@ -41,7 +41,7 @@ export default function MemberNeedsFields({ id, member, planText, onEdit }: Memb
         <label htmlFor={`${id}-needs`} className={`${FIELD_LABEL} block`}>
           {planText.pass.needsLegend}
         </label>
-        <p id={`${id}-needs-hint`} className="mt-1 text-body-sm text-pretty text-text-muted">
+        <p id={`${id}-needs-hint`} className={FIELD_DESCRIPTION}>
           {planText.pass.needsHint}
         </p>
         <div className="mt-2">

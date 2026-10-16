@@ -160,7 +160,7 @@ function PickerRow({ choice, variant, added, checked, planText, text, onToggle }
   if (added) {
     return (
       <li style={order} className="flex items-start gap-3 rounded-lg p-3 opacity-60 motion-safe:animate-list-in">
-        <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-success text-on-success">
+        <span className="flex size-6 shrink-0 items-center justify-center rounded-lg bg-primary text-on-primary">
           <Check className="size-4" strokeWidth={3} aria-hidden="true" />
         </span>
         {body}

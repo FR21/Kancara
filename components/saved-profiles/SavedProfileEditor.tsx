@@ -2,6 +2,7 @@
 
 import { Check, CircleAlert, Loader2 } from "lucide-react";
 import { type FormEvent, useId, useRef, useState } from "react";
+import FieldError from "@/components/ui/FieldError";
 import RequiredMark from "@/components/ui/RequiredMark";
 import SelectField from "@/components/ui/SelectField";
 import Sheet from "@/components/ui/Sheet";
@@ -162,10 +163,7 @@ export default function SavedProfileEditor({ target, planText, text, onClose, on
               className={`${INPUT} mt-2 aria-invalid:border-error`}
             />
             {nameMissing && (
-              <p id={`${fieldId}-name-error`} className="mt-2 flex items-start gap-2 text-caption text-error">
-                <CircleAlert className="size-4 shrink-0" aria-hidden="true" />
-                {text.editor.nameMissing}
-              </p>
+              <FieldError id={`${fieldId}-name-error`}>{text.editor.nameMissing}</FieldError>
             )}
           </div>
 

@@ -4,7 +4,7 @@ import {
   ArrowRight,
   BatteryMedium,
   Check,
-  CheckCircle2,
+  CircleCheck,
   MapPin,
   ShieldCheck,
   Tent,
@@ -12,9 +12,18 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef } from "react";
-import { BADGE, buttonClass } from "@/components/ui/styles";
+import { BADGE, EASE, buttonClass } from "@/components/ui/styles";
 import { useMessages } from "@/lib/use-messages";
-import ScrollReveal from "./ScrollReveal";
+// The section's opening, played once when it scrolls into view: each part starts hidden a little low and rises into
+// place, a beat after the one before. With reduced motion everything is simply there.
+const ENTER = `transition-[opacity,translate] duration-700 ${EASE} motion-safe:translate-y-6 motion-safe:opacity-0 motion-safe:group-data-in-view/offline:translate-y-0 motion-safe:group-data-in-view/offline:opacity-100`;
+// A line of the headline rises from behind its own lower edge, like a word slid up into a slot.
+const LINE_MASK = "-mb-2 block overflow-hidden pb-2";
+const LINE = `block transition-[translate] duration-900 ${EASE} motion-safe:translate-y-full motion-safe:group-data-in-view/offline:translate-y-0`;
+
+function delay(milliseconds: number) {
+  return { transitionDelay: `${milliseconds}ms` };
+}
 
 const MEMBERS = [
   { initial: "J", x: 24, y: 30, tone: "bg-primary-600 text-neutral-50" },
@@ -50,11 +59,11 @@ function Phone() {
 
   return (
     <div ref={ref} className="group/phone relative w-75 max-w-full">
-      <div className={`${FLOAT_CARD} -top-16 left-0 border-border bg-surface/95 backdrop-blur-sm delay-200 sm:top-28 sm:-left-36`}>
+      <div className={`${FLOAT_CARD} -top-16 left-0 border-border bg-surface delay-200 sm:top-28 sm:-left-20`}>
         <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-primary-subtle text-primary">
           <WifiOff className="size-5" aria-hidden="true" />
         </span>
-        <span className="leading-tight">
+        <span>
           <span className="block text-label text-text">{t.offlineCard.title}</span>
           <span className="block text-caption text-text-muted">{t.offlineCard.body}</span>
         </span>
@@ -64,7 +73,7 @@ function Phone() {
         <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-neutral-950/10">
           <ShieldCheck className="size-5" aria-hidden="true" />
         </span>
-        <span className="leading-tight">
+        <span>
           <span className="block text-label">{t.calmCard.title}</span>
           <span className="block text-caption text-neutral-950/75">{t.calmCard.body}</span>
         </span>
@@ -195,9 +204,9 @@ function Phone() {
 
             <div className="flex items-center gap-3 rounded-full border border-border bg-surface p-1 pr-4">
               <span className="flex size-9 shrink-0 items-center justify-center rounded-full bg-success-subtle text-success">
-                <CheckCircle2 className="size-5" />
+                <CircleCheck className="size-5" />
               </span>
-              <span className="min-w-0 flex-1 leading-tight">
+              <span className="min-w-0 flex-1">
                 <span className="block text-label text-text">{t.statusPill}</span>
                 <span className="mt-1 block text-caption text-text-muted">{t.subStatus}</span>
               </span>
@@ -217,36 +226,58 @@ function Phone() {
 
 export default function OfflineSection() {
   const t = useMessages("landing");
+  const sectionRef = useRef<HTMLElement>(null);
+
+  // Played once: the section stays in its final state after the first time it is seen.
+  useEffect(() => {
+    const element = sectionRef.current;
+    if (!element) return;
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (!entry.isIntersecting) return;
+        element.setAttribute("data-in-view", "");
+        observer.disconnect();
+      },
+      { threshold: 0.25 },
+    );
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
 
   return (
     <section
+      ref={sectionRef}
       id="pwa-info"
-      className="relative z-10 w-full overflow-hidden bg-[linear-gradient(to_bottom,var(--background),var(--section-muted)_10rem)] px-4 py-16 shadow-2xl shadow-neutral-950/15 sm:px-6 sm:py-24 md:px-12 lg:px-20"
+      className="group/offline relative z-10 w-full overflow-hidden bg-[linear-gradient(to_bottom,var(--background),var(--section-muted)_10rem)] px-4 py-16 shadow-2xl shadow-neutral-950/15 sm:px-6 sm:py-24 md:px-12 lg:px-20"
     >
-      <ScrollReveal className="mx-auto max-w-6xl">
+      <div className="mx-auto max-w-6xl">
         <div className="flex flex-col items-center gap-12 lg:flex-row lg:gap-16">
           <div className="flex-1 text-left">
             <h2 className="font-heading text-4xl leading-tight font-extrabold text-balance text-text sm:text-5xl">
-              {t.offline.titlePart1} <br />
-              <span className="text-success">
-                {t.offline.titlePart2}
+              <span className={LINE_MASK}>
+                <span className={LINE}>{t.offline.titlePart1}</span>
+              </span>
+              <span className={LINE_MASK}>
+                <span className={`${LINE} text-success`} style={delay(140)}>
+                  {t.offline.titlePart2}
+                </span>
               </span>
             </h2>
 
-            <p className="mt-4 max-w-lg text-body leading-relaxed text-pretty text-text-muted sm:text-h3">
+            <p className={`mt-4 max-w-lg text-body text-pretty text-text-muted sm:text-lead ${ENTER}`} style={delay(320)}>
               {t.offline.description}
             </p>
 
             <ul className="mt-8 space-y-3">
-              {t.offline.points.map((point) => (
-                <li key={point} className="flex items-center gap-3 text-body-sm font-bold text-text">
-                  <CheckCircle2 className="size-5 shrink-0 text-success" aria-hidden="true" />
+              {t.offline.points.map((point, index) => (
+                <li key={point} className={`flex items-center gap-3 text-body-sm font-bold text-text ${ENTER}`} style={delay(460 + index * 110)}>
+                  <CircleCheck className="size-5 shrink-0 text-success" aria-hidden="true" />
                   {point}
                 </li>
               ))}
             </ul>
 
-            <div className="mt-8">
+            <div className={`mt-8 ${ENTER}`} style={delay(460 + t.offline.points.length * 110)}>
               <Link href="/plan" className={`group ${buttonClass("primary", "large")} shadow-md`}>
                 {t.offline.cta}
                 <ArrowRight
@@ -257,11 +288,11 @@ export default function OfflineSection() {
             </div>
           </div>
 
-          <div className="flex w-full flex-1 justify-center pt-20 pb-8 sm:py-6">
+          <div className={`flex w-full flex-1 justify-center pt-20 pb-8 sm:py-6 ${ENTER}`} style={delay(200)}>
             <Phone />
           </div>
         </div>
-      </ScrollReveal>
+      </div>
     </section>
   );
 }

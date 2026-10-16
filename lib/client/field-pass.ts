@@ -1,6 +1,8 @@
 import { withTimeout } from "@/lib/client/abort";
+import { keepTripOffline, keepUrls } from "@/lib/client/keep-trip-offline";
 import { type SharedFieldPass, parseSharedFieldPass } from "@/lib/field-pass/pass";
 import type { Locale } from "@/lib/locale";
+import { DATA_CACHE } from "@/lib/offline-caches";
 
 /** Why a pass could not be had: no connection and no kept copy, no destination to write it for, written moments ago, or anything else. */
 export type FieldPassFailure = "offline" | "noDestination" | "tooSoon" | "failed";
@@ -15,9 +17,6 @@ const READ_TIMEOUT_MS = 15_000;
 // Writing a pass is a model call on the server, which is allowed up to 30 seconds.
 const WRITE_TIMEOUT_MS = 35_000;
 const RATE_LIMIT_WAIT_MS = 1100;
-// The caches the service worker (app/sw.ts) answers from without a connection.
-const PAGE_CACHE = "kancara-pages";
-const DATA_CACHE = "kancara-data";
 
 const passUrl = (tripId: string, locale: Locale) => `/api/field-pass/${encodeURIComponent(tripId)}?locale=${locale}`;
 
@@ -72,37 +71,15 @@ export const fieldPasses = {
   },
 };
 
-async function keep(cacheName: string, urls: string[]): Promise<boolean> {
-  const cache = await caches.open(cacheName);
-  const kept = await Promise.all(
-    urls.map(async (url) => {
-      try {
-        const response = await fetch(url, { signal: AbortSignal.timeout(READ_TIMEOUT_MS) });
-        if (!response.ok) return false;
-        await cache.put(url, response);
-        return true;
-      } catch {
-        return false;
-      }
-    }),
-  );
-  return kept.every(Boolean);
-}
-
 /**
- * Puts the pass and the trip's own pages where the service worker finds them without a connection. The worker
- * keeps what is opened anyway; this also covers the pages of the trip nobody has opened on this phone yet, and a
- * browser where the worker is not running. False when the browser keeps nothing or a part could not be fetched.
+ * Puts the pass and the whole trip where the service worker finds them without a connection (see
+ * keepTripOffline). False when the browser keeps nothing or a part could not be fetched.
  */
 export async function keepFieldPassOffline(tripId: string, locale: Locale): Promise<boolean> {
   if (typeof caches === "undefined") return false;
-  const trip = `/trips/${encodeURIComponent(tripId)}`;
   try {
-    const [data, pages] = await Promise.all([
-      keep(DATA_CACHE, [passUrl(tripId, locale), `/api/trips/${encodeURIComponent(tripId)}`]),
-      keep(PAGE_CACHE, [trip, `${trip}/dietary-scan`, `${trip}/translator`, `${trip}/packing`]),
-    ]);
-    return data && pages;
+    const [pass, trip] = await Promise.all([keepUrls(DATA_CACHE, [passUrl(tripId, locale)]), keepTripOffline(tripId)]);
+    return pass && trip;
   } catch {
     return false;
   }

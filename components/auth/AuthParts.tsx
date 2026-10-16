@@ -1,17 +1,15 @@
-import { Check, Circle, CircleAlert, Loader2 } from "lucide-react";
+import { Check, Circle, Loader2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/ui/styles";
 import { PASSWORD_RULES, type PasswordRule, passwordRuleMet } from "@/lib/auth/validation";
+import ErrorAlert from "@/components/ui/ErrorAlert";
 
+/** The form's own problem (not one field's), in the app's one error box. */
 export function FormAlert({ message }: { message: string }) {
   if (!message) return null;
   return (
-    <div
-      role="alert"
-      className="flex items-center gap-3 rounded-lg bg-error-subtle px-4 py-3 motion-safe:animate-message-in"
-    >
-      <CircleAlert className="size-5 shrink-0 text-error" aria-hidden="true" />
-      <p className="text-body-sm text-on-error-subtle">{message}</p>
+    <div className="motion-safe:animate-message-in">
+      <ErrorAlert message={message} />
     </div>
   );
 }

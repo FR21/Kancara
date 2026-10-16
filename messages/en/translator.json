@@ -24,12 +24,10 @@
   },
   "settings": {
     "language": "The other person's language",
-    "autoSpeak": "Read aloud automatically",
-    "faceToFace": "Face-to-face mode"
+    "autoSpeak": "Read aloud automatically"
   },
   "noMicrophone": "This browser cannot listen yet. Type the sentence instead and the translation still appears.",
   "recordingMode": "In this browser your voice is recorded first: press the microphone to start and again to send.",
-  "faceToFaceWaiting": "The translation of what you say shows here, facing the other person.",
   "composer": {
     "placeholder": "Type in {language}",
     "speak": "Speak",
@@ -84,10 +82,12 @@
   "noVoice": "This phone has no {language} voice yet. Show the text instead.",
   "errors": {
     "offline": "Translating needs an internet connection. Connect first, then try again.",
-    "failed": "This sentence could not be translated. Try again.",
+    "failed": "Couldn't translate this. Try again, or use a shorter sentence.",
     "micBlocked": "Microphone access is blocked. Allow the microphone in your browser settings, or type the sentence.",
     "noSpeech": "No voice was heard. Try speaking closer to the phone.",
     "micFailed": "The microphone cannot be used right now. Type the sentence instead."
   },
-  "dismiss": "Dismiss"
+  "dismiss": "Dismiss",
+  "offlineNote": "You're offline. Translating needs the internet, so sending and the microphone come back as soon as your phone reconnects.",
+  "speakerLabel": "Who is speaking"
 }

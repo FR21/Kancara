@@ -1,6 +1,6 @@
 "use client";
 
-import { ChevronRight, CloudOff, IdCard, Link2, MessageCircle, Phone, PhoneOff, TriangleAlert } from "lucide-react";
+import { ChevronRight, CloudOff, IdCard, Link2, MapPinOff, MessageCircle, Phone, PhoneOff, TriangleAlert } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { type CSSProperties, type ReactNode, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
@@ -10,7 +10,7 @@ import PageHeader from "@/components/layout/PageHeader";
 import PageShell from "@/components/layout/PageShell";
 import ErrorAlert from "@/components/ui/ErrorAlert";
 import MemberAvatar from "@/components/ui/MemberAvatar";
-import { BADGE, TEXT_LINK, choiceClass, iconButtonClass } from "@/components/ui/styles";
+import { BADGE, TEXT_LINK, buttonClass, choiceClass, iconButtonClass } from "@/components/ui/styles";
 import {
   type Door,
   applyLocally,
@@ -42,6 +42,7 @@ import MemberSheet, { SearchSteps } from "./MemberSheet";
 import SeparatedButton from "./SeparatedButton";
 import { ImportantNumbers, PrepareBlocks } from "./SetupColumn";
 import StandaloneShell from "./StandaloneShell";
+import EmptyState from "@/components/ui/EmptyState";
 
 type HelpWorkspaceProps = {
   /** How this phone reaches the trip: an account on it, or one member's own link. */
@@ -107,7 +108,7 @@ function RollRow({ context, member, index, onOpen }: { context: HelpContext; mem
           <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
             <span className="min-w-0 text-label-lg text-pretty wrap-anywhere text-text">{name}</span>
             {isViewer && (
-              <span className="inline-flex h-5 items-center rounded-full border border-primary px-2 text-[11px] font-semibold text-primary sm:h-6 sm:px-2.5 sm:text-caption">
+              <span className={`${BADGE} border border-primary text-primary`}>
                 {copy.you}
               </span>
             )}
@@ -384,7 +385,33 @@ export default function HelpWorkspace({ door, startWithMember }: HelpWorkspacePr
           <ErrorAlert message={text.error} retryLabel={text.retry} onRetry={retry} />
         </div>
       )}
-      {!pack && state === "notFound" && <p className="mt-8 text-body text-pretty text-text-muted">{linked ? text.link.notFound : text.notFound}</p>}
+      {!pack && state === "notFound" && (
+        <EmptyState
+          icon={MapPinOff}
+          title={linked ? text.link.notFoundTitle : text.notFoundTitle}
+          body={linked ? text.link.notFound : text.notFound}
+          headingLevel={2}
+          className="mt-8"
+        />
+      )}
+
+      {/* Without the trip's help pack (no signal on a first visit, or a link that no longer works) the page still
+          gives someone who is lost the one number that always answers. */}
+      {!pack && (state === "failed" || state === "notFound") && (
+        <section
+          aria-labelledby="help-emergency-title"
+          className="mt-6 surface-compact rounded-surface bg-error-subtle p-surface text-on-error-subtle motion-safe:animate-message-in"
+        >
+          <h2 id="help-emergency-title" className="text-label-lg">
+            {text.emergencyFallback.title}
+          </h2>
+          <p className="mt-1 text-body-sm text-pretty">{text.emergencyFallback.body}</p>
+          <a href="tel:112" className={`${buttonClass("danger")} mt-4 w-full sm:w-auto`}>
+            <Phone className="size-5" aria-hidden="true" />
+            {text.emergencyFallback.call}
+          </a>
+        </section>
+      )}
 
       {pack && context && (
         <div className="mt-8 space-y-8 motion-safe:animate-message-in lg:grid lg:grid-cols-[minmax(0,1fr)_22rem] lg:items-start lg:gap-8 lg:space-y-0">
@@ -481,9 +508,11 @@ export default function HelpWorkspace({ door, startWithMember }: HelpWorkspacePr
             <>
               {/* The bar covers the bottom of the screen, so the page is made that much longer: under the footer,
                   or under the page itself where a member's own link shows none. */}
-              <div aria-hidden="true" className={`h-20 shrink-0 lg:hidden ${linked ? "" : "bg-footer"}`} />
-              <div className="safe-bottom fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background px-4 pt-3 sm:px-6 lg:hidden">
-                <SeparatedButton asked={asked} label={actionLabel} onPress={() => pressAction(pack)} />
+              <div aria-hidden="true" className={`h-[calc(4.25rem+max(0.75rem,env(safe-area-inset-bottom)))] shrink-0 lg:hidden ${linked ? "" : "bg-footer"}`} />
+              <div data-bottom-bar="below-lg" className="safe-bottom safe-x fixed inset-x-0 bottom-0 z-40 border-t border-border bg-background pt-3 lg:hidden">
+                <div className="mx-auto max-w-2xl">
+                  <SeparatedButton asked={asked} label={actionLabel} onPress={() => pressAction(pack)} />
+                </div>
               </div>
               <Notice notice={foundNotice} dismissLabel={text.close} duration={FOUND_SHOWN_MS} onDismiss={() => setFoundNotice(null)} />
             </>,

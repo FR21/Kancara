@@ -1,6 +1,6 @@
 "use client";
 
-import { Home, RefreshCcw } from "lucide-react";
+import { Home, RotateCw } from "lucide-react";
 import Link from "next/link";
 import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/ui/styles";
 import { useMessages } from "@/lib/use-messages";
@@ -42,7 +42,7 @@ export function ErrorState({ type, onRetry, showHomeButton = true }: ErrorStateP
         <div className="mt-8 flex w-full flex-col gap-3 motion-safe:animate-message-in motion-safe:[animation-delay:180ms] sm:w-auto sm:flex-row">
           {onRetry && (
             <button type="button" onClick={onRetry} className={`group ${PRIMARY_BUTTON}`}>
-              <RefreshCcw
+              <RotateCw
                 className="size-4 transition-[rotate] duration-500 ease-out group-hover:-rotate-180 group-active:-rotate-360"
                 aria-hidden="true"
               />

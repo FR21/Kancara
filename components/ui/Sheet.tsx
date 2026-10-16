@@ -3,6 +3,7 @@
 import { X } from "lucide-react";
 import { type MouseEvent, type ReactNode, useEffect, useId, useRef } from "react";
 import IconButton from "@/components/ui/IconButton";
+import { useSwipeToClose } from "@/components/ui/use-swipe-to-close";
 
 type SheetProps = {
   open: boolean;
@@ -23,6 +24,7 @@ export default function Sheet({ open, title, closeLabel, onClose, children, foot
   const titleId = useId();
   // True while the sheet is being closed from outside, so that close is not reported back as the visitor's.
   const closingRef = useRef(false);
+  const swipe = useSwipeToClose(dialogRef, onClose);
 
   useEffect(() => {
     const dialog = dialogRef.current;
@@ -55,19 +57,26 @@ export default function Sheet({ open, title, closeLabel, onClose, children, foot
     >
       {open && (
         <>
-          <span aria-hidden="true" className="mx-auto mt-2 h-1 w-10 shrink-0 rounded-full bg-border-strong sm:hidden" />
-          <div className="flex shrink-0 items-center justify-between gap-3 border-b border-border py-1 pr-2 pl-surface sm:py-2">
-            <h2 id={titleId} className="min-w-0 text-h3 text-pretty text-text">
-              {title}
-            </h2>
-            <IconButton label={closeLabel} onClick={onClose}>
-              <X className="size-5" aria-hidden="true" />
-            </IconButton>
+          {/* The grab bar and the title row are where a thumb pulls the sheet down to close it. */}
+          <div className="shrink-0 touch-none sm:touch-auto" {...swipe}>
+            <span aria-hidden="true" className="mx-auto mt-2 block h-1 w-10 rounded-full bg-border-strong sm:hidden" />
+            <div className="flex items-center justify-between gap-3 border-b border-border py-1 pr-2 pl-surface sm:py-2">
+              <h2 id={titleId} className="min-w-0 text-h3 text-pretty text-text">
+                {title}
+              </h2>
+              <IconButton label={closeLabel} onClick={onClose}>
+                <X className="size-5" aria-hidden="true" />
+              </IconButton>
+            </div>
           </div>
-          <div className="min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain p-surface [scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin]">
+          <div
+            className={`min-h-0 flex-1 space-y-6 overflow-y-auto overscroll-contain p-surface [scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin] ${
+              footer ? "" : "pb-[max(var(--surface-pad),env(safe-area-inset-bottom))]"
+            }`}
+          >
             {children}
           </div>
-          {footer && <div className="safe-bottom flex shrink-0 flex-wrap gap-3 border-t border-border px-surface pt-3">{footer}</div>}
+          {footer && <div className="safe-bottom flex shrink-0 flex-wrap gap-3 border-t border-border pt-3 pr-[max(var(--surface-pad),env(safe-area-inset-right))] pl-[max(var(--surface-pad),env(safe-area-inset-left))]">{footer}</div>}
         </>
       )}
     </dialog>

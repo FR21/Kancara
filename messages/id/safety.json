@@ -4,12 +4,12 @@
   "lead": "Untuk saat ada yang terpisah dari rombongan.",
   "back": "Itinerary",
   "loading": "Memuat bantuan",
-  "error": "Bantuan belum bisa dimuat.",
+  "error": "Halaman bantuan belum bisa dimuat. Sambungkan internet lalu coba lagi. Darurat? Telepon 112.",
   "retry": "Coba lagi",
-  "notFound": "Trip ini tidak ditemukan, atau kamu belum bergabung.",
+  "notFound": "Perjalanan ini tidak ditemukan, atau kamu belum bergabung.",
   "offline": "Tanpa koneksi. Yang kamu lakukan dikirim begitu koneksi kembali.",
-  "offlineOnly": "Butuh koneksi untuk mengubah ini.",
-  "failed": "Belum tersimpan. Coba lagi.",
+  "offlineOnly": "Butuh internet untuk mengubah ini. Sambungkan dulu, lalu simpan lagi.",
+  "failed": "Belum tersimpan. Periksa koneksimu, lalu coba lagi.",
   "close": "Tutup",
   "save": "Simpan",
   "cancel": "Batal",
@@ -102,7 +102,7 @@
     "share": "Bagikan lokasi saya",
     "shareHint": "Dikirim satu kali. Kancara tidak melacakmu.",
     "shared": "Lokasimu sudah dibagikan.",
-    "shareFailed": "Lokasi tidak bisa dibaca di HP ini.",
+    "shareFailed": "Lokasimu belum terbaca. Nyalakan GPS dan izinkan akses lokasi, atau tulis alamatnya.",
     "onWay": "Saya sedang menuju",
     "lost": "Saya tersesat",
     "back": "Saya sudah bersama rombongan",
@@ -140,7 +140,7 @@
     "placePlaceholder": "Contoh: Stasiun Kyoto",
     "kind": "Jenis kontak",
     "phone": "Nomor telepon",
-    "phoneInvalid": "Nomor ini belum bisa dibaca.",
+    "phoneInvalid": "Nomor ini belum bisa dibaca. Tulis dengan kode negara, misalnya +62 812 3456 7890.",
     "remove": "Hapus kontak {name}",
     "empty": "Belum ada kontak setempat. Tambahkan pusat informasi atau keamanan tempat yang dikunjungi."
   },
@@ -155,7 +155,7 @@
     "notePlaceholder": "Contoh: dekat loket tiket",
     "here": "Pakai lokasi saya sekarang",
     "hereHint": "Tekan tombol di atas untuk memakai posisi HP ini. Nama dan alamatnya terisi sendiri.",
-    "hereFailed": "Lokasi tidak bisa dibaca di HP ini.",
+    "hereFailed": "Lokasimu belum terbaca. Nyalakan GPS dan izinkan akses lokasi, atau tulis alamatnya.",
     "clear": "Hapus titik kumpul",
     "where": "Lokasi",
     "mapLabel": "Peta untuk memilih titik kumpul",
@@ -200,7 +200,6 @@
   "ready": {
     "title": "Siap berangkat",
     "count": "{done} dari {total} beres",
-    "optional": "disarankan",
     "items": {
       "reach": "Setiap anggota yang membawa HP sudah terhubung atau punya nomor tercatat",
       "cards": "Setiap anggota tanpa HP punya Kartu Kumpul yang sudah disimpan",
@@ -236,11 +235,11 @@
     "pick": "Gabung sebagai {name}",
     "taken": "Sudah diambil",
     "mine": "Ini kamu",
-    "open": "Buka bantuan trip",
+    "open": "Buka bantuan perjalanan",
     "loading": "Memuat undangan",
     "invalid": "Tautan undangan ini sudah tidak berlaku. Minta tautan baru ke ketua rombongan.",
-    "error": "Undangan belum bisa dimuat.",
-    "failed": "Belum berhasil bergabung. Coba lagi.",
+    "error": "Undangan belum bisa dimuat. Periksa koneksimu, lalu coba lagi.",
+    "failed": "Belum berhasil bergabung. Periksa koneksimu lalu coba lagi. Kalau tetap gagal, minta tautan baru ke ketua rombongan.",
     "leadOpen": "Pilih namamu. Tidak perlu akun.",
     "pickOpen": "Saya {name}",
     "haveAccount": "Punya akun Kancara? Masuk untuk bergabung dengan namamu sendiri dan menerima kabar bila ada yang terpisah.",
@@ -257,12 +256,13 @@
     "lead": "Kalau terpisah dari rombongan, tekan \"Saya terpisah\". Rombongan langsung diberi tahu dan kamu ditunjukkan jalan kembali.",
     "keep": "Halaman bantuanmu untuk {trip}. Buka lagi kapan saja dari tautan yang sama.",
     "notFound": "Tautan ini sudah tidak berlaku. Minta tautan baru ke ketua rombongan.",
-    "notYou": "Bukan {name}? Pilih ulang"
+    "notYou": "Bukan {name}? Pilih ulang",
+    "notFoundTitle": "Tautan ini sudah tidak berlaku"
   },
   "call": {
     "title": "Telepon {name}",
     "textTitle": "SMS ke {name}",
-    "hint": "Perangkat ini tidak menelepon langsung. Telepon nomor ini dari HP-mu, atau salin.",
+    "hint": "HP ini tidak bisa menelepon langsung dari sini. Telepon nomor ini dari HP-mu, atau salin.",
     "textHint": "Perangkat ini tidak mengirim SMS langsung. Kirim pesan di bawah ke nomor ini dari HP-mu.",
     "copy": "Salin nomor",
     "copyMessage": "Salin pesan",
@@ -280,5 +280,11 @@
     "body": "Buka Kancara untuk melihat titik kumpul dan menghubunginya.",
     "askingBody": "Buka Kancara dan jawab supaya mereka tahu keadaanmu.",
     "foundBody": "Pencarian di {trip} selesai."
+  },
+  "notFoundTitle": "Perjalanan ini tidak ditemukan",
+  "emergencyFallback": {
+    "title": "Darurat",
+    "body": "Kalau terpisah dan halaman ini belum bisa dimuat, telepon nomor darurat.",
+    "call": "Telepon 112"
   }
 }

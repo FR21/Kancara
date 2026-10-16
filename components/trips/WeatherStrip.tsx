@@ -6,7 +6,7 @@ import {
   CloudRain,
   CloudSun,
   type LucideIcon,
-  RotateCcw,
+  RotateCw,
   Snowflake,
   Sun,
 } from "lucide-react";
@@ -39,7 +39,7 @@ const SKY_ICONS: Record<Sky, LucideIcon> = {
 // A cell in a scrolling row on a phone; a line in a short table in the side column from 1024px.
 // On a phone each day is a compact surface; from 1024px the days become the rows of one framed list.
 const CELL =
-  "surface-compact flex w-24 shrink-0 flex-col items-center rounded-surface border bg-background p-surface text-center lg:w-auto lg:flex-row lg:gap-3 lg:rounded-none lg:border-x-0 lg:border-t-0 lg:border-solid lg:border-border lg:bg-transparent lg:px-0 lg:text-left lg:last:border-b-0";
+  "surface-compact flex w-24 shrink-0 snap-start flex-col items-center rounded-surface border bg-background p-surface text-center lg:w-auto lg:flex-row lg:gap-3 lg:rounded-none lg:border-x-0 lg:border-t-0 lg:border-solid lg:border-border lg:bg-transparent lg:px-0 lg:text-left lg:last:border-b-0";
 
 function rainLine(day: WeatherDay, text: WeatherStripProps["text"]): string {
   if (day.rainChance !== null) return fillTemplate(text.rainChance, { chance: Math.round(day.rainChance) });
@@ -55,10 +55,13 @@ export default function WeatherStrip({ state, locale, text, retryLabel, onRetry 
 
   if (state.status === "loading") {
     return (
-      <div role="status" className="flex gap-2 overflow-hidden motion-safe:animate-pulse lg:flex-col">
+      <div
+        role="status"
+        className="flex gap-2 overflow-hidden motion-safe:animate-pulse lg:flex-col lg:gap-0 lg:divide-y lg:divide-border lg:overflow-clip lg:rounded-surface lg:border lg:border-border"
+      >
         <span className="sr-only">{text.loading}</span>
         {[0, 1, 2].map((cell) => (
-          <span key={cell} className="surface-compact h-32 w-24 shrink-0 rounded-surface bg-surface-muted lg:h-12 lg:w-full lg:rounded-lg" />
+          <span key={cell} className="surface-compact h-32 w-24 shrink-0 rounded-surface bg-surface-muted lg:h-12 lg:w-full lg:rounded-none" />
         ))}
       </div>
     );
@@ -73,7 +76,7 @@ export default function WeatherStrip({ state, locale, text, retryLabel, onRetry 
           onClick={onRetry}
           className={buttonClass("outline", "small")}
         >
-          <RotateCcw className="size-4" aria-hidden="true" />
+          <RotateCw className="size-4" aria-hidden="true" />
           {retryLabel}
         </button>
       </div>
@@ -90,7 +93,7 @@ export default function WeatherStrip({ state, locale, text, retryLabel, onRetry 
           <h2 id={`weather-title-${index}`} className="text-label-lg text-text">
             {fillTemplate(text.title, { place: entry.place })}
           </h2>
-          <ul className="scrollbar-none -mx-surface mt-3 flex gap-2 overflow-x-auto px-surface lg:mx-0 lg:block lg:overflow-visible lg:rounded-surface lg:border lg:border-border lg:bg-background">
+          <ul className="scrollbar-none -mx-surface mt-3 flex gap-2 overflow-x-auto px-surface snap-x snap-mandatory scroll-px-(--surface-pad) lg:mx-0 lg:block lg:overflow-visible lg:rounded-surface lg:border lg:border-border lg:bg-background">
             {entry.days.map((day) => {
               const sky = shownSky(day);
               const Icon = SKY_ICONS[sky];

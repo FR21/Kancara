@@ -1,17 +1,18 @@
 "use client";
 
-import { CircleAlert } from "lucide-react";
 import { type KeyboardEvent, useId } from "react";
-import { FIELD_LABEL, INPUT, choiceClass } from "@/components/ui/styles";
+import RequiredMark from "@/components/ui/RequiredMark";
+import { FIELD_LABEL, INPUT, choiceClass, FIELD_DESCRIPTION } from "@/components/ui/styles";
 import { AMOUNT_CHARACTERS } from "@/lib/split-bill/amount";
 import { BILL_LIMITS } from "@/lib/split-bill/bill";
+import FieldError from "@/components/ui/FieldError";
 
 export type AmountShortcut = { label: string; value: string };
 
 type AmountFieldProps = {
   label: string;
-  /** Said after the label, such as "optional". */
-  labelNote?: string;
+  /** Marks the label with the red star of a field that must be filled. */
+  required?: boolean;
   hint: string;
   placeholder: string;
   value: string;
@@ -28,7 +29,7 @@ type AmountFieldProps = {
 // signs get in; pressing Enter or "=" writes the result in place of the sum.
 export default function AmountField({
   label,
-  labelNote,
+  required = false,
   hint,
   placeholder,
   value,
@@ -52,9 +53,9 @@ export default function AmountField({
     <div>
       <label htmlFor={inputId} className={FIELD_LABEL}>
         {label}
-        {labelNote && <span className="font-medium text-text-muted"> ({labelNote})</span>}
+        {required && <RequiredMark />}
       </label>
-      <p id={hintId} className="mt-1 text-caption text-pretty text-text-muted">
+      <p id={hintId} className={FIELD_DESCRIPTION}>
         {hint}
       </p>
       <input
@@ -75,10 +76,7 @@ export default function AmountField({
         className={`${INPUT} mt-2 tabular-nums aria-invalid:border-error`}
       />
       {problem && (
-        <p id={problemId} role="alert" className="mt-2 flex items-start gap-2 text-body-sm text-error">
-          <CircleAlert className="mt-1 size-4 shrink-0" aria-hidden="true" />
-          {problem}
-        </p>
+        <FieldError id={problemId} role="alert">{problem}</FieldError>
       )}
       {!problem && preview && <p className="mt-2 text-body-sm text-text-muted tabular-nums">{preview}</p>}
       {shortcuts.length > 0 && (

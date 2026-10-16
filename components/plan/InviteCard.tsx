@@ -5,6 +5,7 @@ import { useEffect, useState, useSyncExternalStore } from "react";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
 import { INPUT, INPUT_BUTTON, OUTLINE_BUTTON, TEXT_LINK, buttonClass } from "@/components/ui/styles";
+import FieldError from "@/components/ui/FieldError";
 
 export type InviteState = "idle" | "preparing" | "failed";
 
@@ -137,9 +138,7 @@ export default function InviteCard({ link, state, tripName, text, onMake, onRene
       )}
 
       {state === "failed" && (
-        <p role="alert" className="mt-2 text-caption text-pretty text-error">
-          {text.failed}
-        </p>
+        <FieldError role="alert">{text.failed}</FieldError>
       )}
     </section>
   );

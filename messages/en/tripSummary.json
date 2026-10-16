@@ -11,10 +11,16 @@
   "stats": {
     "label": "This trip in numbers",
     "places": "Places visited",
-    "placesCount": { "one": "{count} place", "other": "{count} places" },
+    "placesCount": {
+      "one": "{count} place",
+      "other": "{count} places"
+    },
     "days": "Trip length",
     "members": "Group",
-    "membersCount": { "one": "{count} person", "other": "{count} people" },
+    "membersCount": {
+      "one": "{count} person",
+      "other": "{count} people"
+    },
     "spent": "Spent",
     "budget": "Budget"
   },
@@ -74,8 +80,11 @@
       "placeRequired": "Enter the place name first.",
       "day": "Which day",
       "rating": "Rating",
-      "ratingOptional": "Optional. Tap the same star again to clear it.",
-      "ratingStar": { "one": "{count} star", "other": "{count} stars" },
+      "ratingOptional": "Tap the same star again to clear it.",
+      "ratingStar": {
+        "one": "{count} star",
+        "other": "{count} stars"
+      },
       "note": "Story or tip",
       "notePlaceholder": "What stayed with you about this place?",
       "author": "Moment from",
@@ -85,12 +94,12 @@
       "photoChange": "Change photo",
       "photoRemove": "Remove photo",
       "photoPreview": "Preview of the chosen photo",
-      "photoHint": "Optional. JPG, PNG, or WebP, up to 10 MB.",
+      "photoHint": "JPG, PNG, or WebP, up to 10 MB.",
       "photoTooLarge": "The photo is over 10 MB. Choose a smaller one.",
       "photoWrongType": "Choose a JPG, PNG, or WebP photo.",
       "cancel": "Cancel",
       "save": "Save moment",
-      "saving": "Saving...",
+      "saving": "Saving…",
       "failed": "The moment was not saved. Check your connection, then try again."
     },
     "confirm": {
@@ -98,7 +107,7 @@
       "body": "The group will no longer see its photo and story.",
       "cancel": "Cancel",
       "confirm": "Delete",
-      "pending": "Deleting...",
+      "pending": "Deleting…",
       "failed": "The moment was not deleted. Check your connection, then try again."
     }
   }

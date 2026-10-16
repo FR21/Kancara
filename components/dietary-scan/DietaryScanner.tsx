@@ -1,14 +1,16 @@
 "use client";
 
-import { type CSSProperties, useEffect, useRef, useState } from "react";
+import { type CSSProperties, useEffect, useEffectEvent, useRef, useState } from "react";
 import Notice, { type NoticeMessage } from "@/components/layout/Notice";
 import PageHeader from "@/components/layout/PageHeader";
 import ErrorAlert from "@/components/ui/ErrorAlert";
+import OfflineNote from "@/components/ui/OfflineNote";
 import { type DietaryAnalysis, type ScanFailure, DietaryScanError, prepareMenuPhoto, scanMenu } from "@/lib/client/dietary-scan";
 import { type Member, fillTemplate, getMemberName, NEED_CATEGORIES } from "@/lib/plan-draft";
 import { formatTripTitle } from "@/lib/trips/format";
 import { useLocale } from "@/lib/use-locale";
 import { useMessages } from "@/lib/use-messages";
+import { useOnline } from "@/lib/use-online";
 import { useSpeech } from "@/lib/use-speech";
 import DietaryResult, { DietaryResultSkeleton } from "./DietaryResult";
 import MenuPhotoPicker from "./MenuPhotoPicker";
@@ -34,6 +36,7 @@ export default function DietaryScanner({ tripId, tripName, destination, members 
   const tripsText = useMessages("trips");
   const planText = useMessages("plan");
   const locale = useLocale();
+  const online = useOnline();
   const { speakingId, speak } = useSpeech();
   const [photo, setPhoto] = useState<Photo | null>(null);
   const [busy, setBusy] = useState<"idle" | "preparing" | "scanning">("idle");
@@ -48,11 +51,9 @@ export default function DietaryScanner({ tripId, tripName, destination, members 
   }, [photo]);
   useEffect(() => () => scanRef.current?.abort(), []);
 
-  // When language is switched (e.g. EN <-> ID), re-analyze the currently loaded photo if already scanned
-  const currentLocaleRef = useRef(locale);
-  useEffect(() => {
-    if (currentLocaleRef.current === locale) return;
-    currentLocaleRef.current = locale;
+  // A scanned menu is read again when the language changes (Indonesian and English), so its answers follow the
+  // page. The rescan reads the latest photo and result without making them reasons to scan again.
+  const rescan = useEffectEvent(() => {
     if (photo && analysis) {
       scanRef.current?.abort();
       const controller = new AbortController();
@@ -70,7 +71,13 @@ export default function DietaryScanner({ tripId, tripName, destination, members 
           if (!controller.signal.aborted) setBusy("idle");
         });
     }
-  }, [locale, photo, analysis, tripId]);
+  });
+  const currentLocaleRef = useRef(locale);
+  useEffect(() => {
+    if (currentLocaleRef.current === locale) return;
+    currentLocaleRef.current = locale;
+    rescan();
+  }, [locale]);
 
   const restrictionsOf = (member: Member) => [
     ...member.needs.filter((need) => DIET_NEEDS.includes(need)).map((need) => planText.needs[need]),
@@ -141,12 +148,12 @@ export default function DietaryScanner({ tripId, tripName, destination, members 
             {text.group.title}
           </h2>
           {restricted.length > 0 ? (
-            <ul className="mt-1 divide-y divide-border">
+            <ul className="mt-2 divide-y divide-border">
               {restricted.map((member, index) => (
                 <li
                   key={member.id}
                   style={{ "--item-index": index } as CSSProperties}
-                  className="flex flex-col gap-1 py-3 first:pt-1 last:pb-0 motion-safe:animate-list-in sm:flex-row sm:gap-4"
+                  className="flex flex-col gap-1 py-3 last:pb-0 motion-safe:animate-list-in sm:flex-row sm:gap-4"
                 >
                   <span className="text-label wrap-anywhere text-text sm:w-40 sm:shrink-0">{member.name}</span>
                   <span className="min-w-0 text-body-sm text-pretty wrap-anywhere text-text-muted">{member.restrictions.join(", ")}</span>
@@ -158,16 +165,25 @@ export default function DietaryScanner({ tripId, tripName, destination, members 
           )}
         </section>
 
-        <MenuPhotoPicker text={text.picker} previewUrl={photo?.url ?? null} busy={busy} scanned={analysis !== null} onPick={pick} onScan={scan} />
+        {/* The menu is read on the server, so this is said before a photo is picked, not after Scan fails. */}
+        {!online && <OfflineNote message={text.offlineNote} />}
+
+        <MenuPhotoPicker
+          text={text.picker}
+          previewUrl={photo?.url ?? null}
+          busy={busy}
+          scanned={analysis !== null}
+          onPick={pick}
+          onScan={scan}
+          canScan={online}
+        />
 
         {failure && (
           <div className="motion-safe:animate-message-in">
             {failure === "failed" && photo ? (
               <ErrorAlert message={text.errors.failed} retryLabel={text.retry} onRetry={scan} />
             ) : (
-              <p role="alert" className="rounded-lg bg-error-subtle px-4 py-3 text-body-sm text-pretty text-on-error-subtle">
-                {text.errors[failure]}
-              </p>
+              <ErrorAlert message={text.errors[failure]} />
             )}
           </div>
         )}

@@ -11,10 +11,16 @@
   "stats": {
     "label": "Perjalanan ini dalam angka",
     "places": "Tempat dikunjungi",
-    "placesCount": { "one": "{count} tempat", "other": "{count} tempat" },
+    "placesCount": {
+      "one": "{count} tempat",
+      "other": "{count} tempat"
+    },
     "days": "Lama perjalanan",
     "members": "Rombongan",
-    "membersCount": { "one": "{count} orang", "other": "{count} orang" },
+    "membersCount": {
+      "one": "{count} orang",
+      "other": "{count} orang"
+    },
     "spent": "Biaya terpakai",
     "budget": "Anggaran"
   },
@@ -74,8 +80,11 @@
       "placeRequired": "Isi dulu nama tempatnya.",
       "day": "Hari ke berapa",
       "rating": "Penilaian",
-      "ratingOptional": "Boleh dilewati. Ketuk bintang yang sama lagi untuk menghapusnya.",
-      "ratingStar": { "one": "{count} bintang", "other": "{count} bintang" },
+      "ratingOptional": "Ketuk bintang yang sama lagi untuk menghapusnya.",
+      "ratingStar": {
+        "one": "{count} bintang",
+        "other": "{count} bintang"
+      },
       "note": "Cerita atau tips",
       "notePlaceholder": "Apa yang paling berkesan di tempat ini?",
       "author": "Momen dari",
@@ -85,12 +94,12 @@
       "photoChange": "Ganti foto",
       "photoRemove": "Hapus foto",
       "photoPreview": "Pratinjau foto yang dipilih",
-      "photoHint": "Boleh dilewati. JPG, PNG, atau WebP, paling besar 10 MB.",
+      "photoHint": "JPG, PNG, atau WebP, paling besar 10 MB.",
       "photoTooLarge": "Fotonya lebih dari 10 MB. Pilih foto yang lebih kecil.",
       "photoWrongType": "Pilih foto berformat JPG, PNG, atau WebP.",
       "cancel": "Batal",
       "save": "Simpan momen",
-      "saving": "Menyimpan...",
+      "saving": "Menyimpan…",
       "failed": "Momen belum tersimpan. Periksa koneksimu, lalu coba lagi."
     },
     "confirm": {
@@ -98,7 +107,7 @@
       "body": "Foto dan ceritanya tidak akan terlihat lagi oleh rombongan.",
       "cancel": "Batal",
       "confirm": "Hapus",
-      "pending": "Menghapus...",
+      "pending": "Menghapus…",
       "failed": "Momen belum terhapus. Periksa koneksimu, lalu coba lagi."
     }
   }

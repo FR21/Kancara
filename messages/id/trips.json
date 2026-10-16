@@ -79,7 +79,10 @@
     "sectionMissing": "belum diisi",
     "openItinerary": "Lihat itinerary",
     "openSummary": "Lihat rangkuman",
-    "more": "Tindakan lain untuk {name}"
+    "more": "Tindakan lain untuk {name}",
+    "emptyTitle": "Belum ada yang dipilih",
+    "showMore": "Lihat detail",
+    "showLess": "Sembunyikan detail"
   },
   "menu": {
     "duplicate": "Duplikat",
@@ -97,10 +100,10 @@
   },
   "notice": {
     "duplicated": "Draf baru dibuat dari {name}.",
-    "duplicateFailed": "Perjalanan belum terduplikat. Coba lagi.",
+    "duplicateFailed": "Perjalanan belum terduplikat. Periksa koneksimu, lalu coba lagi.",
     "deleted": "{name} dihapus.",
     "copied": "Tautan disalin.",
-    "shareFailed": "Tautan belum tersalin. Coba lagi.",
+    "shareFailed": "Tautan belum tersalin. Tekan lama tautannya untuk menyalin manual.",
     "dismiss": "Tutup"
   },
   "history": {
@@ -116,7 +119,8 @@
     "searchPlaceholder": "Cari kota atau nama perjalanan",
     "yearLabel": "Tahun",
     "allYears": "Semua",
-    "clear": "Hapus filter"
+    "clear": "Hapus filter",
+    "savedProfiles": "Profil tersimpan"
   },
   "empty": {
     "activeTitle": "Belum ada perjalanan.",
@@ -133,14 +137,16 @@
   "itinerary": {
     "loading": "Memuat itinerary",
     "error": "Itinerary belum bisa dimuat. Periksa koneksimu, lalu coba lagi.",
-    "notFound": "Perjalanan ini tidak ditemukan. Mungkin sudah dihapus.",
+    "notFound": "Mungkin sudah dihapus, atau tautannya tidak lengkap.",
     "missing": "Perjalanan ini belum punya itinerary.",
     "missingOrganizer": "Captain bisa menyusunnya sekarang dari tanggal, rombongan, dan kebutuhan yang sudah tersimpan.",
     "missingDraft": "Lengkapi dulu rencananya, lalu itinerary dibuat dari sana.",
     "generate": "Buat itinerary",
     "generating": "Captain sedang menyusun itinerary. Biasanya kurang dari satu menit.",
     "generateFailed": "Itinerary belum berhasil dibuat. Periksa koneksimu, lalu coba lagi.",
-    "changeFailed": "Perubahan belum tersimpan. Periksa koneksimu, lalu coba lagi."
+    "changeFailed": "Perubahan belum tersimpan. Periksa koneksimu, lalu coba lagi.",
+    "notFoundTitle": "Perjalanan ini tidak ditemukan",
+    "waitingOffline": "Offline. Perubahanmu disimpan di HP ini dan dikirim otomatis saat kembali online."
   },
   "loadMore": "Tampilkan lebih banyak",
   "tools": {

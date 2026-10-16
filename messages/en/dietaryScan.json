@@ -23,7 +23,7 @@
   },
   "errors": {
     "notImage": "This file is not a photo. Choose a JPG, PNG, or HEIC photo.",
-    "tooLarge": "The photo is too large. Take it again or choose another one.",
+    "tooLarge": "The photo is over 6 MB. Retake it or choose a smaller one.",
     "unreadable": "This browser cannot open this photo. Try taking one straight from the camera.",
     "offline": "Reading a menu needs an internet connection. Connect first, then try again.",
     "failed": "The menu could not be read. Try again shortly."
@@ -59,5 +59,6 @@
   },
   "noSpeech": "This browser cannot read text aloud. Show the text instead.",
   "noVoice": "This phone has no {language} voice yet. Show the text instead.",
-  "dismiss": "Dismiss"
+  "dismiss": "Dismiss",
+  "offlineNote": "You're offline. You can still pick a menu photo now, then scan it once your phone is back online."
 }

@@ -1,6 +1,5 @@
 "use client";
 
-import { ExternalLink } from "lucide-react";
 import { useEffect, useRef, useState } from "react";
 import type { ItineraryItem } from "@/lib/client/captain";
 import {
@@ -9,7 +8,6 @@ import {
   type Point,
   type RouteLine,
   type StopMarker,
-  googleMapsLink,
   loadDayMap,
   mapsAvailable,
 } from "@/lib/itinerary-map";

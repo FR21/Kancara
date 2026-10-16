@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, CircleAlert, Plus } from "lucide-react";
+import { Check, Plus } from "lucide-react";
 import { type Dispatch, type KeyboardEvent, useEffect, useState } from "react";
 import { type Currency, CURRENCIES, idrToUsd, usdToIdr } from "@/lib/currency";
 import type { Messages } from "@/lib/messages";
@@ -15,9 +15,11 @@ import {
 import { useExchangeRate } from "@/lib/use-exchange-rate";
 import { useLocale } from "@/lib/use-locale";
 import Checkbox from "@/components/ui/Checkbox";
+import RequiredMark from "@/components/ui/RequiredMark";
 import SegmentedToggle from "@/components/ui/SegmentedToggle";
 import { FIELD_LABEL, INPUT, INPUT_BUTTON, choiceClass } from "@/components/ui/styles";
 import { CustomChip } from "./CustomAdd";
+import FieldError from "@/components/ui/FieldError";
 
 type EditorProps = {
   draft: PlanDraft;
@@ -39,6 +41,7 @@ export function OriginEditor({ draft, dispatch, text }: EditorProps) {
     <div>
       <label htmlFor="pass-origin" className={FIELD_LABEL}>
         {text.pass.origin}
+        <RequiredMark />
       </label>
       <input
         id="pass-origin"
@@ -72,6 +75,7 @@ export function DestinationsEditor({ draft, dispatch, text }: EditorProps) {
     <div>
       <label htmlFor="pass-destination" className={FIELD_LABEL}>
         {text.pass.destinations}
+        <RequiredMark />
       </label>
       <div className="mt-2 flex gap-2">
         <input
@@ -116,6 +120,7 @@ export function DatesEditor({ draft, dispatch, text }: EditorProps) {
         <div>
           <label htmlFor="pass-start" className={FIELD_LABEL}>
             {text.pass.startDate}
+            <RequiredMark />
           </label>
           <input
             id="pass-start"
@@ -129,6 +134,7 @@ export function DatesEditor({ draft, dispatch, text }: EditorProps) {
         <div>
           <label htmlFor="pass-end" className={FIELD_LABEL}>
             {text.pass.endDate}
+            <RequiredMark />
           </label>
           <input
             id="pass-end"
@@ -143,10 +149,7 @@ export function DatesEditor({ draft, dispatch, text }: EditorProps) {
         </div>
       </div>
       {dateError && (
-        <p id="pass-date-error" className="mt-2 flex items-center gap-2 text-body-sm text-error">
-          <CircleAlert className="size-4 shrink-0" aria-hidden="true" />
-          {text.pass.dateError}
-        </p>
+        <FieldError id="pass-date-error">{text.pass.dateError}</FieldError>
       )}
       <label className="mt-2 flex min-h-11 cursor-pointer items-center gap-3 text-body-sm text-text">
         <Checkbox
@@ -170,7 +173,6 @@ export function BudgetEditor({ draft, dispatch, text }: EditorProps) {
     USD: draft.budgetUsd ?? (draft.budget === null ? null : idrToUsd(draft.budget, rate)),
   };
 
-  const grouped = new Intl.NumberFormat(locale);
   const money = (unit: Currency, compact = false) =>
     new Intl.NumberFormat(locale, {
       style: "currency",
@@ -217,6 +219,7 @@ export function BudgetEditor({ draft, dispatch, text }: EditorProps) {
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <label htmlFor={`pass-budget-${currency}`} className={FIELD_LABEL}>
           {copy.fields[currency]}
+          <RequiredMark />
         </label>
         <SegmentedToggle
           name="budget-currency"
@@ -224,7 +227,6 @@ export function BudgetEditor({ draft, dispatch, text }: EditorProps) {
           options={CURRENCIES}
           labels={copy.currencies}
           value={currency}
-          block
           onChange={(value) => dispatch({ type: "setBudgetCurrency", value })}
         />
       </div>
@@ -252,7 +254,7 @@ export function BudgetEditor({ draft, dispatch, text }: EditorProps) {
         {convertedText && (
           <p className="mt-2 text-caption text-text-muted">
             <span className="font-medium text-text">{convertedText}</span>
-            <span className="ml-1.5 opacity-80">({copy.auto})</span>
+            <span className="ml-1 text-text-muted">({copy.auto})</span>
           </p>
         )}
       </div>
@@ -283,7 +285,10 @@ export function BudgetEditor({ draft, dispatch, text }: EditorProps) {
 export function PaceEditor({ draft, dispatch, text }: EditorProps) {
   return (
     <fieldset className="min-w-0">
-      <legend className={FIELD_LABEL}>{text.pass.pace}</legend>
+      <legend className={FIELD_LABEL}>
+        {text.pass.pace}
+        <RequiredMark />
+      </legend>
       <div className="mt-2 flex flex-wrap gap-2">
         {PACES.map((pace) => {
           const selected = draft.pace === pace;

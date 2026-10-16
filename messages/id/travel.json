@@ -34,7 +34,7 @@
   "status": {
     "saving": "Menyimpan…",
     "saved": "Tersimpan",
-    "error": "Gagal menyimpan. Periksa koneksimu.",
+    "error": "Negara ini belum tersimpan. Periksa koneksimu, lalu coba lagi.",
     "retry": "Coba lagi"
   },
   "announce": {

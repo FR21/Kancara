@@ -3,7 +3,7 @@
     "home": "Home",
     "plan": "Plan a trip",
     "trips": "My Trips",
-    "splitBill": "Split Bill",
+    "splitBill": "Split bill",
     "about": "About"
   },
   "homeLabel": "Kancara, go to home",
@@ -13,7 +13,6 @@
   "themeToggle": "Toggle light/dark theme",
   "languageToggle": "Language",
   "login": "Log in",
-  "logout": "Log out",
   "profile": "Profile",
   "breadcrumb": "Breadcrumb"
 }

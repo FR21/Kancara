@@ -231,26 +231,22 @@ export default function GuidePanel({ context, actionLabel, onAction, onOpenCard 
   const viewer = pack.members.find((member) => member.id === pack.viewerMemberId) ?? null;
   const report = viewer ? openReportFor(pack, viewer.id) : null;
   const place = clock ? meetingPlace(pack, clock) : pack.meetingPoint;
-  const [resolvedCoords, setResolvedCoords] = useState<Coordinates | null>(() => {
-    return place && place.latitude !== null && place.longitude !== null ? { latitude: place.latitude, longitude: place.longitude } : null;
-  });
+  const placeLabel = place?.label ?? "";
+  const known: Coordinates | null =
+    place && place.latitude !== null && place.longitude !== null ? { latitude: place.latitude, longitude: place.longitude } : null;
+  // Where a meeting place written only as words was found on the map, kept with those words so a new place never
+  // borrows the last one's position.
+  const [geocoded, setGeocoded] = useState<{ label: string; coordinates: Coordinates } | null>(null);
+  const needsLookup = place !== null && known === null;
 
-  // If place exists without coordinates, resolve via forward geocoding
   useEffect(() => {
-    if (!place) {
-      setResolvedCoords(null);
-      return;
-    }
-    if (place.latitude !== null && place.longitude !== null) {
-      setResolvedCoords({ latitude: place.latitude, longitude: place.longitude });
-      return;
-    }
+    if (!needsLookup || placeLabel === "") return;
     let cancelled = false;
     const near = pack.destinations[0] ?? "";
-    const query = near ? `${place.label}, ${near}` : place.label;
+    const query = near ? `${placeLabel}, ${near}` : placeLabel;
     geocodePlace(query, near, locale).then((found) => {
       if (cancelled || !found) return;
-      setResolvedCoords({ latitude: found.latitude, longitude: found.longitude });
+      setGeocoded({ label: placeLabel, coordinates: { latitude: found.latitude, longitude: found.longitude } });
       if (pack.canManage && pack.meetingPoint && (pack.meetingPoint.latitude === null || pack.meetingPoint.longitude === null)) {
         context.act({
           type: "meetingPoint",
@@ -266,9 +262,9 @@ export default function GuidePanel({ context, actionLabel, onAction, onOpenCard 
     return () => {
       cancelled = true;
     };
-  }, [place?.label, place?.latitude, place?.longitude, pack.destinations, pack.canManage, pack.meetingPoint, locale, context]);
+  }, [needsLookup, placeLabel, pack.destinations, pack.canManage, pack.meetingPoint, locale, context]);
 
-  const target = resolvedCoords;
+  const target = known ?? (geocoded && geocoded.label === placeLabel ? geocoded.coordinates : null);
   // The phone's position is read once the member is separated, or when they ask for the way; never just for opening the page.
   const guiding = target !== null && (report !== null || asked);
   const here = guiding && typeof fix === "object" ? fix : null;

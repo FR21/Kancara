@@ -79,14 +79,14 @@
     "notesHint": "Notes are stored encrypted and only you can see them.",
     "cancel": "Cancel",
     "save": "Save profile",
-    "saving": "Saving..."
+    "saving": "Saving…"
   },
   "errors": {
     "full": "You already have {count} saved profiles. Delete one to add a new one.",
     "offline": "You are offline. Connect to the internet, then try again.",
     "failed": "The profile was not saved. Try again in a moment.",
     "deleteFailed": "The profile was not deleted. Check your connection, then try again.",
-    "loadFailed": "Saved profiles could not be loaded.",
+    "loadFailed": "Saved profiles couldn't load. Check your connection, then try again.",
     "retry": "Try again"
   },
   "deleteDialog": {
@@ -94,11 +94,11 @@
     "body": "Their needs, allergies, and notes are deleted too. Trip plans you already made stay as they are.",
     "cancel": "Cancel",
     "confirm": "Delete profile",
-    "pending": "Deleting..."
+    "pending": "Deleting…"
   },
   "picker": {
     "title": "Pick from saved profiles",
-    "loading": "Loading profiles...",
+    "loading": "Loading profiles…",
     "empty": "No saved profiles yet. Save the people who often travel with you on the saved profiles page.",
     "saved": "Saved profiles",
     "inPlan": "Already in the group",

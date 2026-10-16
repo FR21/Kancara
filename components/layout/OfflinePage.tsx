@@ -5,6 +5,27 @@ import Link from "next/link";
 import { OUTLINE_BUTTON, PRIMARY_BUTTON } from "@/components/ui/styles";
 import { useMessages } from "@/lib/use-messages";
 
+// The service worker sends a page it could not fetch here with that page's address (?from=). Only an address on
+// this site is followed, so a link made to look like this page cannot send anyone elsewhere.
+function pageToRetry(): string | null {
+  const from = new URLSearchParams(window.location.search).get("from");
+  if (!from?.startsWith("/") || from.startsWith("//")) return null;
+  try {
+    const target = new URL(from, window.location.origin);
+    if (target.origin !== window.location.origin) return null;
+    return target.pathname + target.search + target.hash;
+  } catch {
+    return null;
+  }
+}
+
+// Opens the page that could not be fetched again; reached directly, the offline page has none and loads itself again.
+function retry() {
+  const target = pageToRetry();
+  if (target) window.location.assign(target);
+  else window.location.reload();
+}
+
 // Shown in place of a page that was never opened on this device when there is no connection to fetch it.
 export default function OfflinePage() {
   const text = useMessages("error");
@@ -22,7 +43,7 @@ export default function OfflinePage() {
           {text.offline.description}
         </p>
         <div className="mt-8 flex w-full flex-col gap-3 motion-safe:animate-message-in motion-safe:[animation-delay:180ms] sm:w-auto sm:flex-row">
-          <button type="button" onClick={() => window.location.reload()} className={`group ${PRIMARY_BUTTON}`}>
+          <button type="button" onClick={retry} className={`group ${PRIMARY_BUTTON}`}>
             <RefreshCcw
               className="size-4 transition-[rotate] duration-500 ease-out group-hover:-rotate-180"
               aria-hidden="true"

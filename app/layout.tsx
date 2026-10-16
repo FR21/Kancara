@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import Footer from "@/components/footer/Footer";
+import KeepTripsOffline from "@/components/layout/KeepTripsOffline";
 import LocaleProvider from "@/components/layout/LocaleProvider";
 import OfflineReady from "@/components/layout/OfflineReady";
 import SafetyDock from "@/components/safety/SafetyDock";
@@ -27,6 +28,8 @@ export async function generateMetadata(): Promise<Metadata> {
 }
 
 export const viewport: Viewport = {
+  // The page is drawn edge to edge, under the notch and the home indicator; the fixed bars add the insets back.
+  viewportFit: "cover",
   themeColor: [
     { media: "(prefers-color-scheme: light)", color: "#ffffff" },
     { media: "(prefers-color-scheme: dark)", color: "#081415" },
@@ -49,6 +52,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-dvh flex flex-col font-sans overflow-x-clip">
         <OfflineReady />
         <SafetyDock />
+        <KeepTripsOffline signedIn={viewer !== null} />
         <LocaleProvider locale={locale}>
           <SiteChrome>
             <Navbar isLoggedIn={viewer !== null} picture={viewer?.picture ?? null} />

@@ -39,7 +39,7 @@ function LinkColumn({
               <Link
                 href={link.href}
                 aria-current={active ? "page" : undefined}
-                className={`group inline-flex min-h-11 items-center rounded-sm text-body-sm transition-colors focus-visible:outline-accent md:min-h-8 ${
+                className={`group inline-flex min-h-11 items-center rounded-sm text-body-sm transition-colors focus-visible:outline-accent ${
                   active ? "text-on-footer" : "text-on-footer-muted hover:text-on-footer"
                 }`}
               >

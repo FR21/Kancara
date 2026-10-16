@@ -503,8 +503,9 @@
 
 /* ---------- Typography scale ---------- */
 /*
- * Utilities: text-display, text-h1 ... text-label-lg. Each one sets font size,
- * line height, and font weight together.
+ * Utilities: text-display, text-h1 ... text-label-lg, text-lead. Each one sets
+ * font size, line height, and font weight together. Line heights are whole
+ * multiples of 4px, so stacked text keeps to the same 4px grid as the spacing.
  * Use Plus Jakarta Sans (font-heading) for headings at 20px and up.
  */
 @theme {
@@ -515,43 +516,48 @@
 
   --text-h1: 1.875rem;
   /* 30px */
-  --text-h1--line-height: 1.2;
+  --text-h1--line-height: 2.25rem;
   --text-h1--font-weight: 600;
 
   --text-h2: 1.5rem;
   /* 24px */
-  --text-h2--line-height: 1.25;
+  --text-h2--line-height: 2rem;
   --text-h2--font-weight: 600;
 
   --text-h3: 1.25rem;
   /* 20px */
-  --text-h3--line-height: 1.3;
+  --text-h3--line-height: 1.75rem;
   --text-h3--font-weight: 500;
 
   --text-body: 1rem;
   /* 16px */
-  --text-body--line-height: 1.5;
+  --text-body--line-height: 1.5rem;
   --text-body--font-weight: 400;
 
   --text-body-sm: 0.875rem;
   /* 14px */
-  --text-body-sm--line-height: 1.5;
+  --text-body-sm--line-height: 1.25rem;
   --text-body-sm--font-weight: 500;
 
   --text-caption: 0.75rem;
   /* 12px */
-  --text-caption--line-height: 1.4;
+  --text-caption--line-height: 1rem;
   --text-caption--font-weight: 500;
 
   --text-label: 0.875rem;
   /* 14px, buttons and form labels */
-  --text-label--line-height: 1.25;
+  --text-label--line-height: 1.25rem;
   --text-label--font-weight: 700;
 
   --text-label-lg: 1rem;
   /* 16px */
-  --text-label-lg--line-height: 1.25;
+  --text-label-lg--line-height: 1.25rem;
   --text-label-lg--font-weight: 700;
+
+  --text-lead: 1.25rem;
+  /* 20px, the opening paragraph of a public page or section, read at length */
+  --text-lead--line-height: 2rem;
+  --text-lead--font-weight: 400;
 }
 
 /* ---------- Motion ---------- */
@@ -575,6 +581,7 @@
   --animate-pop-in: pop-in 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-sheet-up: sheet-up 300ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-float: float 5s ease-in-out infinite;
+  --animate-drift: drift 24s ease-in-out infinite alternate;
   --animate-grow-x: grow-x 700ms cubic-bezier(0.23, 1, 0.32, 1) both;
   --animate-lock-nudge: lock-nudge 400ms ease-in-out;
   --animate-slide-progress: slide-progress 6s linear both;
@@ -674,6 +681,18 @@
   @keyframes float {
     50% {
       translate: 0 -0.5rem;
+    }
+  }
+
+  /* A photo behind a page, drifting slowly closer the way a camera pans across a still: alive, never busy. */
+  @keyframes drift {
+    from {
+      scale: 1.04;
+      translate: -1% 0;
+    }
+    to {
+      scale: 1.14;
+      translate: 1% -2%;
     }
   }
 
@@ -1029,6 +1048,47 @@
     overflow-x: hidden;
   }
 
+  :root {
+    --gutter: 1rem;
+
+    @media (width >= 40rem) {
+      --gutter: 1.5rem;
+    }
+  }
+
+  /* A field brought into view by the keyboard or a link stops clear of the fixed navbar and of a bottom bar. */
+  html {
+    scroll-padding-top: calc(env(safe-area-inset-top) + 7rem);
+    scroll-padding-bottom: 6rem;
+  }
+
+  /* While a bar is pinned to the bottom of the screen, the SOS dock rides above it instead of over its buttons. */
+  body:has([data-bottom-bar="always"]) {
+    --dock-lift: 4.5rem;
+  }
+
+  /* A bar that only phones and tablets see (it is lg:hidden or lg:static) lifts the dock only there. */
+  @media (width < 64rem) {
+    body:has([data-bottom-bar="below-lg"]) {
+      --dock-lift: 4.5rem;
+    }
+  }
+
+  @media (width < 40rem) {
+    body:has([data-bottom-bar="below-sm"]) {
+      --dock-lift: 4.5rem;
+    }
+  }
+
+  /* A page's main action pinned at the bottom of a phone: the page gets that much more room at its end, so the
+     footer's last line is never under the bar. */
+  @media (width < 40rem) {
+    body:has([data-page-bar]) {
+      --dock-lift: 4.5rem;
+      padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+    }
+  }
+
   body {
     background: var(--background);
     color: var(--text);
@@ -1128,4 +1188,13 @@
 
 @utility safe-bottom {
   padding-bottom: max(0.75rem, env(safe-area-inset-bottom));
+}
+
+/*
+ * The page's side margin, widened where a landscape phone's notch or rounded corner reaches in. The margin is
+ * --gutter (16px, 24px from 640px); a page that runs to its own max width sets it to 0 at wide screens.
+ */
+@utility safe-x {
+  padding-left: max(var(--gutter), env(safe-area-inset-left));
+  padding-right: max(var(--gutter), env(safe-area-inset-right));
 }

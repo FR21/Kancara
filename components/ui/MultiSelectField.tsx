@@ -102,7 +102,7 @@ export default function MultiSelectField<Value extends string>({
         className={`pointer-events-none absolute top-6 right-4 size-5 -translate-y-1/2 text-text-muted transition-[rotate] duration-200 ease-out ${open ? "rotate-180" : ""}`}
       />
       {open && (
-        <div className="absolute inset-x-0 top-full z-30 mt-2 origin-top overflow-clip surface-compact rounded-surface border border-border bg-background py-2 shadow-lg shadow-neutral-950/10 motion-safe:animate-pop-in">
+        <div className="absolute inset-x-0 top-full z-30 mt-2 origin-top overflow-clip surface-compact rounded-surface border border-border bg-background py-surface shadow-lg shadow-neutral-950/10 motion-safe:animate-pop-in">
           <ul
             id={listId}
             role="listbox"

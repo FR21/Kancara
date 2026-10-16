@@ -1,6 +1,6 @@
-import { Volume2 } from "lucide-react";
 import SelectField from "@/components/ui/SelectField";
-import { FIELD_LABEL, choiceClass } from "@/components/ui/styles";
+import { FIELD_LABEL } from "@/components/ui/styles";
+import Switch from "@/components/ui/Switch";
 import type { Messages } from "@/lib/messages";
 import { type LanguageKey, type LocalLanguage, LOCAL_LANGUAGES } from "./languages";
 
@@ -36,11 +36,10 @@ export default function TranslatorSettings({ localLanguage, onLanguage, autoSpea
         </SelectField>
       </div>
       {canSpeak && (
-        <div className="pb-0.5 sm:ml-auto">
-          <button type="button" aria-pressed={autoSpeak} onClick={() => onAutoSpeak(!autoSpeak)} className={choiceClass(autoSpeak)}>
-            <Volume2 className="size-4" aria-hidden="true" />
+        <div className="sm:ml-auto">
+          <Switch checked={autoSpeak} onChange={onAutoSpeak}>
             {text.settings.autoSpeak}
-          </button>
+          </Switch>
         </div>
       )}
     </div>

@@ -11,7 +11,7 @@ import GenderSelect from "@/components/profile/GenderSelect";
 import PhoneField from "@/components/profile/PhoneField";
 import ProfileIdentity from "@/components/profile/ProfileIdentity";
 import RequiredMark from "@/components/ui/RequiredMark";
-import { buttonClass, GHOST_BUTTON, INPUT, PRIMARY_BUTTON } from "@/components/ui/styles";
+import { buttonClass, GHOST_BUTTON, INPUT, PRIMARY_BUTTON, FIELD_HINT_TYPE } from "@/components/ui/styles";
 import { ProfileError, saveProfileDetails, uploadProfilePhoto } from "@/lib/client/profile";
 import { forgetPush } from "@/lib/client/push";
 import { removeSession } from "@/lib/auth/session";
@@ -23,6 +23,7 @@ import { normalizePhone } from "@/lib/safety/contact";
 import { callingCode, joinPhone, splitPhone } from "@/lib/travel/calling-codes";
 import { countryOf } from "@/lib/travel/country-search";
 import { useMessages } from "@/lib/use-messages";
+import FieldError from "@/components/ui/FieldError";
 
 type ProfileWorkspaceProps = {
   email: string | null;
@@ -39,7 +40,7 @@ type Details = Record<FieldKey, string>;
 // after it, so a list that opens from its field (the country picker) is never drawn underneath them.
 const FIELD =
   "group relative focus-within:z-20 sm:grid sm:grid-cols-[10rem_minmax(0,1fr)] sm:items-start sm:gap-x-6 motion-safe:animate-list-in";
-const FIELD_LABEL = `mb-2 block sm:mb-0 sm:leading-12 ${FOCUS_FIELD_LABEL}`;
+const ROW_LABEL = `mb-2 block sm:mb-0 sm:leading-12 ${FOCUS_FIELD_LABEL}`;
 // The fields arrive after the page header and the photo column, which take the first places in the sequence.
 const FIRST_FIELD_PLACE = 3;
 
@@ -119,6 +120,9 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
   };
   const phoneInvalid = form.phone !== "" && normalizePhone(form.phone) === null;
   const dirty = selectedFile !== null || FIELDS.some((field) => form[field] !== saved[field]);
+  // The red star marks what must be filled while the form is being changed (or something is missing); a profile
+  // that is only being looked at is not a form to fill in.
+  const editing = dirty || incomplete || checked.size > 0;
   const inputClass = `${INPUT} disabled:cursor-not-allowed aria-invalid:border-error`;
 
   const announce = (tone: NoticeMessage["tone"], message: string) => {
@@ -266,15 +270,17 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
                 style={arrival(FIRST_FIELD_PLACE - 1)}
                 className="flex items-start gap-3 rounded-lg bg-primary-subtle px-4 py-3 text-body-sm text-pretty text-on-primary-subtle motion-safe:animate-list-in"
               >
-                <Info className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
+                <span aria-hidden="true" className="flex h-5 shrink-0 items-center">
+                  <Info className="size-4" />
+                </span>
                 {t.completeHint}
               </p>
             )}
             {FIELDS.map((field, index) => (
               <div key={field} className={FIELD} style={arrival(FIRST_FIELD_PLACE + index)}>
-                <label htmlFor={`profile-${field}`} className={FIELD_LABEL}>
+                <label htmlFor={`profile-${field}`} className={ROW_LABEL}>
                   {labels[field]}
-                  {REQUIRED.includes(field) && <RequiredMark />}
+                  {editing && REQUIRED.includes(field) && <RequiredMark />}
                 </label>
                 {field === "gender" && (
                   <GenderSelect
@@ -302,9 +308,7 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
                       className={inputClass}
                     />
                     {birthDateShown && (
-                      <p id="profile-birthDate-error" className="mt-2 text-body-sm text-error motion-safe:animate-message-in">
-                        {t.birthDateError}
-                      </p>
+                      <FieldError id="profile-birthDate-error">{t.birthDateError}</FieldError>
                     )}
                   </div>
                 )}
@@ -332,7 +336,7 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
                       onDialChange={(value) => setPhone(value, national)}
                       onNationalChange={(value) => setPhone(dial, value)}
                     />
-                    <p id="profile-phone-hint" className={`mt-2 text-body-sm text-pretty ${phoneInvalid ? "text-error" : "text-text-muted"}`}>
+                    <p id="profile-phone-hint" className={`${FIELD_HINT_TYPE} ${phoneInvalid ? "text-error" : "text-text-muted"}`}>
                       {phoneInvalid ? t.phoneError : t.phoneHint}
                     </p>
                   </div>
@@ -354,9 +358,7 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
                       className={inputClass}
                     />
                     {field === "name" && nameShown && (
-                      <p id="profile-name-error" className="mt-2 text-body-sm text-error motion-safe:animate-message-in">
-                        {t.nameError}
-                      </p>
+                      <FieldError id="profile-name-error">{t.nameError}</FieldError>
                     )}
                     {field === "username" && usernameInvalid && (
                       <p
@@ -372,7 +374,7 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
             ))}
 
             <div className={FIELD} style={arrival(FIRST_FIELD_PLACE + FIELDS.length)}>
-              <label htmlFor="profile-email" className={FIELD_LABEL}>
+              <label htmlFor="profile-email" className={ROW_LABEL}>
                 {t.emailLabel}
               </label>
               <div className="group/lock relative">
@@ -394,44 +396,36 @@ export default function ProfileWorkspace({ email, profile }: ProfileWorkspacePro
 
           <Notice notice={notice} dismissLabel={t.dismiss} onDismiss={() => setNotice(null)} />
 
-          <div
-            style={arrival(FIRST_FIELD_PLACE + FIELDS.length + 1)}
-            className={`mt-6 flex justify-end gap-3 motion-safe:animate-list-in sm:flex-row sm:items-center ${
-              dirty
-                ? "safe-bottom sticky bottom-0 -mx-4 items-center border-t border-border bg-background px-4 pt-3 sm:static sm:mx-0 sm:border-0 sm:bg-transparent sm:p-0"
-                : "flex-col-reverse"
-            }`}
-          >
-            {dirty ? (
-              <button
-                key="cancel"
-                type="button"
-                onClick={discardChanges}
-                disabled={saving}
-                className={`${GHOST_BUTTON} motion-safe:animate-message-in`}
-              >
+          {/* Save and Cancel appear once something has changed, pinned at the bottom of a phone or tablet in thumb
+              reach. A form with nothing to save shows no button asking to be pressed. */}
+          {dirty && (
+            <div
+              data-bottom-bar="below-lg"
+              style={arrival(FIRST_FIELD_PLACE + FIELDS.length + 1)}
+              className="safe-bottom safe-x sticky bottom-0 z-30 -mx-(--gutter) mt-6 flex items-center justify-end gap-3 border-t border-border bg-background pt-3 motion-safe:animate-message-in lg:static lg:mx-0 lg:border-0 lg:bg-transparent lg:p-0"
+            >
+              <button type="button" onClick={discardChanges} disabled={saving} className={GHOST_BUTTON}>
                 {t.cancel}
               </button>
-            ) : (
-              <button key="logout" type="button" onClick={handleLogout} className={LOGOUT_BUTTON}>
-                <LogOut
-                  className="size-4 text-error transition-[translate] duration-200 ease-out group-hover/out:translate-x-1"
-                  aria-hidden="true"
-                />
-                {t.logoutButton}
+              <button type="submit" disabled={saving} className={`${PRIMARY_BUTTON} flex-1 whitespace-nowrap lg:flex-none`}>
+                {saving ? (
+                  <Loader2 className="size-4 motion-safe:animate-spin" aria-hidden="true" />
+                ) : (
+                  <Check className="size-4" aria-hidden="true" />
+                )}
+                {saving ? t.saving : t.saveButton}
               </button>
-            )}
-            <button
-              type="submit"
-              disabled={!dirty || saving}
-              className={`${PRIMARY_BUTTON} whitespace-nowrap ${dirty ? "flex-1 sm:flex-none" : ""}`}
-            >
-              {saving ? (
-                <Loader2 className="size-4 motion-safe:animate-spin" aria-hidden="true" />
-              ) : (
-                <Check className="size-4" aria-hidden="true" />
-              )}
-              {saving ? t.saving : t.saveButton}
+            </div>
+          )}
+
+          {/* Leaving the account stands apart from saving, at the very end, so it is never pressed on the way to Save. */}
+          <div style={arrival(FIRST_FIELD_PLACE + FIELDS.length + 1)} className="mt-12 border-t border-border pt-6 motion-safe:animate-list-in">
+            <button type="button" onClick={handleLogout} className={LOGOUT_BUTTON}>
+              <LogOut
+                className="size-4 text-error transition-[translate] duration-200 ease-out group-hover/out:translate-x-1"
+                aria-hidden="true"
+              />
+              {t.logoutButton}
             </button>
           </div>
         </form>

@@ -1,5 +1,5 @@
 {
-  "title": "Rencanakan trip",
+  "title": "Rencanakan perjalanan",
   "start": {
     "title": "Yuk, rancang liburan seru bareng rombonganmu!",
     "lead": "Cukup jawab empat pertanyaan santai. Kami siapkan boarding pass dan rencana harian lengkap untuk semua orang.",
@@ -26,7 +26,7 @@
       },
       "pass": {
         "name": "Boarding pass",
-        "asks": "Periksa ringkasan tiket dan dapatkan rencana harian grup."
+        "asks": "Periksa boarding pass, lalu itinerary harian rombongan dibuat."
       }
     }
   },
@@ -68,13 +68,12 @@
       },
       "extras": {
         "title": "Ada lagi yang perlu Captain tahu?",
-        "hint": "Opsional. Makin lengkap, makin pas rencananya."
+        "hint": "Makin lengkap, makin pas rencananya."
       }
     },
     "required": "Belum diisi: {items}.",
     "previewNote": "Ini pratinjau. Selesaikan pertanyaannya dulu untuk lanjut.",
     "previewClose": "Tutup",
-    "previewTitle": "Pratinjau boarding pass",
     "routeSketch": "Rute perjalanan: {route}"
   },
   "crew": {
@@ -243,10 +242,11 @@
     "saving": "Menyimpan ke Perjalanan Saya",
     "saved": "Tersimpan otomatis di Perjalanan Saya.",
     "savedNotice": "Rencana tersimpan di Perjalanan Saya.",
-    "viewTrips": "Lihat Perjalanan Saya",
     "saveFailed": "Rencana belum tersimpan ke Perjalanan Saya. Periksa koneksimu, lalu coba lagi.",
     "saveRetry": "Simpan lagi",
-    "dismiss": "Tutup"
+    "dismiss": "Tutup",
+    "agreementsShow": "Lihat kesepakatan rombongan",
+    "agreementsHide": "Sembunyikan kesepakatan"
   },
   "ageGroups": {
     "adult": "Dewasa",
@@ -358,10 +358,10 @@
     "carriesPhone": "Membawa HP selama perjalanan?",
     "carriesYes": "Ya",
     "carriesNo": "Tidak",
-    "phone": "Nomor telepon (opsional)",
+    "phone": "Nomor telepon",
     "phoneHint": "Untuk tombol WhatsApp, telepon, dan SMS saat terpisah. Nomor berawalan 0 dibaca sebagai nomor Indonesia.",
     "phoneInvalid": "Nomor ini belum bisa dibaca. Coba tulis dengan kode negara, misalnya +62.",
-    "noPhoneHint": "Tanpa HP, {name} mendapat Kartu Kumpul untuk dicetak dari halaman Bantuan trip.",
+    "noPhoneHint": "Tanpa HP, {name} mendapat Kartu Kumpul untuk dicetak dari halaman Bantuan perjalanan.",
     "needsPlaceholder": "Pilih kebutuhan",
     "needsChosen": "{count} dipilih"
   },
@@ -373,12 +373,13 @@
     "retry": "Coba lagi",
     "itineraryPending": "Captain sedang menyusun itinerary",
     "itineraryIntro": "Ini itinerary yang memperhitungkan kebutuhan tiap anggota. Pilih hari untuk melihat detailnya.",
-    "clearDraft": "Hapus draf"
+    "clearDraft": "Hapus draf",
+    "clearDraftConfirm": "Hapus draf?",
+    "clearDraftConfirmLabel": "Ketuk lagi untuk menghapus draf ini"
   },
   "itinerary": {
     "title": "Itinerary {destination}",
     "sample": "Contoh",
-    "daysLabel": "Pilih hari",
     "day": "Hari {number}",
     "honours": "Memenuhi",
     "everyone": "Semua",
@@ -470,7 +471,6 @@
       "cancel": "Batal"
     },
     "timeline": {
-      "today": "hari ini",
       "dayHeading": "{day} · {date}",
       "byCar": "{distance} naik mobil",
       "issues": {
@@ -516,6 +516,17 @@
         "rating": "Rating",
         "next": "Ke tempat berikutnya"
       }
+    },
+    "picker": {
+      "previous": "Hari sebelumnya",
+      "next": "Hari berikutnya",
+      "choose": "Pilih tanggal. Sekarang {date}",
+      "calendar": "Kalender perjalanan",
+      "previousMonth": "Bulan sebelumnya",
+      "nextMonth": "Bulan berikutnya",
+      "dayLabel": "Hari {number}",
+      "today": "hari ini",
+      "position": "Hari {number} dari {total}"
     }
   },
   "invite": {

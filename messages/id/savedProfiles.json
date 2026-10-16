@@ -2,7 +2,7 @@
   "metaTitle": "Profil tersimpan",
   "metaDescription": "Simpan kebutuhan dan keinginan orang-orang yang sering ikut perjalananmu, lalu pakai lagi di rencana berikutnya.",
   "title": "Profil tersimpan",
-  "subtitle": "Orang-orang yang sering ikut perjalananmu, lengkap dengan kebutuhannya. Saat merencanakan trip baru, tinggal pilih tanpa mengisi ulang.",
+  "subtitle": "Orang-orang yang sering ikut perjalananmu, lengkap dengan kebutuhannya. Saat merencanakan perjalanan baru, tinggal pilih tanpa mengisi ulang.",
   "add": "Tambah orang",
   "planWithAll": "Rencanakan dengan semua",
   "notice": {
@@ -28,7 +28,7 @@
   },
   "empty": {
     "title": "Belum ada profil tersimpan",
-    "body": "Simpan sekali saja orang-orang yang sering ikut perjalananmu. Kebutuhan dan keinginan mereka langsung terisi setiap kali kamu merencanakan trip."
+    "body": "Simpan sekali saja orang-orang yang sering ikut perjalananmu. Kebutuhan dan keinginan mereka langsung terisi setiap kali kamu merencanakan perjalanan."
   },
   "noMatch": {
     "title": "Tidak ada yang cocok",
@@ -42,16 +42,16 @@
     "allergies": "Alergi: {allergies}",
     "wishes": "Keinginan",
     "notes": "Catatan",
-    "plan": "Rencanakan trip",
+    "plan": "Rencanakan perjalanan",
     "more": "Tindakan lain untuk {name}",
     "edit": "Ubah profil",
     "delete": "Hapus profil"
   },
   "suggestions": {
     "title": "Dari perjalananmu",
-    "body": "Mereka pernah ikut trip bersamamu. Simpan profilnya agar mudah dipilih lagi nanti.",
+    "body": "Mereka pernah ikut perjalanan bersamamu. Simpan profilnya agar mudah dipilih lagi nanti.",
     "from": "Ikut {trip}",
-    "untitledTrip": "trip tanpa nama",
+    "untitledTrip": "perjalanan tanpa nama",
     "save": "Simpan",
     "saveLabel": "Simpan profil {name}"
   },
@@ -79,26 +79,26 @@
     "notesHint": "Catatan disimpan terenkripsi dan hanya terlihat olehmu.",
     "cancel": "Batal",
     "save": "Simpan profil",
-    "saving": "Menyimpan..."
+    "saving": "Menyimpan…"
   },
   "errors": {
     "full": "Sudah ada {count} profil tersimpan. Hapus satu dulu untuk menambah yang baru.",
     "offline": "Kamu sedang offline. Sambungkan internet, lalu coba lagi.",
     "failed": "Profil belum tersimpan. Coba lagi sebentar lagi.",
     "deleteFailed": "Profil belum terhapus. Periksa koneksimu, lalu coba lagi.",
-    "loadFailed": "Profil tersimpan belum bisa dimuat.",
+    "loadFailed": "Profil tersimpan belum bisa dimuat. Periksa koneksimu, lalu coba lagi.",
     "retry": "Coba lagi"
   },
   "deleteDialog": {
     "title": "Hapus profil {name}?",
-    "body": "Kebutuhan, alergi, dan catatannya ikut terhapus. Rencana trip yang sudah ada tidak berubah.",
+    "body": "Kebutuhan, alergi, dan catatannya ikut terhapus. Rencana perjalanan yang sudah ada tidak berubah.",
     "cancel": "Batal",
     "confirm": "Hapus profil",
-    "pending": "Menghapus..."
+    "pending": "Menghapus…"
   },
   "picker": {
     "title": "Pilih dari profil tersimpan",
-    "loading": "Memuat profil...",
+    "loading": "Memuat profil…",
     "empty": "Belum ada profil tersimpan. Simpan orang-orang yang sering ikut perjalananmu di halaman profil tersimpan.",
     "saved": "Profil tersimpan",
     "inPlan": "Sudah ada di rombongan",

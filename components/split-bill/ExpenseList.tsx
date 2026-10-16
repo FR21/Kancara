@@ -89,7 +89,7 @@ export default function ExpenseList({ bill, editingId, text, categories, locale,
                 <Pencil className="size-4" aria-hidden="true" />
               </IconButton>
               <IconButton label={fillTemplate(text.remove, { name: expense.description })} onClick={() => onRemove(expense)} className="group/remove">
-                <Trash2 className="size-4 transition-colors duration-150 group-hover/remove:text-error" aria-hidden="true" />
+                <Trash2 className="size-5 transition-colors duration-150 group-hover/remove:text-error" aria-hidden="true" />
               </IconButton>
             </div>
           </li>

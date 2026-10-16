@@ -17,7 +17,7 @@ const STATUS_MARKS: Record<TripStatus, string> = {
   ongoing: "bg-primary text-on-primary",
   upcoming: "border border-primary text-primary",
   draft: "border border-dashed border-border-strong text-text-muted",
-  completed: "bg-success-subtle text-success",
+  completed: "bg-success-subtle text-on-success-subtle",
 };
 
 /** The round mark that leads a row in the list: shape and icon change with the status, not only the colour. */
