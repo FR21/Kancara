@@ -34,7 +34,7 @@ export default function TripTabs({ tab, text, onChange }: TripTabsProps) {
     <div
       role="tablist"
       aria-label={text.label}
-      className="relative inline-grid w-fit grid-cols-2 rounded-full border border-border-strong bg-surface p-1"
+      className="relative inline-grid w-fit shrink-0 grid-cols-2 rounded-full border border-border-strong bg-surface p-1"
     >
       <span
         aria-hidden="true"
@@ -56,8 +56,8 @@ export default function TripTabs({ tab, text, onChange }: TripTabsProps) {
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(option)}
             onKeyDown={handleKeyDown}
-            className={`relative inline-flex h-9 cursor-pointer items-center justify-center gap-2 rounded-full px-4 text-label whitespace-nowrap transition-[color,scale] duration-150 ease-out active:scale-[0.97] ${
-              selected ? "text-on-primary" : "text-text-muted hover:text-text"
+            className={`relative inline-flex h-9 min-w-[5.75rem] cursor-pointer items-center justify-center gap-2 rounded-full px-4 text-label whitespace-nowrap transition-[color,scale] duration-150 ease-out active:scale-[0.97] sm:min-w-[6.5rem] ${
+              selected ? "text-on-primary font-bold" : "text-text-muted hover:text-text"
             }`}
           >
             {/* On a phone the words alone, so the views and the "Plan" button beside them fit one row. */}

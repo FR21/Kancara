@@ -270,12 +270,13 @@ export default function TripsWorkspace({ initialTab }: TripsWorkspaceProps) {
       {/* The list's two views and a new plan share one row: what you are looking at on the left, starting another
           trip on the right. With no trips yet the empty state below carries the one "Plan" button instead. Quieter
           than opening the current trip, the screen's main action. */}
-      <div className="mt-6 flex items-center justify-between gap-3 motion-safe:animate-message-in motion-safe:[animation-delay:40ms]">
+      <div className="mt-6 flex flex-wrap items-center justify-between gap-3 motion-safe:animate-message-in motion-safe:[animation-delay:40ms]">
         <TripTabs tab={tab} text={text.tabs} onChange={changeTab} />
         {!nothingYet && (
           <Link href={PLAN_HREF} className={`group ${buttonClass("outline", "small")} shrink-0`}>
             <Plus className="size-4 transition-[rotate] duration-300 ease-out group-hover:rotate-90" aria-hidden="true" />
-            {text.plan}
+            <span className="sm:hidden">{locale === "id" ? "Rencanakan" : "Plan"}</span>
+            <span className="hidden sm:inline">{text.plan}</span>
           </Link>
         )}
       </div>
