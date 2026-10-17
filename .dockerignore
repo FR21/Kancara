@@ -1,4 +1,3 @@
-git commit -m "chore: add docker configuration for Dockerfile*
 .dockerignore
 node_modules
 .next

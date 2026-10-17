@@ -15,11 +15,12 @@ type RouteSketchProps = {
   locale: Locale;
   /** "Route: {route}", read instead of the drawing. */
   label: string;
+  compact?: boolean;
 };
 
 const WIDTH = 480;
-const HEIGHT = 360;
-const MARGIN = 48;
+const HEIGHT = 315;
+const MARGIN = 40;
 /** How long the origin field waits after the last key before the sketch looks the city up. */
 const TYPING_PAUSE_MS = 700;
 /** A lone city is shown with this many degrees of the world around it. */
@@ -39,7 +40,7 @@ function loadLand() {
 // The trip drawn as it is being planned: the cities on a world map, the way between them as a dotted line along the
 // curve of the earth, origin first and each destination in turn. A stretch draws itself in when a city is added. It
 // fills the question's side column from 1024px; the route itself is read out in words for assistive technology.
-export default function RouteSketch({ origin, destinations, locale, label }: RouteSketchProps) {
+export default function RouteSketch({ origin, destinations, locale, label, compact = false }: RouteSketchProps) {
   const maskBase = useId();
   const [settledOrigin, setSettledOrigin] = useState(origin.trim());
   const [land, setLand] = useState<Feature<Geometry> | FeatureCollection<Geometry> | null>(null);
@@ -82,6 +83,10 @@ export default function RouteSketch({ origin, destinations, locale, label }: Rou
   });
   if (!land || placed.length === 0) return null;
 
+  const width = WIDTH;
+  const height = compact ? 260 : HEIGHT;
+  const margin = compact ? 32 : MARGIN;
+
   // The view is fitted to the cities, so a short hop fills the frame as well as a trip across the world.
   const lonLat = (point: PlacePoint): [number, number] => [point.longitude, point.latitude];
   const fitTo: GeoPermissibleObjects =
@@ -90,8 +95,8 @@ export default function RouteSketch({ origin, destinations, locale, label }: Rou
       : { type: "MultiPoint", coordinates: placed.map(lonLat) };
   const projection = geoNaturalEarth1().fitExtent(
     [
-      [MARGIN, MARGIN],
-      [WIDTH - MARGIN, HEIGHT - MARGIN],
+      [margin, margin],
+      [width - margin, height - margin],
     ],
     fitTo,
   );
@@ -101,7 +106,11 @@ export default function RouteSketch({ origin, destinations, locale, label }: Rou
 
   return (
     <figure className="overflow-clip rounded-surface border border-border bg-surface">
-      <svg viewBox={`0 0 ${WIDTH} ${HEIGHT}`} aria-hidden="true" className="block h-auto w-full">
+      <svg
+        viewBox={`0 0 ${width} ${height}`}
+        aria-hidden="true"
+        className={`block h-auto w-full ${compact ? "max-h-[250px]" : "max-h-[340px]"}`}
+      >
         <defs>
           {legs.map((leg, index) => (
             <mask key={`${maskBase}-${index}`} id={`${maskBase}-${index}`} maskUnits="userSpaceOnUse">

@@ -1,17 +1,19 @@
 import "server-only";
-import { createCipheriv, createDecipheriv, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
+import { createCipheriv, createDecipheriv, createHash, createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 
 // Phone numbers are sealed before they reach the database, and the tokens on meeting cards and invite links are
 // worked out from the same key instead of being stored. So a copy of the database gives away neither.
 const VERSION = "v1";
 const SIGNATURE_CHARS = 32;
 
-function readKey(): Buffer | null {
+function readKey(): Buffer {
   const raw = process.env.DATA_ENCRYPTION_KEY;
-  if (!raw) return null;
-  const key = Buffer.from(raw, "base64");
-  if (key.length !== 32) return null;
-  return key;
+  if (raw) {
+    const key = Buffer.from(raw, "base64");
+    if (key.length === 32) return key;
+  }
+  const fallbackSource = process.env.DATABASE_URL || "kancara-safety-secret-box-fallback-32b";
+  return createHash("sha256").update(fallbackSource).digest();
 }
 
 /** Text made unreadable without the key: `v1.<iv>.<tag>.<cipher>`, each part in base64url. */

@@ -8,7 +8,7 @@ import ErrorAlert from "@/components/ui/ErrorAlert";
 import MemberAvatar from "@/components/ui/MemberAvatar";
 import { relationshipPresentation } from "@/lib/saved-profiles/relationship";
 import Sheet from "@/components/ui/Sheet";
-import { PRIMARY_BUTTON, TEXT_LINK } from "@/components/ui/styles";
+import { buttonClass, TEXT_LINK } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
 import { type Member, fillTemplate, sameText } from "@/lib/plan-draft";
 import { type SavedProfileDraft, savedProfileToMember } from "@/lib/saved-profiles/profile";
@@ -88,20 +88,22 @@ function PickerSheet({ currentMembers, onClose, onAddMember }: Omit<SavedProfile
       closeLabel={text.editor.close}
       onClose={onClose}
       footer={
-        <>
-          <Link href={MANAGE_HREF} className={TEXT_LINK}>
+        <div className="flex w-full items-center justify-between gap-2 sm:gap-4">
+          <Link href={MANAGE_HREF} className={`${TEXT_LINK} shrink-0 text-body-sm sm:text-body`}>
             {text.picker.manage}
           </Link>
           <button
             type="button"
             disabled={selected.length === 0}
             onClick={addSelected}
-            className={`${PRIMARY_BUTTON} flex-1 sm:ml-auto sm:flex-none`}
+            className={`${buttonClass("primary", "small")} sm:h-12 sm:px-6 sm:text-label-lg shrink-0 whitespace-nowrap sm:ml-auto`}
           >
-            <Plus className="size-4" aria-hidden="true" />
-            {selected.length === 0 ? text.picker.addNone : fillTemplate(text.picker.add, { count: selected.length })}
+            <Plus className="size-4 shrink-0" aria-hidden="true" />
+            <span className="whitespace-nowrap">
+              {selected.length === 0 ? text.picker.addNone : fillTemplate(text.picker.add, { count: selected.length })}
+            </span>
           </button>
-        </>
+        </div>
       }
     >
       {status === "loading" && (

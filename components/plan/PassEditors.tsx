@@ -1,6 +1,6 @@
 "use client";
 
-import { Check, Plus } from "lucide-react";
+import { Check, Loader2, Plus } from "lucide-react";
 import { type Dispatch, type KeyboardEvent, useEffect, useState } from "react";
 import { type Currency, CURRENCIES, idrToUsd, usdToIdr } from "@/lib/currency";
 import type { Messages } from "@/lib/messages";
@@ -12,6 +12,7 @@ import {
   PACES,
   parseLocalDate,
 } from "@/lib/plan-draft";
+import { findPlacePoints } from "@/lib/client/place-points";
 import { useExchangeRate } from "@/lib/use-exchange-rate";
 import { useLocale } from "@/lib/use-locale";
 import Checkbox from "@/components/ui/Checkbox";
@@ -37,6 +38,37 @@ function todayIso(): string {
 }
 
 export function OriginEditor({ draft, dispatch, text }: EditorProps) {
+  const locale = useLocale();
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const trimmed = draft.origin.trim();
+    if (trimmed === "") {
+      setError(null);
+      return;
+    }
+
+    const controller = new AbortController();
+    const timer = setTimeout(async () => {
+      try {
+        const [point] = await findPlacePoints([trimmed], locale, controller.signal);
+        if (controller.signal.aborted) return;
+        if (!point) {
+          setError(text.pass.originNotFound);
+        } else {
+          setError(null);
+        }
+      } catch {
+        if (!controller.signal.aborted) setError(null);
+      }
+    }, 700);
+
+    return () => {
+      clearTimeout(timer);
+      controller.abort();
+    };
+  }, [draft.origin, locale, text.pass.originNotFound]);
+
   return (
     <div>
       <label htmlFor="pass-origin" className={FIELD_LABEL}>
@@ -49,20 +81,56 @@ export function OriginEditor({ draft, dispatch, text }: EditorProps) {
         autoComplete="off"
         value={draft.origin}
         placeholder={text.pass.originPlaceholder}
-        onChange={(event) => dispatch({ type: "setOrigin", value: event.target.value })}
-        className={`${INPUT} mt-2`}
+        onChange={(event) => {
+          dispatch({ type: "setOrigin", value: event.target.value });
+          if (error) setError(null);
+        }}
+        className={`${INPUT} mt-2 ${error ? "border-amber-500 focus:border-amber-500" : ""}`}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={error ? "pass-origin-error" : undefined}
       />
+      {error && (
+        <div className="mt-1.5">
+          <FieldError id="pass-origin-error">{error}</FieldError>
+        </div>
+      )}
     </div>
   );
 }
 
 export function DestinationsEditor({ draft, dispatch, text }: EditorProps) {
+  const locale = useLocale();
   const [pendingCity, setPendingCity] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isValidating, setIsValidating] = useState(false);
 
-  const addCity = () => {
-    if (pendingCity.trim() === "") return;
-    dispatch({ type: "addDestination", value: pendingCity });
-    setPendingCity("");
+  const addCity = async () => {
+    const trimmed = pendingCity.trim();
+    if (trimmed === "" || isValidating) return;
+
+    setError(null);
+    setIsValidating(true);
+
+    try {
+      const controller = new AbortController();
+      const [point] = await findPlacePoints([trimmed], locale, controller.signal);
+      if (!point) {
+        setError(text.pass.destinationNotFound);
+        setIsValidating(false);
+        return;
+      }
+
+      dispatch({ type: "addDestination", value: point.name || trimmed });
+      setPendingCity("");
+      setError(null);
+    } catch {
+      // In case of error, allow adding as fallback
+      dispatch({ type: "addDestination", value: trimmed });
+      setPendingCity("");
+      setError(null);
+    } finally {
+      setIsValidating(false);
+    }
   };
 
   const handleCityKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -84,16 +152,34 @@ export function DestinationsEditor({ draft, dispatch, text }: EditorProps) {
           autoComplete="off"
           value={pendingCity}
           placeholder={text.pass.destinationPlaceholder}
-          onChange={(event) => setPendingCity(event.target.value)}
+          onChange={(event) => {
+            setPendingCity(event.target.value);
+            if (error) setError(null);
+          }}
           onKeyDown={handleCityKeyDown}
-          onBlur={addCity}
-          className={`${INPUT} min-w-0`}
+          className={`${INPUT} min-w-0 ${error ? "border-amber-500 focus:border-amber-500" : ""}`}
+          aria-invalid={error ? true : undefined}
+          aria-describedby={error ? "pass-destination-error" : undefined}
         />
-        <button type="button" disabled={pendingCity.trim() === ""} onClick={addCity} className={INPUT_BUTTON}>
-          <Plus className="size-4" aria-hidden="true" />
-          {text.pass.addDestination}
+        <button
+          type="button"
+          disabled={pendingCity.trim() === "" || isValidating}
+          onClick={addCity}
+          className={`${INPUT_BUTTON} min-w-[5.5rem]`}
+        >
+          {isValidating ? (
+            <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+          ) : (
+            <Plus className="size-4" aria-hidden="true" />
+          )}
+          {isValidating ? text.pass.checkingCity : text.pass.addDestination}
         </button>
       </div>
+      {error && (
+        <div className="mt-1.5">
+          <FieldError id="pass-destination-error">{error}</FieldError>
+        </div>
+      )}
       {draft.destinations.length > 0 && (
         <ul className="mt-2 flex flex-wrap gap-2">
           {draft.destinations.map((city, index) => (

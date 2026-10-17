@@ -19,8 +19,113 @@ export async function GET(request: NextRequest) {
   const limited = rateLimit(request, "place-photo", PHOTOS_PER_SECOND);
   if (limited) return limited;
 
-  const name = request.nextUrl.searchParams.get("name") ?? "";
-  if (!isPlacePhotoName(name)) return NextResponse.json({ error: "Invalid photo" }, { status: 400 });
+  let name = request.nextUrl.searchParams.get("name") ?? "";
+  const query = request.nextUrl.searchParams.get("query")?.trim() ?? "";
+
+  // If query is provided instead of direct photo name (e.g. backup places or missing photo metadata),
+  // resolve photo name via Neon DB cache or Google Places Text Search.
+  if (!name && query) {
+    const queryCacheKey = `place-photo-query:${query.toLowerCase()}`;
+    try {
+      const cachedQuery = await prisma.apiCache.findUnique({
+        where: { cacheKey: queryCacheKey },
+      });
+      if (cachedQuery && cachedQuery.expiresAt > new Date()) {
+        const payload = cachedQuery.payload as { photoName?: string } | null;
+        if (payload?.photoName && isPlacePhotoName(payload.photoName)) {
+          name = payload.photoName;
+        }
+      }
+    } catch (err) {
+      console.warn("Neon DB photo query cache lookup failed:", err);
+    }
+
+    if (!name) {
+      try {
+        const stopWords = new Set([
+          "the", "and", "of", "in", "at", "to", "for", "a", "an", "on", "di", "ke",
+          "dari", "yang", "dan", "national", "museum", "science", "innovation", "park",
+          "hotel", "restaurant", "cafe", "center", "centre"
+        ]);
+        const words = query
+          .toLowerCase()
+          .replace(/[^a-z0-9\s]/g, " ")
+          .split(/\s+/)
+          .filter((w) => w.length > 3 && !stopWords.has(w));
+
+        if (words.length > 0) {
+          const trips = await prisma.trip.findMany({
+            take: 20,
+            orderBy: { updatedAt: "desc" },
+          });
+
+          for (const trip of trips) {
+            const itinerary = trip.itinerary as { days?: { items?: { title?: string; imageUrl?: string }[] }[] } | null;
+            if (!itinerary?.days) continue;
+            for (const day of itinerary.days) {
+              if (!day.items) continue;
+              for (const item of day.items) {
+                if (item.imageUrl && item.title) {
+                  const itemLower = item.title.toLowerCase();
+                  if (words.some((w) => itemLower.includes(w))) {
+                    const match = item.imageUrl.match(/name=([^&]+)/);
+                    if (match) {
+                      const decoded = decodeURIComponent(match[1]);
+                      if (isPlacePhotoName(decoded)) {
+                        name = decoded;
+                        break;
+                      }
+                    }
+                  }
+                }
+              }
+              if (name) break;
+            }
+            if (name) break;
+          }
+        }
+      } catch (err) {
+        console.warn("Matching photo from trips failed:", err);
+      }
+    }
+
+    if (!name && KEY) {
+      try {
+        const searchRes = await fetch("https://places.googleapis.com/v1/places:searchText", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "X-Goog-Api-Key": KEY,
+            "X-Goog-FieldMask": "places.photos",
+          },
+          body: JSON.stringify({ textQuery: query }),
+          signal: AbortSignal.timeout(TIMEOUT_MS),
+        });
+        if (searchRes.ok) {
+          const data = await searchRes.json();
+          const firstPhoto = data.places?.[0]?.photos?.[0]?.name;
+          if (firstPhoto && isPlacePhotoName(firstPhoto)) {
+            name = firstPhoto;
+          }
+        }
+      } catch (err) {
+        console.warn("Places searchText photo lookup failed:", err);
+      }
+    }
+
+    if (name && isPlacePhotoName(name)) {
+      const expiresAt = new Date(Date.now() + ONE_YEAR_MS);
+      prisma.apiCache
+        .upsert({
+          where: { cacheKey: queryCacheKey },
+          update: { payload: { photoName: name }, expiresAt },
+          create: { cacheKey: queryCacheKey, payload: { photoName: name }, expiresAt },
+        })
+        .catch((saveErr) => console.warn("Failed saving photo query cache to Neon DB:", saveErr));
+    }
+  }
+
+  if (!isPlacePhotoName(name)) return NextResponse.json({ error: "Invalid photo" }, { status: 404 });
 
   const cacheKey = `place-photo:${name}`;
 

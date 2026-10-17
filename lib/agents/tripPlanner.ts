@@ -2,7 +2,7 @@
 import { GoogleGenAI } from '@google/genai';
 import { BACKUP_KINDS } from '@/lib/client/captain';
 import { mediationBrief } from './mediationBrief';
-import { categoryFromTypes, isPlacePhotoName, placePhotoUrl } from '@/lib/place-category';
+import { categoryFromTypes, inferCategoryFromTitle, isPlacePhotoName, placePhotoUrl } from '@/lib/place-category';
 import { 
   searchBookingHotels, 
   getCachedAmusementAndAttractions, 
@@ -139,32 +139,51 @@ async function executeGetTravelTime(origin: string, destination: string, locale:
 }
 
 function detectTripFocalZone(draft: any): { zone: string; budgetTier: "budget" | "moderate" | "luxury" } {
-  const destStr = (draft?.destinations || []).join(" ") + " " + (draft?.extras?.mustVisit || "") + " " + (draft?.extras?.lodging || "") + " " + (draft?.notes || "");
+  const memberWishes = (draft?.members || [])
+    .flatMap((m: any) => [
+      ...(m.customInterests || []).map((ci: any) => ci?.label || ""),
+      ...(m.customNeeds || []),
+    ])
+    .join(" ");
+
+  const destStr = [
+    ...(draft?.destinations || []),
+    draft?.extras?.mustVisit || "",
+    draft?.extras?.lodging || "",
+    draft?.notes || "",
+    memberWishes,
+  ].join(" ");
   const lower = destStr.toLowerCase();
   
   let zone = "";
-  if (lower.includes("pik") || lower.includes("pantai indah kapuk") || lower.includes("ancol") || lower.includes("dufan") || lower.includes("kelapa gading") || lower.includes("muara karang") || lower.includes("pluit") || lower.includes("jakut")) {
-    zone = "Jakarta Utara";
-  } else if (lower.includes("blok m") || lower.includes("senopati") || lower.includes("kemang") || lower.includes("scbd") || lower.includes("cilandak") || lower.includes("pondok indah") || lower.includes("tebet") || lower.includes("jaksel")) {
-    zone = "Jakarta Selatan";
-  } else if (lower.includes("kota tua") || lower.includes("monas") || lower.includes("menteng") || lower.includes("thamrin") || lower.includes("pasar baru") || lower.includes("jakpus")) {
-    zone = "Jakarta Pusat";
-  } else if (lower.includes("grogol") || lower.includes("central park") || lower.includes("tanjung duren") || lower.includes("jakbar")) {
+  if (lower.includes("glodok") || lower.includes("petak sembilan") || lower.includes("pancoran glodok") || lower.includes("taman sari") || lower.includes("mangga besar") || lower.includes("grogol") || lower.includes("central park") || lower.includes("tanjung duren") || lower.includes("puri") || lower.includes("kebon jeruk") || lower.includes("tomang") || lower.includes("slipi") || lower.includes("roxy") || lower.includes("jakbar") || lower.includes("jakarta barat")) {
     zone = "Jakarta Barat";
-  } else if (lower.includes("ubud")) {
+  } else if (lower.includes("pik") || lower.includes("pantai indah kapuk") || lower.includes("ancol") || lower.includes("dufan") || lower.includes("kelapa gading") || lower.includes("muara karang") || lower.includes("pluit") || lower.includes("sunter") || lower.includes("pademangan") || lower.includes("jakut") || lower.includes("jakarta utara")) {
+    zone = "Jakarta Utara";
+  } else if (lower.includes("kota tua") || lower.includes("monas") || lower.includes("menteng") || lower.includes("thamrin") || lower.includes("pasar baru") || lower.includes("senen") || lower.includes("gambir") || lower.includes("tanah abang") || lower.includes("sarinah") || lower.includes("bundaran hi") || lower.includes("cikini") || lower.includes("salemba") || lower.includes("kemayoran") || lower.includes("jakpus") || lower.includes("jakarta pusat")) {
+    zone = "Jakarta Pusat";
+  } else if (lower.includes("blok m") || lower.includes("senopati") || lower.includes("kemang") || lower.includes("scbd") || lower.includes("cilandak") || lower.includes("pondok indah") || lower.includes("tebet") || lower.includes("senayan") || lower.includes("kuningan") || lower.includes("mampang") || lower.includes("fatmawati") || lower.includes("cipete") || lower.includes("jaksel") || lower.includes("jakarta selatan")) {
+    zone = "Jakarta Selatan";
+  } else if (lower.includes("tmii") || lower.includes("taman mini") || lower.includes("rawamangun") || lower.includes("jatinegara") || lower.includes("matraman") || lower.includes("cibubur") || lower.includes("jaktim") || lower.includes("jakarta timur")) {
+    zone = "Jakarta Timur";
+  } else if (lower.includes("ubud") || lower.includes("tegallalang")) {
     zone = "Ubud";
-  } else if (lower.includes("canggu") || lower.includes("seminyak") || lower.includes("kuta") || lower.includes("legian")) {
+  } else if (lower.includes("canggu") || lower.includes("seminyak") || lower.includes("kuta") || lower.includes("legian") || lower.includes("pererenan")) {
     zone = "Seminyak Kuta";
-  } else if (lower.includes("uluwatu") || lower.includes("jimbaran") || lower.includes("nusa dua")) {
+  } else if (lower.includes("uluwatu") || lower.includes("jimbaran") || lower.includes("nusa dua") || lower.includes("pecatu")) {
     zone = "Nusa Dua Jimbaran";
-  } else if (lower.includes("malioboro") || lower.includes("kraton") || lower.includes("prawirotaman")) {
+  } else if (lower.includes("sanur") || lower.includes("denpasar")) {
+    zone = "Sanur Denpasar";
+  } else if (lower.includes("malioboro") || lower.includes("kraton") || lower.includes("prawirotaman") || lower.includes("tugu jogja") || lower.includes("kotagede")) {
     zone = "Malioboro";
   } else if (lower.includes("kaliurang") || lower.includes("merapi")) {
     zone = "Kaliurang";
-  } else if (lower.includes("lembang")) {
+  } else if (lower.includes("lembang") || lower.includes("maribaya") || lower.includes("ciater")) {
     zone = "Lembang";
-  } else if (lower.includes("dago") || lower.includes("riau") || lower.includes("braga")) {
+  } else if (lower.includes("dago") || lower.includes("riau") || lower.includes("braga") || lower.includes("asia afrika") || lower.includes("gedung sate")) {
     zone = "Dago";
+  } else if (lower.includes("ciwidey") || lower.includes("rancabali") || lower.includes("pangalengan")) {
+    zone = "Ciwidey";
   }
 
   const totalBudget = draft?.budget || 0;
@@ -314,8 +333,13 @@ async function checkBackups(item: any, draft: any, locale: string) {
         kind: backup.kind,
         title: backup.title.trim(),
         detail: typeof backup.detail === "string" ? backup.detail : "",
+        imageUrl: place?.imageUrl,
+        category: place?.category ?? inferCategoryFromTitle(backup.title),
+        placeId: place?.placeId,
         address: place?.address,
         rating: place?.rating,
+        priceLevel: place?.priceLevel,
+        openingHours: place?.open_now !== undefined ? (place.open_now ? (locale === "en" ? "Open Now" : "Buka Sekarang") : (locale === "en" ? "Closed" : "Tutup")) : undefined,
       };
       evaluateRules(entry, place, draft, locale);
       return entry;
@@ -404,7 +428,7 @@ async function runAgent(systemInstruction: string, promptText: string, locale: s
         properties: {
           agentic_evaluation: {
             type: "string",
-            description: "Step-by-step reasoning: analyze constraints (budget, pace, accessibility, diet), evaluate feasibility, and plan the itinerary strategy BEFORE generating the days. Act as your own Rule Guardian."
+            description: "Step-by-step reasoning: 1) Verify all extras.mustVisit venues and schedule them as anchor stops on designated days. 2) Check STRICT SAME-DAY GEOGRAPHIC CLUSTERING: Ensure all stops for each day are in the exact same neighborhood (NO cross-city commute like Glodok to Kelapa Gading!). 3) Check that every member's needs (accessibility, diet/halal) and custom wishes are fulfilled."
           },
           days: {
             type: "array",
@@ -454,6 +478,76 @@ async function runAgent(systemInstruction: string, promptText: string, locale: s
   }
 }
 
+function formatTripExtras(draft: any): string {
+  const ex = draft?.extras || {};
+  const lines: string[] = [];
+
+  if (ex.mustVisit && String(ex.mustVisit).trim()) {
+    lines.push(`- MUST-VISIT ATTRACTIONS & STOPS (NON-NEGOTIABLE): "${ex.mustVisit}" -> YOU MUST INCLUDE THESE EXACT VENUES/PLACES IN THE ITINERARY DAYS!`);
+  }
+  if (ex.avoid && String(ex.avoid).trim()) {
+    lines.push(`- STRICTLY AVOID (DO NOT INCLUDE): "${ex.avoid}"`);
+  }
+  if (ex.lodging && String(ex.lodging).trim()) {
+    lines.push(`- USER SPECIFIED LODGING: "${ex.lodging}"`);
+  }
+  if (ex.arrivalTime || ex.departureTime) {
+    lines.push(`- ARRIVAL / DEPARTURE: Arrives at ${ex.arrivalTime || "Flexible"}, Departs at ${ex.departureTime || "Flexible"}`);
+  }
+  if (ex.dayStart || ex.dayEnd) {
+    lines.push(`- DAILY TIME WINDOW: Starts around ${ex.dayStart || "09:00"}, Ends around ${ex.dayEnd || "21:00"}`);
+  }
+  const transportList = [...(ex.transport || []), ...(ex.customTransport || [])];
+  if (transportList.length > 0) {
+    lines.push(`- TRANSPORTATION MODE: ${transportList.join(", ")}`);
+  }
+  if (ex.occasion && String(ex.occasion).trim()) {
+    lines.push(`- SPECIAL OCCASION: "${ex.occasion}"`);
+  }
+  if (draft?.notes && String(draft.notes).trim()) {
+    lines.push(`- TRIP NOTES / SPECIAL REQUESTS: "${draft.notes}"`);
+  }
+
+  return lines.length > 0 ? lines.join("\n") : "No specific extras specified.";
+}
+
+function formatMemberProfiles(members: any[]): string {
+  if (!Array.isArray(members) || members.length === 0) return "Standard group profile.";
+
+  return members.map((m: any, idx: number) => {
+    const ageStr = m.age ? `${m.age} years old` : (m.ageGroup || "adult");
+    const name = m.name || `Member ${idx + 1}`;
+    
+    const needsList: string[] = [];
+    if (Array.isArray(m.needs)) needsList.push(...m.needs);
+    if (Array.isArray(m.customNeeds)) needsList.push(...m.customNeeds);
+    
+    const mustWishes: string[] = [];
+    const niceWishes: string[] = [];
+    if (m.interests && typeof m.interests === "object") {
+      for (const [key, level] of Object.entries(m.interests)) {
+        if (level === "must") mustWishes.push(key);
+        else if (level === "nice") niceWishes.push(key);
+      }
+    }
+    if (Array.isArray(m.customInterests)) {
+      for (const ci of m.customInterests) {
+        if (!ci?.label) continue;
+        if (ci.level === "must") mustWishes.push(`"${ci.label}"`);
+        else niceWishes.push(`"${ci.label}"`);
+      }
+    }
+
+    const lines: string[] = [`- ${name} (${ageStr}):`];
+    if (needsList.length > 0) lines.push(`  * Needs: ${needsList.join(", ")}`);
+    if (m.allergies) lines.push(`  * Allergies/Diet: ${m.allergies}`);
+    if (mustWishes.length > 0) lines.push(`  * MUST-HAVE WISHES: ${mustWishes.join(", ")}`);
+    if (niceWishes.length > 0) lines.push(`  * Nice-to-have wishes: ${niceWishes.join(", ")}`);
+    
+    return lines.join("\n");
+  }).join("\n");
+}
+
 async function plannerAgent(
   draft: any,
   locale: string,
@@ -485,42 +579,60 @@ async function plannerAgent(
       `\nIncorporate these verified amusement and attraction places for daytime itinerary stops when relevant to members' interests!`
     : "";
 
+  const extrasPrompt = `\n\n=== TRIP EXTRAS & USER CONSTRAINTS ===\n${formatTripExtras(draft)}`;
+  const membersPrompt = `\n\n=== GROUP MEMBERS, SPECIFIC WISHES & ACCESSIBILITY NEEDS ===\n${formatMemberProfiles(draft.members)}`;
+
   return await runAgent(
-    `You are an expert, meticulous, and realistic AI Trip Planner. Create a detailed, day-by-day itinerary based on the user's trip plan data.${liveHotelPrompt}${liveAttractionPrompt}${mediationBrief(draft, locale)}
+    `You are an expert, meticulous, and realistic AI Trip Planner. Create a detailed, day-by-day itinerary based on the user's trip plan data.${extrasPrompt}${membersPrompt}${liveHotelPrompt}${liveAttractionPrompt}${mediationBrief(draft, locale)}
 
 CRITICAL RULES FOR ACCURACY, PLACES & BUDGET:
-1. SPECIFIC REAL VENUES ONLY (NO GENERIC ACTIVITY TITLES):
+1. MANDATORY MUST-VISIT ATTRACTIONS & STOPS:
+   - If user specified "extras.mustVisit" (e.g. "${draft?.extras?.mustVisit || ''}"), EVERY place or venue listed is NON-NEGOTIABLE and MUST appear as a primary stop in the itinerary!
+   - You MUST design that day's schedule around these anchor stops. NEVER omit, replace, or skip them.
+
+2. STRICT SAME-DAY GEOGRAPHIC CLUSTERING (NO CROSS-CITY COMMUTES):
+   - CRITICAL PROXIMITY RULE: All stops on any given day MUST be clustered within the same local neighborhood or adjacent district (under 15-20 minutes / maximum 5-10 km travel radius).
+   - NEVER schedule stops across far opposite ends of a metropolis on the same day!
+     * Example of severe failure: Scheduling a morning or lunch stop in Glodok / Kota Tua (West/Central Jakarta) and an afternoon stop in Kelapa Gading (North-East Jakarta). They are 18+ km apart with heavy traffic!
+     * If the day includes a stop in Glodok, ALL stops for that day (morning coffee, lunch, afternoon cultural walk, dinner, and hotel check-in) MUST be in the Glodok / Kota Tua / Mangga Besar / Hayam Wuruk / West-Central Jakarta area!
+     * If the trip spans multiple days, dedicate different days to distinct neighborhood clusters (e.g. Day 1 in Glodok & Kota Tua; Day 2 in Senopati & Blok M).
+
+3. STRICT USER AVOIDANCE:
+   - If user specified "extras.avoid" (e.g. "${draft?.extras?.avoid || ''}"), you are STRICTLY FORBIDDEN from including any of those venues, crowds, or food items.
+
+4. SPECIFIC REAL VENUES ONLY (NO GENERIC ACTIVITY TITLES):
    - NEVER use generic activity titles like "Check-in Hotel", "Check in", "Istirahat", "Makan Siang", "Makan Malam", "Kulineran".
    - "title" MUST ALWAYS BE A REAL, SPECIFIC, SEARCHABLE VENUE/PLACE NAME on Google Maps.
 
-2. HOTEL & ACCOMMODATION RULES (STRICT ZONE & PROXIMITY):
-   - CRITICAL PROXIMITY RULE: The hotel MUST be located in the SAME geographic cluster as Day 1's activities (e.g. if Day 1 activities are in North Jakarta / PIK / Ancol, the hotel MUST be in North Jakarta / PIK, NEVER South Jakarta!).
+5. HOTEL & ACCOMMODATION RULES (STRICT ZONE & PROXIMITY):
+   - The hotel MUST be located in the SAME geographic cluster as Day 1's activities (e.g. if Day 1 activities are in Glodok / West Jakarta, the hotel MUST be in West Jakarta / Glodok, NEVER Kelapa Gading or South Jakarta!).
    - If user specified "extras.lodging" in the draft, USE THAT HOTEL as the "title" for accommodation/check-in.
    - If user did NOT specify a hotel: Select 1 REAL HOTEL matching the zone and budget tier as the "title".
    - In the "detail" of the hotel check-in stop: a brief description with the estimated price per night. Real alternative hotels nearby go in that stop's "backups" (kind "closed"), each with its estimated price per night in the backup's detail.
 
-3. DINING & RESTAURANT RULES (BUDGET-AWARE):
+6. DINING & RESTAURANT RULES (BUDGET-AWARE):
    - For every meal stop (breakfast, lunch, dinner), "title" MUST be a SPECIFIC, REAL RESTAURANT or EATERY NAME.
-   - NEVER name just a general area, complex, or mall (e.g. NEVER write "Makan di Cove at Batavia" or "Mall Central Park"). Instead, write the exact restaurant within that area, e.g. "Talassa Jakarta - Cove at Batavia PIK" or "Remboelan - Senayan City".
+   - NEVER name just a general area, complex, or mall. Instead, write the exact restaurant within that area (e.g. "Pantjoran Tea House" or "Kopi Es Tak Kie" in Glodok).
    - BUDGET ALIGNMENT: 
      ${totalBudget ? `Total group budget is Rp ${totalBudget.toLocaleString('id-ID')} for ${memberCount} people across ${daysCount} days (approx. Rp ${budgetPerPersonPerDay?.toLocaleString('id-ID')} per person/day). Pick restaurants whose price range logically fits this budget! Mention estimated price per person in the detail.` : 'Pick popular, high-value restaurants suitable for travelers and their budget.'}
    - STRICT DIET & ALLERGIES: Honour halal, vegetarian, vegan, and member allergy constraints strictly. If halal is requested, choose halal-certified or Muslim-friendly spots.
    - In the "detail": Mention recommended signature dishes and the approximate price per person. Alternative eateries go in "backups", not in the detail.
 
-4. LOGICAL TIMINGS & REALISTIC PACE:
+7. LOGICAL TIMINGS & REALISTIC PACE:
    - Account for travel distance and traffic between consecutive stops.
+   - Respect daily time windows (extras.dayStart to extras.dayEnd) and arrival/departure times.
    - If pace is 'relaxed', do not pack more than 3-4 key stops per day with ample rest.
 
-5. SPECIAL NEEDS & CUSTOM WISHES:
-   - Member needs (wheelchair, stroller/no stairs, elderly, toddlers) must be prioritized in venue selection.
-   - Honour members' "customNeeds", "customInterests", and free-text "notes".
-   - Besides the fixed choices, the data holds entries people typed themselves: a member's exact "age", "customNeeds" and "customInterests" (level "must" outranks "nice"), the trip's "extras.customTransport", and the free-text "notes". Honour them exactly like the fixed ones.
+8. SPECIAL NEEDS & MEMBER WISHES:
+   - Member accessibility needs (wheelchair, stroller/no stairs, elderly, toddlers) must be prioritized in venue selection.
+   - Honour members' "customNeeds", "customInterests" (level "must" is MANDATORY; level "nice" is prioritized if time permits), and free-text "notes".
+   - Stated needs are NEVER traded away.
 
-6. A BACKUP PLAN FOR EVERY STOP ("backups"):
-   - Give EVERY stop 1 or 2 backups for the same time slot, so the group already has somewhere to go when the stop cannot happen. They are prepared now because on the day there may be no internet.
-   - "kind" says when the backup is for: "rain" = an INDOOR place for a rainy day (every outdoor stop needs one); "rest" = a calm place close by to sit and recover, such as a café, a lounge, or a shaded seating area; "meal" = a replacement restaurant (every meal stop needs one); "closed" = a similar place for when the stop is closed or full.
+9. A BACKUP PLAN FOR EVERY STOP ("backups"):
+   - Give EVERY stop 1 or 2 backups for the same time slot, so the group already has somewhere to go when the stop cannot happen.
+   - "kind" says when the backup is for: "rain" = an INDOOR place for a rainy day (every outdoor stop needs one); "rest" = a calm place close by to sit and recover; "meal" = a replacement restaurant; "closed" = a similar place for when the stop is closed or full.
    - A backup "title" is a SPECIFIC REAL venue on Google Maps within about 15 minutes of the stop it replaces. Never reuse a place that appears anywhere else in the plan.
-   - A backup honours every member's needs, diet, and allergies exactly like a main stop does. Its "detail" says in one or two sentences why it suits this group and what to know before going (indoor or outdoor, price, opening hours).
+   - A backup honours every member's needs, diet, and allergies exactly like a main stop does.
 
 Do it perfectly on the first try.`,
     `Please generate a detailed itinerary for:

@@ -37,6 +37,8 @@ function labelTone(step: StepperStep): string {
 
 /** The dot a station is drawn as: filled once passed, ringed where the visitor is, hollow ahead. */
 function Dot({ step, last }: { step: StepperStep; last: boolean }) {
+  const shape = last ? "h-4 w-6 rounded-full" : "size-4 rounded-full";
+  if (step.current) return <span aria-hidden="true" className={`${shape} border-4 border-primary bg-background ring-4 ring-primary/20`} />;
   if (step.done) {
     return (
       <span
@@ -47,8 +49,6 @@ function Dot({ step, last }: { step: StepperStep; last: boolean }) {
       </span>
     );
   }
-  const shape = last ? "h-4 w-6 rounded-full" : "size-4 rounded-full";
-  if (step.current) return <span aria-hidden="true" className={`${shape} border-4 border-primary bg-background ring-4 ring-primary/20`} />;
   return <span aria-hidden="true" className={`${shape} border-2 border-border-strong bg-background`} />;
 }
 

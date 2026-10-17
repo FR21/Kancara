@@ -486,7 +486,7 @@ export function countFilledExtras(extras: TripExtras): number {
   ];
   const filledText = textKeys.filter((key) => extras[key].trim() !== "").length;
   const hasTransport = extras.transport.length > 0 || extras.customTransport.length > 0;
-  return filledText + (extras.flexibleDates ? 1 : 0) + (hasTransport ? 1 : 0);
+  return filledText + (hasTransport ? 1 : 0);
 }
 
 /** Optional details the planner has filled in: the extras plus the free-text note. */

@@ -1,4 +1,5 @@
 import type { BackupKind, Itinerary, ItineraryBackup, ItineraryDay, ItineraryItem } from "@/lib/client/captain";
+import { placePhotoQueryUrl, resolveEffectiveCategory } from "@/lib/place-category";
 
 // Backup plans: every stop carries one or two places that can take its slot when it cannot happen. They are
 // prepared and checked against the group's needs when the plan is made, so on the day nothing has to be looked up.
@@ -41,6 +42,8 @@ function swapBackup(item: ItineraryItem, index: number): ItineraryItem {
   const others = backups.filter((_, position) => position !== index);
   return {
     ...place,
+    imageUrl: place.imageUrl || (place.title ? placePhotoQueryUrl(place.title) : undefined),
+    category: resolveEffectiveCategory(place.category, place.title),
     time: item.time,
     travelToNext: item.travelToNext,
     standIn: kind === "main" ? undefined : kind,

@@ -5,6 +5,7 @@ import { type Dispatch, type ReactNode, useEffect, useRef } from "react";
 import type { Messages } from "@/lib/messages";
 import { type PlanDraft, type PlanDraftAction, fillTemplate } from "@/lib/plan-draft";
 import { type QuestionKey, isAnswered, isOptional, missingIn } from "@/lib/plan-questions";
+import { findPlacePoints } from "@/lib/client/place-points";
 import { useLocale } from "@/lib/use-locale";
 import CaptainNote from "./CaptainNote";
 import RouteSketch from "./RouteSketch";
@@ -72,7 +73,17 @@ export default function QuestionDeck({
   }, [question]);
 
 
-  const goNext = () => {
+  const goNext = async () => {
+    if (question === "trip") {
+      const trimmedOrigin = draft.origin.trim();
+      if (trimmedOrigin) {
+        const [point] = await findPlacePoints([trimmedOrigin], locale, new AbortController().signal).catch(() => [null]);
+        if (!point) {
+          document.getElementById("pass-origin")?.focus();
+          return;
+        }
+      }
+    }
     if (isLast || single) {
       onFinish();
       return;
@@ -121,7 +132,7 @@ export default function QuestionDeck({
           >
             {copy.title}
           </h1>
-          {copy.hint && <CaptainNote className="mt-4">{copy.hint}</CaptainNote>}
+          {copy.hint && <CaptainNote className="mt-3">{copy.hint}</CaptainNote>}
           {/* The pass so far, one quiet link in the question's own heading group rather than a button of its own. */}
           {onPreviewPass && (
             <button type="button" onClick={onPreviewPass} className={`${TEXT_LINK} mt-2`}>
@@ -130,7 +141,7 @@ export default function QuestionDeck({
             </button>
           )}
           {question === "trip" && isDesktop && (
-            <div className="mt-8">
+            <div className="mt-4">
               <RouteSketch origin={draft.origin} destinations={draft.destinations} locale={locale} label={text.deck.routeSketch} />
             </div>
           )}
@@ -144,6 +155,17 @@ export default function QuestionDeck({
 
         <div className={`mt-8 min-w-0 lg:mt-0 ${isCrew && isDesktop ? "relative min-h-96" : ""}`}>
           {!isCrew && answer}
+          {question === "trip" && !isDesktop && (
+            <div className="mt-6">
+              <RouteSketch
+                origin={draft.origin}
+                destinations={draft.destinations}
+                locale={locale}
+                label={text.deck.routeSketch}
+                compact
+              />
+            </div>
+          )}
           {isCrew && isDesktop && selectedMember && (
             // The frame and the scroller are two boxes: the frame clips the corners, and the scroller starts and
             // ends a corner's radius in from the edges, so its scrollbar runs along the straight side only.

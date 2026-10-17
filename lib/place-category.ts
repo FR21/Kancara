@@ -40,6 +40,32 @@ export function categoryFromTypes(types: unknown): PlaceCategory {
   return match ? match[0] : "other";
 }
 
+/**
+ * Infers a place category from its title when Google Places types are missing or general ("other").
+ */
+export function inferCategoryFromTitle(title?: string): PlaceCategory {
+  if (!title) return "other";
+  const lower = title.toLowerCase();
+
+  if (/\b(museum|gallery|galeri|monument|monumen|memorial|science center|science centre|miraikan|planetarium|art center|art centre)\b/i.test(lower)) return "museum";
+  if (/\b(mosque|masjid|musholla|church|gereja|temple|kuil|candi|synagogue|shrine|klenteng|pagoda|katedral|cathedral)\b/i.test(lower)) return "worship";
+  if (/\b(park|taman|beach|pantai|garden|kebun|zoo|aquarium|lake|danau|waterfall|curug|mountain|gunung|forest|hutan|bukit|hill|nature|cliff)\b/i.test(lower)) return "nature";
+  if (/\b(cafe|café|coffee|kopi|bakery|bakehouse|tea house|teahouse|dessert|ice cream|gelato)\b/i.test(lower)) return "cafe";
+  if (/\b(restaurant|restoran|resto|makan|food|dining|bistro|eatery|warung|kuliner|ramen|sushi|seafood|grill|bbq|steak|diner|kitchen|kedai)\b/i.test(lower)) return "meal";
+  if (/\b(mall|plaza|market|pasar|supermarket|department store|outlet|shopping|boutique|toko)\b/i.test(lower)) return "shopping";
+  if (/\b(hotel|resort|villa|hostel|inn|guest house|guesthouse|homestay|cottage|ryokan|stay)\b/i.test(lower)) return "lodging";
+  if (/\b(station|stasiun|airport|bandara|terminal|harbor|harbour|pelabuhan|transit|subway|metro|ferry|port)\b/i.test(lower)) return "transport";
+  if (/\b(tower|menara|castle|istana|palace|theme park|waterpark|safari|amusement|observation deck|skytree|bridge|jembatan)\b/i.test(lower)) return "attraction";
+
+  return "other";
+}
+
+/** Resolves category with fallback to title-based inference if category is undefined or "other". */
+export function resolveEffectiveCategory(category?: PlaceCategory, title?: string): PlaceCategory {
+  if (category && category !== "other") return category;
+  return title ? inferCategoryFromTitle(title) : (category ?? "other");
+}
+
 // A Places photo is fetched with the server's key; the browser only ever sees this app's own address for it.
 const PHOTO_NAME = /^places\/[A-Za-z0-9_-]+\/photos\/[A-Za-z0-9_-]+$/;
 
@@ -50,6 +76,11 @@ export function isPlacePhotoName(value: string): boolean {
 /** This app's address for a Places photo, so the key that fetches it never leaves the server. */
 export function placePhotoUrl(photoName: string): string {
   return `/api/place-photo?name=${encodeURIComponent(photoName)}`;
+}
+
+/** URL for searching and serving a place photo on-demand by place query. */
+export function placePhotoQueryUrl(query: string): string {
+  return `/api/place-photo?query=${encodeURIComponent(query.trim())}`;
 }
 
 /**

@@ -23,7 +23,7 @@ import IconButton from "@/components/ui/IconButton";
 import { BADGE } from "@/components/ui/styles";
 import type { ItineraryItem } from "@/lib/client/captain";
 import type { Messages } from "@/lib/messages";
-import type { PlaceCategory } from "@/lib/place-category";
+import { type PlaceCategory, placePhotoQueryUrl, resolveEffectiveCategory } from "@/lib/place-category";
 import { fillTemplate } from "@/lib/plan-draft";
 import { splitTime } from "@/lib/stop-time";
 import { listBackups } from "@/lib/backups";
@@ -63,15 +63,17 @@ type StopItemProps = {
 export default function StopItem({ item, number, phase, active, text, needLabels, onOpen, onBackups, onPoint }: StopItemProps) {
   const { start } = splitTime(item.time);
   const duration = formatDuration(item.time, text);
-  const kind = item.errand ? text.errands[item.errand] : text.timeline.categories[item.category ?? "other"];
+  const effectiveCategory = resolveEffectiveCategory(item.category, item.title);
+  const kind = item.errand ? text.errands[item.errand] : text.timeline.categories[effectiveCategory];
   const facts = [kind, item.priceLevel].filter(Boolean).join(" · ");
   const partly = new Set((item.violations ?? []).map((violation) => violation.need));
   const met = item.covers.filter((cover) => !partly.has(cover.need));
   const backups = listBackups(item).filter((backup) => backup.kind !== "main").length;
   const done = phase === "done";
   const [photoFailed, setPhotoFailed] = useState(false);
-  const showPhoto = Boolean(item.imageUrl) && !photoFailed;
-  const Icon = item.errand ? WashingMachine : CATEGORY_ICONS[item.category ?? "other"];
+  const effectiveImageUrl = item.imageUrl || (item.title ? placePhotoQueryUrl(item.title) : undefined);
+  const showPhoto = Boolean(effectiveImageUrl) && !photoFailed;
+  const Icon = item.errand ? WashingMachine : CATEGORY_ICONS[effectiveCategory];
 
   return (
     <li
@@ -106,7 +108,7 @@ export default function StopItem({ item, number, phase, active, text, needLabels
           {showPhoto && (
             // eslint-disable-next-line @next/next/no-img-element -- place photos are served per request by /api/place-photo
             <img
-              src={item.imageUrl}
+              src={effectiveImageUrl}
               alt=""
               loading="lazy"
               decoding="async"

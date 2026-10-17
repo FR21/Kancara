@@ -96,7 +96,24 @@ export default function MenuPhotoPicker({ text, previewUrl, busy, scanned, onPic
             {busy === "scanning" ? text.scanning : text.scan}
           </button>
           {busy === "idle" && (
-            <PickButton label={text.change} icon={<ImageUp className="size-4" aria-hidden="true" />} primary={false} camera={false} onChange={pick} />
+            <div className="flex flex-col gap-2 sm:flex-row">
+              {touch && (
+                <PickButton
+                  label={text.camera}
+                  icon={<Camera className="size-4" aria-hidden="true" />}
+                  primary={false}
+                  camera
+                  onChange={pick}
+                />
+              )}
+              <PickButton
+                label={text.change}
+                icon={<ImageUp className="size-4" aria-hidden="true" />}
+                primary={false}
+                camera={false}
+                onChange={pick}
+              />
+            </div>
           )}
         </div>
       </div>

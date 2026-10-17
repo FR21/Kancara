@@ -162,14 +162,21 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
     return text.itinerary.missingOrganizer;
   };
 
-  const tripTitle = card ? formatTripTitle(card.name, card.destinations, locale, text.card.untitled) : text.card.untitled;
+  const tripTitle = card ? formatTripTitle(card.name, card.destinations, locale, text.card.untitled) : "";
 
   return (
     <PageShell width="workspace">
       <PageBackdrop />
       <Breadcrumbs
         label={navText.breadcrumb}
-        items={[{ label: navText.links.trips, href: "/trips" }, { label: tripTitle }]}
+        items={[
+          { label: navText.links.trips, href: "/trips" },
+          ...(card
+            ? [{ label: tripTitle }]
+            : state === "loading"
+            ? [{ label: "", loading: true }]
+            : []),
+        ]}
       />
 
       {!plan && state === "loading" && (

@@ -3,6 +3,7 @@
 
 import type { Itinerary, ItineraryItem } from "@/lib/client/captain";
 import type { Messages } from "@/lib/messages";
+import { resolveEffectiveCategory } from "@/lib/place-category";
 import { fillTemplate, parseLocalDate } from "@/lib/plan-draft";
 import { splitTime } from "@/lib/stop-time";
 
@@ -39,7 +40,8 @@ function needsLine(item: ItineraryItem, input: PdfInput): string {
 
 function rowOf(item: ItineraryItem, index: number, input: PdfInput): string[] {
   const { start, end } = splitTime(item.time);
-  const kind = item.errand ? input.text.errands[item.errand] : input.text.timeline.categories[item.category ?? "other"];
+  const effectiveCategory = resolveEffectiveCategory(item.category, item.title);
+  const kind = item.errand ? input.text.errands[item.errand] : input.text.timeline.categories[effectiveCategory];
   const travel = item.travelToNext
     ? fillTemplate(input.text.timeline.travelCar, { duration: item.travelToNext.duration, distance: item.travelToNext.distance })
     : "";
@@ -88,18 +90,20 @@ export async function downloadItineraryPdf(input: PdfInput): Promise<void> {
       startY: cursor,
       margin: { left: MARGIN, right: MARGIN, top: MARGIN, bottom: MARGIN + 16 },
       head: [
-        [{ content: drawable(heading), colSpan: 7, styles: { fillColor: [255, 255, 255], textColor: INK, fontSize: 12, fontStyle: "bold", cellPadding: { top: 4, bottom: 8, left: 0, right: 0 } } }],
+        [{ content: drawable(heading), colSpan: 7, styles: { fillColor: [255, 255, 255], textColor: INK, fontSize: 12, fontStyle: "bold", halign: "left", cellPadding: { top: 4, bottom: 8, left: 0, right: 0 } } }],
         [words.columns.number, words.columns.time, words.columns.place, words.columns.kind, words.columns.needs, words.columns.rating, words.columns.next].map(drawable),
       ],
       body: day.items.length > 0 ? day.items.map((item, index) => rowOf(item, index, input)) : [[{ content: drawable(text.emptyDay), colSpan: 7 }]],
       theme: "grid",
-      styles: { font: "helvetica", fontSize: 9, cellPadding: 6, textColor: INK, lineColor: [221, 228, 228], lineWidth: 0.5, valign: "top", overflow: "linebreak" },
-      headStyles: { fillColor: PRIMARY, textColor: [255, 255, 255], fontStyle: "bold" },
+      styles: { font: "helvetica", fontSize: 9, cellPadding: 5, textColor: INK, lineColor: [221, 228, 228], lineWidth: 0.5, valign: "top", overflow: "linebreak" },
+      headStyles: { fillColor: PRIMARY, textColor: [255, 255, 255], fontStyle: "bold", valign: "middle", halign: "center" },
       columnStyles: {
-        0: { cellWidth: 22, halign: "right" },
-        1: { cellWidth: 62 },
-        2: { cellWidth: 140 },
-        5: { cellWidth: 38, halign: "right" },
+        0: { cellWidth: 28, halign: "center" },
+        1: { cellWidth: 58 },
+        2: { cellWidth: 135 },
+        3: { cellWidth: 72 },
+        4: { cellWidth: 84 },
+        5: { cellWidth: 46, halign: "center" },
       },
     });
     cursor = (document as unknown as { lastAutoTable: { finalY: number } }).lastAutoTable.finalY + 24;

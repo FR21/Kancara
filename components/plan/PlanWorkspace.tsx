@@ -293,7 +293,7 @@ export default function PlanWorkspace() {
     ...QUESTIONS.map((key) => ({
       key,
       label: text.stages.questions[key],
-      done: isAnswered(key, draft),
+      done: canOpen(key) && isAnswered(key, draft) && !(stage === "details" && question === key),
       current: stage === "details" && question === key,
       onSelect: canOpen(key)
         ? () => {

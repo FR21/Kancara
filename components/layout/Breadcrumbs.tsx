@@ -1,7 +1,7 @@
 import { ChevronRight } from "lucide-react";
 import Link from "next/link";
 
-export type Crumb = { label: string; href?: string };
+export type Crumb = { label: string; href?: string; loading?: boolean };
 
 type BreadcrumbsProps = {
   /** What a screen reader calls the trail. */
@@ -21,7 +21,12 @@ export default function Breadcrumbs({ label, items }: BreadcrumbsProps) {
           return (
             <li key={`${index}-${item.label}`} className="flex min-w-0 items-center gap-x-1">
               {index > 0 && <ChevronRight className="size-4 shrink-0 text-text-muted" aria-hidden="true" />}
-              {item.href && !last ? (
+              {item.loading ? (
+                <span
+                  aria-hidden="true"
+                  className="inline-block h-4 w-28 rounded-full bg-surface-muted motion-safe:animate-pulse"
+                />
+              ) : item.href && !last ? (
                 <Link
                   href={item.href}
                   className="inline-flex min-h-11 max-w-40 items-center rounded-sm text-primary underline-offset-4 transition-[color] duration-150 ease-out hover:underline sm:max-w-64"

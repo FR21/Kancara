@@ -13,10 +13,11 @@ import {
   Wallet,
   X,
 } from "lucide-react";
-import { type KeyboardEvent, type MouseEvent, useEffect, useRef } from "react";
+import { type KeyboardEvent, type MouseEvent, useEffect, useRef, useState } from "react";
 import type { ItineraryItem } from "@/lib/client/captain";
 import { isLegCurrent, listBackups } from "@/lib/backups";
 import type { Messages } from "@/lib/messages";
+import { placePhotoQueryUrl } from "@/lib/place-category";
 import { fillTemplate } from "@/lib/plan-draft";
 import { splitTime } from "@/lib/stop-time";
 import { plural } from "@/lib/trips/format";
@@ -95,8 +96,10 @@ export default function StopDialog({
   }, [open]);
 
   // Each stop starts at its top, whatever the last one was scrolled to.
+  const [photoFailed, setPhotoFailed] = useState(false);
   useEffect(() => {
     scrollRef.current?.scrollTo({ top: 0, behavior: "instant" });
+    setPhotoFailed(false);
   }, [index]);
 
   const closeOnBackdrop = (event: MouseEvent<HTMLDialogElement>) => {
@@ -125,6 +128,7 @@ export default function StopDialog({
   const phase = index === null ? null : (phases[index] ?? null);
   const nextItem = index === null ? undefined : items[index + 1];
   const standingBy = item ? listBackups(item).filter((backup) => backup.kind !== "main").length : 0;
+  const effectiveImageUrl = item?.imageUrl || (item?.title ? placePhotoQueryUrl(item.title) : undefined);
 
   return (
     <dialog
@@ -151,9 +155,14 @@ export default function StopDialog({
           </div>
 
           <div ref={scrollRef} className="min-h-0 flex-1 overflow-y-auto overscroll-contain [scrollbar-color:var(--border-strong)_transparent] [scrollbar-width:thin] motion-safe:scroll-smooth">
-            {item.imageUrl && (
+            {effectiveImageUrl && !photoFailed && (
               // eslint-disable-next-line @next/next/no-img-element -- place photos come from a remote API with per-request URLs
-              <img src={item.imageUrl} alt="" className="aspect-2/1 w-full bg-surface-muted object-cover sm:aspect-5/2" />
+              <img
+                src={effectiveImageUrl}
+                alt=""
+                onError={() => setPhotoFailed(true)}
+                className="aspect-2/1 w-full bg-surface-muted object-cover sm:aspect-5/2"
+              />
             )}
 
             <div key={index} className="space-y-6 p-surface motion-safe:animate-message-in">
