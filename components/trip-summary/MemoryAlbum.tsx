@@ -10,7 +10,7 @@ import EmptyState from "@/components/ui/EmptyState";
 import ErrorAlert from "@/components/ui/ErrorAlert";
 import { buttonClass, choiceClass } from "@/components/ui/styles";
 import { useListArrival } from "@/components/ui/use-list-arrival";
-import type { NewMemory, TripMemory } from "@/lib/client/trip-memories";
+import type { NewMemory, TripMemory, UpdateMemory } from "@/lib/client/trip-memories";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
 
@@ -43,6 +43,7 @@ function MemoryCardSkeleton({ className = "" }: { className?: string }) {
 export default function MemoryAlbum({ album, days, defaultDay, places, members, locale, text, onNotice }: MemoryAlbumProps) {
   const momentsText = text.moments;
   const [formOpen, setFormOpen] = useState(false);
+  const [editingMemory, setEditingMemory] = useState<TripMemory | null>(null);
   // A new key gives every opening of the form a fresh, empty one.
   const [formKey, setFormKey] = useState(0);
   const [removing, setRemoving] = useState<TripMemory | null>(null);
@@ -51,14 +52,27 @@ export default function MemoryAlbum({ album, days, defaultDay, places, members, 
   const arrivalOf = useListArrival(album.memories.map((memory) => memory.id));
 
   const openForm = () => {
+    setEditingMemory(null);
     setFormKey((key) => key + 1);
     setFormOpen(true);
   };
 
-  const save = async (memory: NewMemory) => {
-    await album.add(memory);
-    setFormOpen(false);
-    onNotice(momentsText.saved);
+  const askEdit = (memory: TripMemory) => {
+    setEditingMemory(memory);
+    setFormOpen(true);
+  };
+
+  const save = async (memory: NewMemory | UpdateMemory) => {
+    if (editingMemory) {
+      await album.update(editingMemory.id, memory as UpdateMemory);
+      setFormOpen(false);
+      setEditingMemory(null);
+      onNotice(momentsText.updated);
+    } else {
+      await album.add(memory as NewMemory);
+      setFormOpen(false);
+      onNotice(momentsText.saved);
+    }
   };
 
   const askRemove = (memory: TripMemory) => {
@@ -152,7 +166,7 @@ export default function MemoryAlbum({ album, days, defaultDay, places, members, 
                 const arrival = arrivalOf(memory.id);
                 return (
                   <li key={memory.id} style={arrival.style} className={`flex ${arrival.className}`}>
-                    <MemoryCard memory={memory} locale={locale} text={momentsText} onRemove={askRemove} />
+                    <MemoryCard memory={memory} locale={locale} text={momentsText} onEdit={askEdit} onRemove={askRemove} />
                   </li>
                 );
               })}
@@ -171,15 +185,19 @@ export default function MemoryAlbum({ album, days, defaultDay, places, members, 
       </div>
 
       <MemoryFormSheet
-        key={formKey}
+        key={editingMemory ? `edit-${editingMemory.id}` : `new-${formKey}`}
         open={formOpen}
         days={days}
         defaultDay={defaultDay}
+        initialMemory={editingMemory}
         places={places}
         members={members}
         locale={locale}
         text={momentsText}
-        onClose={() => setFormOpen(false)}
+        onClose={() => {
+          setFormOpen(false);
+          setEditingMemory(null);
+        }}
         onSave={save}
       />
 

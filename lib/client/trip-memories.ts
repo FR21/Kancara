@@ -23,6 +23,15 @@ export type NewMemory = {
   authorName: string;
   photo: File | null;
 };
+export type UpdateMemory = {
+  placeTitle: string;
+  dayNumber: number;
+  note: string;
+  rating: number | null;
+  authorName: string;
+  photo?: File | null;
+  removePhoto?: boolean;
+};
 
 export class TripMemoriesError extends Error {
   constructor(
@@ -124,6 +133,21 @@ export const tripMemories = {
     const [created] = parseMemory(await response.json());
     if (!created) throw new TripMemoriesError("Invalid memory response");
     return created;
+  },
+
+  async update(tripId: string, memoryId: string, memory: UpdateMemory): Promise<TripMemory> {
+    const form = new FormData();
+    form.set("placeTitle", memory.placeTitle);
+    form.set("dayNumber", String(memory.dayNumber));
+    form.set("note", memory.note);
+    if (memory.rating !== null) form.set("rating", String(memory.rating));
+    form.set("authorName", memory.authorName);
+    if (memory.photo) form.set("photo", memory.photo);
+    if (memory.removePhoto) form.set("removePhoto", "true");
+    const response = await send(`${basePath(tripId)}/${encodeURIComponent(memoryId)}`, { method: "PATCH", body: form }, UPLOAD_TIMEOUT_MS);
+    const [updated] = parseMemory(await response.json());
+    if (!updated) throw new TripMemoriesError("Invalid memory response");
+    return updated;
   },
 
   async remove(tripId: string, memoryId: string): Promise<void> {

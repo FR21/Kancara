@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { type MemoryAuthor, type NewMemory, type TripMemory, tripMemories } from "@/lib/client/trip-memories";
+import { type MemoryAuthor, type NewMemory, type TripMemory, type UpdateMemory, tripMemories } from "@/lib/client/trip-memories";
 
 export type AlbumStatus = "loading" | "ready" | "failed";
 
@@ -17,6 +17,7 @@ export type MemoryAlbum = {
   retry: () => void;
   loadMore: () => void;
   add: (memory: NewMemory) => Promise<void>;
+  update: (memoryId: string, memory: UpdateMemory) => Promise<void>;
   remove: (memoryId: string) => Promise<void>;
 };
 
@@ -106,6 +107,24 @@ export function useMemoryAlbum(tripId: string): MemoryAlbum {
     setTotal((count) => count + 1);
   };
 
+  const update = async (memoryId: string, memory: UpdateMemory) => {
+    const updated = await tripMemories.update(tripId, memoryId, memory);
+    const oldMemory = memories.find((item) => item.id === memoryId);
+    if (author !== null && updated.authorName !== author) {
+      setMemories((current) => current.filter((item) => item.id !== memoryId));
+    } else {
+      setMemories((current) => current.map((item) => (item.id === memoryId ? updated : item)));
+    }
+    if (oldMemory && oldMemory.authorName !== updated.authorName) {
+      setAuthors((current) => {
+        const decremented = countAuthor(current, oldMemory.authorName, -1);
+        return countAuthor(decremented, updated.authorName, 1);
+      });
+      const lastOfAuthor = authors.find((entry) => entry.name === author)?.count === 1;
+      if (author !== null && lastOfAuthor) showAuthor(null);
+    }
+  };
+
   const remove = async (memoryId: string) => {
     await tripMemories.remove(tripId, memoryId);
     const removed = memories.find((memory) => memory.id === memoryId);
@@ -130,6 +149,7 @@ export function useMemoryAlbum(tripId: string): MemoryAlbum {
     retry,
     loadMore,
     add,
+    update,
     remove,
   };
 }

@@ -1,6 +1,6 @@
 import "server-only";
 import type { Viewer } from "@/lib/account";
-import type { MemoryAuthor, MemoryPage, TripMemory } from "@/lib/client/trip-memories";
+import { type MemoryAuthor, type MemoryPage, type TripMemory, MAX_MEMORY_PHOTO_BYTES } from "@/lib/client/trip-memories";
 import { deleteObject, putObject } from "@/lib/object-storage";
 import { prisma } from "@/lib/prisma";
 
@@ -21,6 +21,53 @@ export const MAX_AUTHOR_NAME = 50;
 export const MAX_DAY_NUMBER = 366;
 const PAGE_SIZE = 24;
 const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+export const KINDS = [
+  { extension: "png", type: "image/png", matches: (bytes: Uint8Array) => startsWith(bytes, [0x89, 0x50, 0x4e, 0x47]) },
+  { extension: "jpg", type: "image/jpeg", matches: (bytes: Uint8Array) => startsWith(bytes, [0xff, 0xd8, 0xff]) },
+  {
+    extension: "webp",
+    type: "image/webp",
+    matches: (bytes: Uint8Array) =>
+      startsWith(bytes, [0x52, 0x49, 0x46, 0x46]) && startsWith(bytes.subarray(8), [0x57, 0x45, 0x42, 0x50]),
+  },
+];
+
+function startsWith(bytes: Uint8Array, signature: number[]): boolean {
+  return signature.every((byte, index) => bytes[index] === byte);
+}
+
+export function readText(form: FormData, name: string, limit: number): string {
+  const value = form.get(name);
+  return typeof value === "string" ? value.trim().slice(0, limit) : "";
+}
+
+export function readInput(form: FormData): MemoryInput | null {
+  const placeTitle = readText(form, "placeTitle", MAX_PLACE_TITLE);
+  const dayNumber = Number(form.get("dayNumber"));
+  const rawRating = form.get("rating");
+  const rating = rawRating === null ? null : Number(rawRating);
+  if (!placeTitle) return null;
+  if (!Number.isInteger(dayNumber) || dayNumber < 1 || dayNumber > MAX_DAY_NUMBER) return null;
+  if (rating !== null && (!Number.isInteger(rating) || rating < 1 || rating > 5)) return null;
+  return {
+    placeTitle,
+    dayNumber,
+    note: readText(form, "note", MAX_NOTE),
+    rating,
+    authorName: readText(form, "authorName", MAX_AUTHOR_NAME),
+  };
+}
+
+export async function readPhoto(form: FormData): Promise<{ photo: MemoryPhoto | null; error?: { message: string; status: number } }> {
+  const file = form.get("photo");
+  if (!(file instanceof File) || file.size === 0) return { photo: null };
+  if (file.size > MAX_MEMORY_PHOTO_BYTES) return { photo: null, error: { message: "The photo is too large", status: 413 } };
+  const content = await file.arrayBuffer();
+  const kind = KINDS.find((candidate) => candidate.matches(new Uint8Array(content)));
+  if (!kind) return { photo: null, error: { message: "The photo must be a PNG, JPEG, or WebP image", status: 415 } };
+  return { photo: { content, extension: kind.extension, contentType: kind.type } };
+}
 
 type TripAccess = { tripId: string; workspaceId: string; organizer: boolean };
 type MemoryRecord = {
@@ -155,6 +202,61 @@ export async function addTripMemory(
         note: input.note,
         rating: input.rating,
         photoObjectKey,
+      },
+      select: MEMORY_FIELDS,
+    });
+    return toMemory(record, trip.tripId, viewer, trip);
+  } catch (caught) {
+    if (photoObjectKey) await deleteObject(photoObjectKey).catch(() => undefined);
+    throw caught;
+  }
+}
+
+/**
+ * Updates a memory in the album. Only its original author or the trip organizer can update it.
+ */
+export async function updateTripMemory(
+  viewer: Viewer,
+  tripId: string,
+  memoryId: string,
+  input: MemoryInput,
+  photo: MemoryPhoto | null,
+  removePhoto = false,
+): Promise<TripMemory | null | "refused"> {
+  if (!UUID.test(memoryId)) return null;
+  const trip = await findTrip(viewer, tripId);
+  if (!trip) return null;
+
+  const where = { tripMemoryId: memoryId, tripId: trip.tripId, workspaceId: trip.workspaceId, deletedAt: null };
+  const memory = await prisma.tripMemory.findFirst({ where, select: { userId: true, photoObjectKey: true } });
+  if (!memory) return null;
+  if (!trip.organizer && memory.userId !== viewer.userId) return "refused";
+
+  let photoObjectKey: string | null | undefined = undefined;
+  if (photo) {
+    const photoId = crypto.randomUUID();
+    photoObjectKey = `trips/${trip.tripId}/memories/${viewer.userId}/${photoId}.${photo.extension}`;
+    await putObject(photoObjectKey, photo.content, photo.contentType, false);
+  } else if (removePhoto) {
+    photoObjectKey = null;
+  }
+
+  let authorName = input.authorName;
+  if (!authorName) {
+    const user = await prisma.user.findUnique({ where: { userId: viewer.userId }, select: { displayName: true } });
+    authorName = user?.displayName?.trim().slice(0, MAX_AUTHOR_NAME) ?? "";
+  }
+
+  try {
+    const record = await prisma.tripMemory.update({
+      where: { tripMemoryId: memoryId },
+      data: {
+        placeTitle: input.placeTitle,
+        dayNumber: input.dayNumber,
+        note: input.note,
+        rating: input.rating,
+        authorName,
+        ...(photoObjectKey !== undefined ? { photoObjectKey } : {}),
       },
       select: MEMORY_FIELDS,
     });

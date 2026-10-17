@@ -1,6 +1,6 @@
-import { Star, Trash2 } from "lucide-react";
+import { Pencil, Star, Trash2 } from "lucide-react";
 import Image from "next/image";
-import IconButton from "@/components/ui/IconButton";
+import ActionMenu from "@/components/ui/ActionMenu";
 import type { TripMemory } from "@/lib/client/trip-memories";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
@@ -9,6 +9,7 @@ type MemoryCardProps = {
   memory: TripMemory;
   locale: string;
   text: Messages["tripSummary"]["moments"];
+  onEdit: (memory: TripMemory) => void;
   onRemove: (memory: TripMemory) => void;
 };
 
@@ -21,7 +22,7 @@ function savedOn(createdAt: string, locale: string): string {
   return new Intl.DateTimeFormat(locale, { day: "numeric", month: "short", year: "numeric", timeZone: TIME_ZONE }).format(date);
 }
 
-export default function MemoryCard({ memory, locale, text, onRemove }: MemoryCardProps) {
+export default function MemoryCard({ memory, locale, text, onEdit, onRemove }: MemoryCardProps) {
   const author = memory.authorName || text.someone;
   const date = savedOn(memory.createdAt, locale);
 
@@ -65,13 +66,26 @@ export default function MemoryCard({ memory, locale, text, onRemove }: MemoryCar
           {[fillTemplate(text.day, { day: memory.dayNumber }), fillTemplate(text.by, { name: author }), date].filter(Boolean).join(" · ")}
         </p>
         {memory.removable && (
-          <IconButton
-            label={fillTemplate(text.remove, { place: memory.placeTitle })}
-            onClick={() => onRemove(memory)}
-            className="group/remove -mr-2"
-          >
-            <Trash2 className="size-4 text-text-muted transition-colors duration-150 group-hover/remove:text-error" aria-hidden="true" />
-          </IconButton>
+          <div className="-mr-2">
+            <ActionMenu
+              label={fillTemplate(text.actions, { place: memory.placeTitle })}
+              items={[
+                {
+                  key: "edit",
+                  label: text.edit,
+                  icon: Pencil,
+                  onSelect: () => onEdit(memory),
+                },
+                {
+                  key: "delete",
+                  label: text.delete,
+                  icon: Trash2,
+                  danger: true,
+                  onSelect: () => onRemove(memory),
+                },
+              ]}
+            />
+          </div>
         )}
       </div>
     </article>

@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, MapPinOff, Route, Trophy } from "lucide-react";
+import { ArrowRight, MapPinOff, Route } from "lucide-react";
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 import FieldPassSheet from "@/components/field-pass/FieldPassSheet";
@@ -215,14 +215,6 @@ export default function TripItinerary({ tripId, openToday = false }: TripItinera
             <PageHeader
               title={tripTitle}
               lead={facts.length > 0 ? <span className="tabular-nums">{facts.join(" · ")}</span> : undefined}
-              actions={
-                card.status === "completed" && (
-                  <Link href={`/trips/${encodeURIComponent(card.id)}/summary`} className={buttonClass("outline", "small")}>
-                    <Trophy className="size-4 text-primary" aria-hidden="true" />
-                    {text.tools.recap}
-                  </Link>
-                )
-              }
             />
           </div>
 

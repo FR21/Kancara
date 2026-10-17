@@ -10,13 +10,16 @@ import FieldError from "@/components/ui/FieldError";
 
 type PhotoPickerProps = {
   photo: File | null;
+  initialUrl?: string | null;
+  removePhoto?: boolean;
   text: Messages["tripSummary"]["moments"]["form"];
   onChange: (photo: File | null) => void;
+  onRemovePhoto?: (remove: boolean) => void;
 };
 
 // Picks one photo and shows it before it is sent. Asking for JPEG, PNG, or WebP only makes iPhones hand over a
 // JPEG instead of their HEIC original.
-export default function PhotoPicker({ photo, text, onChange }: PhotoPickerProps) {
+export default function PhotoPicker({ photo, initialUrl, removePhoto, text, onChange, onRemovePhoto }: PhotoPickerProps) {
   const inputId = useId();
   const hintId = useId();
   const [problem, setProblem] = useState<string | null>(null);
@@ -29,6 +32,7 @@ export default function PhotoPicker({ photo, text, onChange }: PhotoPickerProps)
     previewRef.current = file ? URL.createObjectURL(file) : null;
     setPreview(previewRef.current);
     onChange(file);
+    if (file && onRemovePhoto) onRemovePhoto(false);
   };
 
   useEffect(
@@ -55,15 +59,23 @@ export default function PhotoPicker({ photo, text, onChange }: PhotoPickerProps)
     showPreview(file);
   };
 
+  const handleRemove = () => {
+    showPreview(null);
+    if (onRemovePhoto) onRemovePhoto(true);
+  };
+
+  const currentDisplayUrl = preview ?? (!removePhoto ? initialUrl : null);
+  const hasPhoto = Boolean(photo || (!removePhoto && initialUrl));
+
   return (
     <div>
       <p className={FIELD_LABEL}>{text.photo}</p>
       <p id={hintId} className={FIELD_DESCRIPTION}>
         {text.photoHint}
       </p>
-      {preview && (
+      {currentDisplayUrl && (
         <div className="relative mt-2 aspect-4/3 w-full max-w-xs overflow-clip rounded-lg border border-border bg-surface-muted motion-safe:animate-pop-in">
-          <Image src={preview} alt={text.photoPreview} fill unoptimized sizes="320px" className="object-cover" />
+          <Image src={currentDisplayUrl} alt={text.photoPreview} fill unoptimized sizes="320px" className="object-cover" />
         </div>
       )}
       <div className="mt-2 flex flex-wrap gap-3">
@@ -80,10 +92,10 @@ export default function PhotoPicker({ photo, text, onChange }: PhotoPickerProps)
           className={`${buttonClass("outline", "small")} peer-focus-visible:outline-2 peer-focus-visible:outline-offset-2 peer-focus-visible:outline-primary`}
         >
           <ImagePlus className="size-4" aria-hidden="true" />
-          {photo ? text.photoChange : text.photoPick}
+          {hasPhoto ? text.photoChange : text.photoPick}
         </label>
-        {photo && (
-          <button type="button" onClick={() => showPreview(null)} className={buttonClass("ghost", "small")}>
+        {hasPhoto && (
+          <button type="button" onClick={handleRemove} className={buttonClass("ghost", "small")}>
             <X className="size-4" aria-hidden="true" />
             {text.photoRemove}
           </button>

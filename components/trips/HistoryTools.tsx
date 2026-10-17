@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowRight, Check, Globe, Search, Users } from "lucide-react";
+import { ArrowRight, Check, Globe, Search } from "lucide-react";
 import Link from "next/link";
 import { choiceClass, INPUT } from "@/components/ui/styles";
 import type { Messages } from "@/lib/messages";
@@ -42,17 +42,6 @@ export default function HistoryTools({
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
         <p className="text-label-lg text-text tabular-nums">{summary.join(" · ")}</p>
         <div className="flex flex-wrap items-center gap-x-4 gap-y-1">
-          <Link
-            href="/profile/saved-members"
-            className={TEXT_LINK}
-          >
-            <Users className="size-4" aria-hidden="true" />
-            {text.savedProfiles}
-            <ArrowRight
-              className="size-4 transition-[translate] duration-200 ease-out group-hover:translate-x-1"
-              aria-hidden="true"
-            />
-          </Link>
           <Link
             href="/profile/map"
             className={TEXT_LINK}

@@ -34,6 +34,7 @@
     "day": "Day {day}",
     "emptyTitle": "No route yet",
     "empty": "The route planned for this trip will show up here, day by day.",
+    "emptyDay": "No places visited on this day.",
     "open": "Open the trip"
   },
   "share": {
@@ -70,11 +71,16 @@
     "rating": "Rated {rating} out of 5",
     "photoAlt": "Photo of a moment at {place}",
     "remove": "Delete the moment at {place}",
+    "actions": "Actions for moment at {place}",
+    "edit": "Edit",
+    "delete": "Delete",
     "loadMore": "Show more",
     "saved": "Moment saved. The whole group can see it now.",
+    "updated": "Moment updated.",
     "removed": "Moment removed from the album.",
     "form": {
       "title": "Record a new moment",
+      "editTitle": "Edit moment",
       "place": "Place name",
       "placePlaceholder": "e.g. Borobudur Temple",
       "placeRequired": "Enter the place name first.",

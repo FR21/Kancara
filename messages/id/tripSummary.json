@@ -34,6 +34,7 @@
     "day": "Hari {day}",
     "emptyTitle": "Belum ada rute",
     "empty": "Rute yang disusun untuk perjalanan ini akan muncul di sini, hari demi hari.",
+    "emptyDay": "Tidak ada kunjungan tempat di hari ini.",
     "open": "Buka perjalanan"
   },
   "share": {
@@ -70,11 +71,16 @@
     "rating": "Nilai {rating} dari 5",
     "photoAlt": "Foto momen di {place}",
     "remove": "Hapus momen di {place}",
+    "actions": "Pilihan untuk momen di {place}",
+    "edit": "Ubah",
+    "delete": "Hapus",
     "loadMore": "Tampilkan lebih banyak",
     "saved": "Momen tersimpan. Seluruh rombongan sudah bisa melihatnya.",
+    "updated": "Momen berhasil diperbarui.",
     "removed": "Momen dihapus dari album.",
     "form": {
       "title": "Catat momen baru",
+      "editTitle": "Ubah momen",
       "place": "Nama tempat",
       "placePlaceholder": "contoh: Candi Borobudur",
       "placeRequired": "Isi dulu nama tempatnya.",

@@ -28,9 +28,10 @@ export function formatMoney(amount: number, locale: string): string {
   }).format(amount);
 }
 
-/** "tomorrow" or "in 5 days", in the reader's language. */
+/** "Tomorrow" or "In 5 days", capitalized in the reader's language. */
 export function formatDaysAhead(days: number, locale: string): string {
-  return new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(days, "day");
+  const formatted = new Intl.RelativeTimeFormat(locale, { numeric: "auto" }).format(days, "day");
+  return formatted ? formatted.charAt(0).toUpperCase() + formatted.slice(1) : "";
 }
 
 /**

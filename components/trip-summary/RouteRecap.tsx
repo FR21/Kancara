@@ -1,12 +1,19 @@
-import { ArrowRight, Compass, MapPin } from "lucide-react";
+"use client";
+
+import { ArrowRight, Compass, MapPin, Star } from "lucide-react";
 import Link from "next/link";
-import type { CSSProperties } from "react";
+import { useState } from "react";
+import DayPicker from "@/components/plan/itinerary/DayPicker";
 import EmptyState from "@/components/ui/EmptyState";
 import { buttonClass } from "@/components/ui/styles";
-import type { Itinerary } from "@/lib/client/captain";
+import { CATEGORY_ICONS } from "@/components/plan/itinerary/StopItem";
+import type { Itinerary, ItineraryItem } from "@/lib/client/captain";
 import type { Messages } from "@/lib/messages";
+import { placePhotoQueryUrl, resolveEffectiveCategory } from "@/lib/place-category";
 import { fillTemplate, parseLocalDate } from "@/lib/plan-draft";
 import { plural } from "@/lib/trips/format";
+import { useWibNow } from "@/lib/use-jakarta-clock";
+import { useMessages } from "@/lib/use-messages";
 
 type RouteRecapProps = {
   itinerary: Itinerary | null;
@@ -20,14 +27,70 @@ function dayDate(date: string, locale: string): string {
   return new Intl.DateTimeFormat(locale, { weekday: "long", day: "numeric", month: "long" }).format(parseLocalDate(date));
 }
 
-// The route the group took, day by day, read from the saved itinerary.
-export default function RouteRecap({ itinerary, tripHref, locale, text }: RouteRecapProps) {
-  // Laundry errands are chores, not places the group went to. A day keeps its number when one before it is empty.
-  const days = (itinerary?.days ?? [])
-    .map((day, index) => ({ number: index + 1, date: day.date, stops: day.items.filter((item) => !item.errand) }))
-    .filter((day) => day.stops.length > 0);
+function StopCard({ item }: { item: ItineraryItem }) {
+  const [photoFailed, setPhotoFailed] = useState(false);
+  const effectiveImageUrl = item.imageUrl || (item.title ? placePhotoQueryUrl(item.title) : undefined);
+  const category = resolveEffectiveCategory(item.category, item.title);
+  const Icon = CATEGORY_ICONS[category] || MapPin;
+  const showPhoto = Boolean(effectiveImageUrl) && !photoFailed;
 
-  if (days.length === 0) {
+  return (
+    <li className="flex items-center gap-3.5 rounded-media p-2 transition-[background-color] duration-150 ease-out hover:bg-surface-muted/60">
+      {showPhoto ? (
+        // eslint-disable-next-line @next/next/no-img-element
+        <img
+          src={effectiveImageUrl}
+          alt=""
+          loading="lazy"
+          decoding="async"
+          onError={() => setPhotoFailed(true)}
+          className="size-16 sm:size-20 shrink-0 rounded-media bg-surface-muted object-cover shadow-xs"
+        />
+      ) : (
+        <span aria-hidden="true" className="flex size-16 sm:size-20 shrink-0 items-center justify-center rounded-media bg-primary-subtle text-primary">
+          <Icon className="size-6" />
+        </span>
+      )}
+
+      <div className="min-w-0 flex-1">
+        <h3 className="text-label-lg font-semibold text-text text-pretty leading-snug">
+          {item.title}
+        </h3>
+
+        <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-caption text-text-muted">
+          {item.time && (
+            <span className="tabular-nums font-medium text-text-subtle">
+              {item.time}
+            </span>
+          )}
+          {item.time && item.rating !== undefined && (
+            <span aria-hidden="true">·</span>
+          )}
+          {item.rating !== undefined && (
+            <span className="inline-flex items-center gap-1 tabular-nums">
+              <Star className="size-3 fill-accent text-accent-500" aria-hidden="true" />
+              {item.rating.toFixed(1)}
+            </span>
+          )}
+        </div>
+      </div>
+    </li>
+  );
+}
+
+// The route the group took, switched day by day using DayPicker just like the main trip itinerary.
+export default function RouteRecap({ itinerary, tripHref, locale, text }: RouteRecapProps) {
+  const planText = useMessages("plan");
+  const clock = useWibNow(true);
+  const days = itinerary?.days ?? [];
+  const totalStops = days.reduce((sum, day) => sum + day.items.filter((item) => !item.errand).length, 0);
+
+  const [selected, setSelected] = useState(() => {
+    const firstWithStops = days.findIndex((day) => day.items.some((item) => !item.errand));
+    return firstWithStops !== -1 ? firstWithStops : 0;
+  });
+
+  if (days.length === 0 || totalStops === 0) {
     return (
       <EmptyState
         icon={Compass}
@@ -44,41 +107,43 @@ export default function RouteRecap({ itinerary, tripHref, locale, text }: RouteR
     );
   }
 
-  // One card for the whole route, a day per block between hairlines, so the days read as one journey rather
-  // than a stack of boxes.
+  const currentDay = days[selected] ?? days[0];
+  const currentStops = currentDay ? currentDay.items.filter((item) => !item.errand) : [];
+  const date = currentDay ? dayDate(currentDay.date, locale) : "";
+
   return (
-    <ol className="divide-y divide-border rounded-surface border border-border bg-surface p-surface">
-      {days.map((day, index) => {
-        const date = dayDate(day.date, locale);
-        return (
-          <li
-            key={day.number}
-            style={{ "--item-index": index } as CSSProperties}
-            className="py-4 first:pt-0 last:pb-0 motion-safe:animate-list-in"
-          >
-            <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
-              <h2 className="text-h3 text-text">{fillTemplate(text.route.day, { day: day.number })}</h2>
-              <p className="text-body-sm text-text-muted">
-                {[date, plural(text.stats.placesCount, day.stops.length, locale)].filter(Boolean).join(" · ")}
-              </p>
-            </div>
-            <ol className="mt-2 space-y-3">
-              {day.stops.map((item, itemIndex) => (
-                <li key={`${itemIndex}-${item.title}`} className="flex items-start gap-3">
-                  <MapPin className="mt-1 size-4 shrink-0 text-primary" aria-hidden="true" />
-                  <div className="min-w-0 flex-1">
-                    <p className="text-body text-text">{item.title}</p>
-                    {(item.address || item.detail) && (
-                      <p className="mt-1 text-body-sm wrap-break-word text-text-muted">{item.address || item.detail}</p>
-                    )}
-                  </div>
-                  {item.time && <span className="shrink-0 text-body-sm text-text-muted tabular-nums">{item.time}</span>}
-                </li>
-              ))}
-            </ol>
-          </li>
-        );
-      })}
-    </ol>
+    <div className="surface-compact rounded-surface border border-border bg-surface p-surface">
+      <header className="relative flex flex-wrap items-center justify-between gap-x-4 gap-y-3 border-b border-border pb-4">
+        <div>
+          <h2 className="text-h3 font-semibold text-text">{fillTemplate(text.route.day, { day: selected + 1 })}</h2>
+          <p className="mt-1 text-body-sm text-text-muted">
+            {[date, plural(text.stats.placesCount, currentStops.length, locale)].filter(Boolean).join(" · ")}
+          </p>
+        </div>
+        {days.length > 1 && (
+          <DayPicker
+            days={days}
+            selected={selected}
+            today={clock?.date ?? null}
+            locale={locale}
+            text={planText.itinerary.picker}
+            className="w-full sm:w-auto"
+            onSelect={setSelected}
+          />
+        )}
+      </header>
+
+      {currentStops.length > 0 ? (
+        <ol key={currentDay.date} className="mt-4 space-y-1 motion-safe:animate-message-in">
+          {currentStops.map((item, itemIndex) => (
+            <StopCard key={`${itemIndex}-${item.title}`} item={item} />
+          ))}
+        </ol>
+      ) : (
+        <p className="py-8 text-center text-body-sm text-text-muted">
+          {text.route.emptyDay}
+        </p>
+      )}
+    </div>
   );
 }

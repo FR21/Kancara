@@ -107,7 +107,7 @@ quietly compromising, or staying home.
     <td width="50%" valign="top">
       <img src=".github/assets/readme/utensils-crossed.svg" width="28" height="28" alt="" /><br />
       <b>Read any menu</b><br />
-      Scan a menu to see which dishes suit each person's diet.
+      Snap a photo or upload a menu to see which dishes suit each person's diet.
     </td>
     <td width="50%" valign="top">
       <img src=".github/assets/readme/languages.svg" width="28" height="28" alt="" /><br />
@@ -119,7 +119,7 @@ quietly compromising, or staying home.
     <td width="50%" valign="top">
       <img src=".github/assets/readme/compass.svg" width="28" height="28" alt="" /><br />
       <b>Carry a field pass</b><br />
-      Stays, food notes, useful phrases, and emergency numbers, saved on your phone for when there's no signal.
+      Stays, food notes, spoken phrases, and emergency numbers, saved on your phone for when there's no signal.
     </td>
     <td width="50%" valign="top">
       <img src=".github/assets/readme/wallet.svg" width="28" height="28" alt="" /><br />
@@ -162,20 +162,27 @@ quietly compromising, or staying home.
 
 <table>
   <tr>
-    <td width="33%" valign="top">
+    <td width="50%" valign="top">
       <img src=".github/assets/readme/images.svg" width="28" height="28" alt="" /><br />
-      <b>Look back together</b><br />
-      A recap with the route you took and the moments the group saved.
+      <b>Trip summary & daily route</b><br />
+      A day-by-day interactive recap with visited places, timings, and ratings, plus key travel stats.
     </td>
-    <td width="33%" valign="top">
-      <img src=".github/assets/readme/contact.svg" width="28" height="28" alt="" /><br />
-      <b>Remember your companions</b><br />
-      Save the people you travel with, so the next trip starts already filled in.
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/camera.svg" width="28" height="28" alt="" /><br />
+      <b>Shared memory album</b><br />
+      Collect photos, stories, and ratings together with your group, with full editing and sharing.
     </td>
-    <td width="33%" valign="top">
+  </tr>
+  <tr>
+    <td width="50%" valign="top">
       <img src=".github/assets/readme/globe.svg" width="28" height="28" alt="" /><br />
       <b>See where you've been</b><br />
-      A map of the countries you have visited.
+      An interactive world map tracking all the countries and destinations you have visited.
+    </td>
+    <td width="50%" valign="top">
+      <img src=".github/assets/readme/contact.svg" width="28" height="28" alt="" /><br />
+      <b>Remember your companions</b><br />
+      Save the people you travel with and their dietary or accessibility needs, so the next trip starts already filled in.
     </td>
   </tr>
 </table>
@@ -342,19 +349,27 @@ npm install
 npm run dev
 ```
 
+Or run with **Docker**:
+
+```bash
+docker build -t kancara .
+docker run -p 3000:3000 --env-file .env kancara
+```
+
 Then open http://localhost:3000.
 
 **Environment variables** go in a `.env` file at the project root, which is never committed.
 
 | Variable | What it's for |
 | --- | --- |
-| `DATABASE_URL` | PostgreSQL (Neon) connection used by Prisma |
+| `DATABASE_URL` | PostgreSQL (Neon) pooled connection used by Prisma |
+| `DATABASE_URL_UNPOOLED` | Direct PostgreSQL connection used for schema migrations |
 | `DATA_ENCRYPTION_KEY` | Encrypts health notes and phone numbers |
 | `GEMINI_API_KEY` | Captain, the AI guide behind plans, packing lists, translations, and menu checks |
 | `GOOGLE_MAPS_API_KEY` | Server key for Google Places and travel times |
 | `NEXT_PUBLIC_GOOGLE_MAPS_API_KEY` | Browser key for the maps (Maps JavaScript API and Geocoding API) |
 | `NEXT_PUBLIC_FIREBASE_*`, `FIREBASE_*` | Sign-in and push notifications |
-| `AWS_*`, `NEXT_PUBLIC_STORAGE_URL` | Object storage for profile and memory photos |
+| `GCS_BUCKET_NAME`, `NEXT_PUBLIC_STORAGE_URL` | Object storage (Google Cloud Storage / Firebase Storage) for profile and memory photos |
 | `RAPIDAPI_KEY`, `RAPIDAPI_BOOKING_HOST` | Hotel search |
 | `NEXT_PUBLIC_SITE_URL` | The site's public address, for links and search engines |
 | `GOOGLE_SITE_VERIFICATION` | Optional: Google Search Console verification |
@@ -372,8 +387,6 @@ Then open http://localhost:3000.
 
 | Document | What it covers |
 | --- | --- |
-| `PRODUCT.md` | Who Kancara is for and how it should feel |
-| `DESIGN.md` | The design system: colors, type, corners, spacing, components |
 | `rules.md` | The project's rules for code, design, and data |
 | `prisma/schema.prisma` | The database tables |
 

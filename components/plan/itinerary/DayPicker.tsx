@@ -14,6 +14,7 @@ type DayPickerProps = {
   today: string | null;
   locale: string;
   text: Messages["plan"]["itinerary"]["picker"];
+  className?: string;
   onSelect: (index: number) => void;
 };
 
@@ -48,7 +49,7 @@ function monthCells(key: string): (Date | null)[] {
 // in which only the trip's own days can be picked, so a trip of two weeks is one tap from any of its days instead
 // of a long row to scroll. The arrow keys move a day (or a week) at a time inside the calendar, as in any date
 // picker; Escape or a press outside closes it.
-export default function DayPicker({ days, selected, today, locale, text, onSelect }: DayPickerProps) {
+export default function DayPicker({ days, selected, today, locale, text, className = "", onSelect }: DayPickerProps) {
   const popoverId = useId();
   const rootRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
@@ -136,9 +137,9 @@ export default function DayPicker({ days, selected, today, locale, text, onSelec
   return (
     // The calendar is placed against the nearest positioned parent (the day header), under its right edge, so it
     // opens in view whether the pill sits at the end of the header or has wrapped to a line of its own.
-    <div ref={rootRef} className="flex">
+    <div ref={rootRef} className={`flex ${className}`}>
       {/* Padded like the travel map's zoom: two 36px steps and the date inside one 44px pill. */}
-      <div className="inline-flex items-center rounded-full border border-border-strong bg-background p-1">
+      <div className="flex w-full items-center justify-between rounded-full border border-border-strong bg-background p-1 sm:w-auto">
         <IconButton label={text.previous} size="small" disabled={selected === 0} onClick={() => step(-1)}>
           <ChevronLeft className="size-5" aria-hidden="true" />
         </IconButton>
@@ -150,7 +151,7 @@ export default function DayPicker({ days, selected, today, locale, text, onSelec
           aria-controls={open ? popoverId : undefined}
           aria-label={fillTemplate(text.choose, { date: current ? longDate.format(parseLocalDate(current.date)) : "" })}
           onClick={() => (open ? close(false) : openCalendar())}
-          className="inline-flex h-9 cursor-pointer items-center gap-2 rounded-full px-3 text-label text-text tabular-nums transition-[background-color,scale] duration-150 ease-out hover:bg-surface-muted active:scale-[0.97]"
+          className="inline-flex h-9 flex-1 cursor-pointer items-center justify-center gap-2 rounded-full px-3 text-label text-text tabular-nums transition-[background-color,scale] duration-150 ease-out hover:bg-surface-muted active:scale-[0.97] sm:flex-initial"
         >
           <CalendarDays className="size-4 text-primary" aria-hidden="true" />
           {current && shortDate.format(parseLocalDate(current.date))}

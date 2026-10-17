@@ -8,7 +8,7 @@ import SelectField from "@/components/ui/SelectField";
 import Sheet from "@/components/ui/Sheet";
 import RequiredMark from "@/components/ui/RequiredMark";
 import { buttonClass, FIELD_LABEL, INPUT, TEXTAREA, FIELD_DESCRIPTION } from "@/components/ui/styles";
-import type { NewMemory } from "@/lib/client/trip-memories";
+import type { NewMemory, TripMemory, UpdateMemory } from "@/lib/client/trip-memories";
 import type { Messages } from "@/lib/messages";
 import { fillTemplate } from "@/lib/plan-draft";
 import FieldError from "@/components/ui/FieldError";
@@ -18,6 +18,7 @@ type MemoryFormSheetProps = {
   open: boolean;
   days: number;
   defaultDay: number;
+  initialMemory?: TripMemory | null;
   /** The stops of the itinerary, offered as the place while typing. */
   places: string[];
   /** The group's names, for a memory someone records on another member's behalf. */
@@ -25,18 +26,19 @@ type MemoryFormSheetProps = {
   locale: string;
   text: Messages["tripSummary"]["moments"];
   onClose: () => void;
-  onSave: (memory: NewMemory) => Promise<void>;
+  onSave: (memory: NewMemory | UpdateMemory) => Promise<void>;
 };
 
 // Mirrors the server's limits, so what is typed is what is kept.
 const MAX_PLACE_TITLE = 100;
 const MAX_NOTE = 1000;
 
-// The form for a new memory. It starts empty each time it opens: the album gives it a new key.
+// The form for a new or edited memory.
 export default function MemoryFormSheet({
   open,
   days,
   defaultDay,
+  initialMemory,
   places,
   members,
   locale,
@@ -45,6 +47,7 @@ export default function MemoryFormSheet({
   onSave,
 }: MemoryFormSheetProps) {
   const formText = text.form;
+  const isEditing = Boolean(initialMemory);
   const formId = useId();
   const placeId = useId();
   const placeErrorId = useId();
@@ -54,12 +57,13 @@ export default function MemoryFormSheet({
   const ratingHintId = useId();
   const noteId = useId();
   const authorId = useId();
-  const [placeTitle, setPlaceTitle] = useState("");
-  const [dayNumber, setDayNumber] = useState(defaultDay);
-  const [rating, setRating] = useState<number | null>(null);
-  const [note, setNote] = useState("");
-  const [authorName, setAuthorName] = useState("");
+  const [placeTitle, setPlaceTitle] = useState(initialMemory?.placeTitle ?? "");
+  const [dayNumber, setDayNumber] = useState(initialMemory?.dayNumber ?? defaultDay);
+  const [rating, setRating] = useState<number | null>(initialMemory?.rating ?? null);
+  const [note, setNote] = useState(initialMemory?.note ?? "");
+  const [authorName, setAuthorName] = useState(initialMemory?.authorName ?? "");
   const [photo, setPhoto] = useState<File | null>(null);
+  const [removePhoto, setRemovePhoto] = useState(false);
   const [triedSaving, setTriedSaving] = useState(false);
   const [saving, setSaving] = useState(false);
   const [failed, setFailed] = useState(false);
@@ -73,7 +77,15 @@ export default function MemoryFormSheet({
     setSaving(true);
     setFailed(false);
     try {
-      await onSave({ placeTitle: placeTitle.trim(), dayNumber, note: note.trim(), rating, authorName, photo });
+      await onSave({
+        placeTitle: placeTitle.trim(),
+        dayNumber,
+        note: note.trim(),
+        rating,
+        authorName,
+        photo,
+        ...(isEditing ? { removePhoto } : {}),
+      });
     } catch {
       setFailed(true);
       setSaving(false);
@@ -87,7 +99,7 @@ export default function MemoryFormSheet({
   return (
     <Sheet
       open={open}
-      title={formText.title}
+      title={isEditing ? formText.editTitle : formText.title}
       closeLabel={formText.cancel}
       onClose={close}
       footer={
@@ -197,7 +209,14 @@ export default function MemoryFormSheet({
           </div>
         </div>
 
-        <PhotoPicker photo={photo} text={formText} onChange={setPhoto} />
+        <PhotoPicker
+          photo={photo}
+          initialUrl={initialMemory?.photoUrl}
+          removePhoto={removePhoto}
+          text={formText}
+          onChange={setPhoto}
+          onRemovePhoto={setRemovePhoto}
+        />
 
         {failed && (
           <div className="motion-safe:animate-message-in">
