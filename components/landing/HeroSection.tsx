@@ -156,7 +156,6 @@ export default function HeroSection() {
             src="/images/hero/Sky.webp"
             alt=""
             fill
-            priority
             sizes="100vw"
             className="object-cover object-top opacity-90"
           />
@@ -172,8 +171,8 @@ export default function HeroSection() {
             alt=""
             fill
             priority
-            // The picture fills a box one and a half screens tall, so on a phone it is drawn far wider than the screen.
-            sizes="max(100vw, 200vh)"
+            fetchPriority="high"
+            sizes="100vw"
             // Darkened and behind everything, so a lighter encoding shows no difference and saves most of its weight.
             quality={50}
             className="translate-x-[-2%] scale-[1.05] object-cover object-[60%_95%] brightness-70"

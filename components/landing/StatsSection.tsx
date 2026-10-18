@@ -272,12 +272,12 @@ function TimeCard() {
       </CardLabel>
       <CountUp value={t.card3Value} className="mt-2 font-heading text-h1 font-extrabold tracking-tight text-text" />
 
-      <dl className="mt-auto space-y-3 pt-6">
+      <div className="mt-auto space-y-3 pt-6" role="list">
         {rows.map((row, index) => (
-          <div key={row.name}>
+          <div key={row.name} role="listitem">
             <div className="flex items-baseline justify-between text-caption">
-              <dt className={row.text}>{row.name}</dt>
-              <dd className={`${row.text} tabular-nums`}>{row.label}</dd>
+              <span className={row.text}>{row.name}</span>
+              <span className={`${row.text} tabular-nums`}>{row.label}</span>
             </div>
             <div className="mt-1 h-2 rounded-full bg-surface-muted">
               <div
@@ -289,7 +289,7 @@ function TimeCard() {
             </div>
           </div>
         ))}
-      </dl>
+      </div>
     </div>
   );
 }

@@ -210,8 +210,9 @@ export default function Navbar({ isLoggedIn = false, picture = null }: NavbarPro
           <Image
             src="/images/logo/kancara_wordmark_logo.webp"
             alt=""
-            width={866}
-            height={288}
+            width={232}
+            height={77}
+            sizes="160px"
             loading="eager"
             className="-my-1 h-10 w-auto"
           />

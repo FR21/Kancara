@@ -1,5 +1,5 @@
 import { type Itinerary, parseItinerary } from "@/lib/client/captain";
-import { PUSH_SCOPE } from "@/lib/client/push";
+import { PUSH_SCOPE } from "@/lib/client/push-constants";
 import { isPersonalCache } from "@/lib/offline-caches";
 import { type PackingState, parsePacking } from "./plan-draft";
 

@@ -1,4 +1,5 @@
-import { app } from "@/lib/firebase/client";
+export { PUSH_WORKER, PUSH_SCOPE } from "./push-constants";
+import { PUSH_WORKER, PUSH_SCOPE } from "./push-constants";
 
 // Turning push notifications on for this device. The browser is asked for permission, a small service worker of
 // its own is registered to receive them (it works on the dev server too, where the offline worker is not kept),
@@ -7,8 +8,6 @@ import { app } from "@/lib/firebase/client";
 /** Whether this device gets notifications: it cannot, the visitor refused, not yet, or yes. */
 export type PushState = "unsupported" | "blocked" | "off" | "on";
 
-export const PUSH_WORKER = "/push-sw.js";
-export const PUSH_SCOPE = "/push-scope/";
 const TOKEN_KEY = "kancara-push-token";
 const REQUEST_TIMEOUT_MS = 15000;
 
@@ -47,7 +46,10 @@ async function pushWorker(): Promise<ServiceWorkerRegistration> {
 
 /** Asks Firebase for this device's token and tells the server. Null when Firebase cannot give one here. */
 async function register(locale: string): Promise<string | null> {
-  const { getMessaging, getToken, isSupported } = await import("firebase/messaging");
+  const [{ getMessaging, getToken, isSupported }, { app }] = await Promise.all([
+    import("firebase/messaging"),
+    import("@/lib/firebase/client"),
+  ]);
   if (!(await isSupported())) return null;
   const { key } = (await (await send("GET")).json()) as { key?: string };
   if (!key) return null;

@@ -24,8 +24,9 @@ export default function StandaloneShell({ width, centered = false, lang, dir, cl
       <Image
         src="/images/logo/kancara_wordmark_logo.webp"
         alt="Kancara"
-        width={866}
-        height={288}
+        width={232}
+        height={77}
+        sizes="140px"
         loading="eager"
         className={`mb-8 h-8 w-auto ${centered ? "self-center" : "self-start"}`}
       />

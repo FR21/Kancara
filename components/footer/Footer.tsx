@@ -128,8 +128,9 @@ export default function Footer() {
               <Image
                 src="/images/logo/kancara_wordmark_logo.webp"
                 alt="Kancara"
-                width={866}
-                height={288}
+                width={232}
+                height={77}
+                sizes="180px"
                 className="h-11 w-auto"
               />
             </Link>

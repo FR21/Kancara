@@ -21,8 +21,9 @@ export default function AuthTopBar() {
         <Image
           src="/images/logo/kancara_wordmark_logo.webp"
           alt=""
-          width={866}
-          height={288}
+          width={232}
+          height={77}
+          sizes="160px"
           loading="eager"
           className="h-10 w-auto"
         />

@@ -44,6 +44,8 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
     // must not warn about those attributes differing from the server render.
     <html lang={locale} suppressHydrationWarning className={FONT_CLASSES}>
       <head>
+        <link rel="dns-prefetch" href="https://kancara-app.firebaseapp.com" />
+        <link rel="dns-prefetch" href="https://apis.google.com" />
         <script
           suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: `${themeInitScript};${localeInitScript}` }}

@@ -10,7 +10,6 @@ import {
 } from "@/lib/plan-draft";
 import { type PlaceCategory, isPlaceCategory, safePhotoUrl } from "@/lib/place-category";
 import type { Weather } from "@/lib/weather";
-import { sampleCaptain } from "@/lib/client/captain-sample";
 
 export type ItineraryCover = { need: NeedKey; memberIds: string[] };
 export type ItineraryViolation = { need: NeedKey; reason: string };
@@ -166,4 +165,19 @@ const httpCaptain: CaptainClient = {
 
 export const captainIsSample = process.env.NEXT_PUBLIC_USE_SAMPLE_CAPTAIN === "true";
 
-export const captain: CaptainClient = captainIsSample ? sampleCaptain : httpCaptain;
+export const captain: CaptainClient = {
+  itinerary: async (request, signal) => {
+    if (captainIsSample) {
+      const { sampleCaptain } = await import("@/lib/client/captain-sample");
+      return sampleCaptain.itinerary(request, signal);
+    }
+    return httpCaptain.itinerary(request, signal);
+  },
+  packing: async (request, signal) => {
+    if (captainIsSample) {
+      const { sampleCaptain } = await import("@/lib/client/captain-sample");
+      return sampleCaptain.packing(request, signal);
+    }
+    return httpCaptain.packing(request, signal);
+  },
+};
