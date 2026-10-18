@@ -96,19 +96,19 @@
     ]
   },
   "status": {
-    "title": "Kancara masih muda, dan kami terbuka soal itu.",
-    "body": "Kancara lahir tahun ini dari kesal melihat rencana liburan yang selalu mengorbankan seseorang. Kami baru mulai, jadi ini yang sudah bisa kamu pakai dan yang masih kami kerjakan.",
+    "title": "Kancara masih muda, tapi sudah siap menemani.",
+    "body": "Kancara lahir tahun ini dari kesal melihat rencana liburan yang selalu mengorbankan seseorang. Ini semua yang sudah bisa kamu pakai hari ini.",
     "nowTitle": "Sudah bisa",
     "now": [
       "Menyusun rencana bersama Captain",
       "Boarding pass untuk memeriksa rencana",
       "Itinerary per hari yang memeriksa tiap kebutuhan",
-      "Perjalanan Saya dengan jadwal hari ini"
-    ],
-    "nextTitle": "Sedang disiapkan",
-    "next": [
+      "Perjalanan Saya dengan jadwal hari ini",
       "Undangan untuk anggota rombongan",
-      "Akses tanpa sinyal selama perjalanan"
+      "Akses tanpa sinyal selama perjalanan",
+      "Daftar bawaan, scan menu, dan penerjemah",
+      "Bantuan saat terpisah dan Kartu Kumpul",
+      "Bagi tagihan dan rekap perjalanan"
     ]
   },
   "faq": {
