@@ -24,6 +24,13 @@ const nextConfig: NextConfig = {
   // Serwist adds a webpack setting even while it is switched off. Next refuses to run Turbopack beside a webpack
   // setting unless Turbopack has one of its own, so this empty one says the dev server is meant to use it.
   turbopack: {},
+  images: {
+    formats: ["image/avif", "image/webp"],
+    // No 3840 width: no picture on these pages is worth sending at 4K, and the widest source is 2000px anyway.
+    deviceSizes: [640, 750, 828, 1080, 1200, 1920, 2048, 2560],
+    // 75 is the default for every picture; 50 is for the darkened backgrounds.
+    qualities: [50, 75],
+  },
   async headers() {
     // The browser looks for a new service worker by fetching it; a cached copy would hide the new one.
     return [{ source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache, no-store, must-revalidate" }] }];

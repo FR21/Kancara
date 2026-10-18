@@ -28,7 +28,7 @@ export default function PlanBackdrop() {
   return (
     <div
       aria-hidden="true"
-      className="pointer-events-none absolute top-0 left-1/2 -z-10 h-[min(52rem,115svh)] w-screen -translate-x-1/2 overflow-clip mask-[linear-gradient(to_bottom,black_45%,transparent)] motion-safe:animate-message-in motion-safe:[animation-duration:1200ms]"
+      className="pointer-events-none absolute top-0 left-1/2 -z-10 h-[min(52rem,115svh)] w-screen -translate-x-1/2 overflow-clip mask-[linear-gradient(to_bottom,black_45%,transparent)]"
     >
       {PLACES.map((source, index) => {
         if (index > 0 && !restLoaded) return null;

@@ -174,6 +174,8 @@ export default function HeroSection() {
             priority
             // The picture fills a box one and a half screens tall, so on a phone it is drawn far wider than the screen.
             sizes="max(100vw, 200vh)"
+            // Darkened and behind everything, so a lighter encoding shows no difference and saves most of its weight.
+            quality={50}
             className="translate-x-[-2%] scale-[1.05] object-cover object-[60%_95%] brightness-70"
           />
         </div>

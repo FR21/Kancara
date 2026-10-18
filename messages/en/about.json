@@ -96,19 +96,19 @@
     ]
   },
   "status": {
-    "title": "Kancara is young, and we're open about it.",
-    "body": "Kancara was born this year out of frustration with holiday plans that always leave someone out. We're just getting started, so here is what you can use today and what we're still working on.",
+    "title": "Kancara is young, and ready to go.",
+    "body": "Kancara was born this year out of frustration with holiday plans that always leave someone out. Here is everything you can use today.",
     "nowTitle": "Works today",
     "now": [
       "Planning a trip with Captain",
       "A boarding pass to check the plan",
       "A day-by-day itinerary that checks each need",
-      "My Trips with today's schedule"
-    ],
-    "nextTitle": "In the works",
-    "next": [
+      "My Trips with today's schedule",
       "Invitations for group members",
-      "Access without a signal during the trip"
+      "Access without a signal during the trip",
+      "Packing list, menu scan, and translator",
+      "Help when someone is separated, and the meeting card",
+      "Split bill and trip recap"
     ]
   },
   "faq": {

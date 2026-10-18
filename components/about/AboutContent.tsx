@@ -1,6 +1,6 @@
 "use client";
 
-import { Accessibility, Baby, Check, CircleDashed, type LucideIcon, Utensils, Wallet } from "lucide-react";
+import { Accessibility, Baby, Check, type LucideIcon, Utensils, Wallet } from "lucide-react";
 import Image from "next/image";
 import ScrollReveal from "@/components/landing/ScrollReveal";
 import { useMessages } from "@/lib/use-messages";
@@ -178,10 +178,11 @@ export default function AboutContent() {
           <h2 className={SECTION_TITLE}>{text.status.title}</h2>
           <p className={`mt-4 ${LEAD}`}>{text.status.body}</p>
         </ScrollReveal>
-        <ScrollReveal delayMs={120} className="mt-12 grid gap-8 sm:grid-cols-2 sm:gap-12">
+        {/* Everything here works today, so it is one list, run in two columns on a wider screen. */}
+        <ScrollReveal delayMs={120} className="mt-12">
           <div>
             <h3 className={LIST_TITLE}>{text.status.nowTitle}</h3>
-            <ul className="mt-4 space-y-3">
+            <ul className="mt-4 grid gap-x-12 gap-y-3 sm:grid-cols-2">
               {text.status.now.map((entry, index) => (
                 <li key={entry} className="flex items-start gap-3 text-body text-pretty text-text">
                   {/* Each check is stamped on, one after another, once the list is on screen. */}
@@ -191,17 +192,6 @@ export default function AboutContent() {
                   >
                     <Check className="size-4" strokeWidth={3} aria-hidden="true" />
                   </span>
-                  {entry}
-                </li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h3 className={LIST_TITLE}>{text.status.nextTitle}</h3>
-            <ul className="mt-4 space-y-3">
-              {text.status.next.map((entry) => (
-                <li key={entry} className="flex items-start gap-3 text-body text-pretty text-text-muted">
-                  <CircleDashed className="size-6 shrink-0" aria-hidden="true" />
                   {entry}
                 </li>
               ))}
