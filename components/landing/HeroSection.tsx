@@ -172,10 +172,9 @@ export default function HeroSection() {
             fill
             priority
             fetchPriority="high"
-            sizes="100vw"
-            // Darkened and behind everything, so a lighter encoding shows no difference and saves most of its weight.
-            quality={50}
-            className="translate-x-[-2%] scale-[1.05] object-cover object-[60%_95%] brightness-70"
+            sizes="(max-width: 768px) 140vw, 100vw"
+            quality={75}
+            className="translate-x-0 sm:translate-x-[-2%] scale-[1.05] object-cover object-[50%_95%] sm:object-[60%_95%] brightness-70"
           />
         </div>
       </div>
